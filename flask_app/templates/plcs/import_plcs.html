@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}
+Import Legacy PLCs
+{% endblock %}
+
+{% block content %}
+
+<h3>
+    Import Legacy PLCs
+</h3>
+
+{% if error %}
+
+<p style="color:red;">
+    {{ error }}
+</p>
+
+{% endif %}
+
+{% if result %}
+
+<p>
+    Imported: {{ result.imported }}
+    |
+    Skipped: {{ result.skipped }}
+    |
+    Machines Created: {{ result.created_machines }}
+    |
+    Stages Created: {{ result.created_stages }}
+</p>
+
+{% endif %}
+
+<form method="POST">
+
+    <p>
+
+        KM Suffix Stage
+
+        <br>
+
+        <select name="km_stage">
+
+            <option
+                value="FIRST_STAGE"
+                {% if form.get("km_stage", "FIRST_STAGE") == "FIRST_STAGE" %}selected{% endif %}
+            >
+                FIRST_STAGE
+            </option>
+
+            <option
+                value="SECOND_STAGE"
+                {% if form.get("km_stage") == "SECOND_STAGE" %}selected{% endif %}
+            >
+                SECOND_STAGE
+            </option>
+
+        </select>
+
+    </p>
+
+    <p>
+
+        PU Suffix Stage
+
+        <br>
+
+        <select name="pu_stage">
+
+            <option
+                value="SECOND_STAGE"
+                {% if form.get("pu_stage", "SECOND_STAGE") == "SECOND_STAGE" %}selected{% endif %}
+            >
+                SECOND_STAGE
+            </option>
+
+            <option
+                value="FIRST_STAGE"
+                {% if form.get("pu_stage") == "FIRST_STAGE" %}selected{% endif %}
+            >
+                FIRST_STAGE
+            </option>
+
+        </select>
+
+    </p>
+
+    <p>
+
+        <label>
+
+            <input
+                type="checkbox"
+                name="create_missing_machines"
+                value="1"
+                {% if form.get("create_missing_machines") == "1" %}checked{% endif %}
+            >
+
+            Create Missing Machines
+
+        </label>
+
+    </p>
+
+    <p>
+
+        <label>
+
+            <input
+                type="checkbox"
+                name="create_missing_stages"
+                value="1"
+                {% if form.get("create_missing_stages", "1") == "1" %}checked{% endif %}
+            >
+
+            Create Missing Stages For Existing Machines
+
+        </label>
+
+    </p>
+
+    <p>
+
+        Default TBM Family For Missing Machines
+
+        <br>
+
+        <select name="default_family_id">
+
+            <option value="">
+                Select Family
+            </option>
+
+            {% for family in families %}
+
+            <option
+                value="{{ family.id }}"
+                {% if form.get("default_family_id") == family.id|string %}selected{% endif %}
+            >
+                {{ family.family_name }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </p>
+
+    <p>
+
+        Reason
+
+        <br>
+
+        <textarea
+            name="reason"
+            rows="3"
+            cols="50"
+            required
+        >{{ form.get("reason", "") }}</textarea>
+
+    </p>
+
+    <p>
+
+        <button
+            type="submit"
+            name="action_type"
+            value="preview"
+        >
+            Preview Import
+        </button>
+
+        <button
+            type="submit"
+            name="action_type"
+            value="import"
+        >
+            Import Previewed PLCs
+        </button>
+
+        <a href="/plcs">
+            Back
+        </a>
+
+    </p>
+
+</form>
+
+{% if preview %}
+
+<h4>
+    Preview
+</h4>
+
+<table border="1">
+
+    <tr>
+        <th>PLC Name</th>
+        <th>IP Address</th>
+        <th>Machine</th>
+        <th>Suffix</th>
+        <th>Stage</th>
+        <th>Status</th>
+        <th>Message</th>
+    </tr>
+
+    {% for item in preview %}
+
+    <tr>
+        <td>{{ item.plc_name }}</td>
+        <td>{{ item.ip_address }}</td>
+        <td>{{ item.machine_code }}</td>
+        <td>{{ item.suffix }}</td>
+        <td>{{ item.stage_type }}</td>
+        <td>{{ item.status }}</td>
+        <td>{{ item.message }}</td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endif %}
+
+{% endblock %}

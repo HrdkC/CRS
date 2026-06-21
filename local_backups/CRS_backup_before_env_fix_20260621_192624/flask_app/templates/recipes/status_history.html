@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Status History
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+
+        Recipe Status History
+
+    </h1>
+
+    <p>
+
+        Complete Approval Workflow Audit Trail
+
+    </p>
+
+</div>
+
+<div class="dashboard-card">
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Old Status</th>
+
+                    <th>New Status</th>
+
+                    <th>Changed By</th>
+
+                    <th>Changed At</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for row in history %}
+
+                <tr>
+
+                    <td>
+
+                        {{ row.old_status }}
+
+                    </td>
+
+                    <td>
+
+                        {{ row.new_status }}
+
+                    </td>
+
+                    <td>
+
+                        {{ row.changed_by }}
+
+                    </td>
+
+                    <td>
+
+                        {{ row.changed_at }}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

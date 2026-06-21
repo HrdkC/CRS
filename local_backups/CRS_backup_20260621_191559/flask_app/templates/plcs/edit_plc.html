@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit PLC
+{% endblock %}
+
+{% block content %}
+
+<h3>
+    Edit PLC
+</h3>
+
+<form method="post">
+
+    <p>
+
+        PLC Name
+
+        <b>{{ plc.plc_name }}</b>
+
+    </p>
+
+    <p>
+
+        IP Address
+
+        <input
+            type="text"
+            name="ip_address"
+            value="{{ plc.ip_address }}"
+        >
+
+    </p>
+
+    <p>
+
+        Controller Type
+
+        <input
+            type="text"
+            name="controller_type"
+            value="{{ plc.controller_type }}"
+        >
+
+    </p>
+
+    <p>
+
+        Firmware Revision
+
+        <input
+            type="text"
+            name="firmware_revision"
+            value="{{ plc.firmware_revision }}"
+        >
+
+    </p>
+
+    <p>
+
+        Program Revision
+
+        <input
+            type="text"
+            name="program_revision"
+            value="{{ plc.program_revision }}"
+        >
+
+    </p>
+
+    <p>
+
+        Processor Name
+
+        <input
+            type="text"
+            name="processor_name"
+            value="{{ plc.processor_name }}"
+        >
+
+    </p>
+
+    <p>
+
+        PLC Software
+
+        <input
+            type="text"
+            name="plc_software"
+            value="{{ plc.plc_software }}"
+        >
+
+    </p>
+
+    <p>
+
+        Description
+
+        <input
+            type="text"
+            name="description"
+            value="{{ plc.description }}"
+        >
+
+    </p>
+
+    <button type="submit">
+
+        Save
+
+    </button>
+
+</form>
+
+{% endblock %}

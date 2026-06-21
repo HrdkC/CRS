@@ -1,0 +1,75 @@
+SECURITY ARCHITECTURE
+=====================
+
+Security Philosophy
+-------------------
+
+Protect recipes, users, PLC connectivity, and audit history.
+
+Authentication
+--------------
+
+Username
+
+Password
+
+Password stored only as hash.
+
+No plain text password storage.
+
+Authorization
+-------------
+
+Role-based access control.
+
+Permissions determined by role.
+
+Session Management
+------------------
+
+Login required.
+
+Session timeout configurable.
+
+Single active session per user preferred.
+
+Database Security
+-----------------
+
+Parameterized queries only.
+
+Prevent SQL injection.
+
+No direct SQL from UI.
+
+Audit Protection
+----------------
+
+Audit records must be protected.
+
+Normal users cannot modify audit history.
+
+Network Security
+----------------
+
+Application runs on plant intranet.
+
+Future hardening:
+
+- HTTPS
+- Reverse proxy
+- Firewall rules
+- Secure backups
+
+Future Improvements
+-------------------
+
+Account lockout
+
+Failed login tracking
+
+Password policy
+
+Security event monitoring
+
+Cyber hardening review before production deployment

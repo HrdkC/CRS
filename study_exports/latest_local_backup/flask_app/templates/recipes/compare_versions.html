@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}
+Compare Versions
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    Recipe Compare
+
+</h3>
+
+<hr>
+
+<p>
+
+    Recipe:
+
+    <strong>
+
+        {{ recipe_code }}
+
+    </strong>
+
+</p>
+
+<form method="POST">
+
+    <p>
+
+        Version A
+
+    </p>
+
+    <select name="version_a">
+
+        {% for version in versions %}
+
+        <option value="{{ version }}">
+
+            {{ version }}
+
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+    <p>
+
+        Version B
+
+    </p>
+
+    <select name="version_b">
+
+        {% for version in versions %}
+
+        <option value="{{ version }}">
+
+            {{ version }}
+
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+    <br><br>
+
+    <button type="submit">
+
+        Compare
+
+    </button>
+
+</form>
+
+{% if comparison %}
+
+<hr>
+
+<h3>
+
+    Comparison Results
+
+</h3>
+
+<table border="1">
+
+    <tr>
+
+        <th>Parameter</th>
+
+        <th>Version A</th>
+
+        <th>Version B</th>
+
+        <th>Changed</th>
+
+    </tr>
+
+    {% for row in comparison %}
+
+    <tr>
+
+        <td>
+
+            {{ row.parameter_name }}
+
+        </td>
+
+        <td>
+
+            {{ row.value_a }}
+
+        </td>
+
+        <td>
+
+            {{ row.value_b }}
+
+        </td>
+
+        <td>
+
+            {% if row.changed %}
+
+                YES
+
+            {% else %}
+
+                NO
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endif %}
+
+{% endblock %}

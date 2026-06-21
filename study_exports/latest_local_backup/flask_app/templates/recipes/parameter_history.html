@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}
+Parameter History
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    Parameter History
+
+</h3>
+
+<hr>
+
+<p>
+
+    <strong>
+        Recipe:
+    </strong>
+
+    {{ recipe_code }}
+
+</p>
+
+<p>
+
+    <strong>
+        Parameter:
+    </strong>
+
+    {{ parameter_name }}
+
+</p>
+
+<table border="1">
+
+    <tr>
+
+        <th>Date/Time</th>
+
+        <th>Version</th>
+
+        <th>User</th>
+
+        <th>Old Value</th>
+
+        <th>New Value</th>
+
+        <th>Reason</th>
+
+    </tr>
+
+    {% for row in history %}
+
+    <tr>
+
+        <td>
+
+            {{ row.display_time }}
+
+        </td>
+
+        <td>{{ row.recipe_version }}</td>
+
+        <td>
+
+            {{ row.username }}
+
+        </td>
+
+        <td>
+
+            {{ row.old_value }}
+
+        </td>
+
+        <td>
+
+            {{ row.new_value }}
+
+        </td>
+
+        <td>
+
+            {{ row.reason }}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

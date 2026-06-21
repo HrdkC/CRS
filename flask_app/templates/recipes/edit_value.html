@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Recipe Parameter
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+
+        Edit Recipe Parameter
+
+    </h1>
+
+    <p>
+
+        Modify Recipe Parameter Value
+
+    </p>
+
+</div>
+
+<div class="dashboard-card">
+
+    <table>
+
+        <tr>
+
+            <td>
+
+                Tag Index
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    {{ value.tag_index }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                Parameter Name
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    {{ value.parameter_name }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                Unit
+
+            </td>
+
+            <td>
+
+                {{ value.unit }}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                Minimum Value
+
+            </td>
+
+            <td>
+
+                {{ value.min_value }}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                Maximum Value
+
+            </td>
+
+            <td>
+
+                {{ value.max_value }}
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+<br>
+
+<div class="dashboard-card">
+
+    <form method="POST">
+
+        <label>
+
+            Parameter Value
+
+        </label>
+
+        <input
+            type="number"
+            step="any"
+            name="parameter_value"
+            value="{{ value.parameter_value }}"
+            required
+        >
+
+        <br>
+
+        <button type="submit">
+
+            Save Parameter
+
+        </button>
+
+        <a
+            href="/recipe-editor/{{ value.recipe_id }}"
+            class="quick-card"
+            style="
+                display:inline-block;
+                width:auto;
+                margin-left:10px;
+                padding:12px 20px;
+            "
+        >
+
+            Cancel
+
+        </a>
+
+    </form>
+
+</div>
+
+<br>
+
+<div class="dashboard-card">
+
+    <h3>
+
+        Current Value
+
+    </h3>
+
+    <br>
+
+    <div class="dashboard-value">
+
+        {{ value.parameter_value }}
+
+    </div>
+
+</div>
+
+{% endblock %}

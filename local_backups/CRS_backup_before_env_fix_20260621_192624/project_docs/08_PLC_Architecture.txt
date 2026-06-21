@@ -1,0 +1,111 @@
+PLC ARCHITECTURE
+================
+
+PLC Platform
+------------
+
+Allen Bradley ControlLogix
+
+Communication
+-------------
+
+EtherNet/IP
+
+Python Library
+--------------
+
+pycomm3
+
+PLC Ownership
+-------------
+
+Each PLC belongs to:
+
+Machine + Stage
+
+Examples:
+
+P01 FIRST_STAGE PLC
+
+P01 SECOND_STAGE PLC
+
+PLC Registry Stores
+-------------------
+
+PLC Name
+
+IP Address
+
+Controller Type
+
+Processor Type
+
+Firmware Revision
+
+Program Revision
+
+Description
+
+Status
+
+Future PLC Features
+-------------------
+
+PLC Connectivity Test
+
+PLC Tag Discovery
+
+Recipe Download
+
+Recipe Upload
+
+Heartbeat Monitoring
+
+Program Revision Tracking
+
+Program History Tracking
+
+PLC Tag Registry
+----------------
+
+Future separate table.
+
+Stores:
+
+Recipe Tags
+
+Trigger Tags
+
+Completion Tags
+
+Heartbeat Tags
+
+Verification Tags
+
+Program Revision Philosophy
+---------------------------
+
+Program revision changes must be traceable.
+
+Program history should store:
+
+Old Revision
+
+New Revision
+
+User
+
+Reason
+
+Timestamp
+
+PLC Backup
+----------
+
+Future support for:
+
+PLC backup metadata
+
+ACD file tracking
+
+Program revision management

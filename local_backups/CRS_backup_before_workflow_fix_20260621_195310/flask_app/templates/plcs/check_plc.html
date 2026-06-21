@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}
+Check PLC Connection
+{% endblock %}
+
+{% block content %}
+
+<h3>
+    Check PLC Connection
+</h3>
+
+<table border="1">
+
+    <tr>
+        <th>PLC Name</th>
+        <td>{{ plc.plc_name }}</td>
+    </tr>
+
+    <tr>
+        <th>IP Address</th>
+        <td>{{ plc.ip_address }}</td>
+    </tr>
+
+    <tr>
+        <th>Port</th>
+        <td>44818</td>
+    </tr>
+
+</table>
+
+<form method="POST">
+
+    <p>
+
+        Reason
+
+        <br>
+
+        <textarea
+            name="reason"
+            rows="3"
+            cols="50"
+            required
+        ></textarea>
+
+    </p>
+
+    <p>
+
+        <button type="submit">
+
+            Check Connection
+
+        </button>
+
+        <a href="/plcs">
+
+            Back
+
+        </a>
+
+    </p>
+
+</form>
+
+{% if result %}
+
+<h4>
+    Result
+</h4>
+
+<table border="1">
+
+    <tr>
+        <th>Status</th>
+        <td>
+            {% if result.reachable %}
+                Reachable
+            {% else %}
+                Not Reachable
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <th>Message</th>
+        <td>{{ result.message }}</td>
+    </tr>
+
+    <tr>
+        <th>Elapsed</th>
+        <td>{{ result.elapsed_ms }} ms</td>
+    </tr>
+
+</table>
+
+{% endif %}
+
+{% endblock %}

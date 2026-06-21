@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Editor
+{% endblock %}
+
+{% block content %}
+
+<h2>
+
+Recipe Editor
+
+</h2>
+
+<div class="dashboard-card">
+
+    <p>
+
+        Recipe Code :
+        <b>{{ recipe.recipe_code }}</b>
+
+        &nbsp;&nbsp;&nbsp;&nbsp;
+
+        Recipe Name :
+        <b>{{ recipe.recipe_name }}</b>
+
+    </p>
+
+    <br>
+
+    <p>
+
+        Status :
+
+        <b>
+
+            {{ recipe.status }}
+
+        </b>
+
+    </p>
+
+    <br>
+
+    <p>
+
+        <a href="/recipe-editor/create-version/{{ recipe.id }}">
+
+            Create Version
+
+        </a>
+
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <a href="/recipe-editor/versions/{{ recipe.id }}">
+
+            View Versions
+
+        </a>
+
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <a href="/recipe-editor/status-history/{{ recipe.id }}">
+
+            Status History
+
+        </a>
+
+    </p>
+
+    <br>
+
+    <p>
+
+        <a href="/recipe-editor/status/{{ recipe.id }}/REVIEW">
+
+            Submit For Review
+
+        </a>
+
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <a href="/recipe-editor/status/{{ recipe.id }}/APPROVED">
+
+            Approve
+
+        </a>
+
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <a href="/recipe-editor/status/{{ recipe.id }}/RELEASED">
+
+            Release
+
+        </a>
+
+    </p>
+
+</div>
+
+<br>
+
+<table border="1">
+
+<tr>
+
+    <th colspan="2">
+
+        Recipe Summary
+
+    </th>
+
+</tr>
+
+<tr>
+
+    <td>Total Parameters</td>
+
+    <td>{{ summary.total_parameters }}</td>
+
+</tr>
+
+<tr>
+
+    <td>Modified Parameters</td>
+
+    <td>{{ summary.modified_parameters }}</td>
+
+</tr>
+
+<tr>
+
+    <td>Minimum Tag</td>
+
+    <td>{{ summary.min_tag }}</td>
+
+</tr>
+
+<tr>
+
+    <td>Maximum Tag</td>
+
+    <td>{{ summary.max_tag }}</td>
+
+</tr>
+
+<tr>
+
+    <td>Last Changed By</td>
+
+    <td>{{ summary.last_changed_by }}</td>
+
+</tr>
+
+<tr>
+
+    <td>Last Changed At</td>
+
+    <td>{{ summary.last_changed_at }}</td>
+
+</tr>
+
+</table>
+
+<br>
+
+<form method="GET">
+
+    <input
+        type="text"
+        name="search"
+        value="{{ search_text }}"
+        placeholder="Search Parameter"
+    >
+
+    <input
+        type="hidden"
+        name="page_size"
+        value="{{ page_size }}"
+    >
+
+    <input
+        type="hidden"
+        name="modified_only"
+        value="{{ modified_only }}"
+    >
+
+    <button type="submit">
+
+        Search
+
+    </button>
+
+</form>
+
+<br>
+
+<form method="GET">
+
+    <input
+        type="hidden"
+        name="search"
+        value="{{ search_text }}"
+    >
+
+    <input
+        type="hidden"
+        name="page_size"
+        value="{{ page_size }}"
+    >
+
+    Show
+
+    <select
+        name="modified_only"
+        onchange="this.form.submit()"
+    >
+
+        <option
+            value="0"
+            {% if modified_only == "0" %}
+            selected
+            {% endif %}
+        >
+            All Parameters
+        </option>
+
+        <option
+            value="1"
+            {% if modified_only == "1" %}
+            selected
+            {% endif %}
+        >
+            Modified Only
+        </option>
+
+    </select>
+
+</form>
+
+<br>
+
+<form method="GET">
+
+    <input
+        type="hidden"
+        name="search"
+        value="{{ search_text }}"
+    >
+
+    <input
+        type="hidden"
+        name="modified_only"
+        value="{{ modified_only }}"
+    >
+
+    <input
+        type="hidden"
+        name="page_size"
+        value="{{ page_size }}"
+    >
+
+    Jump To Tag
+
+    <input
+        type="number"
+        name="jump_tag"
+        value="{{ jump_tag }}"
+        style="width:100px"
+    >
+
+    <button type="submit">
+
+        Go
+
+    </button>
+
+</form>
+
+<br>
+
+<form method="GET">
+
+    <input
+        type="hidden"
+        name="search"
+        value="{{ search_text }}"
+    >
+
+    <input
+        type="hidden"
+        name="modified_only"
+        value="{{ modified_only }}"
+    >
+
+    <input
+        type="hidden"
+        name="jump_tag"
+        value="{{ jump_tag }}"
+    >
+
+    Page Size
+
+    <select
+        name="page_size"
+        onchange="this.form.submit()"
+    >
+
+        <option value="25"
+        {% if page_size == 25 %}
+        selected
+        {% endif %}
+        >
+        25
+        </option>
+
+        <option value="50"
+        {% if page_size == 50 %}
+        selected
+        {% endif %}
+        >
+        50
+        </option>
+
+        <option value="100"
+        {% if page_size == 100 %}
+        selected
+        {% endif %}
+        >
+        100
+        </option>
+
+        <option value="9999"
+        {% if page_size == 9999 %}
+        selected
+        {% endif %}
+        >
+        All
+        </option>
+
+    </select>
+
+</form>
+
+<br>
+
+<p>
+
+Total Parameters :
+
+<b>
+
+{{ total_parameters }}
+
+</b>
+
+</p>
+
+<table border="1" width="100%">
+
+<tr>
+
+    <th>Tag</th>
+
+    <th>Parameter</th>
+
+    <th>Value</th>
+
+    <th>Unit</th>
+
+    <th>Min</th>
+
+    <th>Max</th>
+
+    <th>Modified</th>
+
+    <th>Action</th>
+
+</tr>
+
+{% for row in values %}
+
+<tr>
+
+    <td>{{ row.tag_index }}</td>
+
+    <td>{{ row.parameter_name }}</td>
+
+    <td>{{ row.parameter_value }}</td>
+
+    <td>{{ row.unit }}</td>
+
+    <td>{{ row.min_value }}</td>
+
+    <td>{{ row.max_value }}</td>
+
+    <td>
+
+        {% if row.is_modified %}
+            YES
+        {% else %}
+            NO
+        {% endif %}
+
+    </td>
+
+    <td>
+
+        <a href="/recipe-editor/edit/{{ row.id }}">
+            Edit
+        </a>
+
+        |
+
+        <a href="/recipe-editor/history/{{ row.id }}">
+            History
+        </a>
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<br>
+
+{% if page > 1 %}
+
+<a href="?page={{ page - 1 }}&page_size={{ page_size }}&modified_only={{ modified_only }}&jump_tag={{ jump_tag }}">
+
+    Previous
+
+</a>
+
+{% endif %}
+
+&nbsp;&nbsp;
+
+{% if values|length == page_size %}
+
+<a href="?page={{ page + 1 }}&page_size={{ page_size }}&modified_only={{ modified_only }}&jump_tag={{ jump_tag }}">
+
+    Next
+
+</a>
+
+{% endif %}
+
+<br><br>
+
+<h2>
+
+Phase Control
+
+</h2>
+
+<table border="1" width="100%">
+
+<tr>
+
+    <th>Line</th>
+
+    <th>Phase Control</th>
+
+    <th>Stop</th>
+
+    <th>Position</th>
+
+    <th>Sequence</th>
+
+</tr>
+
+{% for row in phase_control %}
+
+<tr>
+
+    <td>
+
+        {{ row.line_no }}
+
+    </td>
+
+    <td>
+
+        {{ row.phase_control_name }}
+
+    </td>
+
+    <td>
+
+        {{ row.stop_option }}
+
+    </td>
+
+    <td>
+
+        {{ row.position_option }}
+
+    </td>
+
+    <td>
+
+        {{ row.sequence_no }}
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

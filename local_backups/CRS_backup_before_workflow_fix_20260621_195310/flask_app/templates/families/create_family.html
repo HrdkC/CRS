@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create TBM Family
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+
+        Create TBM Family
+
+    </h1>
+
+    <p>
+
+        Add a new TBM Family to the Centralized Recipe System
+
+    </p>
+
+</div>
+
+<div class="form-card">
+
+    <form method="POST">
+
+        <label>
+
+            Family Name
+
+        </label>
+
+        <input
+            type="text"
+            name="family_name"
+            required
+        >
+
+        <label>
+
+            Description
+
+        </label>
+
+        <textarea
+            name="description"
+            rows="5"
+        ></textarea>
+
+        <br>
+
+        <button type="submit">
+
+            Create Family
+
+        </button>
+
+        <a
+            href="/families"
+            class="btn-secondary"
+        >
+
+            Cancel
+
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

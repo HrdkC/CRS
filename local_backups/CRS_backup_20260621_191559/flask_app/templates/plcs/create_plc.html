@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create PLC
+{% endblock %}
+
+{% block content %}
+
+<h3>
+    Create PLC
+</h3>
+
+<form method="post">
+
+    <p>
+
+        Stage
+
+        <select
+            name="machine_stage_id"
+        >
+
+            {% for stage in stages %}
+
+            <option
+                value="{{ stage.id }}"
+            >
+
+                {{ stage.machine_code }}
+                -
+                {{ stage.stage_type }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </p>
+
+    <p>
+
+        PLC Name
+
+        <input
+            type="text"
+            name="plc_name"
+        >
+
+    </p>
+
+    <p>
+
+        IP Address
+
+        <input
+            type="text"
+            name="ip_address"
+        >
+
+    </p>
+
+    <p>
+
+        Controller Type
+
+        <input
+            type="text"
+            name="controller_type"
+        >
+
+    </p>
+
+    <p>
+
+        Firmware Revision
+
+        <input
+            type="text"
+            name="firmware_revision"
+        >
+
+    </p>
+
+    <p>
+
+        Program Revision
+
+        <input
+            type="text"
+            name="program_revision"
+        >
+
+    </p>
+
+    <p>
+
+        Processor Name
+
+        <input
+            type="text"
+            name="processor_name"
+        >
+
+    </p>
+
+    <p>
+
+        PLC Software
+
+        <input
+            type="text"
+            name="plc_software"
+        >
+
+    </p>
+
+    <p>
+
+        Description
+
+        <input
+            type="text"
+            name="description"
+        >
+
+    </p>
+
+    <button type="submit">
+
+        Create PLC
+
+    </button>
+
+</form>
+
+{% endblock %}

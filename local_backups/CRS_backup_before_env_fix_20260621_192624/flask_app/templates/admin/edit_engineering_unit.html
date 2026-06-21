@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Engineering Unit
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    Edit Engineering Unit
+
+</h3>
+
+<hr>
+
+<form method="POST">
+
+    <p>
+
+        Unit Code
+
+    </p>
+
+    <input
+        type="text"
+        value="{{ unit.unit_code }}"
+        disabled
+    >
+
+    <p>
+
+        Description
+
+    </p>
+
+    <input
+        type="text"
+        name="description"
+        value="{{ unit.description }}"
+        required
+    >
+
+    <br><br>
+
+    <button type="submit">
+
+        Save Changes
+
+    </button>
+
+</form>
+
+{% endblock %}

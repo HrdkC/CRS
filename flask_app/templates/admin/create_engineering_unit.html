@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+Add Engineering Unit
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    Add Engineering Unit
+
+</h3>
+
+<hr>
+
+<form method="POST">
+
+    <p>
+
+        Unit Code
+
+    </p>
+
+    <input
+        type="text"
+        name="unit_code"
+        required
+    >
+
+    <p>
+
+        Description
+
+    </p>
+
+    <input
+        type="text"
+        name="description"
+        required
+    >
+
+    <br><br>
+
+    <button type="submit">
+
+        Save
+
+    </button>
+
+</form>
+
+{% endblock %}

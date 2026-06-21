@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipes
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+
+    Recipes
+
+
+</h3>
+
+<hr>
+
+<p>
+
+
+    <a href="/recipes/create/{{ machine_id }}/{{ stage_id }}">
+
+        Create Recipe
+
+    </a>
+
+
+</p>
+
+<table border="1">
+
+
+    <tr>
+
+        <th>
+            Recipe Code
+        </th>
+
+        <th>
+            Recipe Name
+        </th>
+
+        <th>
+            Version
+        </th>
+
+        <th>
+            Status
+        </th>
+
+        <th>Editor</th>
+
+    </tr>
+
+    {% for recipe in recipes %}
+
+    <tr>
+
+        <td>
+            <a href="/recipe-editor/{{ recipe.id }}">
+                {{ recipe.recipe_code }}
+            </a>
+        </td>
+
+        <td>
+            {{ recipe.recipe_name }}
+        </td>
+
+        <td>
+            {{ recipe.version }}
+        </td>
+
+        <td>
+            {{ recipe.status }}
+        </td>
+
+        <td>
+
+            <a href="/recipe-editor/{{ recipe.id }}">
+
+                Open
+
+            </a>
+
+            |
+
+            <a href="/recipes/{{ recipe.id }}/copy">
+
+                Copy
+
+            </a>
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+
+</table>
+
+{% endblock %}

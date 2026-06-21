@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+
+        {% block title %}
+        Apollo CRS
+        {% endblock %}
+
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/main.css') }}"
+    >
+
+</head>
+
+<body>
+
+    {% if session.get("logged_in") %}
+
+    <header class="site-header">
+
+        <div class="header-top">
+
+            <div class="brand-area">
+
+                <img
+                    src="{{ url_for('static', filename='images/apollo_logo.png') }}"
+                    alt="Apollo Logo"
+                    class="logo"
+                >
+
+                <div>
+
+                    <div class="brand-title">
+
+                        Centralized Recipe System (CRS)
+
+                    </div>
+
+                    <div class="brand-subtitle">
+
+                        Apollo Tyres Ltd.
+
+                    </div>
+
+                    <div class="brand-subtitle">
+
+                        PCR Limda Plant
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="user-info">
+
+                <strong>
+
+                    Username :  {{ session["username"] }}
+
+                </strong>
+
+                <br>
+
+                User Role :  {{ session["role"] }}
+
+                {% if session.get("last_login_ist") %}
+
+                <br>
+
+                Last Login :  {{ session["last_login_ist"] }}
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <nav class="navbar">
+
+            <ul>
+
+                <li class="menu-item">
+
+                    <a href="/">
+
+                        Dashboard
+
+                    </a>
+
+                </li>
+
+                <li class="dropdown menu-item">
+
+                    <a href="#">
+
+                        Production ▼
+
+                    </a>
+
+                    <div class="dropdown-menu">
+
+                        <a href="/families">
+
+                            TBM Families
+
+                        </a>
+
+                        <a href="/machines">
+
+                            Machines
+
+                        </a>
+
+                    </div>
+
+                </li>
+
+                <li class="dropdown menu-item">
+
+                    <a href="#">
+
+                        Masters ▼
+
+                    </a>
+
+                    <div class="dropdown-menu">
+
+                        <a href="/plcs">
+
+                            PLC Registry
+
+                        </a>
+
+                        <a href="/engineering-units">
+
+                            Engineering Units
+
+                        </a>
+
+                    </div>
+
+                </li>
+
+                {% if session.get("role") == "ADMIN" %}
+
+                <li class="dropdown menu-item">
+
+                    <a href="#">
+
+                        Administration ▼
+
+                    </a>
+
+                    <div class="dropdown-menu">
+
+                        <a href="/users">
+
+                            Users
+
+                        </a>
+
+                        <a href="/audit-history">
+
+                            Audit History
+
+                        </a>
+
+                        <a href="/active-sessions">
+
+                            Active Sessions
+
+                        </a>
+
+                    </div>
+
+                </li>
+
+                {% endif %}
+
+                <li class="menu-item">
+
+                    <a href="/logout">
+
+                        Logout
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </nav>
+
+    </header>
+
+    {% endif %}
+
+    <div class="main-container">
+
+        {% with messages =
+        get_flashed_messages(
+            with_categories=true
+        ) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="flash-message">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+    {% if session.get("logged_in") %}
+
+    <footer class="site-footer">
+
+        <div class="footer-content">
+
+            <span>
+
+                © 2026 Apollo Tyres Ltd.
+
+            </span>
+
+            <span class="footer-separator">
+
+                |
+
+            </span>
+
+            <span>
+
+                Centralized Recipe System (CRS)
+
+            </span>
+
+            <span class="footer-separator">
+
+                |
+
+            </span>
+
+            <span>
+
+                Version 0.1 Beta
+
+            </span>
+
+            <span class="footer-separator">
+
+                |
+
+            </span>
+
+            <span>
+
+                Developed by Hardik Chauhan
+
+            </span>
+
+            <span class="footer-separator">
+
+                |
+
+            </span>
+
+            <span>
+
+                PCR Engineering – Limda Plant
+
+            </span>
+
+        </div>
+
+    </footer>
+
+    {% endif %}
+
+    <script
+        src="{{ url_for('static', filename='js/main.js') }}"
+    ></script>
+
+</body>
+
+</html>

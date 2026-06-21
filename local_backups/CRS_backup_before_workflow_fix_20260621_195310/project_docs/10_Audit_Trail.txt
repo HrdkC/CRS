@@ -1,0 +1,99 @@
+AUDIT TRAIL ARCHITECTURE
+========================
+
+Purpose
+-------
+
+Provide complete traceability of all significant system activities.
+
+Core Philosophy
+---------------
+
+No significant system change should occur without traceability.
+
+Tracked Information
+-------------------
+
+User
+
+Role
+
+Timestamp
+
+Old Value
+
+New Value
+
+Reason
+
+Machine
+
+Stage
+
+Version
+
+Source
+
+Examples
+--------
+
+Recipe Created
+
+Recipe Modified
+
+Recipe Approved
+
+Recipe Released
+
+Recipe Downloaded
+
+Recipe Uploaded
+
+Template Modified
+
+Parameter Added
+
+Parameter Removed
+
+PLC Changed
+
+User Created
+
+User Disabled
+
+Machine Created
+
+Machine Modified
+
+Family Modified
+
+Phase Control Modified
+
+Program Revision Changed
+
+Audit Retention
+---------------
+
+Long-term retention required.
+
+Future configuration through system settings.
+
+Analysis Support
+----------------
+
+Audit history should support:
+
+- Quality investigations
+- Defect analysis
+- Uniformity investigations
+- Root cause analysis
+- Engineering troubleshooting
+
+Time Handling
+-------------
+
+Store:
+UTC
+
+Display:
+IST

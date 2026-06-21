@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Phase Control
+{% endblock %}
+
+{% block content %}
+
+<h2>
+    Recipe Phase Control
+</h2>
+
+<hr>
+
+<table
+    width="60%"
+    border="0"
+    cellpadding="5"
+>
+
+    <tr>
+
+        <td width="200">
+
+            <b>Recipe ID</b>
+
+        </td>
+
+        <td>
+
+            {{ recipe.id }}
+
+        </td>
+
+    </tr>
+
+    <tr>
+
+        <td>
+
+            <b>Recipe Code</b>
+
+        </td>
+
+        <td>
+
+            {{ recipe.recipe_code }}
+
+        </td>
+
+    </tr>
+
+    <tr>
+
+        <td>
+
+            <b>Recipe Name</b>
+
+        </td>
+
+        <td>
+
+            {{ recipe.recipe_name }}
+
+        </td>
+
+    </tr>
+
+    <tr>
+
+        <td>
+
+            <b>Machine</b>
+
+        </td>
+
+        <td>
+
+            {{ recipe.machine_code }}
+
+        </td>
+
+    </tr>
+
+    <tr>
+
+        <td>
+
+            <b>Stage</b>
+
+        </td>
+
+        <td>
+
+            {{ recipe.stage_type }}
+
+        </td>
+
+    </tr>
+
+</table>
+
+<hr>
+
+<form method="POST">
+
+<table
+    border="1"
+    width="100%"
+>
+
+    <tr>
+
+        <th width="60">
+
+            Line
+
+        </th>
+
+        <th>
+
+            Phase Description
+
+        </th>
+
+        <th width="120">
+
+            Stop
+
+        </th>
+
+        <th width="120">
+
+            Position
+
+        </th>
+
+    </tr>
+
+    {% for row in phase_rows %}
+
+    <tr>
+
+        <td align="center">
+
+            {{ row.line_no }}
+
+        </td>
+
+        <td>
+
+            <select
+                name="phase_control_id_{{ row.id }}"
+                style="width:100%;"
+            >
+
+                {% for phase in phase_controls %}
+
+                <option
+                    value="{{ phase.id }}"
+
+                    {% if row.phase_control_id == phase.id %}
+                    selected
+                    {% endif %}
+                >
+
+                    {{ phase.phase_control_name }}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+        </td>
+
+        <td>
+
+            <select
+                name="stop_option_{{ row.id }}"
+                style="width:100%;"
+            >
+
+                <option
+                    value="No"
+
+                    {% if row.stop_option == "No" %}
+                    selected
+                    {% endif %}
+                >
+
+                    No
+
+                </option>
+
+                <option
+                    value="Yes"
+
+                    {% if row.stop_option == "Yes" %}
+                    selected
+                    {% endif %}
+                >
+
+                    Yes
+
+                </option>
+
+            </select>
+
+        </td>
+
+        <td>
+
+            <select
+                name="position_option_{{ row.id }}"
+                style="width:100%;"
+            >
+
+                <option
+                    value="No"
+
+                    {% if row.position_option == "No" %}
+                    selected
+                    {% endif %}
+                >
+
+                    No
+
+                </option>
+
+                <option
+                    value="Yes"
+
+                    {% if row.position_option == "Yes" %}
+                    selected
+                    {% endif %}
+                >
+
+                    Yes
+
+                </option>
+
+            </select>
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+<br>
+
+<button
+    type="submit"
+>
+
+    Save Phase Control
+
+</button>
+
+</form>
+
+{% endblock %}

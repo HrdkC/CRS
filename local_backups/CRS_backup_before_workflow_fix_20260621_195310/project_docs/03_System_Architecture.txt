@@ -1,0 +1,124 @@
+SYSTEM ARCHITECTURE
+===================
+
+Hierarchy
+---------
+
+TBM Family
+    ↓
+
+Machine
+    ↓
+
+Stage
+    ↓
+
+PLC
+    ↓
+
+Template
+    ↓
+
+Recipe
+
+Machine Rules
+-------------
+
+Machine codes are globally unique.
+
+Machine codes are case-insensitive.
+
+Examples:
+
+P03 = p03
+
+Only one machine record may exist.
+
+Family changes must be performed by editing machine configuration.
+
+Stage Rules
+-----------
+
+Every machine automatically receives:
+
+- FIRST_STAGE
+- SECOND_STAGE
+
+Manual stage creation is not required.
+
+PLC Rules
+---------
+
+PLCs belong to:
+
+Machine + Stage
+
+Example:
+
+P01 FIRST_STAGE PLC
+
+P01 SECOND_STAGE PLC
+
+Templates
+---------
+
+Templates belong to:
+
+Machine + Stage
+
+Example:
+
+P01 FIRST_STAGE Template
+
+P01 SECOND_STAGE Template
+
+Template parameters define:
+
+- Parameter Name
+- PLC Tag
+- Data Type
+- Array Index
+- Engineering Unit
+- Min Value
+- Max Value
+- Display Order
+
+Recipes
+--------
+
+Recipes store values only.
+
+Templates define structure.
+
+Template changes automatically expand existing recipes.
+
+New parameters receive:
+
+Default Value = 0
+
+User must enter valid values before recipe download.
+
+Audit Requirements
+------------------
+
+All significant changes must be traceable.
+
+Track:
+
+- User
+- Timestamp
+- Old Value
+- New Value
+- Reason
+- Machine
+- Stage
+- Version
+
+Time Handling
+-------------
+
+Store:
+UTC
+
+Display:
+IST (Asia/Kolkata)

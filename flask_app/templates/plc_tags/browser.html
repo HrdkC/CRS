@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}
+PLC Tag Browser
+{% endblock %}
+
+{% block content %}
+
+<h2>
+
+    PLC Tag Browser
+
+</h2>
+
+<p>
+
+    Machine ID :
+    <b>{{ machine_id }}</b>
+
+    &nbsp;&nbsp;
+
+    Stage ID :
+    <b>{{ stage_id }}</b>
+
+</p>
+
+<form method="GET">
+
+    {% if purpose_to_assign %}
+
+    <input
+        type="hidden"
+        name="purpose"
+        value="{{ purpose_to_assign }}"
+    >
+
+    {% endif %}
+
+    <input
+
+        type="text"
+
+        name="search"
+
+        value="{{ search_text }}"
+
+        placeholder="Search PLC Tag"
+
+    >
+
+    <button type="submit">
+
+        Search
+
+    </button>
+
+    &nbsp;&nbsp;
+
+    <label>
+
+        <input
+            type="checkbox"
+            name="bool_only"
+            value="1"
+            {% if bool_only == "1" %}
+            checked
+            {% endif %}
+        >
+
+        BOOL Only
+
+    </label>
+
+</form>
+
+<br>
+
+{% if purpose_to_assign %}
+
+<p>
+
+    Selecting PLC tag for purpose :
+
+    <b>
+
+        {{ purpose_to_assign }}
+
+    </b>
+
+</p>
+
+<br>
+
+<div class="dashboard-card">
+
+    <h3>
+
+        Add PLC Tag For Purpose
+
+    </h3>
+
+    <br>
+
+    <form
+        method="POST"
+        action="/plc-tags/create/{{ machine_id }}/{{ stage_id }}"
+    >
+
+        <input
+            type="hidden"
+            name="tag_purpose"
+            value="{{ purpose_to_assign }}"
+        >
+
+        <label>
+
+            Tag Name
+
+        </label>
+
+        <input
+            type="text"
+            name="tag_name"
+            value="{{ default_tag_name }}"
+            required
+        >
+
+        <label>
+
+            Data Type
+
+        </label>
+
+        <select name="tag_type">
+
+            <option
+                value="BOOL"
+                {% if purpose_to_assign not in ["RECIPE_DATA", "RECIPE_CODE"] %}
+                selected
+                {% endif %}
+            >
+                BOOL
+            </option>
+
+            <option
+                value="REAL"
+                {% if purpose_to_assign == "RECIPE_DATA" %}
+                selected
+                {% endif %}
+            >
+                REAL
+            </option>
+
+            <option
+                value="STRING"
+                {% if purpose_to_assign == "RECIPE_CODE" %}
+                selected
+                {% endif %}
+            >
+                STRING
+            </option>
+
+        </select>
+
+        <label>
+
+            Array
+
+        </label>
+
+        <select name="is_array">
+
+            <option
+                value="0"
+                {% if purpose_to_assign != "RECIPE_DATA" %}
+                selected
+                {% endif %}
+            >
+                NO
+            </option>
+
+            <option
+                value="1"
+                {% if purpose_to_assign == "RECIPE_DATA" %}
+                selected
+                {% endif %}
+            >
+                YES
+            </option>
+
+        </select>
+
+        <label>
+
+            Array Size
+
+        </label>
+
+        <input
+            type="number"
+            name="array_size"
+            value="{% if purpose_to_assign == 'RECIPE_DATA' %}500{% endif %}"
+        >
+
+        <label>
+
+            Start Index
+
+        </label>
+
+        <input
+            type="number"
+            name="array_start_index"
+            value="{% if purpose_to_assign == 'RECIPE_DATA' %}0{% endif %}"
+        >
+
+        <label>
+
+            End Index
+
+        </label>
+
+        <input
+            type="number"
+            name="array_end_index"
+            value="{% if purpose_to_assign == 'RECIPE_DATA' %}499{% endif %}"
+        >
+
+        <label>
+
+            Description
+
+        </label>
+
+        <input
+            type="text"
+            name="description"
+            value="{{ purpose_to_assign }}"
+        >
+
+        <button type="submit">
+
+            Add Tag
+
+        </button>
+
+    </form>
+
+</div>
+
+<br>
+
+{% endif %}
+
+<p>
+
+    Total Tags :
+
+    <b>
+
+        {{ tags|length }}
+
+    </b>
+
+</p>
+
+<table border="1" width="100%">
+
+    <tr>
+
+        <th>Tag Name</th>
+
+        <th>Data Type</th>
+
+        <th>Purpose</th>
+
+        <th>Array</th>
+
+        <th>Start</th>
+
+        <th>End</th>
+
+        <th>Size</th>
+
+        <th>Action</th>
+
+    </tr>
+
+    {% for tag in tags %}
+
+    <tr>
+
+        <td>
+
+            {{ tag.tag_name }}
+
+        </td>
+
+        <td>
+
+            {{ tag.tag_type }}
+
+        </td>
+
+        <td>
+
+            {% if tag.tag_purpose %}
+
+                {{ tag.tag_purpose }}
+
+            {% else %}
+
+                -
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {% if tag.is_array %}
+
+                YES
+
+            {% else %}
+
+                NO
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {{ tag.array_start_index }}
+
+        </td>
+
+        <td>
+
+            {{ tag.array_end_index }}
+
+        </td>
+
+        <td>
+
+            {{ tag.array_size }}
+
+        </td>
+
+        <td>
+
+            {% if tag.is_array %}
+
+                <a href="/plc-tags/array/{{ tag.id }}">
+
+                    Browse
+
+                </a>
+
+            {% else %}
+
+                -
+
+            {% endif %}
+
+            {% if purpose_to_assign %}
+
+                <br>
+
+                <form
+                    method="POST"
+                    action="/plc-tags/set-purpose/{{ tag.id }}"
+                    style="box-shadow:none;border:none;padding:0;margin:0;background:transparent;"
+                >
+
+                    <input
+                        type="hidden"
+                        name="tag_purpose"
+                        value="{{ purpose_to_assign }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="return_url"
+                        value="/plc-tags/{{ machine_id }}/{{ stage_id }}?purpose={{ purpose_to_assign }}&search={{ search_text }}&bool_only={{ bool_only }}"
+                    >
+
+                    <button type="submit">
+
+                        Select
+
+                    </button>
+
+                </form>
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ action }} PLC
+{% endblock %}
+
+{% block content %}
+
+<h3>
+    {{ action }} PLC
+</h3>
+
+{% if error %}
+
+<p style="color:red;">
+    {{ error }}
+</p>
+
+{% endif %}
+
+<p>
+
+    PLC:
+
+    <strong>
+        {{ plc.plc_name }}
+    </strong>
+
+</p>
+
+<form
+    method="POST"
+    action="{{ post_url }}"
+>
+
+    <p>
+
+        Reason
+
+        <br>
+
+        <textarea
+            name="reason"
+            rows="3"
+            cols="50"
+            required
+        ></textarea>
+
+    </p>
+
+    <p>
+
+        <button type="submit">
+
+            {{ action }} PLC
+
+        </button>
+
+        <a href="/plcs">
+
+            Cancel
+
+        </a>
+
+    </p>
+
+</form>
+
+{% endblock %}

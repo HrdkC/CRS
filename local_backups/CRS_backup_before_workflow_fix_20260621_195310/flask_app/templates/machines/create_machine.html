@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Machine
+{% endblock %}
+
+{% block content %}
+
+<h3>
+    Create Machine
+</h3>
+
+{% if error %}
+
+<p style="color:red;">
+
+    {{ error }}
+
+</p>
+
+{% endif %}
+
+<form method="POST">
+
+    <p>
+
+        Machine Code
+
+        <br>
+
+        <input
+            type="text"
+            name="machine_code"
+            required
+        >
+
+    </p>
+
+    <p>
+
+        TBM Family
+
+        <br>
+
+        <select
+            name="family_id"
+            required
+        >
+
+            {% for family in families %}
+
+            <option value="{{ family.id }}">
+
+                {{ family.family_name }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </p>
+
+    <p>
+
+        Description
+
+        <br>
+
+        <textarea
+            name="description"
+            rows="4"
+            cols="50"
+        ></textarea>
+
+    </p>
+
+    <p>
+
+        <button type="submit">
+
+            Create Machine
+
+        </button>
+
+    </p>
+
+</form>
+
+{% endblock %}

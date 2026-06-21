@@ -1,0 +1,85 @@
+FUTURE ROADMAP
+==============
+
+Phase 1
+--------
+
+Core Platform
+
+- User Management
+- Audit Logging
+- Families
+- Machines
+- Stages
+- PLC Registry
+- Templates
+- Recipes
+
+Phase 2
+--------
+
+PLC Integration
+
+- PLC Connectivity Test
+- pycomm3 Integration
+- Tag Discovery
+- Recipe Download
+- Recipe Upload
+
+Phase 3
+--------
+
+Recipe Lifecycle
+
+- Draft
+- Review
+- Approval
+- Release
+
+Phase 4
+--------
+
+Specification Management
+
+- Specification Sheets
+- Specification Versions
+- Specification History
+
+Phase 5
+--------
+
+Automatic Recipe Generation
+
+Generate recipes from specifications.
+
+Manual recipe creation must always remain available.
+
+Machine operation must never depend on automatic generation.
+
+Phase 6
+--------
+
+Engineering Analytics
+
+- Recipe Comparison
+- Parameter History
+- Change Analysis
+
+Phase 7
+--------
+
+Quality Analytics
+
+- Defect Analysis
+- Uniformity Analysis
+- Production Analysis
+
+Phase 8
+--------
+
+Enterprise Features
+
+- MSSQL Support
+- Reporting
+- Dashboards
+- Notifications

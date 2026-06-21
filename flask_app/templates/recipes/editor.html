@@ -1,0 +1,797 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Editor
+{% endblock %}
+
+{% block content %}
+
+<h2>
+
+Recipe Editor
+
+</h2>
+
+<div class="dashboard-card">
+
+    <p>
+
+        Recipe Code :
+        <b>{{ recipe.recipe_code }}</b>
+
+        &nbsp;&nbsp;&nbsp;&nbsp;
+
+        Recipe Name :
+        <b>{{ recipe.recipe_name }}</b>
+
+        &nbsp;&nbsp;&nbsp;&nbsp;
+
+        Version :
+        <b>V{{ recipe.version }}</b>
+
+    </p>
+
+    <br>
+
+    <p>
+
+        Status :
+
+        <b>
+
+            {{ recipe.status }}
+
+        </b>
+
+    </p>
+
+    <br>
+
+    <p>
+
+        Version Usage :
+
+        <b>
+
+            {% if recipe.version_usage_status == "CURRENT_RELEASED" %}
+
+                Current Production Version
+
+            {% elif recipe.version_usage_status == "HISTORY_RELEASED" %}
+
+                Historical Released Version
+
+            {% elif recipe.version_usage_status == "DRAFT_REVISION" %}
+
+                Draft Production Revision
+
+            {% else %}
+
+                {{ recipe.version_usage_status }}
+
+            {% endif %}
+
+        </b>
+
+    </p>
+
+    <br>
+
+    <p>
+
+        {% if recipe.status != "RELEASED" %}
+
+        <a href="/recipe-editor/create-version/{{ recipe.id }}">
+
+            Create Snapshot
+
+        </a>
+
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        {% endif %}
+
+        <a href="/recipe-editor/versions/{{ recipe.id }}">
+
+            View Versions
+
+        </a>
+
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <a href="/recipe-editor/status-history/{{ recipe.id }}">
+
+            Status History
+
+        </a>
+
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        <a href="/recipe-editor/download-preparation/{{ recipe.id }}">
+
+            PLC Download Prep
+
+        </a>
+
+    </p>
+
+    <br>
+
+    {% if recipe.status == "DRAFT" %}
+
+    {% if production_revision_source and recipe.current_released_version and recipe.current_released_version > recipe.version %}
+
+    <p>
+
+        This draft is older than current released
+        <b>V{{ recipe.current_released_version }}</b>.
+        Create changes from the current production version.
+
+    </p>
+
+    <br>
+
+    <a href="/recipe-editor/{{ recipe.current_released_recipe_id }}">
+
+        Open Current Production Version
+
+    </a>
+
+    {% elif production_revision_source %}
+
+    <p>
+
+        Production revision from
+        <b>V{{ production_revision_source.version }}</b>.
+        Edit values, enter release remarks, then release directly.
+
+    </p>
+
+    <br>
+
+    <form
+        method="POST"
+        action="/recipe-editor/release-production-revision/{{ recipe.id }}"
+    >
+
+        <label>
+
+            Production Release Remarks
+
+        </label>
+
+        <textarea
+            name="remarks"
+            required
+            placeholder="Enter production change reason"
+        ></textarea>
+
+        <button type="submit">
+
+            Release Production Change
+
+        </button>
+
+    </form>
+
+    {% else %}
+
+    <form
+        method="POST"
+        action="/recipe-editor/status/{{ recipe.id }}/REVIEW"
+        style="box-shadow:none;border:none;padding:0;margin:0;background:transparent;"
+    >
+
+        <button type="submit">
+
+            Submit For Review
+
+        </button>
+
+    </form>
+
+    {% endif %}
+
+    {% elif recipe.status == "REVIEW" %}
+
+    <form
+        method="POST"
+        action="/recipe-editor/status/{{ recipe.id }}/APPROVED"
+        style="box-shadow:none;border:none;padding:0;margin:0;background:transparent;"
+    >
+
+        <button type="submit">
+
+            Approve
+
+        </button>
+
+    </form>
+
+    <br>
+
+    <form
+        method="POST"
+        action="/recipe-editor/status/{{ recipe.id }}/DRAFT"
+    >
+
+        <label>
+
+            Rejection Remarks
+
+        </label>
+
+        <textarea
+            name="remarks"
+            required
+            placeholder="Enter rejection remarks"
+        ></textarea>
+
+        <button type="submit">
+
+            Reject
+
+        </button>
+
+    </form>
+
+    {% elif recipe.status == "RELEASED" %}
+
+    {% if recipe.version_usage_status == "CURRENT_RELEASED" %}
+
+    <p>
+
+        Released recipe is locked for traceability.
+        Use Edit Released Recipe to create an editable next version.
+
+    </p>
+
+    <br>
+
+    <form
+        method="POST"
+        action="/recipe-editor/production-revision/{{ recipe.id }}"
+        style="box-shadow:none;border:none;padding:0;margin:0;background:transparent;"
+    >
+
+        <input
+            type="hidden"
+            name="remarks"
+            value="Production fast edit"
+        >
+
+        <button type="submit">
+
+            Edit Released Recipe
+
+        </button>
+
+    </form>
+
+    {% else %}
+
+    <p>
+
+        This is a historical released version.
+        Current production version is
+        <b>V{{ recipe.current_released_version }}</b>.
+
+    </p>
+
+    <br>
+
+    <a href="/recipe-editor/{{ recipe.current_released_recipe_id }}">
+
+        Open Current Production Version
+
+    </a>
+
+    {% endif %}
+
+    {% endif %}
+
+</div>
+
+<br>
+
+<table border="1">
+
+<tr>
+
+    <th colspan="2">
+
+        PLC Download Eligibility
+
+    </th>
+
+</tr>
+
+<tr>
+
+    <td>Status</td>
+
+    <td>
+
+        <b>
+
+            {{ download_eligibility.status }}
+
+        </b>
+
+    </td>
+
+</tr>
+
+{% if download_eligibility.eligible %}
+
+<tr>
+
+    <td>Result</td>
+
+    <td>
+
+        Recipe is current, released, and validation passed.
+
+    </td>
+
+</tr>
+
+{% else %}
+
+<tr>
+
+    <td>Blocked Reason</td>
+
+    <td>
+
+        <ul>
+
+            {% for error in download_eligibility.errors[:10] %}
+
+            <li>
+
+                {{ error }}
+
+            </li>
+
+            {% endfor %}
+
+        </ul>
+
+        {% if download_eligibility.errors|length > 10 %}
+
+        <p>
+
+            More errors exist. Fix listed errors first, then recheck.
+
+        </p>
+
+        {% endif %}
+
+    </td>
+
+</tr>
+
+{% endif %}
+
+</table>
+
+<br>
+
+<table border="1">
+
+<tr>
+
+    <th colspan="2">
+
+        Recipe Summary
+
+    </th>
+
+</tr>
+
+<tr>
+
+    <td>Total Parameters</td>
+
+    <td>{{ summary.total_parameters }}</td>
+
+</tr>
+
+<tr>
+
+    <td>Modified Parameters</td>
+
+    <td>{{ summary.modified_parameters }}</td>
+
+</tr>
+
+<tr>
+
+    <td>Minimum Tag</td>
+
+    <td>{{ summary.min_tag }}</td>
+
+</tr>
+
+<tr>
+
+    <td>Maximum Tag</td>
+
+    <td>{{ summary.max_tag }}</td>
+
+</tr>
+
+<tr>
+
+    <td>Last Changed By</td>
+
+    <td>{{ summary.last_changed_by }}</td>
+
+</tr>
+
+<tr>
+
+    <td>Last Changed At</td>
+
+    <td>{{ summary.last_changed_at }}</td>
+
+</tr>
+
+</table>
+
+<br>
+
+<form method="GET">
+
+    <input
+        type="text"
+        name="search"
+        value="{{ search_text }}"
+        placeholder="Search Parameter"
+    >
+
+    <input
+        type="hidden"
+        name="page_size"
+        value="{{ page_size }}"
+    >
+
+    <input
+        type="hidden"
+        name="modified_only"
+        value="{{ modified_only }}"
+    >
+
+    <button type="submit">
+
+        Search
+
+    </button>
+
+</form>
+
+<br>
+
+<form method="GET">
+
+    <input
+        type="hidden"
+        name="search"
+        value="{{ search_text }}"
+    >
+
+    <input
+        type="hidden"
+        name="page_size"
+        value="{{ page_size }}"
+    >
+
+    Show
+
+    <select
+        name="modified_only"
+        onchange="this.form.submit()"
+    >
+
+        <option
+            value="0"
+            {% if modified_only == "0" %}
+            selected
+            {% endif %}
+        >
+            All Parameters
+        </option>
+
+        <option
+            value="1"
+            {% if modified_only == "1" %}
+            selected
+            {% endif %}
+        >
+            Modified Only
+        </option>
+
+    </select>
+
+</form>
+
+<br>
+
+<form method="GET">
+
+    <input
+        type="hidden"
+        name="search"
+        value="{{ search_text }}"
+    >
+
+    <input
+        type="hidden"
+        name="modified_only"
+        value="{{ modified_only }}"
+    >
+
+    <input
+        type="hidden"
+        name="page_size"
+        value="{{ page_size }}"
+    >
+
+    Jump To Tag
+
+    <input
+        type="number"
+        name="jump_tag"
+        value="{{ jump_tag }}"
+        style="width:100px"
+    >
+
+    <button type="submit">
+
+        Go
+
+    </button>
+
+</form>
+
+<br>
+
+<form method="GET">
+
+    <input
+        type="hidden"
+        name="search"
+        value="{{ search_text }}"
+    >
+
+    <input
+        type="hidden"
+        name="modified_only"
+        value="{{ modified_only }}"
+    >
+
+    <input
+        type="hidden"
+        name="jump_tag"
+        value="{{ jump_tag }}"
+    >
+
+    Page Size
+
+    <select
+        name="page_size"
+        onchange="this.form.submit()"
+    >
+
+        <option value="25"
+        {% if page_size == 25 %}
+        selected
+        {% endif %}
+        >
+        25
+        </option>
+
+        <option value="50"
+        {% if page_size == 50 %}
+        selected
+        {% endif %}
+        >
+        50
+        </option>
+
+        <option value="100"
+        {% if page_size == 100 %}
+        selected
+        {% endif %}
+        >
+        100
+        </option>
+
+        <option value="9999"
+        {% if page_size == 9999 %}
+        selected
+        {% endif %}
+        >
+        All
+        </option>
+
+    </select>
+
+</form>
+
+<br>
+
+<p>
+
+Total Parameters :
+
+<b>
+
+{{ total_parameters }}
+
+</b>
+
+</p>
+
+<table border="1" width="100%">
+
+<tr>
+
+    <th>Tag</th>
+
+    <th>Parameter</th>
+
+    <th>Value</th>
+
+    <th>Unit</th>
+
+    <th>Min</th>
+
+    <th>Max</th>
+
+    <th>Modified</th>
+
+    <th>Action</th>
+
+</tr>
+
+{% for row in values %}
+
+<tr>
+
+    <td>{{ row.tag_index }}</td>
+
+    <td>{{ row.parameter_name }}</td>
+
+    <td>{{ row.parameter_value }}</td>
+
+    <td>{{ row.unit }}</td>
+
+    <td>{{ row.min_value }}</td>
+
+    <td>{{ row.max_value }}</td>
+
+    <td>
+
+        {% if row.is_modified %}
+            YES
+        {% else %}
+            NO
+        {% endif %}
+
+    </td>
+
+    <td>
+
+        {% if recipe.status != "RELEASED" %}
+
+            <a href="/recipe-editor/edit/{{ row.id }}">
+                Edit
+            </a>
+
+            |
+
+        {% endif %}
+
+        <a href="/recipe-editor/history/{{ row.id }}">
+            History
+        </a>
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<br>
+
+{% if page > 1 %}
+
+<a href="?page={{ page - 1 }}&page_size={{ page_size }}&modified_only={{ modified_only }}&jump_tag={{ jump_tag }}">
+
+    Previous
+
+</a>
+
+{% endif %}
+
+&nbsp;&nbsp;
+
+{% if values|length == page_size %}
+
+<a href="?page={{ page + 1 }}&page_size={{ page_size }}&modified_only={{ modified_only }}&jump_tag={{ jump_tag }}">
+
+    Next
+
+</a>
+
+{% endif %}
+
+<br><br>
+
+<h2>
+
+Phase Control
+
+</h2>
+
+<table border="1" width="100%">
+
+<tr>
+
+    <th>Line</th>
+
+    <th>Phase Control</th>
+
+    <th>Stop</th>
+
+    <th>Position</th>
+
+    <th>Sequence</th>
+
+</tr>
+
+{% for row in phase_control %}
+
+<tr>
+
+    <td>
+
+        {{ row.line_no }}
+
+    </td>
+
+    <td>
+
+        {{ row.phase_control_name }}
+
+    </td>
+
+    <td>
+
+        {{ row.stop_option }}
+
+    </td>
+
+    <td>
+
+        {{ row.position_option }}
+
+    </td>
+
+    <td>
+
+        {{ row.sequence_no }}
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

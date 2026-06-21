@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}
+Users
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    Users
+
+</h3>
+
+<hr>
+
+<p>
+
+    <a href="/users/create">
+
+        Create User
+
+    </a>
+
+</p>
+
+<table border="1">
+
+    <tr>
+
+        <th>
+            Username
+        </th>
+
+        <th>
+            Role
+        </th>
+
+        <th>
+            Status
+        </th>
+
+        <th>
+            Created By
+        </th>
+
+        <th>
+            Created At (IST)
+        </th>
+
+        <th>
+            Last Login (IST)
+        </th>
+
+        <th>
+            Actions
+        </th>
+
+    </tr>
+
+    {% for user in users %}
+
+    <tr>
+
+        <td>
+            {{ user.username }}
+        </td>
+
+        <td>
+            {{ user.role }}
+        </td>
+
+        <td>
+
+            {% if user.active == 1 %}
+
+                Active
+
+            {% else %}
+
+                Disabled
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {{ user.created_by }}
+
+        </td>
+
+        <td>
+
+            {{ user.created_at_ist }}
+
+        </td>
+
+        <td>
+
+            {% if user.last_login %}
+
+                {{ user.last_login_ist }}
+
+            {% else %}
+
+                Never Logged In
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {% if user.username != "admin" %}
+
+                {% if user.active == 1 %}
+
+                    <a href="/users/disable/{{ user.username }}">
+
+                        Disable
+
+                    </a>
+
+                {% else %}
+
+                    <a href="/users/enable/{{ user.username }}">
+
+                        Enable
+
+                    </a>
+
+                {% endif %}
+
+                |
+
+            {% endif %}
+
+            <a href="/users/change_password/{{ user.username }}">
+
+                Change Password
+
+            </a>
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

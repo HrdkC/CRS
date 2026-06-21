@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}
+Stage Registry
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+
+        Stage Registry
+
+    </h1>
+
+    <p>
+
+        Machine Stage Configuration
+
+    </p>
+
+</div>
+
+<div class="table-container">
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Machine</th>
+
+                <th>Stage Type</th>
+
+                <th>Description</th>
+
+                <th>Status</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for stage in stages %}
+
+            <tr>
+
+                <td>
+
+                    {{ stage.id }}
+
+                </td>
+
+                <td>
+
+                    {{ stage.machine_code }}
+
+                </td>
+
+                <td>
+
+                    <a
+                        href="/recipes/{{ stage.machine_id }}/{{ stage.id }}"
+                    >
+
+                        {{ stage.stage_type }}
+
+                    </a>
+
+                </td>
+
+                <td>
+
+                    {{ stage.description }}
+
+                </td>
+
+                <td>
+
+                    {% if stage.active == 1 %}
+
+                        Active
+
+                    {% else %}
+
+                        Disabled
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

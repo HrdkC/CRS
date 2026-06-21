@@ -1,0 +1,37 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Flask
+instance/
+.flaskenv
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# VS Code
+.vscode/
+
+# Secrets / local config
+.env
+config_local.py
+
+# Windows files
+Thumbs.db
+Desktop.ini
+
+# Mac files
+.DS_Store

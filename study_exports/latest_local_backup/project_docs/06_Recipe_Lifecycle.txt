@@ -1,0 +1,94 @@
+RECIPE LIFECYCLE
+================
+
+Recipe States
+-------------
+
+DRAFT
+
+REVIEW
+
+APPROVED
+
+RELEASED
+
+Workflow
+--------
+
+Production
+    ↓
+
+Create Draft
+
+    ↓
+
+Technology Review
+
+    ↓
+
+Approve
+
+    ↓
+
+Release
+
+    ↓
+
+Operator Use
+
+Draft Stage
+-----------
+
+Recipe may be edited.
+
+Review Stage
+------------
+
+Recipe reviewed for:
+
+- Parameter values
+- Phase controls
+- Engineering requirements
+
+Approval Stage
+--------------
+
+Technology approves recipe.
+
+Release Stage
+-------------
+
+Recipe becomes available to operators.
+
+Operator Restrictions
+---------------------
+
+Operators may only:
+
+- View approved/released recipes
+- Download approved/released recipes
+
+Operators cannot:
+
+- Edit recipes
+- Approve recipes
+- Modify templates
+
+Versioning
+----------
+
+Every approved change creates a new version.
+
+History must remain available.
+
+Audit Requirements
+------------------
+
+Track:
+
+- User
+- Timestamp
+- Old Value
+- New Value
+- Reason
+- Version

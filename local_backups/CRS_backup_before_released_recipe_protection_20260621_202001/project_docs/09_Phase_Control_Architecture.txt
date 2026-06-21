@@ -1,0 +1,76 @@
+PHASE CONTROL ARCHITECTURE
+==========================
+
+Purpose
+-------
+
+Phase controls define material application sequences.
+
+Phase controls are separate from normal process parameters.
+
+FIRST_STAGE
+-----------
+
+Application Side
+
+SECOND_STAGE
+------------
+
+Cap Strip Side
+
+B&T Side
+
+Shaping Side
+
+Selection Method
+----------------
+
+Dropdown selection only.
+
+Users should not type free text.
+
+Ownership
+---------
+
+Engineering:
+
+- Create phase controls
+- Configure options
+- Maintain mappings
+
+Production:
+
+- Select approved options
+
+Technology:
+
+- Review selected options
+
+Operator:
+
+- Use approved recipes only
+
+Standardization
+---------------
+
+Phase control names are standardized across PCR TBMs.
+
+PLC tag names may differ.
+
+Machine families may differ.
+
+PLC mappings may differ.
+
+Mapping Philosophy
+------------------
+
+Similar to template parameters.
+
+Human-readable names remain standardized.
+
+PLC implementation may vary.
+
+Validation
+----------
+
+Selected phase control must be valid before recipe approval and before recipe download.

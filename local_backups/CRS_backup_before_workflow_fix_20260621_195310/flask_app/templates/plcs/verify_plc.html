@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}
+PLC Verification
+{% endblock %}
+
+{% block content %}
+
+<h3>
+    PLC Verification
+</h3>
+
+<hr>
+
+<p>
+    PLC :
+    <b>{{ plc.plc_name }}</b>
+</p>
+
+<p>
+    Expected Processor :
+    <b>{{ result.expected_processor }}</b>
+</p>
+
+<p>
+    Actual Processor :
+    <b>{{ result.actual_processor }}</b>
+</p>
+
+<p>
+    Expected Firmware :
+    <b>{{ result.expected_firmware }}</b>
+</p>
+
+<p>
+    Actual Firmware :
+    <b>{{ result.actual_firmware }}</b>
+</p>
+
+<p>
+    Program Name :
+    <b>{{ result.program_name }}</b>
+</p>
+
+<p>
+    Serial Number :
+    <b>{{ result.serial_number }}</b>
+</p>
+
+<p>
+    Verification Status :
+    <b>{{ result.verification_status }}</b>
+</p>
+
+<hr>
+
+<a href="/plcs">
+    Back To PLC Registry
+</a>
+
+{% endblock %}

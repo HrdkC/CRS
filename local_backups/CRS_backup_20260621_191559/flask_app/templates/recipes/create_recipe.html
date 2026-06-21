@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Recipe
+{% endblock %}
+
+{% block content %}
+
+<h3>Create Recipe</h3>
+
+<hr>
+
+<form method="POST">
+
+    <p>Recipe Code</p>
+
+    <input
+        type="text"
+        name="recipe_code"
+        required
+    >
+
+    <p>Recipe Name</p>
+
+    <input
+        type="text"
+        name="recipe_name"
+        required
+    >
+
+    <br><br>
+
+    <button type="submit">
+
+        Create Recipe
+
+    </button>
+
+</form>
+
+{% endblock %}

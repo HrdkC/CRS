@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}
+Copy Recipe
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+Copy Recipe
+
+</h3>
+
+<hr>
+
+<p>
+
+Source Recipe:
+
+<b>
+
+{{ recipe.recipe_code }}
+
+</b>
+
+</p>
+
+<form method="POST">
+
+    <p>
+
+        New Recipe Code
+
+        <br>
+
+        <input
+            type="text"
+            name="recipe_code"
+            required
+        >
+
+    </p>
+
+    <p>
+
+        New Recipe Name
+
+        <br>
+
+        <input
+            type="text"
+            name="recipe_name"
+            required
+        >
+
+    </p>
+
+    <button type="submit">
+
+        Create Copy
+
+    </button>
+
+</form>
+
+{% endblock %}

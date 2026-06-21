@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Versions
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+
+        Recipe Versions
+
+    </h1>
+
+    <p>
+
+        Version History And Restore Management
+
+    </p>
+
+</div>
+
+<div class="dashboard-card">
+
+    <table>
+
+        <tr>
+
+            <td>
+
+                Recipe Code
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    {{ recipe.recipe_code }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                Recipe Name
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    {{ recipe.recipe_name }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+<br>
+
+<a
+    href="/recipe-editor/{{ recipe.id }}"
+    class="quick-card"
+    style="
+        display:inline-block;
+        width:auto;
+        padding:12px 20px;
+    "
+>
+
+    Back To Recipe Editor
+
+</a>
+
+<a
+    href="/recipe-editor/create-version/{{ recipe.id }}"
+    class="quick-card"
+    style="
+        display:inline-block;
+        width:auto;
+        padding:12px 20px;
+        margin-left:10px;
+    "
+>
+
+    Create New Version
+
+</a>
+
+<br><br>
+
+<div class="dashboard-card">
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Version</th>
+
+                    <th>Comment</th>
+
+                    <th>Created By</th>
+
+                    <th>Created At</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for row in versions %}
+
+                <tr>
+
+                    <td>
+
+                        <strong>
+
+                            {{ row.version }}
+
+                        </strong>
+
+                    </td>
+
+                    <td>
+
+                        {{ row.version_comment }}
+
+                    </td>
+
+                    <td>
+
+                        {{ row.created_by }}
+
+                    </td>
+
+                    <td>
+
+                        {{ row.created_at_ist }}
+                        
+                    </td>
+
+                    <td>
+
+                        <a href="/recipe-editor/restore-version/{{ row.id }}">
+
+                            Restore Version
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

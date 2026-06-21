@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Details
+{% endblock %}
+
+{% block content %}
+
+<h3>Recipe Details</h3>
+
+<hr>
+
+<p>
+
+
+    <strong>Recipe Code:</strong>
+
+    {{ recipe.recipe_code }}
+
+
+</p>
+
+<p>
+
+
+    <strong>Recipe Name:</strong>
+
+    {{ recipe.recipe_name }}
+
+
+</p>
+
+<p>
+
+
+    <strong>Version:</strong>
+
+    {{ recipe.current_version }}
+
+
+</p>
+
+<p>
+
+
+    <strong>Status:</strong>
+
+    {{ recipe.recipe_status }}
+
+
+</p>
+
+<p>
+
+
+    <a href="/recipes/{{ recipe.recipe_code }}/parameters">
+
+        Parameters
+
+    </a>
+
+
+</p>
+
+<p>
+
+    <a href="/recipes/{{ recipe.recipe_code }}/create-version">
+
+        Create New Version
+
+    </a>
+
+</p>
+
+<p>
+
+    <a href="/recipes/{{ recipe.recipe_code }}/compare">
+
+        Compare Versions
+
+    </a>
+
+</p>
+
+{% endblock %}

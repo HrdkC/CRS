@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}
+TBM Families
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+
+        TBM Families
+
+    </h1>
+
+    <p>
+
+        Manage PCR TBM Family Registry
+
+    </p>
+
+</div>
+
+<div class="page-toolbar">
+
+    <a
+        href="/families/create"
+        class="btn-primary"
+    >
+
+        + Create Family
+
+    </a>
+
+</div>
+
+<div class="table-container">
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Family Name</th>
+
+                <th>Description</th>
+
+                <th>Created By</th>
+
+                <th>Status</th>
+
+                <th>Actions</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for family in families %}
+
+            <tr>
+
+                <td>
+
+                    {{ family.id }}
+
+                </td>
+
+                <td>
+
+                    <strong>
+
+                        {{ family.family_name }}
+
+                    </strong>
+
+                </td>
+
+                <td>
+
+                    {{ family.description }}
+
+                </td>
+
+                <td>
+
+                    {{ family.created_by }}
+
+                </td>
+
+                <td>
+
+                    {% if family.active == 1 %}
+
+                        <span class="status-active">
+
+                            Active
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-inactive">
+
+                            Inactive
+
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    {% if family.active == 1 %}
+
+                        <a
+                            href="/families/disable/{{ family.id }}"
+                            class="action-link-danger"
+                        >
+
+                            Disable
+
+                        </a>
+
+                    {% else %}
+
+                        <a
+                            href="/families/enable/{{ family.id }}"
+                            class="action-link-success"
+                        >
+
+                            Enable
+
+                        </a>
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}
+Apollo CRS Login
+{% endblock %}
+
+{% block content %}
+
+<div class="login-container">
+
+    <div class="login-card">
+
+        <div class="login-logo">
+
+            <img
+                src="{{ url_for('static', filename='images/apollo_logo.png') }}"
+                alt="Apollo Logo"
+            >
+
+        </div>
+
+        <div class="login-title">
+
+            Centralized Recipe System
+
+        </div>
+
+
+
+        {% if error %}
+
+        <div class="flash-message">
+
+            {{ error }}
+
+        </div>
+
+        {% endif %}
+
+        <div class="login-form-panel">
+
+            <form method="POST">
+
+                <label>
+
+                    Username
+
+                </label>
+
+                <input
+                    type="text"
+                    name="username"
+                    required
+                    autofocus
+                >
+
+                <label>
+
+                    Password
+
+                </label>
+
+                <input
+                    type="password"
+                    name="password"
+                    required
+                >
+
+                <button type="submit">
+
+                    Sign In
+
+                </button>
+
+            </form>
+
+        </div>
+
+        <div class="login-footer">
+
+            <div class="login-version">
+
+                Version 0.1 Beta
+
+            </div>
+
+            Centralized Recipe System (CRS)
+
+            <div>
+
+            Designed & Developed by
+
+            </div>
+
+            <div>
+
+                Hardik Chauhan
+
+            </div>
+
+            <div>
+
+            Apollo Tyres Ltd.
+
+            </div>
+
+            PCR Engineering – Limda Plant
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

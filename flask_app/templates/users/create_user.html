@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create User
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    Create User
+
+</h3>
+
+<hr>
+
+<form method="POST">
+
+    <p>
+
+        Username
+
+    </p>
+
+    <input
+        type="text"
+        name="username"
+        required
+    >
+
+    <p>
+
+        Password
+
+    </p>
+
+    <input
+        type="password"
+        name="password"
+        required
+    >
+
+    <p>
+
+        Role
+
+    </p>
+
+    <select
+        name="role"
+    >
+
+        <option>
+            ADMIN
+        </option>
+
+        <option>
+            EDITOR
+        </option>
+
+        <option>
+            VIEWER
+        </option>
+
+    </select>
+
+    <br><br>
+
+    <button
+        type="submit"
+    >
+
+        Create User
+
+    </button>
+
+</form>
+
+{% endblock %}

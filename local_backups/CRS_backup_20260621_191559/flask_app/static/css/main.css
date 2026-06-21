@@ -1,0 +1,979 @@
+/* =====================================================
+   Apollo CRS
+   Version 0.1 Beta
+   Apollo Violet Theme
+   ===================================================== */
+
+:root {
+
+    --apollo-violet: #6f2da8;
+
+    --apollo-violet-dark: #542080;
+
+    --apollo-violet-light: #f5f0fb;
+
+    --apollo-dark: #1f2937;
+
+    --apollo-grey: #6b7280;
+
+    --background: #f5f7fb;
+
+    --card-bg: #ffffff;
+
+    --border: #e5e7eb;
+
+    --success: #22c55e;
+
+    --warning: #f59e0b;
+
+    --danger: #ef4444;
+
+}
+
+/* =====================================================
+   Global
+   ===================================================== */
+
+* {
+
+    margin: 0;
+
+    padding: 0;
+
+    box-sizing: border-box;
+
+}
+
+html,
+body {
+
+    min-height: 100vh;
+
+}
+
+body {
+
+    font-family:
+        "Segoe UI",
+        sans-serif;
+
+    background:
+
+        radial-gradient(
+            circle at top left,
+            rgba(111,45,168,0.10),
+            transparent 25%
+        ),
+
+        radial-gradient(
+            circle at bottom right,
+            rgba(111,45,168,0.10),
+            transparent 25%
+        ),
+
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #f4f0fb
+        );
+
+    background-attachment: fixed;
+
+}
+
+a {
+
+    text-decoration: none;
+
+}
+
+/* =====================================================
+   Header
+   ===================================================== */
+
+.site-header {
+
+    background: white;
+
+    border-bottom: 2px solid var(--apollo-violet);
+
+    box-shadow:
+        0 2px 15px rgba(0,0,0,0.08);
+
+    padding: 15px 25px;
+
+}
+
+.header-top {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+}
+
+.brand-area {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+
+}
+
+.logo {
+
+    height: 55px;
+
+}
+
+.brand-title {
+
+    font-size: 34px;
+
+    font-weight: 700;
+
+    color: var(--apollo-violet);
+
+}
+
+.brand-subtitle {
+
+    color: var(--apollo-grey);
+
+    font-size: 15px;
+
+}
+
+.user-info {
+
+    text-align: right;
+
+    font-size: 14px;
+
+    color: var(--apollo-dark);
+
+}
+
+.user-info strong {
+
+    font-size: 18px;
+
+}
+
+/* =====================================================
+   Navigation
+   ===================================================== */
+
+.navbar {
+
+    margin-top: 18px;
+
+}
+
+.navbar ul {
+
+    list-style: none;
+
+    display: flex;
+
+    gap: 12px;
+
+    flex-wrap: wrap;
+
+}
+
+.menu-item {
+
+    background: var(--apollo-violet);
+
+    border-radius: 10px;
+
+    transition: all 0.3s ease;
+
+}
+
+.menu-item:hover {
+
+    background: var(--apollo-violet-dark);
+
+    transform: translateY(-2px);
+
+}
+
+.navbar a {
+
+    color: white;
+
+    font-weight: 600;
+
+    display: block;
+
+    padding: 12px 18px;
+
+}
+
+.dropdown {
+
+    position: relative;
+
+}
+
+.dropdown-menu {
+
+    display: none;
+
+    position: absolute;
+
+    top: 48px;
+
+    left: 0;
+
+    min-width: 240px;
+
+    background: white;
+
+    border-radius: 10px;
+
+    border: 1px solid var(--border);
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.12);
+
+    z-index: 9999;
+
+}
+
+.dropdown-menu a {
+
+    color: var(--apollo-dark);
+
+    padding: 12px 15px;
+
+}
+
+.dropdown-menu a:hover {
+
+    background: var(--apollo-violet-light);
+
+}
+
+.dropdown:hover .dropdown-menu {
+
+    display: block;
+
+}
+
+/* =====================================================
+   Main Content
+   ===================================================== */
+
+.main-container {
+
+    width: 100%;
+
+    max-width: 1850px;
+
+    margin: 10px auto;
+
+    padding: 0 15px;
+
+}
+
+
+/* =====================================================
+   Dashboard
+   ===================================================== */
+
+.page-header {
+
+    margin-bottom: 15px;
+
+}
+
+.page-header h1 {
+
+    font-size: 42px;
+
+    color: var(--apollo-dark);
+
+}
+
+.page-header p {
+
+    color: var(--apollo-grey);
+
+    margin-top: 5px;
+
+}
+
+.card-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(5, minmax(180px, 1fr));
+
+    gap: 12px;
+
+}
+
+.dashboard-card {
+
+    background: white;
+
+    border-radius: 14px;
+
+    padding: 20px;
+
+    border: 1px solid var(--border);
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.05);
+
+    transition: all 0.3s ease;
+
+    text-align: center;
+
+    min-height: 100px;
+
+}
+
+.dashboard-card p {
+
+    color: var(--apollo-grey);
+
+    line-height: 1.7;
+
+}
+
+.dashboard-card:hover {
+
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 12px 30px rgba(111,45,168,0.15);
+
+}
+
+.dashboard-card h3 {
+
+    color: var(--apollo-dark);
+
+    margin-bottom: 15px;
+
+}
+
+.dashboard-value {
+
+    font-size: 36px;
+
+    font-weight: 700;
+
+    color: var(--apollo-violet);
+
+}
+
+/* =====================================================
+   Quick Cards
+   ===================================================== */
+
+.quick-card {
+
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 12px;
+
+    padding: 14px;
+
+    text-align: center;
+
+    font-weight: 600;
+
+    color: var(--apollo-violet);
+
+    transition: all 0.3s ease;
+
+}
+
+.quick-card:hover {
+
+    background: var(--apollo-violet);
+
+    color: white;
+
+}
+
+/* =====================================================
+   Tables
+   ===================================================== */
+
+.table-container {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+}
+
+table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    background: white;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    table-layout: auto;
+
+}
+
+table th {
+
+    background: var(--apollo-violet);
+
+    color: white;
+
+    padding: 14px;
+
+    text-align: left;
+
+}
+
+table td {
+
+    padding: 12px;
+
+    border: 1px solid #ececec;
+
+}
+
+table tr:nth-child(even) {
+
+    background: #fafafa;
+
+}
+
+/* =====================================================
+   Forms
+   ===================================================== */
+
+form {
+
+    background: white;
+
+    padding: 25px;
+
+    border-radius: 12px;
+
+    border: 1px solid var(--border);
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.05);
+
+}
+
+input,
+select,
+textarea {
+
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 8px;
+
+    margin-top: 5px;
+
+    margin-bottom: 15px;
+
+    font-size: 14px;
+
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+
+    outline: none;
+
+    border-color: var(--apollo-violet);
+
+    box-shadow:
+        0 0 0 3px rgba(111,45,168,0.15);
+
+}
+
+textarea {
+
+    resize: vertical;
+
+}
+
+/* =====================================================
+   Buttons
+   ===================================================== */
+
+button {
+
+    background: var(--apollo-violet);
+
+    color: white;
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 12px 22px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+
+}
+
+button:hover {
+
+    background: var(--apollo-violet-dark);
+
+}
+
+/* =====================================================
+   Flash Messages
+   ===================================================== */
+
+.flash-message {
+
+    background: #ecfdf5;
+
+    border: 1px solid #bbf7d0;
+
+    color: #166534;
+
+    padding: 15px;
+
+    border-radius: 10px;
+
+    margin-bottom: 20px;
+
+}
+
+/* =====================================================
+   Footer
+   ===================================================== */
+
+.site-footer {
+
+    margin-top: 20px;
+
+    background: white;
+
+    border-top: 2px solid var(--apollo-violet);
+
+    padding: 10px 20px;
+
+    text-align: center;
+
+}
+
+.footer-content {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    color: var(--apollo-grey);
+
+    font-size: 14px;
+
+}
+
+.footer-separator {
+
+    color: var(--apollo-violet);
+
+    font-weight: 600;
+
+}
+
+
+/* =====================================================
+   Apollo CRS Login
+   ===================================================== */
+
+.login-container {
+
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 40px;
+
+}
+
+.login-card {
+
+    width: 600px;
+
+    max-width: 90%;
+
+    background: rgba(255,255,255,0.96);
+
+    border-radius: 24px;
+
+    padding: 50px;
+
+    border: 1px solid rgba(255,255,255,0.8);
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,0.08);
+
+}
+
+.login-logo {
+
+    text-align: center;
+
+    margin-bottom: 10px;
+
+}
+
+.login-logo img {
+
+    height: 95px;
+
+}
+
+.login-title {
+
+    text-align: center;
+
+    color: var(--apollo-violet);
+
+    font-size: 40px;
+
+    font-weight: 700;
+
+    margin-bottom: 10px;
+
+}
+
+.login-subtitle {
+
+    text-align: center;
+
+    color: var(--apollo-grey);
+
+    font-size: 18px;
+
+    line-height: 1.8;
+
+    margin-bottom: 30px;
+
+}
+
+.login-form-panel {
+
+    background: rgb(234, 222, 252);
+
+    border: 1px solid var(--border);
+
+    border-radius: 16px;
+
+    padding: 30px;
+
+}
+
+.login-form-panel form {
+
+    background: transparent;
+
+    border: none;
+
+    box-shadow: none;
+
+    padding: 0;
+
+}
+
+.login-form-panel label {
+
+    display: block;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    margin-bottom: 8px;
+
+}
+
+.login-form-panel input {
+
+    height: 52px;
+
+    font-size: 15px;
+
+    margin-bottom: 20px;
+
+}
+
+.login-form-panel button {
+
+    width: 50%;
+
+    display: block;
+
+    margin: 20px auto;
+
+    height: 52px;
+
+    background: linear-gradient(
+        135deg,
+        #7b2cbf,
+        #5a189a
+    );
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    border-radius: 100px;
+
+}
+
+.login-form-panel button:hover {
+
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 10px 25px rgba(123, 44, 191, 0.4);
+    background: linear-gradient(135deg, #8e44ec, #6a0dad);
+
+}
+
+.login-form-panel button:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+.login-footer {
+
+    text-align: center;
+
+    margin-top: 25px;
+
+    color: var(--apollo-grey);
+
+    line-height: 1.8;
+
+    font-size: 14px;
+
+}
+
+.login-version {
+
+    color: var(--apollo-violet);
+
+    font-weight: 600;
+
+    margin-bottom: 10px;
+
+}
+
+/* =====================================================
+   Responsive
+   ===================================================== */
+
+@media screen and (max-width: 900px) {
+
+    .header-top {
+
+        flex-direction: column;
+
+        text-align: center;
+
+    }
+
+    .brand-area {
+
+        flex-direction: column;
+
+    }
+
+    .user-info {
+
+        text-align: center;
+
+    }
+
+}
+
+@media screen and (max-width: 768px) {
+
+    .navbar ul {
+
+        flex-direction: column;
+
+    }
+
+    .dropdown-menu {
+
+        position: static;
+
+        width: 100%;
+
+        margin-top: 5px;
+
+    }
+
+    .page-header h1 {
+
+        font-size: 30px;
+
+    }
+
+    .brand-title {
+
+        font-size: 28px;
+
+    }
+
+}
+
+/* =====================================================
+   Apollo CRS Forms & Tables
+   ===================================================== */
+
+.page-toolbar {
+
+    margin-bottom: 20px;
+
+}
+
+.btn-primary {
+
+    display: inline-block;
+
+    background: var(--apollo-violet);
+
+    color: white;
+
+    padding: 12px 20px;
+
+    border-radius: 8px;
+
+    font-weight: 600;
+
+}
+
+.btn-primary:hover {
+
+    background: var(--apollo-violet-dark);
+
+}
+
+.btn-secondary {
+
+    display: inline-block;
+
+    margin-left: 10px;
+
+    padding: 12px 20px;
+
+    border-radius: 8px;
+
+    background: #e5e7eb;
+
+    color: var(--apollo-dark);
+
+    font-weight: 600;
+
+}
+
+.btn-secondary:hover {
+
+    background: #d1d5db;
+
+}
+
+.form-card {
+
+    background: white;
+
+    border-radius: 14px;
+
+    padding: 25px;
+
+    border: 1px solid var(--border);
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.05);
+
+    max-width: 900px;
+
+}
+
+.table-container {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+}
+
+.status-active {
+
+    color: #16a34a;
+
+    font-weight: 600;
+
+}
+
+.status-inactive {
+
+    color: #dc2626;
+
+    font-weight: 600;
+
+}
+
+.action-link-danger {
+
+    color: #dc2626;
+
+    font-weight: 600;
+
+}
+
+.action-link-success {
+
+    color: #16a34a;
+
+    font-weight: 600;
+
+}

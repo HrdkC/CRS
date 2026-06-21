@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>
+
+Add Recipe Parameter
+
+</h2>
+
+<form method="POST">
+
+    <p>
+
+        Tag Index
+
+        <input
+            type="number"
+            name="tag_index"
+            required
+        >
+
+    </p>
+
+    <p>
+
+        PLC Array Index
+
+        <input
+            type="number"
+            name="plc_array_index"
+            required
+        >
+
+    </p>
+
+    <p>
+
+        Parameter Name
+
+        <input
+            type="text"
+            name="parameter_name"
+            required
+        >
+
+    </p>
+
+    <p>
+
+        Unit
+
+        <input
+            type="text"
+            name="unit"
+        >
+
+    </p>
+
+    <p>
+
+        Min Value
+
+        <input
+            type="number"
+            step="any"
+            name="min_value"
+        >
+
+    </p>
+
+    <p>
+
+        Max Value
+
+        <input
+            type="number"
+            step="any"
+            name="max_value"
+        >
+
+    </p>
+
+    <p>
+
+        Default Value
+
+        <input
+            type="number"
+            step="any"
+            name="default_value"
+        >
+
+    </p>
+
+    <button type="submit">
+
+        Save Parameter
+
+    </button>
+
+</form>
+
+{% endblock %}

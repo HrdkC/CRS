@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}
+PLC Tag Browser
+{% endblock %}
+
+{% block content %}
+
+<h2>
+
+    PLC Tag Browser
+
+</h2>
+
+<p>
+
+    Machine ID :
+    <b>{{ machine_id }}</b>
+
+    &nbsp;&nbsp;
+
+    Stage ID :
+    <b>{{ stage_id }}</b>
+
+</p>
+
+<form method="GET">
+
+    <input
+
+        type="text"
+
+        name="search"
+
+        value="{{ search_text }}"
+
+        placeholder="Search PLC Tag"
+
+    >
+
+    <button type="submit">
+
+        Search
+
+    </button>
+
+</form>
+
+<br>
+
+<p>
+
+    Total Tags :
+
+    <b>
+
+        {{ tags|length }}
+
+    </b>
+
+</p>
+
+<table border="1" width="100%">
+
+    <tr>
+
+        <th>Tag Name</th>
+
+        <th>Data Type</th>
+
+        <th>Array</th>
+
+        <th>Start</th>
+
+        <th>End</th>
+
+        <th>Size</th>
+
+        <th>Action</th>
+
+    </tr>
+
+    {% for tag in tags %}
+
+    <tr>
+
+        <td>
+
+            {{ tag.tag_name }}
+
+        </td>
+
+        <td>
+
+            {{ tag.tag_type }}
+
+        </td>
+
+        <td>
+
+            {% if tag.is_array %}
+
+                YES
+
+            {% else %}
+
+                NO
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {{ tag.array_start_index }}
+
+        </td>
+
+        <td>
+
+            {{ tag.array_end_index }}
+
+        </td>
+
+        <td>
+
+            {{ tag.array_size }}
+
+        </td>
+
+        <td>
+
+            {% if tag.is_array %}
+
+                <a href="/plc-tags/array/{{ tag.id }}">
+
+                    Browse
+
+                </a>
+
+            {% else %}
+
+                -
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

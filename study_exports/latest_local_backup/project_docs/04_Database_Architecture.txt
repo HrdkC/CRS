@@ -1,0 +1,94 @@
+DATABASE ARCHITECTURE
+=====================
+
+Database Philosophy
+-------------------
+
+Development:
+- SQLite
+
+Production:
+- MySQL
+
+Future:
+- MSSQL
+
+Application code should remain database-independent.
+
+All database access should occur through central managers and helpers.
+
+Core Tables
+-----------
+
+Users
+Audit Log
+User Sessions
+Engineering Units
+System Settings
+
+TBM Families
+TBM Machines
+Machine Stages
+
+PLC Registry
+PLC Program History
+
+Template Master
+Template Parameters
+
+Phase Control Master
+Phase Control Options
+Phase Control Mapping
+
+Recipe Master
+Recipe Versions
+Recipe Parameters
+
+Relationships
+-------------
+
+TBM Family
+    ↓
+TBM Machine
+    ↓
+Machine Stage
+    ↓
+PLC Registry
+    ↓
+Template
+    ↓
+Recipe
+
+Migration Philosophy
+--------------------
+
+Application startup should:
+
+- Create missing tables
+- Create missing columns
+- Create default settings
+- Create default data
+
+Minimal manual setup should be required.
+
+Time Philosophy
+---------------
+
+Store all timestamps in UTC.
+
+Display all timestamps in IST.
+
+Future Expansion
+----------------
+
+Specification Sheets
+
+Recipe Generation Rules
+
+PLC Tag Registry
+
+Defect Analysis
+
+Uniformity Analysis
+
+Production Analytics

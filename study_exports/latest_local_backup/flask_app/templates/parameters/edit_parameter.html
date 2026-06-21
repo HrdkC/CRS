@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>
+
+Edit Parameter
+
+</h2>
+
+<form method="POST">
+
+    <p>
+
+        Tag Index :
+
+        <b>
+
+            {{ parameter.tag_index }}
+
+        </b>
+
+    </p>
+
+    <p>
+
+        PLC Array Index :
+
+        <b>
+
+            {{ parameter.plc_array_index }}
+
+        </b>
+
+    </p>
+
+    <p>
+
+        Parameter Name
+
+        <input
+            type="text"
+            name="parameter_name"
+            value="{{ parameter.parameter_name }}"
+            required
+        >
+
+    </p>
+
+    <p>
+
+        Unit
+
+        <input
+            type="text"
+            name="unit"
+            value="{{ parameter.unit }}"
+        >
+
+    </p>
+
+    <p>
+
+        Min Value
+
+        <input
+            type="number"
+            step="any"
+            name="min_value"
+            value="{{ parameter.min_value }}"
+        >
+
+    </p>
+
+    <p>
+
+        Max Value
+
+        <input
+            type="number"
+            step="any"
+            name="max_value"
+            value="{{ parameter.max_value }}"
+        >
+
+    </p>
+
+    <p>
+
+        Default Value
+
+        <input
+            type="number"
+            step="any"
+            name="default_value"
+            value="{{ parameter.default_value }}"
+        >
+
+    </p>
+
+    <button type="submit">
+
+        Save Changes
+
+    </button>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,48 @@
+LOCAL ENVIRONMENT NOTES
+=======================
+
+Use this environment for local development:
+
+.venv
+
+Do not use this old environment:
+
+venv
+
+Reason:
+
+The old venv launcher points to a missing Python path:
+
+C:\Program Files\Python314\python.exe
+
+Current working Python:
+
+.venv\Scripts\python.exe
+
+Useful local commands:
+
+.venv\Scripts\python.exe --version
+
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+.venv\Scripts\python.exe scripts\system_health_check.py
+
+.venv\Scripts\python.exe scripts\check_schema.py
+
+.venv\Scripts\python.exe scripts\check_tables.py
+
+$env:PYTHONIOENCODING='utf-8'; .venv\Scripts\python.exe scripts\verify_tables.py
+
+.venv\Scripts\python.exe -m compileall app.py config database flask_app helper plc recipe scripts utils
+
+.venv\Scripts\python.exe -m tests.test_migrations
+
+.venv\Scripts\python.exe tests\test_plc_connectivity_checker.py
+
+.venv\Scripts\python.exe -m pytest
+
+Pytest is installed for future proper pytest tests. Many current files under tests are script-style checks, so selected safe checks may need to be run directly with Python.
+
+Important:
+
+Do not run all files under tests blindly. Some scripts connect to real PLC IP addresses or modify the local database.

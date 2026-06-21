@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}
+Parameter History
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+
+        Parameter Change History
+
+    </h1>
+
+    <p>
+
+        Complete Audit Trail For Recipe Parameter
+
+    </p>
+
+</div>
+
+<div class="dashboard-card">
+
+    <table>
+
+        <tr>
+
+            <td>
+
+                Tag Index
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    {{ value.tag_index }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                Parameter Name
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    {{ value.parameter_name }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                Current Value
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    {{ value.parameter_value }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                Unit
+
+            </td>
+
+            <td>
+
+                {{ value.unit }}
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+<br>
+
+<div class="dashboard-card">
+
+    <h3>
+
+        Audit History
+
+    </h3>
+
+    <br>
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Old Value</th>
+
+                    <th>New Value</th>
+
+                    <th>Changed By</th>
+
+                    <th>Changed At</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for row in history %}
+
+                <tr>
+
+                    <td>
+
+                        {{ row.id }}
+
+                    </td>
+
+                    <td>
+
+                        {{ row.old_value }}
+
+                    </td>
+
+                    <td>
+
+                        {{ row.new_value }}
+
+                    </td>
+
+                    <td>
+
+                        {{ row.changed_by }}
+
+                    </td>
+
+                    <td>
+
+                        {{ row.changed_at_ist }}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<br>
+
+<a
+    href="/recipe-editor/{{ value.recipe_id }}"
+    class="quick-card"
+    style="
+        display:inline-block;
+        width:auto;
+        padding:12px 20px;
+    "
+>
+
+    Back To Recipe Editor
+
+</a>
+
+{% endblock %}

@@ -1,0 +1,1107 @@
+{% extends "base.html" %}
+
+{% block title %}
+PLC Download Preparation
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+
+        PLC Download Preparation
+
+    </h1>
+
+    <p>
+
+        Dry Run Only - Real PLC Write Disabled
+
+    </p>
+
+</div>
+
+<div class="dashboard-card">
+
+    <table>
+
+        <tr>
+
+            <td>Recipe Code</td>
+
+            <td>
+
+                <strong>
+
+                    {{ recipe.recipe_code }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Recipe Name</td>
+
+            <td>
+
+                <strong>
+
+                    {{ recipe.recipe_name }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Version</td>
+
+            <td>
+
+                V{{ recipe.version }}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Status</td>
+
+            <td>
+
+                {{ recipe.status }}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Usage</td>
+
+            <td>
+
+                {% if recipe.version_usage_status == "CURRENT_RELEASED" %}
+
+                    Current Production Version
+
+                {% elif recipe.version_usage_status == "HISTORY_RELEASED" %}
+
+                    Historical Released Version
+
+                {% elif recipe.version_usage_status == "DRAFT_REVISION" %}
+
+                    Draft Production Revision
+
+                {% else %}
+
+                    {{ recipe.version_usage_status }}
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Machine</td>
+
+            <td>
+
+                {{ recipe.machine_code }}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Stage</td>
+
+            <td>
+
+                {{ recipe.stage_type }}
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+<br>
+
+<a
+    href="/recipe-editor/{{ recipe.id }}"
+    class="quick-card"
+    style="
+        display:inline-block;
+        width:auto;
+        padding:12px 20px;
+    "
+>
+
+    Back To Recipe Editor
+
+</a>
+
+<br><br>
+
+<div class="dashboard-card">
+
+    <h3>
+
+        Download Eligibility
+
+    </h3>
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <td>Status</td>
+
+            <td>
+
+                <strong>
+
+                    {{ download_eligibility.status }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        {% if download_eligibility.eligible %}
+
+        <tr>
+
+            <td>Result</td>
+
+            <td>
+
+                Recipe is current, released, and validation passed.
+
+            </td>
+
+        </tr>
+
+        {% else %}
+
+        <tr>
+
+            <td>Blocked Reason</td>
+
+            <td>
+
+                <ul>
+
+                    {% for error in download_eligibility.errors[:10] %}
+
+                    <li>
+
+                        {{ error }}
+
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+    </table>
+
+</div>
+
+<br>
+
+<div class="dashboard-card">
+
+    <h3>
+
+        PLC Download Tag Readiness
+
+    </h3>
+
+    <br>
+
+    <p>
+
+        PLC tags are maintained per Machine + Stage.
+
+        <a href="/plc-tags/{{ recipe.machine_id }}/{{ recipe.stage_id }}">
+
+            Open PLC Tag Browser
+
+        </a>
+
+    </p>
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <td>Status</td>
+
+            <td>
+
+                <strong>
+
+                    {{ tag_readiness.status }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <th>Required Tag</th>
+
+            <th>Purpose</th>
+
+            <th>Configured Tag</th>
+
+            <th>Expected Type</th>
+
+            <th>Array</th>
+
+            <th>Readiness</th>
+
+            <th>Issue</th>
+
+            <th>Action</th>
+
+        </tr>
+
+        {% for item in tag_readiness.tags %}
+
+        <tr>
+
+            <td>
+
+                {{ item.label }}
+
+            </td>
+
+            <td>
+
+                {{ item.purpose }}
+
+            </td>
+
+            <td>
+
+                {% if item.configured %}
+
+                    {{ item.tag.tag_name }}
+
+                {% else %}
+
+                    -
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {{ item.expected_type }}
+
+            </td>
+
+            <td>
+
+                {% if item.array_required %}
+
+                    Required
+
+                    {% if item.tag %}
+
+                        <br>
+
+                        Size:
+                        {{ item.tag.array_size }}
+
+                    {% endif %}
+
+                {% else %}
+
+                    No
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if item.ready %}
+
+                    READY
+
+                {% else %}
+
+                    BLOCKED
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if item.issues %}
+
+                    <ul>
+
+                        {% for issue in item.issues %}
+
+                        <li>
+
+                            {{ issue }}
+
+                        </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                {% else %}
+
+                    -
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                <a href="/plc-tags/{{ recipe.machine_id }}/{{ recipe.stage_id }}?purpose={{ item.purpose }}&bool_only={% if item.expected_type == 'BOOL' %}1{% else %}0{% endif %}">
+
+                    Select Tag
+
+                </a>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+<br>
+
+<div class="dashboard-card">
+
+    <h3>
+
+        PLC Write Plan
+
+    </h3>
+
+    <br>
+
+    <p>
+
+        Plan only. Real PLC write is disabled.
+
+    </p>
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <td>Status</td>
+
+            <td>
+
+                <strong>
+
+                    {{ write_plan.status }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Payload Size</td>
+
+            <td>
+
+                {{ write_plan.payload_size }}
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    <br>
+
+    {% if write_plan.ready %}
+
+    <table>
+
+        <tr>
+
+            <th>Step</th>
+
+            <th>Action</th>
+
+            <th>Purpose</th>
+
+            <th>Configured PLC Tag</th>
+
+            <th>Backend Expression</th>
+
+            <th>Value Source</th>
+
+        </tr>
+
+        {% for step in write_plan.steps %}
+
+        <tr>
+
+            <td>
+
+                {{ step.step_no }}
+
+            </td>
+
+            <td>
+
+                {{ step.action }}
+
+            </td>
+
+            <td>
+
+                {{ step.purpose }}
+
+            </td>
+
+            <td>
+
+                {{ step.tag_name }}
+
+            </td>
+
+            <td>
+
+                {{ step.write_expression }}
+
+            </td>
+
+            <td>
+
+                {{ step.value_source }}
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    {% else %}
+
+    <ul>
+
+        {% for error in write_plan.errors %}
+
+        <li>
+
+            {{ error }}
+
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+    {% endif %}
+
+</div>
+
+<br>
+
+<div class="dashboard-card">
+
+    <h3>
+
+        Active PLC For This Stage
+
+    </h3>
+
+    <br>
+
+    {% if available_plcs %}
+
+    <form method="POST">
+
+        <label>
+
+            Select PLC
+
+        </label>
+
+        <select
+            name="plc_id"
+            required
+        >
+
+            {% for plc in available_plcs %}
+
+            <option
+                value="{{ plc.id }}"
+                {% if selected_plc_id == plc.id|string %}
+                selected
+                {% endif %}
+            >
+
+                {{ plc.plc_name }} - {{ plc.ip_address }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+        <br>
+
+        <button
+            type="submit"
+            name="action"
+            value="dry_run"
+        >
+
+            Dry Run Check
+
+        </button>
+
+        <button
+            type="submit"
+            name="action"
+            value="manual_mode_check"
+        >
+
+            Read Manual Mode
+
+        </button>
+
+        <button
+            type="button"
+            disabled
+        >
+
+            Recipe Write Disabled
+
+        </button>
+
+    </form>
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <th>PLC Name</th>
+
+            <th>IP Address</th>
+
+            <th>Controller</th>
+
+            <th>Machine</th>
+
+            <th>Stage</th>
+
+        </tr>
+
+        {% for plc in available_plcs %}
+
+        <tr>
+
+            <td>{{ plc.plc_name }}</td>
+
+            <td>{{ plc.ip_address }}</td>
+
+            <td>{{ plc.controller_type }}</td>
+
+            <td>{{ plc.machine_code }}</td>
+
+            <td>{{ plc.stage_type }}</td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    {% else %}
+
+    <p>
+
+        No active PLC is registered for this recipe machine and stage.
+
+    </p>
+
+    {% endif %}
+
+</div>
+
+{% if manual_mode_result %}
+
+<br>
+
+<div class="dashboard-card">
+
+    <h3>
+
+        Manual Mode PLC Read Result
+
+    </h3>
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <td>Status</td>
+
+            <td>
+
+                {% if manual_mode_result.ready %}
+
+                    <strong>READY</strong>
+
+                {% else %}
+
+                    <strong>BLOCKED</strong>
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% if manual_mode_result.plc %}
+
+        <tr>
+
+            <td>Selected PLC</td>
+
+            <td>
+
+                {{ manual_mode_result.plc.plc_name }}
+                -
+                {{ manual_mode_result.plc.ip_address }}
+
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+        <tr>
+
+            <td>Manual Mode Tag</td>
+
+            <td>
+
+                {% if manual_mode_result.tag_name %}
+
+                    {{ manual_mode_result.tag_name }}
+
+                {% else %}
+
+                    -
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Actual PLC Value</td>
+
+            <td>
+
+                {% if manual_mode_result.actual_value is not none %}
+
+                    {{ manual_mode_result.actual_value }}
+
+                {% else %}
+
+                    -
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Recipe Write Button</td>
+
+            <td>
+
+                {% if manual_mode_result.ready %}
+
+                    Enabled after all dry-run checks pass and live write is approved.
+
+                {% else %}
+
+                    Disabled.
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    {% if manual_mode_result.errors %}
+
+    <br>
+
+    <h3>
+
+        Blocking Issues
+
+    </h3>
+
+    <ul>
+
+        {% for error in manual_mode_result.errors %}
+
+        <li>
+
+            {{ error }}
+
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+    {% endif %}
+
+    {% if manual_mode_result.warnings %}
+
+    <br>
+
+    <h3>
+
+        Notes
+
+    </h3>
+
+    <ul>
+
+        {% for warning in manual_mode_result.warnings %}
+
+        <li>
+
+            {{ warning }}
+
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+{% if dry_run_result %}
+
+<br>
+
+<div class="dashboard-card">
+
+    <h3>
+
+        Dry Run Result
+
+    </h3>
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <td>Status</td>
+
+            <td>
+
+                {% if dry_run_result.ready %}
+
+                    <strong>READY</strong>
+
+                {% else %}
+
+                    <strong>BLOCKED</strong>
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% if dry_run_result.plc %}
+
+        <tr>
+
+            <td>Selected PLC</td>
+
+            <td>
+
+                {{ dry_run_result.plc.plc_name }}
+                -
+                {{ dry_run_result.plc.ip_address }}
+
+            </td>
+
+        </tr>
+
+        {% endif %}
+
+    </table>
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <th colspan="2">
+
+                Parameter Validation Summary
+
+            </th>
+
+        </tr>
+
+        <tr>
+
+            <td>Total Parameters</td>
+
+            <td>{{ dry_run_result.parameter_validation.summary.total_parameters }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Valid Parameters</td>
+
+            <td>{{ dry_run_result.parameter_validation.summary.valid_parameters }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Invalid Parameters</td>
+
+            <td>{{ dry_run_result.parameter_validation.summary.invalid_parameters }}</td>
+
+        </tr>
+
+    </table>
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <th colspan="2">
+
+                Recipe Payload Summary
+
+            </th>
+
+        </tr>
+
+        <tr>
+
+            <td>Payload Size</td>
+
+            <td>{{ dry_run_result.payload_summary.payload_size }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Total Parameters</td>
+
+            <td>{{ dry_run_result.payload_summary.total_parameters }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Mapped Parameters</td>
+
+            <td>{{ dry_run_result.payload_summary.mapped_parameters }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Non Zero Values</td>
+
+            <td>{{ dry_run_result.payload_summary.non_zero_values }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Minimum PLC Array Index</td>
+
+            <td>{{ dry_run_result.payload_summary.minimum_plc_array_index }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Maximum PLC Array Index</td>
+
+            <td>{{ dry_run_result.payload_summary.maximum_plc_array_index }}</td>
+
+        </tr>
+
+    </table>
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <th colspan="2">
+
+                Phase Control Summary
+
+            </th>
+
+        </tr>
+
+        <tr>
+
+            <td>Total Phase Rows</td>
+
+            <td>{{ dry_run_result.phase_summary.total_phase_rows }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Ready Phase Rows</td>
+
+            <td>{{ dry_run_result.phase_summary.ready_phase_rows }}</td>
+
+        </tr>
+
+    </table>
+
+    {% if dry_run_result.errors %}
+
+    <br>
+
+    <h3>
+
+        Blocking Issues
+
+    </h3>
+
+    <ul>
+
+        {% for error in dry_run_result.errors[:15] %}
+
+        <li>
+
+            {{ error }}
+
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+    {% endif %}
+
+    {% if dry_run_result.warnings %}
+
+    <br>
+
+    <h3>
+
+        Notes
+
+    </h3>
+
+    <ul>
+
+        {% for warning in dry_run_result.warnings %}
+
+        <li>
+
+            {{ warning }}
+
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+{% endblock %}

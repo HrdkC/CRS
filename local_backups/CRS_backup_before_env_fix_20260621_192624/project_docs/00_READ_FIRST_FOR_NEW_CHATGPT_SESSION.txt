@@ -1,0 +1,283 @@
+READ FIRST FOR NEW CHATGPT SESSION
+==================================
+
+Purpose
+-------
+
+This document is intended for future ChatGPT, Codex, engineers, developers, and future project sessions.
+
+Before working on this project, read:
+
+1. Project ZIP
+2. project_docs folder
+3. This document
+
+Current Project
+---------------
+
+Centralized Recipe Management System
+
+Industry:
+PCR Tyre Building Machines (TBM)
+
+Technology:
+Python
+Flask
+SQLite
+MySQL
+MSSQL (Future)
+pycomm3
+Allen Bradley ControlLogix
+
+Project Philosophy
+------------------
+
+The system should help operators.
+
+The system should reduce workload.
+
+The system should not create unnecessary operational burden.
+
+The system should provide strong traceability and audit capability.
+
+Core Architecture
+-----------------
+
+TBM Family
+    ↓
+
+Machine
+    ↓
+
+FIRST_STAGE
+
+SECOND_STAGE
+    ↓
+
+PLC
+    ↓
+
+Template
+    ↓
+
+Recipe
+
+Most Important Decisions
+------------------------
+
+Machine Codes
+
+- Globally unique
+- Case insensitive
+
+Examples:
+
+P03 = p03
+
+Only one machine record may exist.
+
+Family changes require editing the machine.
+
+Do not create duplicate machine records.
+
+--------------------------------------------------
+
+Stages
+
+Automatically created.
+
+FIRST_STAGE
+
+SECOND_STAGE
+
+No manual stage creation required.
+
+--------------------------------------------------
+
+Templates
+
+Templates belong to:
+
+Machine + Stage
+
+Not Family.
+
+Not Global.
+
+--------------------------------------------------
+
+Recipes
+
+Recipes store values.
+
+Templates define structure.
+
+--------------------------------------------------
+
+Validation
+
+No partial recipe download allowed.
+
+Entire stage recipe must pass validation before download.
+
+--------------------------------------------------
+
+Phase Controls
+
+FIRST_STAGE
+
+- Application Side
+
+SECOND_STAGE
+
+- Cap Strip Side
+- B&T Side
+- Shaping Side
+
+Dropdown selection only.
+
+--------------------------------------------------
+
+Time Handling
+
+Store:
+UTC
+
+Display:
+IST
+
+--------------------------------------------------
+
+User Roles
+
+Developer/Master
+
+Admin
+
+Engineering
+
+Technology
+
+Production
+
+Operator
+
+Viewer
+
+Current Development Status
+--------------------------
+
+Completed
+
+✓ User Management
+
+✓ Audit Logging
+
+✓ Migration Framework
+
+✓ TBM Family Module
+
+✓ Machine Module
+
+✓ Auto Stage Creation
+
+✓ Documentation Framework
+
+✓ PLC Registry Foundation
+
+Pending
+
+□ PLC Program History
+
+□ PLC Registry Manager
+
+□ PLC Registry UI
+
+□ PLC Connectivity Test
+
+□ pycomm3 Integration
+
+□ PLC Tag Registry
+
+□ Template Management
+
+□ Recipe Management
+
+□ Approval Workflow
+
+□ Download Workflow
+
+□ Upload Workflow
+
+Most Valuable Documents
+-----------------------
+
+16_Pending_Implementation.txt
+
+Purpose:
+
+Explains what still needs to be developed.
+
+--------------------------------------------------
+
+17_Project_Decisions_Log.txt
+
+Purpose:
+
+Explains why architectural decisions were made.
+
+These two files should always be reviewed before starting development.
+
+Reason:
+
+They prevent future redesign mistakes and preserve project knowledge.
+
+Instructions For Future ChatGPT/Codex Sessions
+----------------------------------------------
+
+Read all project_docs files before suggesting architecture changes.
+
+Do not redesign core architecture without strong justification.
+
+Maintain compatibility with:
+
+Machine
++
+Stage
++
+PLC
++
+Template
++
+Recipe
+
+architecture.
+
+Prefer incremental improvements over large redesigns.
+
+Maintain focus on:
+
+Operator usability
+
+Traceability
+
+Industrial reliability
+
+Long-term maintainability
+
+Project Resume Point
+--------------------
+
+Next Planned Development Step:
+
+PLC Program History Table
+
+Then:
+
+PLC Registry Manager
+
+PLC Registry UI
+
+PLC Connectivity Testing
+
+pycomm3 Integration

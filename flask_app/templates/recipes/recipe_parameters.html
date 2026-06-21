@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Parameters
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    Recipe Parameters
+
+</h3>
+
+<hr>
+
+<p>
+
+    Recipe:
+
+    <strong>
+
+        {{ recipe_code }}
+
+    </strong>
+
+    <p>
+
+    Version:
+
+    <strong>
+
+        {{ selected_version }}
+
+    </strong>
+
+</p>
+
+{% if version_info %}
+
+<p>
+
+    Created By:
+
+    <strong>
+
+        {{ version_info.created_by }}
+
+    </strong>
+
+</p>
+
+<p>
+
+    Created At (IST):
+
+    <strong>
+
+        {{ version_info.display_created_at }}
+
+    </strong>
+
+</p>
+
+{% endif %}
+
+    <form method="GET">
+
+        <p>
+
+            Version
+
+        </p>
+
+        <select name="version">
+
+            {% for version in versions %}
+
+            <option
+                value="{{ version }}"
+                {% if version == selected_version %}
+                    selected
+                {% endif %}
+            >
+
+                {{ version }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+        <button type="submit">
+
+            Load
+
+        </button>
+
+    </form>
+
+    <hr>    
+
+</p>
+
+<table border="1">
+
+    <tr>
+
+        <th>Name</th>
+
+        <th>Value</th>
+
+        <th>Min</th>
+
+        <th>Max</th>
+
+        <th>Unit</th>
+
+        <th>PLC Tag</th>
+
+        <th>Actions</th>
+
+    </tr>
+
+    {% for parameter in parameters %}
+
+    <tr>
+
+        <td>
+
+            {{ parameter.parameter_name }}
+
+        </td>
+
+        <td>
+
+            {{ parameter.parameter_value }}
+
+        </td>
+
+        <td>
+
+            {{ parameter.min_value }}
+
+        </td>
+
+        <td>
+
+            {{ parameter.max_value }}
+
+        </td>
+
+        <td>
+
+            {{ parameter.unit }}
+
+        </td>
+
+        <td>
+
+            {{ parameter.plc_tag_name }}
+
+        </td>
+
+        <td>
+
+            <a href="/recipes/{{ recipe_code }}/parameters/{{ parameter.parameter_name }}/edit?version={{ selected_version }}">
+
+                Edit Value
+
+            </a>
+
+            {% if session["role"] == "ADMIN" %}
+
+                |
+
+                <a href="/recipes/{{ recipe_code }}/parameters/{{ parameter.parameter_name }}/metadata?version={{ selected_version }}">
+
+                    Edit Metadata
+
+                </a>
+
+            {% endif %}
+
+            |
+
+            <a href="/recipes/{{ recipe_code }}/parameters/{{ parameter.parameter_name }}/history?version={{ selected_version }}">
+
+                History
+
+            </a>
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

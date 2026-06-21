@@ -1,0 +1,100 @@
+TEMPLATE ARCHITECTURE
+=====================
+
+Purpose
+-------
+
+Templates define the structure of recipes.
+
+Recipes store values.
+
+Templates define parameter definitions.
+
+Ownership
+---------
+
+Templates belong to:
+
+Machine + Stage
+
+Examples:
+
+P01 FIRST_STAGE Template
+
+P01 SECOND_STAGE Template
+
+P15 FIRST_STAGE Template
+
+P15 SECOND_STAGE Template
+
+Template Contents
+-----------------
+
+Parameter Name
+
+Parameter Description
+
+PLC Tag
+
+PLC Array Index
+
+Data Type
+
+Engineering Unit
+
+Minimum Value
+
+Maximum Value
+
+Default Value
+
+Display Order
+
+Parameter Mapping Philosophy
+----------------------------
+
+Parameter names are generally standardized across TBMs.
+
+Example:
+
+Carcass Width
+
+may map to:
+
+P01:
+Recipe_Real[2]
+
+P15:
+Recipe_Real[17]
+
+Human-readable parameter names remain consistent.
+
+PLC mappings may differ.
+
+Template Expansion
+------------------
+
+When a new parameter is added:
+
+1. Template updated
+2. Existing recipes expanded
+3. New recipes expanded
+4. Default value assigned
+
+Default Value
+-------------
+
+0
+
+Validation
+----------
+
+All parameters must pass:
+
+- Minimum limit
+- Maximum limit
+- Data type validation
+
+before recipe download begins.
+
+No partial download allowed.

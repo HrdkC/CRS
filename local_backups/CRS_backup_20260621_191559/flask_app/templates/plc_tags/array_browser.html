@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}
+Array Browser
+{% endblock %}
+
+{% block content %}
+
+<h2>
+
+{{ tag.tag_name }}
+
+</h2>
+
+<form method="GET">
+
+    <input
+        type="text"
+        name="search"
+        value="{{ search_text }}"
+        placeholder="Search Index Or Parameter"
+    >
+
+    <input
+        type="number"
+        name="jump_index"
+        value="{{ jump_index }}"
+        placeholder="Jump To Index"
+    >
+
+    <select name="status">
+
+        <option value="">
+
+            All
+
+        </option>
+
+        <option
+            value="AVAILABLE"
+            {% if status_filter == "AVAILABLE" %}
+            selected
+            {% endif %}
+        >
+
+            Available
+
+        </option>
+
+        <option
+            value="MAPPED"
+            {% if status_filter == "MAPPED" %}
+            selected
+            {% endif %}
+        >
+
+            Mapped
+
+        </option>
+
+        <option
+            value="DISABLED"
+            {% if status_filter == "DISABLED" %}
+            selected
+            {% endif %}
+        >
+
+            Disabled
+
+        </option>
+
+    </select>
+
+    <button type="submit">
+
+        Filter
+
+    </button>
+
+    <a href="/plc-tags/array/{{ tag.id }}">
+
+        Clear
+
+    </a>
+
+</form>
+
+<br>
+
+<a href="/plc-tags/next-available/{{ tag.id }}">
+
+    Next Available Index
+
+</a>
+
+<br><br>
+
+<br>
+
+<p>
+
+Start Index :
+<b>{{ tag.array_start_index }}</b>
+
+&nbsp;&nbsp;
+
+End Index :
+<b>{{ tag.array_end_index }}</b>
+
+&nbsp;&nbsp;
+
+Size :
+<b>{{ tag.array_size }}</b>
+
+</p>
+
+<p>
+
+Mapped :
+<b>
+
+{{ indexes | selectattr("status", "equalto", "MAPPED") | list | length }}
+
+</b>
+
+&nbsp;&nbsp;
+
+Disabled :
+<b>
+
+{{ indexes | selectattr("status", "equalto", "DISABLED") | list | length }}
+
+</b>
+
+&nbsp;&nbsp;
+
+Available :
+<b>
+
+{{ indexes | selectattr("status", "equalto", "AVAILABLE") | list | length }}
+
+</b>
+
+&nbsp;&nbsp;
+
+Total Shown :
+<b>
+
+{{ indexes | length }}
+
+</b>
+
+</p>
+
+<table border="1" width="100%">
+
+    <tr>
+
+        <th>Index</th>
+
+        <th>Parameter Name</th>
+
+        <th>Status</th>
+
+        <th>Action</th>
+
+    </tr>
+
+    {% for row in indexes %}
+
+    <tr>
+
+        <td>
+
+            {{ row.index }}
+
+        </td>
+
+        <td>
+
+            {% if row.parameter %}
+
+                {{ row.parameter.parameter_name }}
+
+            {% else %}
+
+                -
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {{ row.status }}
+
+        </td>
+
+        <td>
+
+            {% if row.status == "MAPPED" %}
+
+                <a href="/parameters/edit/{{ row.parameter.id }}">
+
+                    View
+
+                </a>
+
+                |
+
+                <a href="/parameters/disable/{{ row.parameter.id }}">
+
+                    Disable
+
+                </a>
+
+            {% elif row.status == "DISABLED" %}
+
+                <a href="/parameters/enable/{{ row.parameter.id }}">
+
+                    Enable
+
+                </a>
+
+            {% else %}
+
+                <a href="/parameters/create-from-array/{{ tag.id }}/{{ row.index }}">
+
+                    Create
+
+                </a>
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

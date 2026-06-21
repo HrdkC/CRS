@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}
+Active Sessions
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    Active Sessions
+
+</h3>
+
+<hr>
+
+<p>
+
+    Total Active Sessions:
+
+    <strong>
+
+        {{ sessions|length }}
+
+    </strong>
+
+</p>
+
+<table border="1">
+
+    <tr>
+
+        <th>
+            Username
+        </th>
+
+        <th>
+            Login Time (IST)
+        </th>
+
+        <th>
+            Client IP
+        </th>
+
+        <th>
+            Workstation
+        </th>
+
+        <th>
+            Status
+        </th>
+
+    </tr>
+
+    {% for row in sessions %}
+
+    <tr>
+
+        <td>
+            {{ row.username }}
+        </td>
+
+        <td>
+            {{ row.login_time_ist }}
+        </td>
+
+        <td>
+            {{ row.client_ip }}
+        </td>
+
+        <td>
+            {{ row.workstation_name }}
+        </td>
+
+        <td>
+            Active
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

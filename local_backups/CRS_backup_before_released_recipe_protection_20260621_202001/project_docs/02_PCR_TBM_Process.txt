@@ -1,0 +1,101 @@
+PCR TYRE BUILDING MACHINE PROCESS
+================================
+
+Machine Structure
+-----------------
+
+Machines:
+
+P01 to P15
+
+Each machine contains:
+
+- FIRST_STAGE
+- SECOND_STAGE
+
+Stage Relationship
+------------------
+
+Both stages operate independently.
+
+Each stage has:
+
+- Independent PLC
+- Independent recipe template
+- Independent parameter list
+- Independent download process
+
+SKU Relationship
+----------------
+
+Example SKU:
+
+GT7109
+
+The same SKU runs on:
+
+FIRST_STAGE
+and
+SECOND_STAGE
+
+However:
+
+Recipe parameters differ by stage.
+
+Recipe templates differ by stage.
+
+Recipe downloads occur stage-wise.
+
+Operator Workflow
+-----------------
+
+FIRST_STAGE Operator
+
+1. Select approved recipe
+2. Validate recipe
+3. Download recipe
+4. Setup machine
+
+SECOND_STAGE Operator
+
+1. Select approved recipe
+2. Validate recipe
+3. Download recipe
+4. Setup machine
+
+Recipe Validation Rule
+----------------------
+
+No partial download allowed.
+
+Entire stage recipe must pass validation.
+
+Validation includes:
+
+- Min value
+- Max value
+- Required values
+- Phase controls
+
+Only after all validation passes:
+
+Recipe download may start.
+
+Machine Families
+----------------
+
+Machines may belong to TBM Families.
+
+Machines within same family may have:
+
+- Similar PLC logic
+- Similar parameter mappings
+- Similar templates
+
+However:
+
+Templates remain owned by:
+
+Machine + Stage
+
+not by family.

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}
+Engineering Units
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    Engineering Units
+
+</h3>
+
+<hr>
+
+<p>
+
+    <a href="/engineering-units/create">
+
+        Add Unit
+
+    </a>
+
+</p>
+
+<table border="1">
+
+    <tr>
+
+        <th>Unit Code</th>
+
+        <th>Description</th>
+
+        <th>Status</th>
+
+        <th>Actions</th>
+
+    </tr>
+
+    {% for unit in units %}
+
+    <tr>
+
+        <td>
+
+            {{ unit.unit_code }}
+
+        </td>
+
+        <td>
+
+            {{ unit.description }}
+
+        </td>
+
+        <td>
+
+            {% if unit.is_active == 1 %}
+
+                Active
+
+            {% else %}
+
+                Inactive
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            <a href="/engineering-units/{{ unit.id }}/edit">
+
+                Edit
+
+            </a>
+
+            |
+
+            {% if unit.is_active == 1 %}
+
+                <a href="/engineering-units/{{ unit.id }}/disable",
+                onclick="return confirm('Disable this engineering unit?')">
+
+                    Disable
+
+                </a>
+
+            {% else %}
+
+                <a href="/engineering-units/{{ unit.id }}/enable",
+                onclick="return confirm('Enable this engineering unit?')">
+
+                    Enable
+
+                </a>
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}
+Machine Registry
+{% endblock %}
+
+{% block content %}
+
+<h3>
+    Machine Registry
+</h3>
+
+<p>
+
+    <a href="/machines/create">
+
+        Create Machine
+
+    </a>
+
+</p>
+
+<table border="1">
+
+    <tr>
+
+        <th>ID</th>
+
+        <th>Machine</th>
+
+        <th>TBM Family</th>
+
+        <th>Description</th>
+
+        <th>Created By</th>
+
+        <th>Status</th>
+
+        <th>Actions</th>
+
+    </tr>
+
+    {% for machine in machines %}
+
+    <tr>
+
+        <td>
+            {{ machine.id }}
+        </td>
+
+        <td>
+            {{ machine.machine_code }}
+        </td>
+
+        <td>
+            {{ machine.family_name }}
+        </td>
+
+        <td>
+            {{ machine.description }}
+        </td>
+
+        <td>
+            {{ machine.created_by }}
+        </td>
+
+        <td>
+
+            {% if machine.active == 1 %}
+
+                Active
+
+            {% else %}
+
+                Inactive
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {% if machine.active == 1 %}
+
+                <a href="/machines/disable/{{ machine.id }}">
+
+                    Disable
+
+                </a>
+
+            {% else %}
+
+                <a href="/machines/enable/{{ machine.id }}">
+
+                    Enable
+
+                </a>
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

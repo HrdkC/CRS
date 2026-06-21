@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}
+PLC Registry
+{% endblock %}
+
+{% block content %}
+
+<h3>
+    PLC Registry
+</h3>
+
+<p>
+
+    <a href="/plcs/create">
+
+        Create PLC
+
+    </a>
+
+</p>
+
+<table border="1">
+
+    <tr>
+
+        <th>ID</th>
+
+        <th>PLC Name</th>
+
+        <th>IP Address</th>
+
+        <th>Controller</th>
+
+        <th>Status</th>
+
+        <th>Actions</th>
+
+    </tr>
+
+    {% for plc in plcs %}
+
+    <tr>
+
+        <td>{{ plc.id }}</td>
+
+        <td>{{ plc.plc_name }}</td>
+
+        <td>{{ plc.ip_address }}</td>
+
+        <td>{{ plc.controller_type }}</td>
+
+        <td>
+
+            {% if plc.active == 1 %}
+
+                Active
+
+            {% else %}
+
+                Disabled
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {% if plc.active == 1 %}
+
+                <a href="/plcs/edit/{{ plc.id }}">
+
+                    Edit
+
+                </a>
+
+                |
+
+                <a href="/plcs/test_connection/{{ plc.id }}">
+
+                    Test
+
+                </a>
+
+                |
+
+                <a href="/plcs/verify/{{ plc.id }}">
+
+                    Verify
+
+                </a>
+
+                |
+
+                <a href="/plcs/disable/{{ plc.id }}">
+
+                    Disable
+
+                </a>
+
+            {% else %}
+
+                <a href="/plcs/edit/{{ plc.id }}">
+
+                    Edit
+
+                </a>
+
+                |
+
+                <a href="/plcs/test_connection/{{ plc.id }}">
+
+                    Test
+
+                </a>
+
+                |
+
+                <a href="/plcs/verify/{{ plc.id }}">
+
+                    Verify
+
+                </a>
+
+                |
+
+                <a href="/plcs/enable/{{ plc.id }}">
+
+                    Enable
+
+                </a>
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

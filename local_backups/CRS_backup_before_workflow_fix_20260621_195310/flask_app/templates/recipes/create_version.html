@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Version
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+
+        Create Recipe Version
+
+    </h1>
+
+    <p>
+
+        Save Current Recipe Snapshot
+
+    </p>
+
+</div>
+
+<div class="dashboard-card">
+
+    <table>
+
+        <tr>
+
+            <td>
+
+                Recipe Code
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    {{ recipe.recipe_code }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                Recipe Name
+
+            </td>
+
+            <td>
+
+                <strong>
+
+                    {{ recipe.recipe_name }}
+
+                </strong>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+<br>
+
+<div class="dashboard-card">
+
+    <form method="POST">
+
+        <label>
+
+            Version Comment
+
+        </label>
+
+        <input
+            type="text"
+            name="version_comment"
+            required
+            placeholder="Example : Changed Turnup Height and Drum Speed"
+        >
+
+        <br>
+
+        <button type="submit">
+
+            Create Version
+
+        </button>
+
+    </form>
+
+</div>
+
+<br>
+
+<a
+    href="/recipe-editor/{{ recipe.id }}"
+    class="quick-card"
+    style="
+        display:inline-block;
+        width:auto;
+        padding:12px 20px;
+    "
+>
+
+    Cancel
+
+</a>
+
+{% endblock %}

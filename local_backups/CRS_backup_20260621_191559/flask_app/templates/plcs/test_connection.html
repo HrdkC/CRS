@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}
+PLC Connection Test
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    PLC Connection Test
+
+</h3>
+
+<p>
+
+    PLC :
+
+    <b>
+
+        {{ plc.plc_name }}
+
+    </b>
+
+</p>
+
+<p>
+
+    IP Address :
+
+    <b>
+
+        {{ plc.ip_address }}
+
+    </b>
+
+</p>
+
+<p>
+
+    Status :
+
+    <b>
+
+        {{ status }}
+
+    </b>
+
+</p>
+
+<p>
+
+    <a href="/plcs">
+
+        Back To PLC Registry
+
+    </a>
+
+</p>
+
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+Audit History
+{% endblock %}
+
+{% block content %}
+
+<h3>
+
+    Audit History
+
+</h3>
+
+<hr>
+
+<table border="1">
+
+    <tr>
+
+        <th>Date/Time (IST)</th>
+
+        <th>User</th>
+
+        <th>Role</th>
+
+        <th>Action</th>
+
+        <th>Record</th>
+
+        <th>Source</th>
+
+        <th>Reason</th>
+
+    </tr>
+
+    {% for row in history %}
+
+    <tr>
+
+        <td>
+            {{ row.timestamp_ist }}
+        </td>
+
+        <td>
+            {{ row.username }}
+        </td>
+
+        <td>
+            {{ row.role }}
+        </td>
+
+        <td>
+            {{ row.action }}
+        </td>
+
+        <td>
+            {{ row.record_id }}
+        </td>
+
+        <td>
+            {{ row.change_source }}
+        </td>
+
+        <td>
+            {{ row.reason }}
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

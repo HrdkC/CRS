@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Parameters
+{% endblock %}
+
+{% block content %}
+
+<h2>
+
+    Recipe Parameters
+
+</h2>
+
+<p>
+
+    Machine ID :
+    <b>{{ machine_id }}</b>
+
+    &nbsp;&nbsp;&nbsp;
+
+    Stage ID :
+    <b>{{ stage_id }}</b>
+
+</p>
+
+<form method="GET">
+
+    <input
+        type="text"
+        name="search"
+        value="{{ search_text }}"
+        placeholder="Search Parameter Or Tag Index"
+    >
+
+    <button type="submit">
+
+        Search
+
+    </button>
+
+</form>
+
+<br>
+
+<p>
+
+    Total Parameters :
+
+    <b>
+
+        {{ parameters|length }}
+
+    </b>
+
+</p>
+
+<a href="/parameters/add/{{ machine_id }}/{{ stage_id }}">
+
+    Add Recipe Parameter
+
+</a>
+
+<br><br>
+
+<table border="1" width="100%">
+
+    <tr>
+
+        <th>Tag Index</th>
+
+        <th>Parameter Name</th>
+
+        <th>Unit</th>
+
+        <th>Min</th>
+
+        <th>Max</th>
+
+        <th>Default</th>
+
+        <th>Actions</th>
+
+    </tr>
+
+    {% for parameter in parameters %}
+
+    <tr>
+
+        <td>
+            {{ parameter.tag_index }}
+        </td>
+
+        <td>
+            {{ parameter.parameter_name }}
+        </td>
+
+        <td>
+            {{ parameter.unit }}
+        </td>
+
+        <td>
+            {{ parameter.min_value }}
+        </td>
+
+        <td>
+            {{ parameter.max_value }}
+        </td>
+
+        <td>
+            {{ parameter.default_value }}
+        </td>
+
+        <td>
+
+            <a href="/parameters/edit/{{ parameter.id }}">
+
+                Edit
+
+            </a>
+
+            |
+
+            <a href="/parameters/disable/{{ parameter.id }}">
+
+                Disable
+
+            </a>
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}
