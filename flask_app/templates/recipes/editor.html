@@ -376,6 +376,9 @@ Recipe Editor
 
             <small>
                 {{ summary.last_changed_at }}
+                {% if summary.last_change_source and summary.last_change_source != '-' %}
+                    | {{ summary.last_change_source }}
+                {% endif %}
             </small>
 
         </div>

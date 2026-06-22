@@ -64,6 +64,9 @@ Parameter History
                         <th>Old Value</th>
                         <th>New Value</th>
                         <th>Changed By</th>
+                        <th>Role</th>
+                        <th>Source</th>
+                        <th>Reason</th>
                         <th>Changed At</th>
                     </tr>
                 </thead>
@@ -74,11 +77,14 @@ Parameter History
                         <td>{{ row.old_value }}</td>
                         <td><strong>{{ row.new_value }}</strong></td>
                         <td>{{ row.changed_by }}</td>
+                        <td>{{ row.user_role or '-' }}</td>
+                        <td><span class="tag-pill">{{ row.change_source or '-' }}</span></td>
+                        <td>{{ row.change_reason or '-' }}</td>
                         <td>{{ row.changed_at_ist }}</td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="empty-state">No parameter change history found.</td>
+                        <td colspan="8" class="empty-state">No parameter change history found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

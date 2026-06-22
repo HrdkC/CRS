@@ -33,6 +33,24 @@ def create_table():
 
             changed_by TEXT,
 
+            recipe_code TEXT,
+
+            recipe_version INTEGER,
+
+            parameter_name TEXT,
+
+            tag_index INTEGER,
+
+            change_source TEXT DEFAULT 'DATABASE',
+
+            change_reason TEXT,
+
+            user_role TEXT,
+
+            client_ip TEXT,
+
+            workstation_name TEXT,
+
             changed_at TIMESTAMP
             DEFAULT CURRENT_TIMESTAMP
 

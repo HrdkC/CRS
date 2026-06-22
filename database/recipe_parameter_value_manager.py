@@ -300,7 +300,13 @@ class RecipeParameterValueManager:
 
         change_reason="Recipe Parameter Update",
 
-        user_role="EDITOR"
+        user_role="EDITOR",
+
+        change_source="DATABASE",
+
+        client_ip=None,
+
+        workstation_name=None
 
     ):
 
@@ -335,7 +341,15 @@ class RecipeParameterValueManager:
 
             conn.close()
 
-            return
+            return {
+
+                "success": False,
+
+                "changed": False,
+
+                "message": "Recipe parameter value not found."
+
+            }
 
         old_value = row[
             "parameter_value"
@@ -357,7 +371,15 @@ class RecipeParameterValueManager:
 
                 r.version,
 
-                pd.parameter_name
+                r.status,
+
+                pd.parameter_name,
+
+                pd.tag_index,
+
+                pd.min_value,
+
+                pd.max_value
 
             FROM recipes r
 
@@ -374,6 +396,74 @@ class RecipeParameterValueManager:
         )
 
         audit_context = cursor.fetchone()
+
+        if audit_context:
+
+            min_value = audit_context[
+                "min_value"
+            ]
+
+            max_value = audit_context[
+                "max_value"
+            ]
+
+            if (
+                min_value is not None
+                and
+                float(new_value) < float(min_value)
+            ):
+
+                conn.close()
+
+                return {
+
+                    "success": False,
+
+                    "changed": False,
+
+                    "message": f"Value below minimum limit ({min_value})."
+
+                }
+
+            if (
+                max_value is not None
+                and
+                float(new_value) > float(max_value)
+            ):
+
+                conn.close()
+
+                return {
+
+                    "success": False,
+
+                    "changed": False,
+
+                    "message": f"Value above maximum limit ({max_value})."
+
+                }
+
+        if (
+            old_value is not None
+            and
+            float(old_value) == float(new_value)
+        ):
+
+            conn.close()
+
+            return {
+
+                "success": True,
+
+                "changed": False,
+
+                "message": "No value change detected; audit entry was not created.",
+
+                "old_value": old_value,
+
+                "new_value": new_value
+
+            }
 
         cursor.execute(
             """
@@ -401,7 +491,33 @@ class RecipeParameterValueManager:
 
         conn.close()
 
-        RecipeParameterAuditManager.log_change(
+        recipe_code = None
+
+        recipe_version = None
+
+        parameter_name = None
+
+        tag_index = None
+
+        if audit_context:
+
+            recipe_code = audit_context[
+                "recipe_code"
+            ]
+
+            recipe_version = audit_context[
+                "version"
+            ]
+
+            parameter_name = audit_context[
+                "parameter_name"
+            ]
+
+            tag_index = audit_context[
+                "tag_index"
+            ]
+
+        parameter_audit_id = RecipeParameterAuditManager.log_change(
 
             recipe_id=recipe_id,
 
@@ -413,7 +529,25 @@ class RecipeParameterValueManager:
 
             new_value=new_value,
 
-            changed_by=changed_by
+            changed_by=changed_by,
+
+            recipe_code=recipe_code,
+
+            recipe_version=recipe_version,
+
+            parameter_name=parameter_name,
+
+            tag_index=tag_index,
+
+            change_source=change_source,
+
+            change_reason=change_reason,
+
+            user_role=user_role,
+
+            client_ip=client_ip,
+
+            workstation_name=workstation_name
 
         )
 
@@ -427,21 +561,15 @@ class RecipeParameterValueManager:
 
                 action="RECIPE_PARAMETER_CHANGED",
 
-                change_source="DATABASE",
+                change_source=change_source,
 
-                recipe_code=audit_context[
-                    "recipe_code"
-                ],
+                recipe_code=recipe_code,
 
-                recipe_version=audit_context[
-                    "version"
-                ],
+                recipe_version=recipe_version,
 
                 record_id=value_id,
 
-                parameter_name=audit_context[
-                    "parameter_name"
-                ],
+                parameter_name=parameter_name,
 
                 old_value=str(
                     old_value
@@ -454,3 +582,30 @@ class RecipeParameterValueManager:
                 reason=change_reason
 
             )
+
+        return {
+
+            "success": True,
+
+            "changed": True,
+
+            "message": "Recipe parameter updated and audited successfully.",
+
+            "parameter_audit_id": parameter_audit_id,
+
+            "recipe_id": recipe_id,
+
+            "recipe_code": recipe_code,
+
+            "recipe_version": recipe_version,
+
+            "parameter_name": parameter_name,
+
+            "old_value": old_value,
+
+            "new_value": new_value,
+
+            "change_source": change_source
+
+        }
+

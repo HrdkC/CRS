@@ -116,6 +116,33 @@ Edit Recipe Parameter
 
     </div>
 
+    {% if is_current_released_edit %}
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Current Released Recipe Edit</span>
+            <span class="status-badge status-warning">Audit Mandatory</span>
+        </div>
+        <p class="muted-text">
+            You are editing the current RELEASED production recipe
+            {{ recipe.recipe_code }} V{{ recipe.version }}.
+            This is allowed by CRS policy for operator ease of use, but every
+            saved change will store old value, new value, user, role, source,
+            timestamp, and reason. Historical released versions remain locked.
+        </p>
+    </div>
+    {% elif recipe and recipe.status == "DRAFT" %}
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Draft Recipe Edit</span>
+            <span class="status-badge status-info">Draft Audit</span>
+        </div>
+        <p class="muted-text">
+            You are editing DRAFT recipe {{ recipe.recipe_code }} V{{ recipe.version }}.
+            The change will still be recorded in parameter audit history.
+        </p>
+    </div>
+    {% endif %}
+
     <div class="workbench-card edit-parameter-panel">
 
         <div class="panel-heading">
@@ -167,6 +194,9 @@ Edit Recipe Parameter
                 <button
                     class="crs-btn crs-btn-primary"
                     type="submit"
+                    {% if is_current_released_edit %}
+                    onclick="return confirm('This will update the CURRENT RELEASED recipe and create an audit record. Continue?');"
+                    {% endif %}
                 >
                     Save Parameter
                 </button>

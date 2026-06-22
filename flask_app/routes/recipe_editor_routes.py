@@ -725,10 +725,29 @@ def register_recipe_editor_routes(app):
             )
         )
 
+        if not value:
+
+            flash(
+                "Recipe parameter value not found.",
+                "error"
+            )
+
+            return redirect(
+                "/recipes"
+            )
+
         recipe = (
             RecipeManager
             .get_recipe_by_id(
                 value["recipe_id"]
+            )
+        )
+
+        is_current_released_edit = (
+            recipe
+            and
+            _is_current_released_recipe(
+                recipe
             )
         )
 
@@ -737,9 +756,7 @@ def register_recipe_editor_routes(app):
             and
             recipe["status"] == "RELEASED"
             and
-            not _is_current_released_recipe(
-                recipe
-            )
+            not is_current_released_edit
         ):
 
             flash(
@@ -831,7 +848,13 @@ def register_recipe_editor_routes(app):
                     "Recipe Parameter Update"
                 )
 
-            RecipeParameterValueManager.update_recipe_value(
+            change_source = "CURRENT_RELEASED_EDIT"
+
+            if not is_current_released_edit:
+
+                change_source = "DRAFT_RECIPE_EDIT"
+
+            result = RecipeParameterValueManager.update_recipe_value(
 
                 value_id=value_id,
 
@@ -846,9 +869,55 @@ def register_recipe_editor_routes(app):
                 user_role=session.get(
                     "role",
                     "EDITOR"
+                ),
+
+                change_source=change_source,
+
+                client_ip=request.remote_addr,
+
+                workstation_name=request.headers.get(
+                    "X-Forwarded-Host",
+                    request.host
                 )
 
             )
+
+            if result.get(
+                "success"
+            ) and result.get(
+                "changed"
+            ):
+
+                flash(
+                    (
+                        "Parameter updated and audited: "
+                        f"{result.get('old_value')} -> "
+                        f"{result.get('new_value')}"
+                    ),
+                    "success"
+                )
+
+            elif result.get(
+                "success"
+            ):
+
+                flash(
+                    result.get(
+                        "message",
+                        "No parameter change detected."
+                    ),
+                    "info"
+                )
+
+            else:
+
+                flash(
+                    result.get(
+                        "message",
+                        "Parameter update failed."
+                    ),
+                    "error"
+                )
 
             return redirect(
                 f"/recipe-editor/{value['recipe_id']}"
@@ -858,7 +927,11 @@ def register_recipe_editor_routes(app):
 
             "recipes/edit_value.html",
 
-            value=value
+            value=value,
+
+            recipe=recipe,
+
+            is_current_released_edit=is_current_released_edit
 
         )
 
