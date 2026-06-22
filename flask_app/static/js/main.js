@@ -13,6 +13,8 @@ document.addEventListener(
 
         initializeConfirmButtons();
 
+        initializeDropdownMenus();
+
         initializeCardAnimations();
 
     }
@@ -101,6 +103,75 @@ function initializeConfirmButtons() {
                         event.preventDefault();
 
                     }
+
+                }
+
+            );
+
+        }
+
+    );
+
+}
+
+/* =====================================================
+   Header Dropdown Hold Delay
+   ===================================================== */
+
+function initializeDropdownMenus() {
+
+    const dropdowns =
+        document.querySelectorAll(
+            ".dropdown"
+        );
+
+    dropdowns.forEach(
+
+        function (dropdown) {
+
+            let closeTimer = null;
+
+            dropdown.addEventListener(
+
+                "mouseenter",
+
+                function () {
+
+                    if (closeTimer) {
+
+                        clearTimeout(
+                            closeTimer
+                        );
+
+                    }
+
+                    dropdown.classList.add(
+                        "dropdown-open"
+                    );
+
+                }
+
+            );
+
+            dropdown.addEventListener(
+
+                "mouseleave",
+
+                function () {
+
+                    closeTimer = setTimeout(
+
+                        function () {
+
+                            dropdown.classList.remove(
+                                "dropdown-open"
+                            );
+
+                        },
+
+                        850
+
+                    );
 
                 }
 

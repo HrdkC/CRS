@@ -3,7 +3,14 @@ from flask import (
     request,
     redirect,
     session,
-    flash
+    flash,
+    jsonify
+)
+
+import threading
+
+from urllib.parse import (
+    urlencode
 )
 
 from database.recipe_manager import (
@@ -50,6 +57,303 @@ from database.plc_buffer_operation_manager import (
     PLCBufferOperationManager
 )
 
+from database.plc_operation_job_manager import (
+    PLCOperationJobManager
+)
+
+
+def _get_parameter_group(
+
+    row
+
+):
+
+    name = (
+        row.get(
+            "parameter_name"
+        )
+        or
+        ""
+    ).upper()
+
+    unit = (
+        row.get(
+            "unit"
+        )
+        or
+        ""
+    ).upper()
+
+    if (
+        "ANGLE" in name
+        or
+        unit == "DEG"
+    ):
+
+        return "Angle"
+
+    if "WIDTH" in name:
+
+        return "Width"
+
+    if (
+        "LENGTH" in name
+        or
+        unit in [
+            "MM",
+            "CM",
+            "M"
+        ]
+    ):
+
+        return "Length"
+
+    if (
+        "SPEED" in name
+        or
+        unit in [
+            "RPM",
+            "MPM",
+            "M/MIN"
+        ]
+    ):
+
+        return "Speed"
+
+    if (
+        "PRESS" in name
+        or
+        unit in [
+            "BAR",
+            "PSI",
+            "KG/CM2"
+        ]
+    ):
+
+        return "Pressure"
+
+    if (
+        "TIME" in name
+        or
+        "DELAY" in name
+        or
+        unit in [
+            "SEC",
+            "S",
+            "MS"
+        ]
+    ):
+
+        return "Time"
+
+    return "Other"
+
+
+def _build_recipe_editor_metrics(
+
+    rows
+
+):
+
+    metrics = {
+
+        "total": len(
+            rows
+        ),
+
+        "modified": 0,
+
+        "out_of_range": 0,
+
+        "below_range": 0,
+
+        "above_range": 0,
+
+        "zero_values": 0,
+
+        "groups": {},
+
+        "units": {}
+
+    }
+
+    for row in rows:
+
+        value = row.get(
+            "parameter_value"
+        )
+
+        min_value = row.get(
+            "min_value"
+        )
+
+        max_value = row.get(
+            "max_value"
+        )
+
+        if row.get(
+            "is_modified"
+        ):
+
+            metrics["modified"] += 1
+
+        if value == 0:
+
+            metrics["zero_values"] += 1
+
+        if (
+            value is not None
+            and
+            min_value is not None
+            and
+            value < min_value
+        ):
+
+            metrics["out_of_range"] += 1
+
+            metrics["below_range"] += 1
+
+        elif (
+            value is not None
+            and
+            max_value is not None
+            and
+            value > max_value
+        ):
+
+            metrics["out_of_range"] += 1
+
+            metrics["above_range"] += 1
+
+        group_name = _get_parameter_group(
+            row
+        )
+
+        if group_name not in metrics["groups"]:
+
+            metrics["groups"][group_name] = {
+
+                "name": group_name,
+
+                "count": 0,
+
+                "modified": 0,
+
+                "out_of_range": 0
+
+            }
+
+        metrics["groups"][group_name]["count"] += 1
+
+        if row.get(
+            "is_modified"
+        ):
+
+            metrics["groups"][group_name]["modified"] += 1
+
+        if (
+            value is not None
+            and
+            min_value is not None
+            and
+            value < min_value
+        ) or (
+            value is not None
+            and
+            max_value is not None
+            and
+            value > max_value
+        ):
+
+            metrics["groups"][group_name]["out_of_range"] += 1
+
+        unit_name = (
+            row.get(
+                "unit"
+            )
+            or
+            "-"
+        )
+
+        metrics["units"][unit_name] = (
+            metrics["units"].get(
+                unit_name,
+                0
+            )
+            + 1
+        )
+
+    total = metrics["total"] or 1
+
+    metrics["modified_percent"] = round(
+        (
+            metrics["modified"]
+            /
+            total
+        )
+        * 100
+    )
+
+    metrics["valid_percent"] = round(
+        (
+            (
+                metrics["total"]
+                -
+                metrics["out_of_range"]
+            )
+            /
+            total
+        )
+        * 100
+    )
+
+    metrics["groups"] = sorted(
+        metrics["groups"].values(),
+        key=lambda item: (
+            item["out_of_range"],
+            item["modified"],
+            item["count"]
+        ),
+        reverse=True
+    )
+
+    metrics["units"] = sorted(
+        [
+            {
+                "name": key,
+                "count": value
+            }
+            for key, value in metrics["units"].items()
+        ],
+        key=lambda item: item["count"],
+        reverse=True
+    )
+
+    return metrics
+
+
+def _is_current_released_recipe(
+
+    recipe
+
+):
+
+    return (
+        recipe
+        and
+        recipe.get(
+            "status"
+        )
+        ==
+        "RELEASED"
+        and
+        recipe.get(
+            "version_usage_status"
+        )
+        ==
+        "CURRENT_RELEASED"
+    )
+
 def register_recipe_editor_routes(app):
 
     @app.route(
@@ -91,25 +395,58 @@ def register_recipe_editor_routes(app):
             ""
         )
 
-        page = int(
-            request.args.get(
-                "page",
-                1
-            )
-        )
+        try:
 
-        page_size = int(
-            request.args.get(
-                "page_size",
-                50
+            page = int(
+                request.args.get(
+                    "page",
+                    1
+                )
             )
-        )
 
-        values = (
+        except Exception:
+
+            page = 1
+
+        try:
+
+            page_size = int(
+                request.args.get(
+                    "page_size",
+                    50
+                )
+            )
+
+        except Exception:
+
+            page_size = 50
+
+        if page < 1:
+
+            page = 1
+
+        if page_size not in [
+            25,
+            50,
+            100,
+            9999
+        ]:
+
+            page_size = 50
+
+        all_values = (
             RecipeParameterValueManager
             .get_recipe_values(
                 recipe_id
             )
+        )
+
+        editor_metrics = _build_recipe_editor_metrics(
+            all_values
+        )
+
+        values = list(
+            all_values
         )
 
         if search_text:
@@ -170,7 +507,7 @@ def register_recipe_editor_routes(app):
 
                 pass
 
-        total_parameters = len(
+        filtered_parameters = len(
             values
         )
 
@@ -184,9 +521,75 @@ def register_recipe_editor_routes(app):
             + page_size
         )
 
-        values = values[
+        paged_values = values[
             start_index:end_index
         ]
+
+        shown_from = 0
+
+        shown_to = 0
+
+        if paged_values:
+
+            shown_from = start_index + 1
+
+            shown_to = (
+                start_index
+                +
+                len(
+                    paged_values
+                )
+            )
+
+        base_query = {
+
+            "search": search_text,
+
+            "page_size": page_size,
+
+            "modified_only": modified_only,
+
+            "jump_tag": jump_tag
+
+        }
+
+        previous_url = None
+
+        next_url = None
+
+        if page > 1:
+
+            previous_query = dict(
+                base_query
+            )
+
+            previous_query["page"] = page - 1
+
+            previous_url = (
+                "?"
+                +
+                urlencode(
+                    previous_query
+                )
+            )
+
+        if len(
+            paged_values
+        ) == page_size and end_index < filtered_parameters:
+
+            next_query = dict(
+                base_query
+            )
+
+            next_query["page"] = page + 1
+
+            next_url = (
+                "?"
+                +
+                urlencode(
+                    next_query
+                )
+            )
 
         summary = (
             RecipeParameterAuditManager
@@ -224,13 +627,42 @@ def register_recipe_editor_routes(app):
             )
         )
 
+        can_edit_values = (
+            recipe
+            and
+            (
+                recipe["status"] != "RELEASED"
+                or
+                _is_current_released_recipe(
+                    recipe
+                )
+            )
+        )
+
+        edit_lock_reason = ""
+
+        if (
+            recipe
+            and
+            recipe["status"] == "RELEASED"
+            and
+            not _is_current_released_recipe(
+                recipe
+            )
+        ):
+
+            edit_lock_reason = (
+                "Historical released versions are locked. "
+                "Open the current production version for changes."
+            )
+
         return render_template(
 
             "recipes/editor.html",
 
             recipe=recipe,
 
-            values=values,
+            values=paged_values,
 
             summary=summary,
             
@@ -239,6 +671,12 @@ def register_recipe_editor_routes(app):
             production_revision_source=production_revision_source,
 
             download_eligibility=download_eligibility,
+
+            editor_metrics=editor_metrics,
+
+            can_edit_values=can_edit_values,
+
+            edit_lock_reason=edit_lock_reason,
 
             search_text=search_text,
 
@@ -250,7 +688,17 @@ def register_recipe_editor_routes(app):
 
             page_size=page_size,
 
-            total_parameters=total_parameters,
+            total_parameters=filtered_parameters,
+
+            filtered_parameters=filtered_parameters,
+
+            shown_from=shown_from,
+
+            shown_to=shown_to,
+
+            previous_url=previous_url,
+
+            next_url=next_url,
 
         )
 
@@ -288,10 +736,17 @@ def register_recipe_editor_routes(app):
             recipe
             and
             recipe["status"] == "RELEASED"
+            and
+            not _is_current_released_recipe(
+                recipe
+            )
         ):
 
             flash(
-                "Released recipe cannot be edited directly. Use Edit Released Recipe.",
+                (
+                    "Historical released recipe cannot be edited. "
+                    "Open the current production version."
+                ),
                 "error"
             )
 
@@ -301,11 +756,80 @@ def register_recipe_editor_routes(app):
 
         if request.method == "POST":
 
-            new_value = float(
-                request.form[
-                    "parameter_value"
-                ]
-            )
+            try:
+
+                new_value = float(
+                    request.form[
+                        "parameter_value"
+                    ]
+                )
+
+            except Exception:
+
+                flash(
+                    "Enter a valid numeric parameter value.",
+                    "error"
+                )
+
+                return redirect(
+                    f"/recipe-editor/edit/{value_id}"
+                )
+
+            if (
+                value.get(
+                    "min_value"
+                )
+                is not None
+                and
+                new_value < value["min_value"]
+            ):
+
+                flash(
+                    (
+                        "Parameter value is below minimum limit "
+                        f"({value['min_value']})."
+                    ),
+                    "error"
+                )
+
+                return redirect(
+                    f"/recipe-editor/edit/{value_id}"
+                )
+
+            if (
+                value.get(
+                    "max_value"
+                )
+                is not None
+                and
+                new_value > value["max_value"]
+            ):
+
+                flash(
+                    (
+                        "Parameter value is above maximum limit "
+                        f"({value['max_value']})."
+                    ),
+                    "error"
+                )
+
+                return redirect(
+                    f"/recipe-editor/edit/{value_id}"
+                )
+
+            change_reason = (
+                request.form.get(
+                    "change_reason"
+                )
+                or
+                "Recipe Parameter Update"
+            ).strip()
+
+            if not change_reason:
+
+                change_reason = (
+                    "Recipe Parameter Update"
+                )
 
             RecipeParameterValueManager.update_recipe_value(
 
@@ -317,7 +841,7 @@ def register_recipe_editor_routes(app):
                     "username"
                 ),
 
-                change_reason="Recipe Parameter Update",
+                change_reason=change_reason,
 
                 user_role=session.get(
                     "role",
@@ -468,7 +992,10 @@ def register_recipe_editor_routes(app):
         ):
 
             flash(
-                "Use Edit Released Recipe to create the next editable version.",
+                (
+                    "Released recipes do not use snapshots. "
+                    "Edit the current production version directly with audit."
+                ),
                 "error"
             )
 
@@ -683,7 +1210,10 @@ def register_recipe_editor_routes(app):
         ):
 
             flash(
-                "Released recipe cannot be restored directly. Create a new version for changes.",
+                (
+                    "Released recipe restore is blocked. "
+                    "Edit the current production version directly with audit."
+                ),
                 "error"
             )
 
@@ -1022,6 +1552,17 @@ def register_recipe_editor_routes(app):
             )
         )
 
+        recent_operations = (
+            PLCOperationJobManager
+            .get_recent_for_recipe(
+
+                recipe_id=recipe_id,
+
+                limit=8
+
+            )
+        )
+
         return render_template(
 
             "recipes/download_preparation.html",
@@ -1038,6 +1579,231 @@ def register_recipe_editor_routes(app):
 
             operation_context=operation_context,
 
-            operation_result=operation_result
+            operation_result=operation_result,
+
+            recent_operations=recent_operations
 
         )
+
+    @app.route(
+        "/recipe-editor/download-preparation/<int:recipe_id>/start",
+        methods=["POST"]
+    )
+    def recipe_download_preparation_start(
+
+        recipe_id
+
+    ):
+
+        if not session.get(
+            "username"
+        ):
+
+            return jsonify({
+                "success": False,
+                "message": "Login required."
+            }), 401
+
+        recipe = (
+            RecipeManager
+            .get_recipe_by_id(
+                recipe_id
+            )
+        )
+
+        if not recipe:
+
+            return jsonify({
+                "success": False,
+                "message": "Recipe not found."
+            }), 404
+
+        if (
+            recipe.get(
+                "version_usage_status"
+            )
+            ==
+            "HISTORY_RELEASED"
+        ):
+
+            return jsonify({
+                "success": False,
+                "message": (
+                    "Historical released recipe opened. "
+                    "Open the current production version."
+                ),
+                "current_recipe_id": recipe.get(
+                    "current_released_recipe_id"
+                )
+            }), 409
+
+        action = (
+            request.form.get(
+                "action",
+                ""
+            )
+            or
+            request.form.get(
+                "selected_action",
+                ""
+            )
+        )
+
+        if action not in PLCBufferOperationManager.OPERATIONS:
+
+            return jsonify({
+                "success": False,
+                "message": "Unknown PLC buffer operation."
+            }), 400
+
+        selected_plc_id = (
+            request.form.get(
+                "plc_id"
+            )
+            or
+            ""
+        )
+
+        try:
+
+            selected_plc_id_int = int(
+                selected_plc_id
+            )
+
+        except Exception:
+
+            selected_plc_id_int = 0
+
+        if not selected_plc_id_int:
+
+            return jsonify({
+                "success": False,
+                "message": "Select PLC for recipe buffer operation."
+            }), 400
+
+        username = session.get(
+            "username"
+        )
+
+        user_role = session.get(
+            "role",
+            "PRODUCTION"
+        )
+
+        operation_title = (
+            PLCBufferOperationManager
+            .OPERATIONS[
+                action
+            ][
+                "title"
+            ]
+        )
+
+        job_id = (
+            PLCOperationJobManager
+            .create_job(
+
+                recipe_id=recipe_id,
+
+                plc_id=selected_plc_id_int,
+
+                operation=action,
+
+                title=operation_title,
+
+                username=username,
+
+                user_role=user_role
+
+            )
+        )
+
+        def run_job():
+
+            try:
+
+                PLCBufferOperationManager.run_operation(
+
+                    recipe_id=recipe_id,
+
+                    plc_id=selected_plc_id_int,
+
+                    operation=action,
+
+                    username=username,
+
+                    user_role=user_role,
+
+                    status_job_id=job_id
+
+                )
+
+            except Exception as exc:
+
+                PLCOperationJobManager.fail_job(
+                    job_id=job_id,
+                    message=str(
+                        exc
+                    )
+                )
+
+        thread = threading.Thread(
+            target=run_job,
+            daemon=True
+        )
+
+        thread.start()
+
+        return jsonify({
+            "success": True,
+            "job_id": job_id,
+            "status_url": (
+                "/recipe-editor/download-preparation/job/"
+                f"{job_id}"
+            )
+        })
+
+    @app.route(
+        "/recipe-editor/download-preparation/job/<job_id>"
+    )
+    def recipe_download_preparation_job_status(
+
+        job_id
+
+    ):
+
+        if not session.get(
+            "username"
+        ):
+
+            return jsonify({
+                "success": False,
+                "message": "Login required."
+            }), 401
+
+        job = (
+            PLCOperationJobManager
+            .get_job(
+                job_id
+            )
+        )
+
+        if not job:
+
+            return jsonify({
+                "success": False,
+                "message": "Operation job not found."
+            }), 404
+
+        return jsonify({
+            "success": True,
+            "job": job,
+            "done": job.get(
+                "status"
+            )
+            in [
+                "SUCCESS",
+                "BLOCKED",
+                "ERROR"
+            ]
+        })

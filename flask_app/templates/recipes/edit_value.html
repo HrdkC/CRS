@@ -6,183 +6,184 @@ Edit Recipe Parameter
 
 {% block content %}
 
-<div class="page-header">
+<section class="recipe-workbench">
 
-    <h1>
+    <div class="workbench-hero">
 
-        Edit Recipe Parameter
+        <div class="workbench-title">
 
-    </h1>
+            <span class="section-kicker">
+                Parameter Edit
+            </span>
 
-    <p>
+            <h1>
+                Tag {{ value.tag_index }}
+            </h1>
 
-        Modify Recipe Parameter Value
+            <p>
+                {{ value.parameter_name }}
+                <span>|</span>
+                Recipe ID {{ value.recipe_id }}
+            </p>
 
-    </p>
+        </div>
 
-</div>
+        <div class="workbench-actions">
 
-<div class="dashboard-card">
+            <a
+                class="crs-btn crs-btn-soft"
+                href="/recipe-editor/{{ value.recipe_id }}"
+            >
+                Back To Editor
+            </a>
 
-    <table>
+            <a
+                class="crs-btn crs-btn-soft"
+                href="/recipe-editor/history/{{ value.id }}"
+            >
+                History
+            </a>
 
-        <tr>
-
-            <td>
-
-                Tag Index
-
-            </td>
-
-            <td>
-
-                <strong>
-
-                    {{ value.tag_index }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-
-                Parameter Name
-
-            </td>
-
-            <td>
-
-                <strong>
-
-                    {{ value.parameter_name }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-
-                Unit
-
-            </td>
-
-            <td>
-
-                {{ value.unit }}
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-
-                Minimum Value
-
-            </td>
-
-            <td>
-
-                {{ value.min_value }}
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-
-                Maximum Value
-
-            </td>
-
-            <td>
-
-                {{ value.max_value }}
-
-            </td>
-
-        </tr>
-
-    </table>
-
-</div>
-
-<br>
-
-<div class="dashboard-card">
-
-    <form method="POST">
-
-        <label>
-
-            Parameter Value
-
-        </label>
-
-        <input
-            type="number"
-            step="any"
-            name="parameter_value"
-            value="{{ value.parameter_value }}"
-            required
-        >
-
-        <br>
-
-        <button type="submit">
-
-            Save Parameter
-
-        </button>
-
-        <a
-            href="/recipe-editor/{{ value.recipe_id }}"
-            class="quick-card"
-            style="
-                display:inline-block;
-                width:auto;
-                margin-left:10px;
-                padding:12px 20px;
-            "
-        >
-
-            Cancel
-
-        </a>
-
-    </form>
-
-</div>
-
-<br>
-
-<div class="dashboard-card">
-
-    <h3>
-
-        Current Value
-
-    </h3>
-
-    <br>
-
-    <div class="dashboard-value">
-
-        {{ value.parameter_value }}
+        </div>
 
     </div>
 
-</div>
+    <div class="metric-grid">
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Current Value
+            </span>
+
+            <strong>
+                {{ value.parameter_value }}
+            </strong>
+
+            <small>
+                {{ value.unit }}
+            </small>
+
+        </div>
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Minimum
+            </span>
+
+            <strong>
+                {{ value.min_value }}
+            </strong>
+
+            <small>
+                Lower validation limit
+            </small>
+
+        </div>
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Maximum
+            </span>
+
+            <strong>
+                {{ value.max_value }}
+            </strong>
+
+            <small>
+                Upper validation limit
+            </small>
+
+        </div>
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Unit
+            </span>
+
+            <strong class="metric-text">
+                {{ value.unit }}
+            </strong>
+
+            <small>
+                Engineering unit
+            </small>
+
+        </div>
+
+    </div>
+
+    <div class="workbench-card edit-parameter-panel">
+
+        <div class="panel-heading">
+
+            <span>
+                Save Parameter Value
+            </span>
+
+            <span class="status-badge status-info">
+                Audit Required
+            </span>
+
+        </div>
+
+        <form
+            class="parameter-edit-form"
+            method="POST"
+        >
+
+            <label>
+                <span>
+                    Parameter Value
+                </span>
+                <input
+                    type="number"
+                    step="any"
+                    name="parameter_value"
+                    value="{{ value.parameter_value }}"
+                    min="{{ value.min_value }}"
+                    max="{{ value.max_value }}"
+                    required
+                >
+            </label>
+
+            <label>
+                <span>
+                    Change Reason
+                </span>
+                <input
+                    type="text"
+                    name="change_reason"
+                    placeholder="Reason for parameter update"
+                    required
+                >
+            </label>
+
+            <div class="form-action-row">
+
+                <button
+                    class="crs-btn crs-btn-primary"
+                    type="submit"
+                >
+                    Save Parameter
+                </button>
+
+                <a
+                    class="crs-btn crs-btn-soft"
+                    href="/recipe-editor/{{ value.recipe_id }}"
+                >
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
 
 {% endblock %}

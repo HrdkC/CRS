@@ -26,7 +26,7 @@
 
 </head>
 
-<body>
+<body class="{% if session.get('logged_in') %}authenticated-layout{% else %}login-layout{% endif %}">
 
     {% if session.get("logged_in") %}
 
@@ -34,7 +34,7 @@
 
         <div class="header-top">
 
-            <div class="brand-area">
+            <div class="header-logo-panel">
 
                 <img
                     src="{{ url_for('static', filename='images/apollo_logo.png') }}"
@@ -42,25 +42,19 @@
                     class="logo"
                 >
 
-                <div>
+            </div>
 
-                    <div class="brand-title">
+            <div class="brand-area">
 
-                        Centralized Recipe System (CRS)
+                <div class="brand-title">
 
-                    </div>
+                    Centralized Recipe System (CRS)
 
-                    <div class="brand-subtitle">
+                </div>
 
-                        Apollo Tyres Ltd.
+                <div class="brand-subtitle">
 
-                    </div>
-
-                    <div class="brand-subtitle">
-
-                        PCR Limda Plant
-
-                    </div>
+                    Apollo Tyres Ltd. | PCR Limda Plant
 
                 </div>
 
@@ -70,19 +64,19 @@
 
                 <strong>
 
-                    Username :  {{ session["username"] }}
+                    {{ session["username"] }}
 
                 </strong>
 
                 <br>
 
-                User Role :  {{ session["role"] }}
+                Role :  {{ session["role"] }}
 
                 {% if session.get("last_login_ist") %}
 
                 <br>
 
-                Last Login :  {{ session["last_login_ist"] }}
+                Last :  {{ session["last_login_ist"] }}
 
                 {% endif %}
 

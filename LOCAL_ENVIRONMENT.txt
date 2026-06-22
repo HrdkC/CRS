@@ -25,6 +25,8 @@ venv\Scripts\python.exe -m pip install -r requirements.txt
 
 venv\Scripts\python.exe scripts\system_health_check.py
 
+venv\Scripts\python.exe scripts\sqlalchemy_health_check.py
+
 venv\Scripts\python.exe scripts\check_schema.py
 
 venv\Scripts\python.exe scripts\check_tables.py

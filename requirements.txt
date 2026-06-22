@@ -17,6 +17,8 @@ pycomm3==1.2.16
 Pygments==2.20.0
 pytest==9.1.1
 python-dateutil==2.9.0.post0
+PyMySQL>=1.1,<2.0
 six==1.17.0
+SQLAlchemy>=2.0,<3.0
 tzdata==2026.2
 Werkzeug==3.1.8

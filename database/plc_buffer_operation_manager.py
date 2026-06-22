@@ -14,6 +14,10 @@ from database.plc_download_preparation_manager import (
     PLCDownloadPreparationManager
 )
 
+from database.plc_operation_job_manager import (
+    PLCOperationJobManager
+)
+
 from database.plc_tag_manager import (
     PLCTagManager
 )
@@ -80,15 +84,23 @@ class PLCBufferOperationManager:
 
         username,
 
-        user_role
+        user_role,
+
+        status_job_id=None
 
     ):
 
         result = (
             PLCBufferOperationManager
             .make_result(
-                operation
+                operation,
+                status_job_id=status_job_id
             )
+        )
+
+        PLCBufferOperationManager.publish_status(
+            result=result,
+            status_override="RUNNING"
         )
 
         if operation not in PLCBufferOperationManager.OPERATIONS:
@@ -694,6 +706,47 @@ class PLCBufferOperationManager:
             90
         )
 
+        fresh_values = RecipeParameterValueManager.get_recipe_values(
+            recipe["id"]
+        )
+
+        database_compare = (
+            PLCBufferOperationManager
+            .compare_recipe_values_to_payload(
+                recipe_values=fresh_values,
+                payload=source_payload
+            )
+        )
+
+        result["payload_compare"] = database_compare
+
+        result["metrics"]["verified_parameters"] = (
+            database_compare["checked_parameters"]
+        )
+
+        if not database_compare["matched"]:
+
+            PLCBufferOperationManager.fail_with_step(
+                result,
+                "Database readback verification",
+                (
+                    "Database values do not match CRS_Recipe_Data after "
+                    "Recipe Save."
+                ),
+                96
+            )
+
+        PLCBufferOperationManager.add_step(
+            result,
+            "Database readback verified",
+            "OK",
+            (
+                f"{database_compare['checked_parameters']} database "
+                "parameters match CRS_Recipe_Data."
+            ),
+            96
+        )
+
         PLCBufferOperationManager.add_step(
             result,
             "Save complete",
@@ -1195,7 +1248,9 @@ class PLCBufferOperationManager:
     @staticmethod
     def make_result(
 
-        operation
+        operation,
+
+        status_job_id=None
 
     ):
 
@@ -1247,7 +1302,9 @@ class PLCBufferOperationManager:
                 "mismatches": []
             },
 
-            "download_id": None
+            "download_id": None,
+
+            "status_job_id": status_job_id
 
         }
 
@@ -1282,6 +1339,11 @@ class PLCBufferOperationManager:
 
         result["current_step"] = label
 
+        PLCBufferOperationManager.publish_status(
+            result=result,
+            status_override="RUNNING"
+        )
+
     @staticmethod
     def finish(
 
@@ -1311,6 +1373,62 @@ class PLCBufferOperationManager:
         elif result["progress_percent"] == 0:
 
             result["progress_percent"] = 5
+
+        PLCBufferOperationManager.publish_status(
+            result=result,
+            completed=True
+        )
+
+    @staticmethod
+    def publish_status(
+
+        result,
+
+        status_override=None,
+
+        completed=False
+
+    ):
+
+        status_job_id = result.get(
+            "status_job_id"
+        )
+
+        if not status_job_id:
+
+            return
+
+        try:
+
+            PLCOperationJobManager.update_from_result(
+
+                job_id=status_job_id,
+
+                result=result,
+
+                status_override=status_override,
+
+                completed=completed
+
+            )
+
+        except Exception as exc:
+
+            warning = (
+                f"Operation status update failed: {exc}"
+            )
+
+            if warning not in result.get(
+                "warnings",
+                []
+            ):
+
+                result.setdefault(
+                    "warnings",
+                    []
+                ).append(
+                    warning
+                )
 
     @staticmethod
     def fail_with_step(
@@ -1977,6 +2095,91 @@ class PLCBufferOperationManager:
                     result["mismatches"].append(
                         f"Index {index}: expected {expected_value}, actual {actual_value}"
                     )
+
+        return result
+
+    @staticmethod
+    def compare_recipe_values_to_payload(
+
+        recipe_values,
+
+        payload
+
+    ):
+
+        result = {
+
+            "checked": True,
+
+            "matched": True,
+
+            "mismatch_count": 0,
+
+            "checked_parameters": 0,
+
+            "mismatches": []
+
+        }
+
+        for row in recipe_values:
+
+            plc_index = row[
+                "plc_array_index"
+            ]
+
+            if plc_index is None:
+
+                continue
+
+            plc_index = int(
+                plc_index
+            )
+
+            if (
+                plc_index < 0
+                or
+                plc_index >= PLCBufferOperationManager.PAYLOAD_SIZE
+            ):
+
+                continue
+
+            result["checked_parameters"] += 1
+
+            expected_value = float(
+                payload[
+                    plc_index
+                ]
+            )
+
+            actual_value = float(
+                row[
+                    "parameter_value"
+                ]
+            )
+
+            if abs(
+                expected_value
+                -
+                actual_value
+            ) <= 0.0001:
+
+                continue
+
+            result["matched"] = False
+
+            result["mismatch_count"] += 1
+
+            if len(
+                result["mismatches"]
+            ) < 8:
+
+                result["mismatches"].append(
+                    (
+                        f"Tag {row['tag_index']} / index {plc_index}: "
+                        f"CRS_Recipe_Data {expected_value}, "
+                        f"database {actual_value}"
+                    )
+                )
 
         return result
 
