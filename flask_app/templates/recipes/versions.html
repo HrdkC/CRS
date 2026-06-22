@@ -6,224 +6,119 @@ Recipe Versions
 
 {% block content %}
 
-<div class="page-header">
-
-    <h1>
-
-        Recipe Versions
-
-    </h1>
-
-    <p>
-
-        Active Recipe Version Records
-
-    </p>
-
-</div>
-
-<div class="dashboard-card">
-
-    <table>
-
-        <tr>
-
-            <td>
-
-                Recipe Code
-
-            </td>
-
-            <td>
-
-                <strong>
-
-                    {{ recipe.recipe_code }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-
-                Recipe Name
-
-            </td>
-
-            <td>
-
-                <strong>
-
-                    {{ recipe.recipe_name }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-    </table>
-
-</div>
-
-<br>
-
-<a
-    href="/recipe-editor/{{ recipe.id }}"
-    class="quick-card"
-    style="
-        display:inline-block;
-        width:auto;
-        padding:12px 20px;
-    "
->
-
-    Back To Recipe Editor
-
-</a>
-
-<br><br>
-
-<div class="dashboard-card">
-
-    <div class="table-container">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Version</th>
-
-                    <th>Status</th>
-
-                    <th>Usage</th>
-
-                    <th>Parameters</th>
-
-                    <th>Created By</th>
-
-                    <th>Created At</th>
-
-                    <th>Updated At</th>
-
-                    <th>Action</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for row in versions %}
-
-                <tr>
-
-                    <td>
-
-                        <strong>
-
-                            V{{ row.version }}
-
-                        </strong>
-
-                    </td>
-
-                    <td>
-
-                        {{ row.status }}
-
-                    </td>
-
-                    <td>
-
-                        {% if row.version_usage_status == "CURRENT_RELEASED" %}
-
-                            Current Production Version
-
-                        {% elif row.version_usage_status == "HISTORY_RELEASED" %}
-
-                            Historical Released Version
-
-                        {% elif row.version_usage_status == "DRAFT_REVISION" %}
-
-                            Draft Production Revision
-
-                        {% elif row.version_usage_status == "REVISION_REVIEW" %}
-
-                            Revision Under Review
-
-                        {% else %}
-
-                            {{ row.version_usage_status }}
-
-                        {% endif %}
-
-                    </td>
-
-                    <td>
-
-                        {{ row.parameter_count }}
-
-                    </td>
-
-                    <td>
-
-                        {{ row.created_by }}
-                        
-                    </td>
-
-                    <td>
-
-                        {{ row.created_at_ist }}
-                        
-                    </td>
-
-                    <td>
-
-                        {{ row.updated_at_ist }}
-                        
-                    </td>
-
-                    <td>
-
-                        <a href="/recipe-editor/{{ row.id }}">
-
-                            Open Editor
-
-                        </a>
-
-                        {% if row.id == recipe.id %}
-
-                            &nbsp;|&nbsp;
-                            Viewing
-
-                        {% endif %}
-
-                        {% if row.is_current_released %}
-
-                            &nbsp;|&nbsp;
-                            Current Production
-
-                        {% endif %}
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Recipe History</span>
+            <h1>Recipe Versions</h1>
+            <p>
+                {{ recipe.recipe_code }}
+                <span>|</span>
+                {{ recipe.recipe_name }}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipe-editor/{{ recipe.id }}" class="crs-btn crs-btn-soft">
+                Back To Editor
+            </a>
+        </div>
     </div>
 
-</div>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Versions</span>
+            <strong>{{ versions|length }}</strong>
+            <small>Total version records</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Current</span>
+            <strong>{{ versions|selectattr("version_usage_status", "equalto", "CURRENT_RELEASED")|list|length }}</strong>
+            <small>Current production version</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Released</span>
+            <strong>{{ versions|selectattr("status", "equalto", "RELEASED")|list|length }}</strong>
+            <small>Released records</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Selected</span>
+            <strong>V{{ recipe.version }}</strong>
+            <small>Currently opened editor version</small>
+        </div>
+    </div>
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Version Records</span>
+                <p>Historical versions are retained for traceability and comparison.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Version</th>
+                        <th>Status</th>
+                        <th>Usage</th>
+                        <th>Parameters</th>
+                        <th>Created By</th>
+                        <th>Created At</th>
+                        <th>Updated At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in versions %}
+                    <tr>
+                        <td><span class="tag-pill">V{{ row.version }}</span></td>
+                        <td>
+                            {% if row.status == "RELEASED" %}
+                            <span class="status-badge status-success">Released</span>
+                            {% elif row.status == "REVIEW" %}
+                            <span class="status-badge status-warning">Review</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">{{ row.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.version_usage_status == "CURRENT_RELEASED" %}
+                            <span class="status-badge status-info">Current Production</span>
+                            {% elif row.version_usage_status == "HISTORY_RELEASED" %}
+                            <span class="status-badge status-neutral">Historical</span>
+                            {% elif row.version_usage_status == "DRAFT_REVISION" %}
+                            <span class="status-badge status-warning">Draft Revision</span>
+                            {% elif row.version_usage_status == "REVISION_REVIEW" %}
+                            <span class="status-badge status-warning">Under Review</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">{{ row.version_usage_status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.parameter_count }}</td>
+                        <td>{{ row.created_by }}</td>
+                        <td>{{ row.created_at_ist }}</td>
+                        <td>{{ row.updated_at_ist }}</td>
+                        <td>
+                            <div class="row-actions">
+                                <a href="/recipe-editor/{{ row.id }}" class="row-action primary">Open</a>
+                                {% if row.id == recipe.id %}
+                                <span class="row-action success">Viewing</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="empty-state">No version records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
 
 {% endblock %}

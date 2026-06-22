@@ -6,70 +6,81 @@ Audit History
 
 {% block content %}
 
-<h3>
+<section class="recipe-workbench">
 
-    Audit History
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Traceability</span>
+            <h1>Audit History</h1>
+            <p>User, role, action, source, reason, and timestamp trail for CRS changes.</p>
+        </div>
+    </div>
 
-</h3>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Records</span>
+            <strong>{{ history|length }}</strong>
+            <small>Visible audit events</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Time Zone</span>
+            <strong class="metric-text">IST</strong>
+            <small>Displayed from UTC storage</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Source</span>
+            <strong class="metric-text">CRS</strong>
+            <small>Database and PLC operations</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Retention</span>
+            <strong class="metric-text">Trace</strong>
+            <small>No delete path from UI</small>
+        </div>
+    </div>
 
-<hr>
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Audit Records</span>
+                <p>Use this page to verify who changed what and why.</p>
+            </div>
+        </div>
 
-<table border="1">
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Date/Time (IST)</th>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                        <th>Record</th>
+                        <th>Source</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in history %}
+                    <tr>
+                        <td>{{ row.timestamp_ist }}</td>
+                        <td><strong>{{ row.username }}</strong></td>
+                        <td><span class="status-badge status-neutral">{{ row.role }}</span></td>
+                        <td>{{ row.action }}</td>
+                        <td>{{ row.record_id }}</td>
+                        <td>{{ row.change_source }}</td>
+                        <td>{{ row.reason }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="empty-state">No audit records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-    <tr>
-
-        <th>Date/Time (IST)</th>
-
-        <th>User</th>
-
-        <th>Role</th>
-
-        <th>Action</th>
-
-        <th>Record</th>
-
-        <th>Source</th>
-
-        <th>Reason</th>
-
-    </tr>
-
-    {% for row in history %}
-
-    <tr>
-
-        <td>
-            {{ row.timestamp_ist }}
-        </td>
-
-        <td>
-            {{ row.username }}
-        </td>
-
-        <td>
-            {{ row.role }}
-        </td>
-
-        <td>
-            {{ row.action }}
-        </td>
-
-        <td>
-            {{ row.record_id }}
-        </td>
-
-        <td>
-            {{ row.change_source }}
-        </td>
-
-        <td>
-            {{ row.reason }}
-        </td>
-
-    </tr>
-
-    {% endfor %}
-
-</table>
+</section>
 
 {% endblock %}

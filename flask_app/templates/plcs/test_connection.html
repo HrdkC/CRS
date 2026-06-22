@@ -6,56 +6,60 @@ PLC Connection Test
 
 {% block content %}
 
-<h3>
+<section class="recipe-workbench">
 
-    PLC Connection Test
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">PLC Test</span>
+            <h1>PLC Connection Test</h1>
+            <p>
+                {{ plc.plc_name }}
+                <span>|</span>
+                {{ plc.ip_address }}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/plcs" class="crs-btn crs-btn-soft">Back To PLCs</a>
+        </div>
+    </div>
 
-</h3>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">PLC</span>
+            <strong class="metric-text">{{ plc.plc_name }}</strong>
+            <small>Controller record</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">IP Address</span>
+            <strong class="metric-text">{{ plc.ip_address }}</strong>
+            <small>Network endpoint</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong class="metric-text">{{ status }}</strong>
+            <small>Connection result</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Protocol</span>
+            <strong class="metric-text">EtherNet/IP</strong>
+            <small>ControlLogix connectivity</small>
+        </div>
+    </div>
 
-<p>
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Test Result</span>
+            {% if status and "OK" in status %}
+            <span class="status-badge status-success">OK</span>
+            {% else %}
+            <span class="status-badge status-info">{{ status }}</span>
+            {% endif %}
+        </div>
+        <p class="muted-text">
+            Use Verify for processor, firmware, program, and serial-number checks.
+        </p>
+    </div>
 
-    PLC :
-
-    <b>
-
-        {{ plc.plc_name }}
-
-    </b>
-
-</p>
-
-<p>
-
-    IP Address :
-
-    <b>
-
-        {{ plc.ip_address }}
-
-    </b>
-
-</p>
-
-<p>
-
-    Status :
-
-    <b>
-
-        {{ status }}
-
-    </b>
-
-</p>
-
-<p>
-
-    <a href="/plcs">
-
-        Back To PLC Registry
-
-    </a>
-
-</p>
+</section>
 
 {% endblock %}

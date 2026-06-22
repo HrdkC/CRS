@@ -6,85 +6,56 @@ Create Machine
 
 {% block content %}
 
-<h3>
-    Create Machine
-</h3>
+<section class="recipe-workbench">
 
-{% if error %}
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Machine Registry</span>
+            <h1>Create Machine</h1>
+            <p>Machine code is globally unique and stages are created automatically.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/machines" class="crs-btn crs-btn-soft">Back To Machines</a>
+        </div>
+    </div>
 
-<p style="color:red;">
+    {% if error %}
+    <div class="workbench-card">
+        <div class="panel-heading"><span>Error</span><span class="status-badge status-danger">Blocked</span></div>
+        <p>{{ error }}</p>
+    </div>
+    {% endif %}
 
-    {{ error }}
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Machine Details</span>
+            <span class="status-badge status-info">Auto Stages</span>
+        </div>
 
-</p>
+        <form method="POST" class="parameter-edit-form">
+            <label>
+                <span>Machine Code</span>
+                <input type="text" name="machine_code" required>
+            </label>
+            <label>
+                <span>TBM Family</span>
+                <select name="family_id" required>
+                    {% for family in families %}
+                    <option value="{{ family.id }}">{{ family.family_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Description</span>
+                <input type="text" name="description">
+            </label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Create Machine</button>
+                <a href="/machines" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
 
-{% endif %}
-
-<form method="POST">
-
-    <p>
-
-        Machine Code
-
-        <br>
-
-        <input
-            type="text"
-            name="machine_code"
-            required
-        >
-
-    </p>
-
-    <p>
-
-        TBM Family
-
-        <br>
-
-        <select
-            name="family_id"
-            required
-        >
-
-            {% for family in families %}
-
-            <option value="{{ family.id }}">
-
-                {{ family.family_name }}
-
-            </option>
-
-            {% endfor %}
-
-        </select>
-
-    </p>
-
-    <p>
-
-        Description
-
-        <br>
-
-        <textarea
-            name="description"
-            rows="4"
-            cols="50"
-        ></textarea>
-
-    </p>
-
-    <p>
-
-        <button type="submit">
-
-            Create Machine
-
-        </button>
-
-    </p>
-
-</form>
+</section>
 
 {% endblock %}

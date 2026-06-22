@@ -6,138 +6,168 @@ PLC Registry
 
 {% block content %}
 
-<h3>
-    PLC Registry
-</h3>
-
-<p>
-
-    <a href="/plcs/create">
-
-        Create PLC
-
-    </a>
-
-</p>
-
-<table border="1">
-
-    <tr>
-
-        <th>ID</th>
-
-        <th>PLC Name</th>
-
-        <th>IP Address</th>
-
-        <th>Controller</th>
-
-        <th>Status</th>
-
-        <th>Actions</th>
-
-    </tr>
-
-    {% for plc in plcs %}
-
-    <tr>
-
-        <td>{{ plc.id }}</td>
-
-        <td>{{ plc.plc_name }}</td>
-
-        <td>{{ plc.ip_address }}</td>
-
-        <td>{{ plc.controller_type }}</td>
-
-        <td>
-
-            {% if plc.active == 1 %}
-
-                Active
-
-            {% else %}
-
-                Disabled
-
-            {% endif %}
-
-        </td>
-
-        <td>
-
-            {% if plc.active == 1 %}
-
-                <a href="/plcs/edit/{{ plc.id }}">
-
-                    Edit
-
-                </a>
-
-                |
-
-                <a href="/plcs/test_connection/{{ plc.id }}">
-
-                    Test
-
-                </a>
-
-                |
-
-                <a href="/plcs/verify/{{ plc.id }}">
-
-                    Verify
-
-                </a>
-
-                |
-
-                <a href="/plcs/disable/{{ plc.id }}">
-
-                    Disable
-
-                </a>
-
-            {% else %}
-
-                <a href="/plcs/edit/{{ plc.id }}">
-
-                    Edit
-
-                </a>
-
-                |
-
-                <a href="/plcs/test_connection/{{ plc.id }}">
-
-                    Test
-
-                </a>
-
-                |
-
-                <a href="/plcs/verify/{{ plc.id }}">
-
-                    Verify
-
-                </a>
-
-                |
-
-                <a href="/plcs/enable/{{ plc.id }}">
-
-                    Enable
-
-                </a>
-
-            {% endif %}
-
-        </td>
-
-    </tr>
-
-    {% endfor %}
-
-</table>
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+
+        <div class="workbench-title">
+
+            <span class="section-kicker">
+                PLC Registry
+            </span>
+
+            <h1>
+                PLC Registry
+            </h1>
+
+            <p>
+                Machine-stage PLC identity, communication endpoint, and verification actions.
+            </p>
+
+        </div>
+
+        <div class="workbench-actions">
+
+            <a
+                href="/plcs/create"
+                class="crs-btn crs-btn-primary"
+            >
+                Create PLC
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="metric-grid">
+
+        <div class="metric-card">
+            <span class="metric-label">PLCs</span>
+            <strong>{{ plcs|length }}</strong>
+            <small>Total registered controllers</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Active</span>
+            <strong>{{ plcs|selectattr("active", "equalto", 1)|list|length }}</strong>
+            <small>Available for online operations</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Disabled</span>
+            <strong>{{ plcs|rejectattr("active", "equalto", 1)|list|length }}</strong>
+            <small>Blocked from new operations</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Protocol</span>
+            <strong class="metric-text">pycomm3</strong>
+            <small>Allen Bradley ControlLogix</small>
+        </div>
+
+    </div>
+
+    <div class="workbench-card data-workbench">
+
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Controller Records</span>
+                <p>Test and verify PLCs before mapping recipe tags.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+
+            <table class="professional-table registry-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>PLC Name</th>
+                        <th>IP Address</th>
+                        <th>Controller</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for plc in plcs %}
+
+                    <tr>
+                        <td>
+                            <span class="tag-pill">{{ plc.id }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ plc.plc_name }}</strong>
+                        </td>
+                        <td>{{ plc.ip_address }}</td>
+                        <td>{{ plc.controller_type }}</td>
+                        <td>
+                            {% if plc.active == 1 %}
+                            <span class="status-badge status-success">Active</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <a
+                                    href="/plcs/edit/{{ plc.id }}"
+                                    class="row-action primary"
+                                >
+                                    Edit
+                                </a>
+                                <a
+                                    href="/plcs/test_connection/{{ plc.id }}"
+                                    class="row-action"
+                                >
+                                    Test
+                                </a>
+                                <a
+                                    href="/plcs/verify/{{ plc.id }}"
+                                    class="row-action"
+                                >
+                                    Verify
+                                </a>
+                                {% if plc.active == 1 %}
+                                <a
+                                    href="/plcs/disable/{{ plc.id }}"
+                                    class="row-action danger"
+                                >
+                                    Disable
+                                </a>
+                                {% else %}
+                                <a
+                                    href="/plcs/enable/{{ plc.id }}"
+                                    class="row-action success"
+                                >
+                                    Enable
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            No PLCs configured.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
 
 {% endblock %}

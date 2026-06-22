@@ -6,151 +6,150 @@ TBM Families
 
 {% block content %}
 
-<div class="page-header">
+<section class="recipe-workbench">
 
-    <h1>
+    <div class="workbench-hero">
 
-        TBM Families
+        <div class="workbench-title">
 
-    </h1>
+            <span class="section-kicker">
+                Master Registry
+            </span>
 
-    <p>
+            <h1>
+                TBM Families
+            </h1>
 
-        Manage PCR TBM Family Registry
+            <p>
+                PCR TBM family grouping for machine ownership and cloning reference.
+            </p>
 
-    </p>
+        </div>
 
-</div>
+        <div class="workbench-actions">
 
-<div class="page-toolbar">
+            <a
+                href="/families/create"
+                class="crs-btn crs-btn-primary"
+            >
+                Create Family
+            </a>
 
-    <a
-        href="/families/create"
-        class="btn-primary"
-    >
+        </div>
 
-        + Create Family
+    </div>
 
-    </a>
+    <div class="metric-grid">
 
-</div>
+        <div class="metric-card">
+            <span class="metric-label">Total Families</span>
+            <strong>{{ families|length }}</strong>
+            <small>Registered TBM families</small>
+        </div>
 
-<div class="table-container">
+        <div class="metric-card">
+            <span class="metric-label">Active</span>
+            <strong>{{ families|selectattr("active", "equalto", 1)|list|length }}</strong>
+            <small>Available for configuration</small>
+        </div>
 
-    <table>
+        <div class="metric-card">
+            <span class="metric-label">Disabled</span>
+            <strong>{{ families|rejectattr("active", "equalto", 1)|list|length }}</strong>
+            <small>Hidden from new use</small>
+        </div>
 
-        <thead>
+        <div class="metric-card">
+            <span class="metric-label">Owner</span>
+            <strong class="metric-text">Engineering</strong>
+            <small>Maintained as master data</small>
+        </div>
 
-            <tr>
+    </div>
 
-                <th>ID</th>
+    <div class="workbench-card data-workbench">
 
-                <th>Family Name</th>
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Family Records</span>
+                <p>Use disable instead of delete to preserve recipe traceability.</p>
+            </div>
+        </div>
 
-                <th>Description</th>
+        <div class="professional-table-wrap registry-table-wrap">
 
-                <th>Created By</th>
+            <table class="professional-table registry-table">
 
-                <th>Status</th>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Family Name</th>
+                        <th>Description</th>
+                        <th>Created By</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
 
-                <th>Actions</th>
+                <tbody>
 
-            </tr>
+                    {% for family in families %}
 
-        </thead>
-
-        <tbody>
-
-            {% for family in families %}
-
-            <tr>
-
-                <td>
-
-                    {{ family.id }}
-
-                </td>
-
-                <td>
-
-                    <strong>
-
-                        {{ family.family_name }}
-
-                    </strong>
-
-                </td>
-
-                <td>
-
-                    {{ family.description }}
-
-                </td>
-
-                <td>
-
-                    {{ family.created_by }}
-
-                </td>
-
-                <td>
-
-                    {% if family.active == 1 %}
-
-                        <span class="status-active">
-
-                            Active
-
-                        </span>
+                    <tr>
+                        <td>
+                            <span class="tag-pill">{{ family.id }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ family.family_name }}</strong>
+                        </td>
+                        <td>{{ family.description }}</td>
+                        <td>{{ family.created_by }}</td>
+                        <td>
+                            {% if family.active == 1 %}
+                            <span class="status-badge status-success">Active</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                {% if family.active == 1 %}
+                                <a
+                                    href="/families/disable/{{ family.id }}"
+                                    class="row-action danger"
+                                >
+                                    Disable
+                                </a>
+                                {% else %}
+                                <a
+                                    href="/families/enable/{{ family.id }}"
+                                    class="row-action success"
+                                >
+                                    Enable
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
 
                     {% else %}
 
-                        <span class="status-inactive">
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            No TBM families configured.
+                        </td>
+                    </tr>
 
-                            Inactive
+                    {% endfor %}
 
-                        </span>
+                </tbody>
 
-                    {% endif %}
+            </table>
 
-                </td>
+        </div>
 
-                <td>
+    </div>
 
-                    {% if family.active == 1 %}
-
-                        <a
-                            href="/families/disable/{{ family.id }}"
-                            class="action-link-danger"
-                        >
-
-                            Disable
-
-                        </a>
-
-                    {% else %}
-
-                        <a
-                            href="/families/enable/{{ family.id }}"
-                            class="action-link-success"
-                        >
-
-                            Enable
-
-                        </a>
-
-                    {% endif %}
-
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-        </tbody>
-
-    </table>
-
-</div>
+</section>
 
 {% endblock %}

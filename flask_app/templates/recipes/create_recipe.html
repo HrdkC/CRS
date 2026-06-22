@@ -6,36 +6,47 @@ Create Recipe
 
 {% block content %}
 
-<h3>Create Recipe</h3>
+<section class="recipe-workbench">
 
-<hr>
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Production Recipe</span>
+            <h1>Create Recipe</h1>
+            <p>
+                Machine ID {{ machine_id }}
+                <span>|</span>
+                Stage ID {{ stage_id }}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipes/{{ machine_id }}/{{ stage_id }}" class="crs-btn crs-btn-soft">
+                Back To Recipes
+            </a>
+        </div>
+    </div>
 
-<form method="POST">
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Recipe Identity</span>
+            <span class="status-badge status-info">Draft</span>
+        </div>
 
-    <p>Recipe Code</p>
+        <form method="POST" class="parameter-edit-form">
+            <label>
+                <span>Recipe Code</span>
+                <input type="text" name="recipe_code" required>
+            </label>
+            <label>
+                <span>Recipe Name</span>
+                <input type="text" name="recipe_name" required>
+            </label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Create Recipe</button>
+                <a href="/recipes/{{ machine_id }}/{{ stage_id }}" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
 
-    <input
-        type="text"
-        name="recipe_code"
-        required
-    >
-
-    <p>Recipe Name</p>
-
-    <input
-        type="text"
-        name="recipe_name"
-        required
-    >
-
-    <br><br>
-
-    <button type="submit">
-
-        Create Recipe
-
-    </button>
-
-</form>
+</section>
 
 {% endblock %}

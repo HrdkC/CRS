@@ -6,80 +6,77 @@ Active Sessions
 
 {% block content %}
 
-<h3>
+<section class="recipe-workbench">
 
-    Active Sessions
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Security</span>
+            <h1>Active Sessions</h1>
+            <p>Currently logged-in CRS users, workstation source, and client IP visibility.</p>
+        </div>
+    </div>
 
-</h3>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Active Sessions</span>
+            <strong>{{ sessions|length }}</strong>
+            <small>Currently open logins</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong class="metric-text">Live</strong>
+            <small>Session table snapshot</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Scope</span>
+            <strong class="metric-text">Plant LAN</strong>
+            <small>Client workstation visibility</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Action</span>
+            <strong class="metric-text">Monitor</strong>
+            <small>Forced logout can be added later</small>
+        </div>
+    </div>
 
-<hr>
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Session Records</span>
+                <p>Use this page to check active login activity before maintenance.</p>
+            </div>
+        </div>
 
-<p>
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Login Time (IST)</th>
+                        <th>Client IP</th>
+                        <th>Workstation</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in sessions %}
+                    <tr>
+                        <td><strong>{{ row.username }}</strong></td>
+                        <td>{{ row.login_time_ist }}</td>
+                        <td>{{ row.client_ip }}</td>
+                        <td>{{ row.workstation_name }}</td>
+                        <td><span class="status-badge status-success">Active</span></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-state">No active sessions.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-    Total Active Sessions:
-
-    <strong>
-
-        {{ sessions|length }}
-
-    </strong>
-
-</p>
-
-<table border="1">
-
-    <tr>
-
-        <th>
-            Username
-        </th>
-
-        <th>
-            Login Time (IST)
-        </th>
-
-        <th>
-            Client IP
-        </th>
-
-        <th>
-            Workstation
-        </th>
-
-        <th>
-            Status
-        </th>
-
-    </tr>
-
-    {% for row in sessions %}
-
-    <tr>
-
-        <td>
-            {{ row.username }}
-        </td>
-
-        <td>
-            {{ row.login_time_ist }}
-        </td>
-
-        <td>
-            {{ row.client_ip }}
-        </td>
-
-        <td>
-            {{ row.workstation_name }}
-        </td>
-
-        <td>
-            Active
-        </td>
-
-    </tr>
-
-    {% endfor %}
-
-</table>
+</section>
 
 {% endblock %}

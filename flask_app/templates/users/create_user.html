@@ -6,74 +6,49 @@ Create User
 
 {% block content %}
 
-<h3>
+<section class="recipe-workbench">
 
-    Create User
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Administration</span>
+            <h1>Create User</h1>
+            <p>Create a CRS account with role-based access.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/users" class="crs-btn crs-btn-soft">Back To Users</a>
+        </div>
+    </div>
 
-</h3>
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>User Details</span>
+            <span class="status-badge status-info">Admin</span>
+        </div>
 
-<hr>
+        <form method="POST" class="parameter-edit-form">
+            <label>
+                <span>Username</span>
+                <input type="text" name="username" required>
+            </label>
+            <label>
+                <span>Password</span>
+                <input type="password" name="password" required>
+            </label>
+            <label>
+                <span>Role</span>
+                <select name="role">
+                    <option>ADMIN</option>
+                    <option>EDITOR</option>
+                    <option>VIEWER</option>
+                </select>
+            </label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Create User</button>
+                <a href="/users" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
 
-<form method="POST">
-
-    <p>
-
-        Username
-
-    </p>
-
-    <input
-        type="text"
-        name="username"
-        required
-    >
-
-    <p>
-
-        Password
-
-    </p>
-
-    <input
-        type="password"
-        name="password"
-        required
-    >
-
-    <p>
-
-        Role
-
-    </p>
-
-    <select
-        name="role"
-    >
-
-        <option>
-            ADMIN
-        </option>
-
-        <option>
-            EDITOR
-        </option>
-
-        <option>
-            VIEWER
-        </option>
-
-    </select>
-
-    <br><br>
-
-    <button
-        type="submit"
-    >
-
-        Create User
-
-    </button>
-
-</form>
+</section>
 
 {% endblock %}

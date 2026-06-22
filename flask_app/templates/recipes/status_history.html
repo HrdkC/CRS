@@ -6,92 +6,77 @@ Recipe Status History
 
 {% block content %}
 
-<div class="page-header">
+<section class="recipe-workbench">
 
-    <h1>
-
-        Recipe Status History
-
-    </h1>
-
-    <p>
-
-        Complete Approval Workflow Audit Trail
-
-    </p>
-
-</div>
-
-<div class="dashboard-card">
-
-    <div class="table-container">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Old Status</th>
-
-                    <th>New Status</th>
-
-                    <th>Changed By</th>
-
-                    <th>Changed At</th>
-
-                    <th>Remarks</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for row in history %}
-
-                <tr>
-
-                    <td>
-
-                        {{ row.old_status }}
-
-                    </td>
-
-                    <td>
-
-                        {{ row.new_status }}
-
-                    </td>
-
-                    <td>
-
-                        {{ row.changed_by }}
-
-                    </td>
-
-                    <td>
-
-                        {{ row.changed_at_ist }}
-
-                    </td>
-
-                    <td>
-
-                        {{ row.remarks }}
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Approval Audit</span>
+            <h1>Recipe Status History</h1>
+            <p>Complete recipe approval workflow transition trail.</p>
+        </div>
     </div>
 
-</div>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Transitions</span>
+            <strong>{{ history|length }}</strong>
+            <small>Status changes recorded</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Audit</span>
+            <strong class="metric-text">Workflow</strong>
+            <small>Draft, review, approval, release</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Time Zone</span>
+            <strong class="metric-text">IST</strong>
+            <small>Displayed for operators</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Trace</span>
+            <strong class="metric-text">User</strong>
+            <small>Changed by is captured</small>
+        </div>
+    </div>
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Status Transitions</span>
+                <p>Each row shows old status, new status, user, time, and remarks.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Old Status</th>
+                        <th>New Status</th>
+                        <th>Changed By</th>
+                        <th>Changed At</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in history %}
+                    <tr>
+                        <td><span class="status-badge status-neutral">{{ row.old_status }}</span></td>
+                        <td><span class="status-badge status-info">{{ row.new_status }}</span></td>
+                        <td><strong>{{ row.changed_by }}</strong></td>
+                        <td>{{ row.changed_at_ist }}</td>
+                        <td>{{ row.remarks }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-state">No status history found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
 
 {% endblock %}

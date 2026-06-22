@@ -92,6 +92,15 @@ def register_recipe_routes(app):
             recipe_code
         )
 
+        if not recipe:
+
+            flash(
+                "Recipe not found.",
+                "error"
+            )
+
+            return redirect("/recipes")
+
         return render_template(
             "recipes/recipe_details.html",
             recipe=recipe
@@ -149,6 +158,15 @@ def register_recipe_routes(app):
         recipe = RecipeManager.get_recipe(
             recipe_code
         )
+
+        if not recipe:
+
+            flash(
+                "Recipe not found.",
+                "error"
+            )
+
+            return redirect("/recipes")
 
         versions = RecipeManager.get_recipe_versions(
             recipe_code

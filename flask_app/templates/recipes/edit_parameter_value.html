@@ -6,104 +6,57 @@ Edit Parameter Value
 
 {% block content %}
 
-<h3>
+<section class="recipe-workbench">
 
-    Edit Parameter Value
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Parameter Value</span>
+            <h1>Edit Parameter Value</h1>
+            <p>
+                {{ recipe_code }}
+                <span>|</span>
+                Version V{{ selected_version }}
+                <span>|</span>
+                {{ parameter.parameter_name }}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipes/{{ recipe_code }}/parameters?version={{ selected_version }}" class="crs-btn crs-btn-soft">
+                Cancel
+            </a>
+        </div>
+    </div>
 
-</h3>
+    <div class="metric-grid">
+        <div class="metric-card"><span class="metric-label">Current</span><strong>{{ parameter.parameter_value }}</strong><small>{{ parameter.unit }}</small></div>
+        <div class="metric-card"><span class="metric-label">Minimum</span><strong>{{ parameter.min_value }}</strong><small>Allowed lower limit</small></div>
+        <div class="metric-card"><span class="metric-label">Maximum</span><strong>{{ parameter.max_value }}</strong><small>Allowed upper limit</small></div>
+        <div class="metric-card"><span class="metric-label">PLC Tag</span><strong class="metric-text">{{ parameter.plc_tag_name }}</strong><small>Mapped tag</small></div>
+    </div>
 
-<hr>
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Save Value</span>
+            <span class="status-badge status-info">Validated</span>
+        </div>
+        <form method="POST" class="parameter-edit-form">
+            <label>
+                <span>Value</span>
+                <input
+                    type="number"
+                    step="any"
+                    name="parameter_value"
+                    value="{{ parameter.parameter_value }}"
+                    required
+                >
+            </label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Save Value</button>
+                <a href="/recipes/{{ recipe_code }}/parameters?version={{ selected_version }}" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
 
-<p>
-
-    Recipe:
-    <strong>{{ recipe_code }}</strong>
-
-</p>
-
-<p>
-
-    Version:
-    <strong>{{ selected_version }}</strong>
-
-</p>
-
-<p>
-
-    <strong>
-        Parameter:
-    </strong>
-
-    {{ parameter.parameter_name }}
-
-</p>
-
-<p>
-
-    <strong>
-        PLC Tag:
-    </strong>
-
-    {{ parameter.plc_tag_name }}
-
-</p>
-
-<p>
-
-    <strong>
-        Unit:
-    </strong>
-
-    {{ parameter.unit }}
-
-</p>
-
-<p>
-
-    <strong>
-        Allowed Range:
-    </strong>
-
-    {{ parameter.min_value }}
-
-    -
-
-    {{ parameter.max_value }}
-
-    {{ parameter.unit }}
-
-</p>
-
-<form method="POST">
-
-    <p>
-
-        Value
-
-    </p>
-
-    <input
-        type="number"
-        step="any"
-        name="parameter_value"
-        value="{{ parameter.parameter_value }}"
-        required
-    >
-
-    <br><br>
-
-    <button type="submit">
-
-        Save Value
-
-    </button>
-
-    <a href="/recipes/{{ recipe_code }}/parameters">
-
-        Cancel
-
-    </a>
-
-</form>
+</section>
 
 {% endblock %}

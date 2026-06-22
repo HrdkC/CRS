@@ -6,242 +6,112 @@ Apollo CRS Dashboard
 
 {% block content %}
 
-<div class="page-header">
+<section class="recipe-workbench">
 
-    <h1>
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Plant Overview</span>
+            <h1>CRS Dashboard</h1>
+            <p>Apollo Tyres Ltd. | PCR Limda Plant | Centralized Recipe System</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/machines" class="crs-btn crs-btn-primary">Machines</a>
+            <a href="/plcs" class="crs-btn crs-btn-soft">PLC Registry</a>
+            <a href="/stages" class="crs-btn crs-btn-soft">Stages</a>
+        </div>
+    </div>
 
-        CRS Dashboard
+    <div class="metric-grid">
+        <a href="/families" class="metric-card metric-link">
+            <span class="metric-label">TBM Families</span>
+            <strong>{{ family_count if family_count is defined else "-" }}</strong>
+            <small>Machine family groups</small>
+        </a>
+        <a href="/machines" class="metric-card metric-link">
+            <span class="metric-label">Machines</span>
+            <strong>{{ machine_count }}</strong>
+            <small>Registered TBMs</small>
+        </a>
+        <a href="/plcs" class="metric-card metric-link">
+            <span class="metric-label">Plant PLCs</span>
+            <strong>{{ plc_count }}</strong>
+            <small>PLC records</small>
+        </a>
+        <a href="/plcs" class="metric-card metric-link">
+            <span class="metric-label">Configured PLCs</span>
+            <strong>{{ configured_plc_count }}</strong>
+            <small>Machine-stage assigned</small>
+        </a>
+    </div>
 
-    </h1>
+    <div class="metric-grid">
+        <a href="/stages" class="metric-card metric-link">
+            <span class="metric-label">Stages</span>
+            <strong>{{ stage_count }}</strong>
+            <small>First and second stage records</small>
+        </a>
+        {% if session.get("role") == "ADMIN" %}
+        <a href="/users" class="metric-card metric-link">
+            <span class="metric-label">Users</span>
+            <strong>{{ user_count }}</strong>
+            <small>CRS user accounts</small>
+        </a>
+        {% endif %}
+        <a href="/engineering-units" class="metric-card metric-link">
+            <span class="metric-label">Units</span>
+            <strong class="metric-text">Master</strong>
+            <small>Engineering unit setup</small>
+        </a>
+        <a href="/audit-history" class="metric-card metric-link">
+            <span class="metric-label">Audit</span>
+            <strong class="metric-text">Trace</strong>
+            <small>System change history</small>
+        </a>
+    </div>
 
-    <p>
-
-        Apollo Tyres Ltd. • PCR Limda Plant
-
-    </p>
-
-</div>
-
-<div class="card-grid">
-
-    <a
-        href="/families"
-        class="dashboard-card"
-    >
-
-        <h3>
-
-            TBM Families
-
-        </h3>
-
-        <div class="dashboard-value">
-
-            {{ family_count
-               if family_count is defined
-               else "-" }}
-
+    <div class="insight-layout">
+        <div class="workbench-card">
+            <div class="panel-heading">
+                <span>Standard Workflow</span>
+                <span class="status-badge status-info">Machine First</span>
+            </div>
+            <div class="flow-map dashboard-flow">
+                <div class="flow-row">
+                    <div class="flow-node">TBM Family</div>
+                    <div class="flow-arrow">-></div>
+                    <div class="flow-node">Machine</div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-node">Machine Stage</div>
+                    <div class="flow-arrow">-></div>
+                    <div class="flow-node">PLC Registry</div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-node">Template Parameters</div>
+                    <div class="flow-arrow">-></div>
+                    <div class="flow-node">Recipe</div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-node">Validation</div>
+                    <div class="flow-arrow">-></div>
+                    <div class="flow-node">PLC Buffer Operation</div>
+                </div>
+            </div>
         </div>
 
-    </a>
-
-    <a
-        href="/machines"
-        class="dashboard-card"
-    >
-
-        <h3>
-
-            Machines
-
-        </h3>
-
-        <div class="dashboard-value">
-
-            {{ machine_count }}
-
+        <div class="workbench-card compact-summary">
+            <div class="panel-heading">
+                <span>Operating Principles</span>
+            </div>
+            <div class="summary-list">
+                <div><span>Database</span><strong>Master</strong></div>
+                <div><span>Download</span><strong>No Partial</strong></div>
+                <div><span>Audit</span><strong>Required</strong></div>
+                <div><span>Time</span><strong>IST Display</strong></div>
+            </div>
         </div>
+    </div>
 
-    </a>
-
-    <a
-        href="/plcs"
-        class="dashboard-card"
-    >
-
-        <h3>
-
-            Plant PLCs
-
-        </h3>
-
-        <div class="dashboard-value">
-
-            {{ plc_count }}
-
-        </div>
-
-    </a>
-
-    <a
-        href="/plcs"
-        class="dashboard-card"
-    >
-
-        <h3>
-
-            Configured PLCs
-
-        </h3>
-
-        <div class="dashboard-value">
-
-            {{ configured_plc_count }}
-
-        </div>
-
-    </a>
-
-    <a href="/stages" class="dashboard-card">
-
-        <h3>
-
-            Stages
-
-        </h3>
-
-        <div class="dashboard-value">
-
-            {{ stage_count }}
-
-        </div>
-
-    </a>
-
-    {% if session.get("role") == "ADMIN" %}
-
-    <a
-        href="/users"
-        class="dashboard-card"
-    >
-
-        <h3>
-
-            Users
-
-        </h3>
-
-        <div class="dashboard-value">
-
-            {{ user_count }}
-
-        </div>
-
-    </a>
-
-    {% endif %}
-
-</div>
-
-<br>
-
-<h2>
-
-    Quick Access
-
-</h2>
-
-<div class="card-grid">
-
-    <a
-        href="/families"
-        class="quick-card"
-    >
-
-        TBM Families
-
-    </a>
-
-    <a
-        href="/machines"
-        class="quick-card"
-    >
-
-        Machines
-
-    </a>
-
-    <a
-        href="/plcs"
-        class="quick-card"
-    >
-
-        PLC Registry
-
-    </a>
-
-    <a
-        href="/stages"
-        class="quick-card"
-    >
-
-        Stages
-
-    </a>
-
-    <a
-        href="/engineering-units"
-        class="quick-card"
-    >
-
-        Engineering Units
-
-    </a>
-
-</div>
-
-<br>
-
-<div class="dashboard-card">
-
-    <h2>
-
-        Welcome to Apollo CRS
-
-    </h2>
-
-    <br>
-
-    <p>
-
-        Centralized Recipe System for PCR Tyre Building Machines.
-
-    </p>
-
-    <br>
-
-    <p>
-
-        Standard Workflow
-
-    </p>
-
-    <br>
-
-    <h3>
-
-        TBM Family
-        →
-        Machine
-        →
-        Stage
-        →
-        Recipe
-        →
-        PLC Upload
-
-    </h3>
-
-</div>
+</section>
 
 {% endblock %}

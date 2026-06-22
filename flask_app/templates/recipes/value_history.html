@@ -6,202 +6,86 @@ Parameter History
 
 {% block content %}
 
-<div class="page-header">
-
-    <h1>
-
-        Parameter Change History
-
-    </h1>
-
-    <p>
-
-        Complete Audit Trail For Recipe Parameter
-
-    </p>
-
-</div>
-
-<div class="dashboard-card">
-
-    <table>
-
-        <tr>
-
-            <td>
-
-                Tag Index
-
-            </td>
-
-            <td>
-
-                <strong>
-
-                    {{ value.tag_index }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-
-                Parameter Name
-
-            </td>
-
-            <td>
-
-                <strong>
-
-                    {{ value.parameter_name }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-
-                Current Value
-
-            </td>
-
-            <td>
-
-                <strong>
-
-                    {{ value.parameter_value }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>
-
-                Unit
-
-            </td>
-
-            <td>
-
-                {{ value.unit }}
-
-            </td>
-
-        </tr>
-
-    </table>
-
-</div>
-
-<br>
-
-<div class="dashboard-card">
-
-    <h3>
-
-        Audit History
-
-    </h3>
-
-    <br>
-
-    <div class="table-container">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>ID</th>
-
-                    <th>Old Value</th>
-
-                    <th>New Value</th>
-
-                    <th>Changed By</th>
-
-                    <th>Changed At</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for row in history %}
-
-                <tr>
-
-                    <td>
-
-                        {{ row.id }}
-
-                    </td>
-
-                    <td>
-
-                        {{ row.old_value }}
-
-                    </td>
-
-                    <td>
-
-                        {{ row.new_value }}
-
-                    </td>
-
-                    <td>
-
-                        {{ row.changed_by }}
-
-                    </td>
-
-                    <td>
-
-                        {{ row.changed_at_ist }}
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Parameter Audit</span>
+            <h1>Parameter Change History</h1>
+            <p>
+                Tag {{ value.tag_index }}
+                <span>|</span>
+                {{ value.parameter_name }}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipe-editor/{{ value.recipe_id }}" class="crs-btn crs-btn-soft">
+                Back To Editor
+            </a>
+        </div>
     </div>
 
-</div>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Current Value</span>
+            <strong>{{ value.parameter_value }}</strong>
+            <small>{{ value.unit }}</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Tag</span>
+            <strong>{{ value.tag_index }}</strong>
+            <small>PLC array mapping index</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Changes</span>
+            <strong>{{ history|length }}</strong>
+            <small>Recorded value updates</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Trace</span>
+            <strong class="metric-text">Audit</strong>
+            <small>User and timestamp captured</small>
+        </div>
+    </div>
 
-<br>
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Value Change Records</span>
+                <p>Old and new values are retained for parameter-level traceability.</p>
+            </div>
+        </div>
 
-<a
-    href="/recipe-editor/{{ value.recipe_id }}"
-    class="quick-card"
-    style="
-        display:inline-block;
-        width:auto;
-        padding:12px 20px;
-    "
->
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                        <th>Changed By</th>
+                        <th>Changed At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in history %}
+                    <tr>
+                        <td><span class="tag-pill">{{ row.id }}</span></td>
+                        <td>{{ row.old_value }}</td>
+                        <td><strong>{{ row.new_value }}</strong></td>
+                        <td>{{ row.changed_by }}</td>
+                        <td>{{ row.changed_at_ist }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-state">No parameter change history found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-    Back To Recipe Editor
-
-</a>
+</section>
 
 {% endblock %}

@@ -6,95 +6,110 @@ Check PLC Connection
 
 {% block content %}
 
-<h3>
-    Check PLC Connection
-</h3>
+<section class="recipe-workbench">
 
-<table border="1">
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">PLC Check</span>
+            <h1>Check PLC Connection</h1>
+            <p>
+                {{ plc.plc_name }}
+                <span>|</span>
+                {{ plc.ip_address }}:44818
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/plcs" class="crs-btn crs-btn-soft">Back To PLCs</a>
+        </div>
+    </div>
 
-    <tr>
-        <th>PLC Name</th>
-        <td>{{ plc.plc_name }}</td>
-    </tr>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">PLC</span>
+            <strong class="metric-text">{{ plc.plc_name }}</strong>
+            <small>Controller record</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">IP Address</span>
+            <strong class="metric-text">{{ plc.ip_address }}</strong>
+            <small>Network endpoint</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Port</span>
+            <strong>44818</strong>
+            <small>EtherNet/IP</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Method</span>
+            <strong class="metric-text">TCP</strong>
+            <small>Connectivity check</small>
+        </div>
+    </div>
 
-    <tr>
-        <th>IP Address</th>
-        <td>{{ plc.ip_address }}</td>
-    </tr>
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Run Connection Check</span>
+            <span class="status-badge status-info">Reason Required</span>
+        </div>
 
-    <tr>
-        <th>Port</th>
-        <td>44818</td>
-    </tr>
+        <form class="parameter-edit-form" method="POST">
+            <label>
+                <span>Reason</span>
+                <input
+                    type="text"
+                    name="reason"
+                    required
+                    placeholder="Reason for checking PLC connection"
+                >
+            </label>
+            <div class="form-action-row">
+                <button class="crs-btn crs-btn-primary" type="submit">
+                    Check Connection
+                </button>
+                <a href="/plcs" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
 
-</table>
+    {% if result %}
 
-<form method="POST">
-
-    <p>
-
-        Reason
-
-        <br>
-
-        <textarea
-            name="reason"
-            rows="3"
-            cols="50"
-            required
-        ></textarea>
-
-    </p>
-
-    <p>
-
-        <button type="submit">
-
-            Check Connection
-
-        </button>
-
-        <a href="/plcs">
-
-            Back
-
-        </a>
-
-    </p>
-
-</form>
-
-{% if result %}
-
-<h4>
-    Result
-</h4>
-
-<table border="1">
-
-    <tr>
-        <th>Status</th>
-        <td>
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Connection Result</span>
+                <p>Network check result captured for operator visibility.</p>
+            </div>
             {% if result.reachable %}
-                Reachable
+            <span class="status-badge status-success">Reachable</span>
             {% else %}
-                Not Reachable
+            <span class="status-badge status-danger">Not Reachable</span>
             {% endif %}
-        </td>
-    </tr>
+        </div>
 
-    <tr>
-        <th>Message</th>
-        <td>{{ result.message }}</td>
-    </tr>
+        <div class="summary-list result-summary">
+            <div>
+                <span>Status</span>
+                <strong>
+                    {% if result.reachable %}
+                    Reachable
+                    {% else %}
+                    Not Reachable
+                    {% endif %}
+                </strong>
+            </div>
+            <div>
+                <span>Message</span>
+                <strong>{{ result.message }}</strong>
+            </div>
+            <div>
+                <span>Elapsed</span>
+                <strong>{{ result.elapsed_ms }} ms</strong>
+            </div>
+        </div>
+    </div>
 
-    <tr>
-        <th>Elapsed</th>
-        <td>{{ result.elapsed_ms }} ms</td>
-    </tr>
+    {% endif %}
 
-</table>
-
-{% endif %}
+</section>
 
 {% endblock %}

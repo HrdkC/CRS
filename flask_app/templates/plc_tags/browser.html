@@ -144,7 +144,7 @@ PLC Tag Browser
 
 {% if online_result %}
 
-<div class="dashboard-card">
+<div class="workbench-card">
 
     <h3>
 
@@ -190,7 +190,7 @@ PLC Tag Browser
 
     <br>
 
-    <table>
+    <table class="professional-table registry-table">
 
         <tr>
 
@@ -316,7 +316,9 @@ PLC Tag Browser
 
     <br>
 
-    <table border="1" width="100%">
+    <div class="professional-table-wrap registry-table-wrap">
+
+    <table class="professional-table registry-table">
 
         <tr>
 
@@ -434,7 +436,7 @@ PLC Tag Browser
                         value="{% if online_tag.array_end_index is not none %}{{ online_tag.array_end_index }}{% endif %}"
                     >
 
-                    <button type="submit">
+                    <button type="submit" class="row-action primary">
 
                         Select
 
@@ -450,6 +452,8 @@ PLC Tag Browser
 
     </table>
 
+    </div>
+
     {% endif %}
 
 </div>
@@ -458,7 +462,7 @@ PLC Tag Browser
 
 {% endif %}
 
-<div class="dashboard-card">
+<div class="workbench-card">
 
     <h3>
 
@@ -605,7 +609,7 @@ PLC Tag Browser
             value="{{ purpose_to_assign }}"
         >
 
-        <button type="submit">
+        <button type="submit" class="crs-btn crs-btn-primary">
 
             Add Tag
 
@@ -631,7 +635,9 @@ PLC Tag Browser
 
 </p>
 
-<table border="1" width="100%">
+<div class="professional-table-wrap registry-table-wrap">
+
+<table class="professional-table registry-table">
 
     <tr>
 
@@ -719,7 +725,7 @@ PLC Tag Browser
 
             {% if tag.is_array %}
 
-                <a href="/plc-tags/array/{{ tag.id }}">
+                <a href="/plc-tags/array/{{ tag.id }}" class="row-action primary">
 
                     Browse
 
@@ -753,7 +759,7 @@ PLC Tag Browser
                         value="/plc-tags/{{ machine_id }}/{{ stage_id }}?purpose={{ purpose_to_assign }}&search={{ search_text }}&bool_only={{ bool_only }}"
                     >
 
-                    <button type="submit">
+                    <button type="submit" class="row-action primary">
 
                         Select
 
@@ -770,6 +776,8 @@ PLC Tag Browser
     {% endfor %}
 
 </table>
+
+</div>
 
 <script>
 

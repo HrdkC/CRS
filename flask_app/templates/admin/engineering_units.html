@@ -6,104 +6,109 @@ Engineering Units
 
 {% block content %}
 
-<h3>
+<section class="recipe-workbench">
 
-    Engineering Units
-
-</h3>
-
-<hr>
-
-<p>
-
-    <a href="/engineering-units/create">
-
-        Add Unit
-
-    </a>
-
-</p>
-
-<table border="1">
-
-    <tr>
-
-        <th>Unit Code</th>
-
-        <th>Description</th>
-
-        <th>Status</th>
-
-        <th>Actions</th>
-
-    </tr>
-
-    {% for unit in units %}
-
-    <tr>
-
-        <td>
-
-            {{ unit.unit_code }}
-
-        </td>
-
-        <td>
-
-            {{ unit.description }}
-
-        </td>
-
-        <td>
-
-            {% if unit.is_active == 1 %}
-
-                Active
-
-            {% else %}
-
-                Inactive
-
-            {% endif %}
-
-        </td>
-
-        <td>
-
-            <a href="/engineering-units/{{ unit.id }}/edit">
-
-                Edit
-
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Master Data</span>
+            <h1>Engineering Units</h1>
+            <p>Approved unit list used by recipe parameters and validation screens.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/engineering-units/create" class="crs-btn crs-btn-primary">
+                Add Unit
             </a>
+        </div>
+    </div>
 
-            |
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Units</span>
+            <strong>{{ units|length }}</strong>
+            <small>Total configured units</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Active</span>
+            <strong>{{ units|selectattr("is_active", "equalto", 1)|list|length }}</strong>
+            <small>Allowed for parameters</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Disabled</span>
+            <strong>{{ units|rejectattr("is_active", "equalto", 1)|list|length }}</strong>
+            <small>Retained for history</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Owner</span>
+            <strong class="metric-text">Engineering</strong>
+            <small>Controlled master list</small>
+        </div>
+    </div>
 
-            {% if unit.is_active == 1 %}
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Unit Records</span>
+                <p>Disable unused units instead of deleting them.</p>
+            </div>
+        </div>
 
-                <a href="/engineering-units/{{ unit.id }}/disable",
-                onclick="return confirm('Disable this engineering unit?')">
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Unit Code</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for unit in units %}
+                    <tr>
+                        <td><strong>{{ unit.unit_code }}</strong></td>
+                        <td>{{ unit.description }}</td>
+                        <td>
+                            {% if unit.is_active == 1 %}
+                            <span class="status-badge status-success">Active</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <a href="/engineering-units/{{ unit.id }}/edit" class="row-action primary">
+                                    Edit
+                                </a>
+                                {% if unit.is_active == 1 %}
+                                <a
+                                    href="/engineering-units/{{ unit.id }}/disable"
+                                    class="row-action danger"
+                                    onclick="return confirm('Disable this engineering unit?')"
+                                >
+                                    Disable
+                                </a>
+                                {% else %}
+                                <a
+                                    href="/engineering-units/{{ unit.id }}/enable"
+                                    class="row-action success"
+                                    onclick="return confirm('Enable this engineering unit?')"
+                                >
+                                    Enable
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="empty-state">No engineering units configured.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-                    Disable
-
-                </a>
-
-            {% else %}
-
-                <a href="/engineering-units/{{ unit.id }}/enable",
-                onclick="return confirm('Enable this engineering unit?')">
-
-                    Enable
-
-                </a>
-
-            {% endif %}
-
-        </td>
-
-    </tr>
-
-    {% endfor %}
-
-</table>
+</section>
 
 {% endblock %}

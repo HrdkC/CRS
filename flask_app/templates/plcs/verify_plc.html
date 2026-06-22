@@ -6,56 +6,70 @@ PLC Verification
 
 {% block content %}
 
-<h3>
-    PLC Verification
-</h3>
+<section class="recipe-workbench">
 
-<hr>
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">PLC Verification</span>
+            <h1>{{ plc.plc_name }}</h1>
+            <p>Processor, firmware, program, and serial number verification.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/plcs" class="crs-btn crs-btn-soft">Back To PLCs</a>
+        </div>
+    </div>
 
-<p>
-    PLC :
-    <b>{{ plc.plc_name }}</b>
-</p>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong class="metric-text">{{ result.verification_status }}</strong>
+            <small>Verification result</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Processor</span>
+            <strong class="metric-text">{{ result.actual_processor }}</strong>
+            <small>Expected {{ result.expected_processor }}</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Firmware</span>
+            <strong class="metric-text">{{ result.actual_firmware }}</strong>
+            <small>Expected {{ result.expected_firmware }}</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Program</span>
+            <strong class="metric-text">{{ result.program_name }}</strong>
+            <small>Online PLC program</small>
+        </div>
+    </div>
 
-<p>
-    Expected Processor :
-    <b>{{ result.expected_processor }}</b>
-</p>
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Verification Details</span>
+                <p>Mismatch here should block final production deployment until reviewed.</p>
+            </div>
+            {% if result.verification_status == "VERIFIED" %}
+            <span class="status-badge status-success">Verified</span>
+            {% elif result.verification_status == "OFFLINE" %}
+            <span class="status-badge status-danger">Offline</span>
+            {% else %}
+            <span class="status-badge status-warning">{{ result.verification_status }}</span>
+            {% endif %}
+        </div>
 
-<p>
-    Actual Processor :
-    <b>{{ result.actual_processor }}</b>
-</p>
+        <div class="summary-list result-summary">
+            {% if result.message is defined %}
+            <div><span>Message</span><strong>{{ result.message }}</strong></div>
+            {% endif %}
+            <div><span>Expected Processor</span><strong>{{ result.expected_processor }}</strong></div>
+            <div><span>Actual Processor</span><strong>{{ result.actual_processor }}</strong></div>
+            <div><span>Expected Firmware</span><strong>{{ result.expected_firmware }}</strong></div>
+            <div><span>Actual Firmware</span><strong>{{ result.actual_firmware }}</strong></div>
+            <div><span>Program Name</span><strong>{{ result.program_name }}</strong></div>
+            <div><span>Serial Number</span><strong>{{ result.serial_number }}</strong></div>
+        </div>
+    </div>
 
-<p>
-    Expected Firmware :
-    <b>{{ result.expected_firmware }}</b>
-</p>
-
-<p>
-    Actual Firmware :
-    <b>{{ result.actual_firmware }}</b>
-</p>
-
-<p>
-    Program Name :
-    <b>{{ result.program_name }}</b>
-</p>
-
-<p>
-    Serial Number :
-    <b>{{ result.serial_number }}</b>
-</p>
-
-<p>
-    Verification Status :
-    <b>{{ result.verification_status }}</b>
-</p>
-
-<hr>
-
-<a href="/plcs">
-    Back To PLC Registry
-</a>
+</section>
 
 {% endblock %}

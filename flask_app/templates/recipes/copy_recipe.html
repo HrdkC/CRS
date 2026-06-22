@@ -6,62 +6,47 @@ Copy Recipe
 
 {% block content %}
 
-<h3>
+<section class="recipe-workbench">
 
-Copy Recipe
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Recipe Copy</span>
+            <h1>Copy Recipe</h1>
+            <p>
+                Source {{ recipe.recipe_code }}
+                <span>|</span>
+                {{ recipe.recipe_name }}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipes/{{ recipe.machine_id }}/{{ recipe.stage_id }}" class="crs-btn crs-btn-soft">
+                Back To Recipes
+            </a>
+        </div>
+    </div>
 
-</h3>
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>New Recipe Identity</span>
+            <span class="status-badge status-info">Copy</span>
+        </div>
 
-<hr>
+        <form method="POST" class="parameter-edit-form">
+            <label>
+                <span>New Recipe Code</span>
+                <input type="text" name="recipe_code" required>
+            </label>
+            <label>
+                <span>New Recipe Name</span>
+                <input type="text" name="recipe_name" required>
+            </label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Create Copy</button>
+                <a href="/recipes/{{ recipe.machine_id }}/{{ recipe.stage_id }}" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
 
-<p>
-
-Source Recipe:
-
-<b>
-
-{{ recipe.recipe_code }}
-
-</b>
-
-</p>
-
-<form method="POST">
-
-    <p>
-
-        New Recipe Code
-
-        <br>
-
-        <input
-            type="text"
-            name="recipe_code"
-            required
-        >
-
-    </p>
-
-    <p>
-
-        New Recipe Name
-
-        <br>
-
-        <input
-            type="text"
-            name="recipe_name"
-            required
-        >
-
-    </p>
-
-    <button type="submit">
-
-        Create Copy
-
-    </button>
-
-</form>
+</section>
 
 {% endblock %}

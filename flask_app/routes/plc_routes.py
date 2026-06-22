@@ -4,7 +4,8 @@ from flask import (
     render_template,
     request,
     redirect,
-    session
+    session,
+    flash
 )
 
 from database.plc_program_history_manager import (
@@ -333,18 +334,54 @@ def register_plc_routes(app):
             )
         )
 
-        result = (
-            PLCVerificationManager
-            .verify_plc(
+        if not plc:
 
-                plc_id,
-
-                plc[
-                    "ip_address"
-                ]
-
+            flash(
+                "PLC record not found.",
+                "error"
             )
-        )
+
+            return redirect("/plcs")
+
+        try:
+
+            result = (
+                PLCVerificationManager
+                .verify_plc(
+
+                    plc_id,
+
+                    plc[
+                        "ip_address"
+                    ]
+
+                )
+            )
+
+        except Exception as exc:
+
+            result = {
+
+                "expected_processor": "-",
+
+                "actual_processor": "-",
+
+                "expected_firmware": "-",
+
+                "actual_firmware": "-",
+
+                "program_name": "-",
+
+                "serial_number": "-",
+
+                "verification_status": "OFFLINE",
+
+                "message": (
+                    "PLC verification could not connect: "
+                    f"{exc}"
+                )
+
+            }
 
         return render_template(
 

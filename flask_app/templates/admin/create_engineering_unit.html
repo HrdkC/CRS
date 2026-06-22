@@ -6,48 +6,34 @@ Add Engineering Unit
 
 {% block content %}
 
-<h3>
+<section class="recipe-workbench">
 
-    Add Engineering Unit
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Master Data</span>
+            <h1>Add Engineering Unit</h1>
+            <p>Create an approved unit for recipe parameter definitions.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/engineering-units" class="crs-btn crs-btn-soft">Back To Units</a>
+        </div>
+    </div>
 
-</h3>
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Unit Details</span>
+            <span class="status-badge status-info">Engineering</span>
+        </div>
+        <form method="POST" class="parameter-edit-form">
+            <label><span>Unit Code</span><input type="text" name="unit_code" required></label>
+            <label><span>Description</span><input type="text" name="description" required></label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Save Unit</button>
+                <a href="/engineering-units" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
 
-<hr>
-
-<form method="POST">
-
-    <p>
-
-        Unit Code
-
-    </p>
-
-    <input
-        type="text"
-        name="unit_code"
-        required
-    >
-
-    <p>
-
-        Description
-
-    </p>
-
-    <input
-        type="text"
-        name="description"
-        required
-    >
-
-    <br><br>
-
-    <button type="submit">
-
-        Save
-
-    </button>
-
-</form>
+</section>
 
 {% endblock %}
