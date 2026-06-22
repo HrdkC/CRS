@@ -71,6 +71,41 @@ Phase Control Modified
 
 Program Revision Changed
 
+
+Released Recipe Edit Audit
+--------------------------
+
+Current RELEASED recipe values are editable with audit.
+
+This is an intentional operator-friendly project decision.
+
+Every edit to the current released recipe must capture:
+
+- Recipe ID
+- Recipe Code
+- Version
+- Machine
+- Stage
+- Parameter ID
+- Parameter Name
+- Old Value
+- New Value
+- Changed By
+- Changed At
+- Reason / Remarks
+- Source
+
+Allowed sources include:
+
+- MANUAL_EDIT
+- PLC_UPLOAD
+- IMPORT
+- SYSTEM
+
+Historical released versions must remain locked and read-only.
+
+No historical version value should be modified directly.
+
 Audit Retention
 ---------------
 

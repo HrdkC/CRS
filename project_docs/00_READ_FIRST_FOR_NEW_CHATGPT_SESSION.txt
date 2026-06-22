@@ -114,6 +114,27 @@ Templates define structure.
 
 --------------------------------------------------
 
+Current Released Recipe Editing
+
+Current RELEASED recipe values are editable with audit for operator ease of use.
+
+Historical released versions remain locked and read-only.
+
+Create Version is used for major revisions, trial work, or controlled recipe development, but it is not mandatory for every small current-production correction.
+
+Required controls:
+
+- Min/max validation
+- Old value / new value audit
+- Changed by
+- Changed at
+- Reason / remarks
+- Machine
+- Stage
+- Source
+
+--------------------------------------------------
+
 Validation
 
 No partial recipe download allowed.
