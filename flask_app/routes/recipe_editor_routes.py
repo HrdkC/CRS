@@ -46,8 +46,8 @@ from database.plc_download_preparation_manager import (
     PLCDownloadPreparationManager
 )
 
-from database.plc_download_tag_readiness_manager import (
-    PLCDownloadTagReadinessManager
+from database.plc_buffer_operation_manager import (
+    PLCBufferOperationManager
 )
 
 def register_recipe_editor_routes(app):
@@ -899,6 +899,29 @@ def register_recipe_editor_routes(app):
 
             return redirect("/")
 
+        if (
+            recipe.get(
+                "version_usage_status"
+            )
+            ==
+            "HISTORY_RELEASED"
+            and
+            recipe.get(
+                "current_released_recipe_id"
+            )
+        ):
+
+            flash(
+                "Historical released recipe opened. "
+                "Buffer operations moved to current production version.",
+                "error"
+            )
+
+            return redirect(
+                "/recipe-editor/download-preparation/"
+                f"{recipe['current_released_recipe_id']}"
+            )
+
         download_eligibility = (
             RecipeDownloadEligibilityManager
             .check_eligibility(
@@ -910,24 +933,6 @@ def register_recipe_editor_routes(app):
             PLCDownloadPreparationManager
             .get_available_plcs(
                 recipe_id
-            )
-        )
-
-        tag_readiness = (
-            PLCDownloadTagReadinessManager
-            .check_readiness(
-                recipe_id
-            )
-        )
-
-        write_plan = (
-            PLCDownloadTagReadinessManager
-            .build_write_plan(
-
-                tag_readiness=tag_readiness,
-
-                payload_size=PLCDownloadPreparationManager.PAYLOAD_SIZE
-
             )
         )
 
@@ -943,16 +948,24 @@ def register_recipe_editor_routes(app):
             ""
         )
 
-        dry_run_result = None
+        if (
+            not selected_plc_id
+            and
+            available_plcs
+        ):
 
-        manual_mode_result = None
+            selected_plc_id = str(
+                available_plcs[0]["id"]
+            )
+
+        operation_result = None
 
         if request.method == "POST":
 
             if not selected_plc_id:
 
                 flash(
-                    "Select PLC for dry run check",
+                    "Select PLC for recipe buffer operation",
                     "error"
                 )
 
@@ -970,34 +983,44 @@ def register_recipe_editor_routes(app):
 
                 action = request.form.get(
                     "action",
-                    "dry_run"
+                    ""
+                ) or request.form.get(
+                    "selected_action",
+                    ""
                 )
 
-                if action == "manual_mode_check":
+                operation_result = (
+                    PLCBufferOperationManager
+                    .run_operation(
 
-                    manual_mode_result = (
-                        PLCDownloadPreparationManager
-                        .check_manual_mode(
+                        recipe_id=recipe_id,
 
-                            recipe_id=recipe_id,
+                        plc_id=selected_plc_id_int,
 
-                            plc_id=selected_plc_id_int
+                        operation=action,
 
+                        username=session.get(
+                            "username"
+                        ),
+
+                        user_role=session.get(
+                            "role",
+                            "PRODUCTION"
                         )
+
                     )
+                )
 
-                else:
+        operation_context = (
+            PLCBufferOperationManager
+            .get_operation_context(
 
-                    dry_run_result = (
-                        PLCDownloadPreparationManager
-                        .dry_run(
+                recipe_id=recipe_id,
 
-                            recipe_id=recipe_id,
+                plc_id=selected_plc_id
 
-                            plc_id=selected_plc_id_int
-
-                        )
-                    )
+            )
+        )
 
         return render_template(
 
@@ -1009,16 +1032,12 @@ def register_recipe_editor_routes(app):
 
             available_plcs=available_plcs,
 
-            tag_readiness=tag_readiness,
-
-            write_plan=write_plan,
-
             selected_plc_id=str(
                 selected_plc_id
             ),
 
-            dry_run_result=dry_run_result,
+            operation_context=operation_context,
 
-            manual_mode_result=manual_mode_result
+            operation_result=operation_result
 
         )

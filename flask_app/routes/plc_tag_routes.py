@@ -6,12 +6,20 @@ from flask import (
     flash
 )
 
+from urllib.parse import (
+    urlencode
+)
+
 from database.parameter_definition_manager import (
     ParameterDefinitionManager
 )
 
 from database.plc_tag_manager import (
     PLCTagManager
+)
+
+from database.plc_online_tag_browser_manager import (
+    PLCOnlineTagBrowserManager
 )
 
 
@@ -49,6 +57,11 @@ def register_plc_tag_routes(app):
             ""
         ).strip()
 
+        online_search = request.args.get(
+            "online_search",
+            ""
+        ).strip() == "1"
+
         if (
             purpose_to_assign
             and
@@ -79,6 +92,36 @@ def register_plc_tag_routes(app):
 
         )
 
+        active_plc = (
+            PLCOnlineTagBrowserManager
+            .get_active_plc(
+
+                machine_id=machine_id,
+
+                stage_id=stage_id
+
+            )
+        )
+
+        online_result = None
+
+        if online_search:
+
+            online_result = (
+                PLCOnlineTagBrowserManager
+                .search_online_tags(
+
+                    machine_id=machine_id,
+
+                    stage_id=stage_id,
+
+                    search_text=search_text,
+
+                    bool_only=bool_only == "1"
+
+                )
+            )
+
         return render_template(
 
             "plc_tags/browser.html",
@@ -99,6 +142,12 @@ def register_plc_tag_routes(app):
             ),
 
             bool_only=bool_only,
+
+            online_search=online_search,
+
+            active_plc=active_plc,
+
+            online_result=online_result,
 
             tags=tags
 
@@ -308,6 +357,163 @@ def register_plc_tag_routes(app):
             request.referrer
             or
             f"/plc-tags/{machine_id}/{stage_id}"
+        )
+
+    @app.route(
+        "/plc-tags/select-online/<int:machine_id>/<int:stage_id>",
+        methods=["POST"]
+    )
+    def plc_tag_select_online(
+
+        machine_id,
+
+        stage_id
+
+    ):
+
+        if not session.get(
+            "username"
+        ):
+
+            return redirect("/")
+
+        tag_name = request.form.get(
+            "tag_name",
+            ""
+        ).strip()
+
+        tag_purpose = request.form.get(
+            "tag_purpose",
+            ""
+        ).strip().upper()
+
+        if not tag_name:
+
+            flash(
+                "Online PLC tag name is required",
+                "error"
+            )
+
+            return redirect(
+                request.referrer
+                or
+                f"/plc-tags/{machine_id}/{stage_id}"
+            )
+
+        try:
+
+            tag_id, created = PLCTagManager.upsert_tag(
+
+                machine_id=machine_id,
+
+                stage_id=stage_id,
+
+                tag_name=tag_name,
+
+                tag_type=request.form.get(
+                    "tag_type",
+                    ""
+                ).strip().upper(),
+
+                is_array=int(
+                    request.form.get(
+                        "is_array",
+                        "0"
+                    )
+                ),
+
+                array_size=(
+                    int(
+                        request.form[
+                            "array_size"
+                        ]
+                    )
+                    if request.form.get(
+                        "array_size"
+                    )
+                    else
+                    None
+                ),
+
+                array_start_index=(
+                    int(
+                        request.form[
+                            "array_start_index"
+                        ]
+                    )
+                    if request.form.get(
+                        "array_start_index"
+                    )
+                    else
+                    None
+                ),
+
+                array_end_index=(
+                    int(
+                        request.form[
+                            "array_end_index"
+                        ]
+                    )
+                    if request.form.get(
+                        "array_end_index"
+                    )
+                    else
+                    None
+                ),
+
+                description="Imported from online PLC tag search",
+
+                created_by=session.get(
+                    "username"
+                ),
+
+                tag_purpose=tag_purpose
+                if tag_purpose
+                else
+                None
+
+            )
+
+            if created:
+
+                flash(
+                    f"PLC tag {tag_name} added to CRS.",
+                    "success"
+                )
+
+            else:
+
+                flash(
+                    f"PLC tag {tag_name} updated in CRS.",
+                    "success"
+                )
+
+        except Exception as ex:
+
+            flash(
+                f"Online PLC tag selection failed: {ex}",
+                "error"
+            )
+
+        redirect_url = (
+            f"/plc-tags/{machine_id}/{stage_id}?"
+            + urlencode(
+                {
+                    "purpose": tag_purpose,
+                    "search": request.form.get(
+                        "search_text",
+                        ""
+                    ),
+                    "bool_only": request.form.get(
+                        "bool_only",
+                        ""
+                    )
+                }
+            )
+        )
+
+        return redirect(
+            redirect_url
         )
 
     @app.route(

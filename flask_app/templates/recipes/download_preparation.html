@@ -1,1107 +1,842 @@
 {% extends "base.html" %}
 
 {% block title %}
-PLC Download Preparation
+Recipe PLC Buffer Operations
 {% endblock %}
 
 {% block content %}
 
-<div class="page-header">
-
-    <h1>
-
-        PLC Download Preparation
-
-    </h1>
-
-    <p>
-
-        Dry Run Only - Real PLC Write Disabled
-
-    </p>
-
-</div>
-
-<div class="dashboard-card">
-
-    <table>
-
-        <tr>
-
-            <td>Recipe Code</td>
-
-            <td>
-
-                <strong>
-
-                    {{ recipe.recipe_code }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Recipe Name</td>
-
-            <td>
-
-                <strong>
-
-                    {{ recipe.recipe_name }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Version</td>
-
-            <td>
-
-                V{{ recipe.version }}
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Status</td>
-
-            <td>
-
-                {{ recipe.status }}
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Usage</td>
-
-            <td>
-
-                {% if recipe.version_usage_status == "CURRENT_RELEASED" %}
-
-                    Current Production Version
-
-                {% elif recipe.version_usage_status == "HISTORY_RELEASED" %}
-
-                    Historical Released Version
-
-                {% elif recipe.version_usage_status == "DRAFT_REVISION" %}
-
-                    Draft Production Revision
-
-                {% else %}
-
-                    {{ recipe.version_usage_status }}
-
-                {% endif %}
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Machine</td>
-
-            <td>
-
-                {{ recipe.machine_code }}
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Stage</td>
-
-            <td>
-
-                {{ recipe.stage_type }}
-
-            </td>
-
-        </tr>
-
-    </table>
-
-</div>
-
-<br>
-
-<a
-    href="/recipe-editor/{{ recipe.id }}"
-    class="quick-card"
-    style="
-        display:inline-block;
-        width:auto;
-        padding:12px 20px;
-    "
->
-
-    Back To Recipe Editor
-
-</a>
-
-<br><br>
-
-<div class="dashboard-card">
-
-    <h3>
-
-        Download Eligibility
-
-    </h3>
-
-    <br>
-
-    <table>
-
-        <tr>
-
-            <td>Status</td>
-
-            <td>
-
-                <strong>
-
-                    {{ download_eligibility.status }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-        {% if download_eligibility.eligible %}
-
-        <tr>
-
-            <td>Result</td>
-
-            <td>
-
-                Recipe is current, released, and validation passed.
-
-            </td>
-
-        </tr>
+<style>
+
+.buffer-shell {
+    display: grid;
+    gap: 16px;
+}
+
+.buffer-hero {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 14px;
+    align-items: stretch;
+}
+
+.buffer-panel {
+    background: #ffffff;
+    border: 1px solid #e5e0ec;
+    border-radius: 8px;
+    box-shadow: 0 12px 30px rgba(60, 30, 90, 0.08);
+    padding: 16px;
+}
+
+.recipe-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.strip-item {
+    border-left: 3px solid #6f2dbd;
+    background: #faf8fd;
+    padding: 10px 12px;
+    min-height: 62px;
+}
+
+.strip-label {
+    color: #5e5870;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.strip-value {
+    color: #162033;
+    font-size: 17px;
+    font-weight: 800;
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.status-ready {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+.status-blocked {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.status-neutral {
+    background: #eef2f7;
+    color: #253044;
+}
+
+.operation-form {
+    box-shadow: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.top-controls {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.button-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.operation-button {
+    border: 0;
+    border-radius: 8px;
+    padding: 13px 12px;
+    font-size: 14px;
+    font-weight: 800;
+    min-height: 48px;
+    cursor: pointer;
+}
+
+.btn-restore {
+    background: #f0ebff;
+    color: #4a178c;
+}
+
+.btn-save {
+    background: #eaf6ff;
+    color: #0f5782;
+}
+
+.btn-download {
+    background: #6f2dbd;
+    color: #ffffff;
+}
+
+.btn-upload {
+    background: #eaf7ef;
+    color: #146236;
+}
+
+.operation-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.flow-map {
+    display: grid;
+    gap: 8px;
+}
+
+.flow-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px;
+    align-items: center;
+    color: #3f3a4f;
+    font-size: 13px;
+}
+
+.flow-node {
+    background: #f8f6fb;
+    border: 1px solid #e6dff1;
+    border-radius: 7px;
+    padding: 9px 10px;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.flow-arrow {
+    color: #6f2dbd;
+    font-weight: 900;
+}
+
+.tag-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.tag-chip {
+    background: #fbfafc;
+    border: 1px solid #e6e1ed;
+    border-radius: 7px;
+    padding: 9px;
+}
+
+.tag-name {
+    font-weight: 800;
+    color: #1b2333;
+    overflow-wrap: anywhere;
+}
+
+.tag-purpose {
+    color: #625a70;
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+.progress-card {
+    display: grid;
+    gap: 12px;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+}
+
+.progress-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #162033;
+}
+
+.progress-percent {
+    font-size: 24px;
+    font-weight: 900;
+    color: #6f2dbd;
+}
+
+.progress-track {
+    height: 12px;
+    background: #ebe7f1;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #6f2dbd, #16a085);
+    border-radius: 999px;
+    transition: width 0.35s ease;
+}
+
+.result-success .progress-fill {
+    background: linear-gradient(90deg, #2e7d32, #16a085);
+}
+
+.result-blocked .progress-fill {
+    background: linear-gradient(90deg, #c62828, #e67e22);
+}
+
+.step-list {
+    display: grid;
+    gap: 8px;
+}
+
+.step-item {
+    display: grid;
+    grid-template-columns: 64px 90px 1fr;
+    gap: 10px;
+    align-items: start;
+    border: 1px solid #ebe6f3;
+    border-radius: 7px;
+    padding: 9px 10px;
+    background: #ffffff;
+}
+
+.step-percent {
+    color: #6f2dbd;
+    font-weight: 900;
+}
+
+.step-state {
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.step-ok {
+    color: #1b7f3a;
+}
+
+.step-failed {
+    color: #b71c1c;
+}
+
+.step-message {
+    color: #514b5f;
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+.compact-details {
+    border: 1px solid #e5e0ec;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #ffffff;
+}
+
+.compact-details summary {
+    cursor: pointer;
+    font-weight: 900;
+    color: #4a178c;
+}
+
+.issue-list {
+    margin: 8px 0 0 18px;
+}
+
+.live-progress {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .buffer-hero,
+    .top-controls,
+    .button-row,
+    .recipe-strip,
+    .tag-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+
+<div class="buffer-shell">
+
+    <div class="page-header">
+
+        <h1>Recipe PLC Buffer Operations</h1>
+
+        <p>
+            Database is master. CRS buffer is
+            <strong>CRS_Recipe_Data</strong>.
+            Test PLC destination is
+            <strong>CRS_Test_Recipe_Data</strong>.
+        </p>
+
+    </div>
+
+    <div class="buffer-hero">
+
+        <div class="buffer-panel">
+
+            <div class="recipe-strip">
+
+                <div class="strip-item">
+                    <div class="strip-label">Recipe</div>
+                    <div class="strip-value">{{ recipe.recipe_code }}</div>
+                </div>
+
+                <div class="strip-item">
+                    <div class="strip-label">Version</div>
+                    <div class="strip-value">V{{ recipe.version }}</div>
+                </div>
+
+                <div class="strip-item">
+                    <div class="strip-label">Status</div>
+                    <div class="strip-value">{{ recipe.status }}</div>
+                </div>
+
+                <div class="strip-item">
+                    <div class="strip-label">Usage</div>
+                    <div class="strip-value">
+                        {% if recipe.version_usage_status == "CURRENT_RELEASED" %}
+                            Current
+                        {% elif recipe.version_usage_status == "HISTORY_RELEASED" %}
+                            Historical
+                        {% elif recipe.version_usage_status == "DRAFT_REVISION" %}
+                            Draft Revision
+                        {% else %}
+                            {{ recipe.version_usage_status }}
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="buffer-panel">
+
+            <div class="progress-header">
+                <div>
+                    <div class="strip-label">Buffer Readiness</div>
+                    <div class="strip-value">
+                        {% if operation_context.status == "READY" %}
+                            <span class="status-pill status-ready">READY</span>
+                        {% else %}
+                            <span class="status-pill status-blocked">NOT READY</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <a
+                    href="/recipe-editor/{{ recipe.id }}"
+                    class="status-pill status-neutral"
+                >
+                    Back To Editor
+                </a>
+            </div>
+
+            {% if operation_context.issues %}
+            <ul class="issue-list">
+                {% for issue in operation_context.issues[:4] %}
+                <li>{{ issue }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="buffer-panel">
+
+        {% if available_plcs %}
+
+        <form
+            method="POST"
+            class="operation-form"
+            id="bufferOperationForm"
+        >
+
+            <input
+                type="hidden"
+                name="selected_action"
+                id="selectedAction"
+                value=""
+            >
+
+            <div class="top-controls">
+
+                <div>
+                    <label>Select PLC</label>
+                    <select name="plc_id" required>
+                        {% for plc in available_plcs %}
+                        <option
+                            value="{{ plc.id }}"
+                            {% if selected_plc_id == plc.id|string %}
+                            selected
+                            {% endif %}
+                        >
+                            {{ plc.plc_name }} - {{ plc.ip_address }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    {% if operation_context.plc %}
+                    <span class="status-pill status-neutral">
+                        {{ operation_context.plc.machine_code }}
+                        /
+                        {{ operation_context.plc.stage_type }}
+                    </span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <div class="button-row">
+
+                <button
+                    class="operation-button btn-restore"
+                    type="submit"
+                    name="action"
+                    value="recipe_restore"
+                    data-loading-title="Recipe Restore"
+                >
+                    Recipe Restore
+                </button>
+
+                <button
+                    class="operation-button btn-save"
+                    type="submit"
+                    name="action"
+                    value="recipe_save"
+                    data-loading-title="Recipe Save"
+                >
+                    Recipe Save
+                </button>
+
+                <button
+                    class="operation-button btn-download"
+                    type="submit"
+                    name="action"
+                    value="download_to_plc"
+                    data-loading-title="Download To PLC"
+                    data-confirm-message="Download CRS_Recipe_Data to CRS_Test_Recipe_Data now?"
+                >
+                    Download To PLC
+                </button>
+
+                <button
+                    class="operation-button btn-upload"
+                    type="submit"
+                    name="action"
+                    value="upload_from_plc"
+                    data-loading-title="Upload From PLC"
+                >
+                    Upload From PLC
+                </button>
+
+            </div>
+
+        </form>
 
         {% else %}
 
-        <tr>
+        <p>No active PLC is registered for this recipe machine and stage.</p>
 
-            <td>Blocked Reason</td>
+        {% endif %}
 
-            <td>
+    </div>
 
-                <ul>
+    <div class="buffer-panel live-progress" id="liveProgress">
 
-                    {% for error in download_eligibility.errors[:10] %}
+        <div class="progress-card">
 
-                    <li>
+            <div class="progress-header">
+                <div class="progress-title" id="liveProgressTitle">
+                    Operation Started
+                </div>
+                <div class="progress-percent" id="liveProgressPercent">
+                    0%
+                </div>
+            </div>
 
-                        {{ error }}
+            <div class="progress-track">
+                <div class="progress-fill" id="liveProgressFill"></div>
+            </div>
 
-                    </li>
+            <div class="step-message" id="liveProgressText">
+                Sending request to backend. PLC checks and validation are running.
+            </div>
 
+        </div>
+
+    </div>
+
+    {% if operation_result %}
+
+    <div
+        id="operationResultPanel"
+        class="buffer-panel {% if operation_result.success %}result-success{% else %}result-blocked{% endif %}"
+    >
+
+        <div class="progress-card">
+
+            <div class="progress-header">
+
+                <div>
+                    <div class="progress-title">
+                        {{ operation_result.title }}
+                    </div>
+                    <div class="step-message">
+                        {{ operation_result.current_step }}
+                    </div>
+                </div>
+
+                <div class="progress-percent">
+                    {{ operation_result.progress_percent }}%
+                </div>
+
+            </div>
+
+            <div class="progress-track">
+                <div
+                    class="progress-fill"
+                    style="width: {{ operation_result.progress_percent }}%;"
+                ></div>
+            </div>
+
+            <div>
+                {% if operation_result.success %}
+                    <span class="status-pill status-ready">SUCCESS</span>
+                {% else %}
+                    <span class="status-pill status-blocked">BLOCKED</span>
+                {% endif %}
+            </div>
+
+            {% if operation_result.steps %}
+            <div class="step-list">
+
+                {% for step in operation_result.steps %}
+                <div class="step-item">
+
+                    <div class="step-percent">
+                        {{ step.percent }}%
+                    </div>
+
+                    <div
+                        class="step-state {% if step.status == 'OK' %}step-ok{% else %}step-failed{% endif %}"
+                    >
+                        {{ step.status }}
+                    </div>
+
+                    <div>
+                        <strong>{{ step.label }}</strong>
+                        <div class="step-message">
+                            {{ step.message }}
+                        </div>
+                    </div>
+
+                </div>
+                {% endfor %}
+
+            </div>
+            {% endif %}
+
+            {% if operation_result.errors %}
+            <details class="compact-details" open>
+                <summary>Blocking Issues</summary>
+                <ul class="issue-list">
+                    {% for error in operation_result.errors[:10] %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+
+            {% if operation_result.payload_compare.mismatches %}
+            <details class="compact-details">
+                <summary>Payload Mismatch Samples</summary>
+                <ul class="issue-list">
+                    {% for mismatch in operation_result.payload_compare.mismatches %}
+                    <li>{{ mismatch }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+
+            {% if operation_result.destination_compare.mismatches %}
+            <details class="compact-details">
+                <summary>Destination Mismatch Samples</summary>
+                <ul class="issue-list">
+                    {% for mismatch in operation_result.destination_compare.mismatches %}
+                    <li>{{ mismatch }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+
+            {% if operation_result.warnings %}
+            <details class="compact-details">
+                <summary>Notes</summary>
+                <ul class="issue-list">
+                    {% for warning in operation_result.warnings %}
+                    <li>{{ warning }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+    <div class="buffer-panel">
+
+        <div class="buffer-hero">
+
+            <div>
+                <h3>Operation Flow</h3>
+                <br>
+                <div class="flow-map">
+                    <div class="flow-row">
+                        <div class="flow-node">Database Recipe</div>
+                        <div class="flow-arrow">-></div>
+                        <div class="flow-node">CRS_Recipe_Data</div>
+                    </div>
+                    <div class="flow-row">
+                        <div class="flow-node">CRS_Recipe_Data</div>
+                        <div class="flow-arrow">-></div>
+                        <div class="flow-node">Database Recipe</div>
+                    </div>
+                    <div class="flow-row">
+                        <div class="flow-node">CRS_Recipe_Data</div>
+                        <div class="flow-arrow">-></div>
+                        <div class="flow-node">CRS_Test_Recipe_Data</div>
+                    </div>
+                    <div class="flow-row">
+                        <div class="flow-node">CRS_Test_Recipe_Data</div>
+                        <div class="flow-arrow">-></div>
+                        <div class="flow-node">CRS_Recipe_Data</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3>Configured Tags</h3>
+                <br>
+                <div class="tag-grid">
+
+                    {% for purpose, tag in operation_context.tags.items() %}
+                    <div class="tag-chip">
+                        <div class="tag-purpose">{{ purpose }}</div>
+                        <div class="tag-name">
+                            {% if tag %}
+                                {{ tag.tag_name }}
+                            {% else %}
+                                Not configured
+                            {% endif %}
+                        </div>
+                    </div>
                     {% endfor %}
 
-                </ul>
+                </div>
+            </div>
 
-            </td>
+        </div>
 
-        </tr>
-
-        {% endif %}
-
-    </table>
+    </div>
 
 </div>
 
-<br>
-
-<div class="dashboard-card">
-
-    <h3>
-
-        PLC Download Tag Readiness
-
-    </h3>
-
-    <br>
-
-    <p>
-
-        PLC tags are maintained per Machine + Stage.
-
-        <a href="/plc-tags/{{ recipe.machine_id }}/{{ recipe.stage_id }}">
-
-            Open PLC Tag Browser
-
-        </a>
-
-    </p>
-
-    <br>
-
-    <table>
-
-        <tr>
-
-            <td>Status</td>
-
-            <td>
-
-                <strong>
-
-                    {{ tag_readiness.status }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-    </table>
-
-    <br>
-
-    <table>
-
-        <tr>
-
-            <th>Required Tag</th>
-
-            <th>Purpose</th>
-
-            <th>Configured Tag</th>
-
-            <th>Expected Type</th>
-
-            <th>Array</th>
-
-            <th>Readiness</th>
-
-            <th>Issue</th>
-
-            <th>Action</th>
-
-        </tr>
-
-        {% for item in tag_readiness.tags %}
-
-        <tr>
-
-            <td>
-
-                {{ item.label }}
-
-            </td>
-
-            <td>
-
-                {{ item.purpose }}
-
-            </td>
-
-            <td>
-
-                {% if item.configured %}
-
-                    {{ item.tag.tag_name }}
-
-                {% else %}
-
-                    -
-
-                {% endif %}
-
-            </td>
-
-            <td>
-
-                {{ item.expected_type }}
-
-            </td>
-
-            <td>
-
-                {% if item.array_required %}
-
-                    Required
-
-                    {% if item.tag %}
-
-                        <br>
-
-                        Size:
-                        {{ item.tag.array_size }}
-
-                    {% endif %}
-
-                {% else %}
-
-                    No
-
-                {% endif %}
-
-            </td>
-
-            <td>
-
-                {% if item.ready %}
-
-                    READY
-
-                {% else %}
-
-                    BLOCKED
-
-                {% endif %}
-
-            </td>
-
-            <td>
-
-                {% if item.issues %}
-
-                    <ul>
-
-                        {% for issue in item.issues %}
-
-                        <li>
-
-                            {{ issue }}
-
-                        </li>
-
-                        {% endfor %}
-
-                    </ul>
-
-                {% else %}
-
-                    -
-
-                {% endif %}
-
-            </td>
-
-            <td>
-
-                <a href="/plc-tags/{{ recipe.machine_id }}/{{ recipe.stage_id }}?purpose={{ item.purpose }}&bool_only={% if item.expected_type == 'BOOL' %}1{% else %}0{% endif %}">
-
-                    Select Tag
-
-                </a>
-
-            </td>
-
-        </tr>
-
-        {% endfor %}
-
-    </table>
-
-</div>
-
-<br>
-
-<div class="dashboard-card">
-
-    <h3>
-
-        PLC Write Plan
-
-    </h3>
-
-    <br>
-
-    <p>
-
-        Plan only. Real PLC write is disabled.
-
-    </p>
-
-    <br>
-
-    <table>
-
-        <tr>
-
-            <td>Status</td>
-
-            <td>
-
-                <strong>
-
-                    {{ write_plan.status }}
-
-                </strong>
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Payload Size</td>
-
-            <td>
-
-                {{ write_plan.payload_size }}
-
-            </td>
-
-        </tr>
-
-    </table>
-
-    <br>
-
-    {% if write_plan.ready %}
-
-    <table>
-
-        <tr>
-
-            <th>Step</th>
-
-            <th>Action</th>
-
-            <th>Purpose</th>
-
-            <th>Configured PLC Tag</th>
-
-            <th>Backend Expression</th>
-
-            <th>Value Source</th>
-
-        </tr>
-
-        {% for step in write_plan.steps %}
-
-        <tr>
-
-            <td>
-
-                {{ step.step_no }}
-
-            </td>
-
-            <td>
-
-                {{ step.action }}
-
-            </td>
-
-            <td>
-
-                {{ step.purpose }}
-
-            </td>
-
-            <td>
-
-                {{ step.tag_name }}
-
-            </td>
-
-            <td>
-
-                {{ step.write_expression }}
-
-            </td>
-
-            <td>
-
-                {{ step.value_source }}
-
-            </td>
-
-        </tr>
-
-        {% endfor %}
-
-    </table>
-
-    {% else %}
-
-    <ul>
-
-        {% for error in write_plan.errors %}
-
-        <li>
-
-            {{ error }}
-
-        </li>
-
-        {% endfor %}
-
-    </ul>
-
-    {% endif %}
-
-</div>
-
-<br>
-
-<div class="dashboard-card">
-
-    <h3>
-
-        Active PLC For This Stage
-
-    </h3>
-
-    <br>
-
-    {% if available_plcs %}
-
-    <form method="POST">
-
-        <label>
-
-            Select PLC
-
-        </label>
-
-        <select
-            name="plc_id"
-            required
-        >
-
-            {% for plc in available_plcs %}
-
-            <option
-                value="{{ plc.id }}"
-                {% if selected_plc_id == plc.id|string %}
-                selected
-                {% endif %}
-            >
-
-                {{ plc.plc_name }} - {{ plc.ip_address }}
-
-            </option>
-
-            {% endfor %}
-
-        </select>
-
-        <br>
-
-        <button
-            type="submit"
-            name="action"
-            value="dry_run"
-        >
-
-            Dry Run Check
-
-        </button>
-
-        <button
-            type="submit"
-            name="action"
-            value="manual_mode_check"
-        >
-
-            Read Manual Mode
-
-        </button>
-
-        <button
-            type="button"
-            disabled
-        >
-
-            Recipe Write Disabled
-
-        </button>
-
-    </form>
-
-    <br>
-
-    <table>
-
-        <tr>
-
-            <th>PLC Name</th>
-
-            <th>IP Address</th>
-
-            <th>Controller</th>
-
-            <th>Machine</th>
-
-            <th>Stage</th>
-
-        </tr>
-
-        {% for plc in available_plcs %}
-
-        <tr>
-
-            <td>{{ plc.plc_name }}</td>
-
-            <td>{{ plc.ip_address }}</td>
-
-            <td>{{ plc.controller_type }}</td>
-
-            <td>{{ plc.machine_code }}</td>
-
-            <td>{{ plc.stage_type }}</td>
-
-        </tr>
-
-        {% endfor %}
-
-    </table>
-
-    {% else %}
-
-    <p>
-
-        No active PLC is registered for this recipe machine and stage.
-
-    </p>
-
-    {% endif %}
-
-</div>
-
-{% if manual_mode_result %}
-
-<br>
-
-<div class="dashboard-card">
-
-    <h3>
-
-        Manual Mode PLC Read Result
-
-    </h3>
-
-    <br>
-
-    <table>
-
-        <tr>
-
-            <td>Status</td>
-
-            <td>
-
-                {% if manual_mode_result.ready %}
-
-                    <strong>READY</strong>
-
-                {% else %}
-
-                    <strong>BLOCKED</strong>
-
-                {% endif %}
-
-            </td>
-
-        </tr>
-
-        {% if manual_mode_result.plc %}
-
-        <tr>
-
-            <td>Selected PLC</td>
-
-            <td>
-
-                {{ manual_mode_result.plc.plc_name }}
-                -
-                {{ manual_mode_result.plc.ip_address }}
-
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-        <tr>
-
-            <td>Manual Mode Tag</td>
-
-            <td>
-
-                {% if manual_mode_result.tag_name %}
-
-                    {{ manual_mode_result.tag_name }}
-
-                {% else %}
-
-                    -
-
-                {% endif %}
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Actual PLC Value</td>
-
-            <td>
-
-                {% if manual_mode_result.actual_value is not none %}
-
-                    {{ manual_mode_result.actual_value }}
-
-                {% else %}
-
-                    -
-
-                {% endif %}
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Recipe Write Button</td>
-
-            <td>
-
-                {% if manual_mode_result.ready %}
-
-                    Enabled after all dry-run checks pass and live write is approved.
-
-                {% else %}
-
-                    Disabled.
-
-                {% endif %}
-
-            </td>
-
-        </tr>
-
-    </table>
-
-    {% if manual_mode_result.errors %}
-
-    <br>
-
-    <h3>
-
-        Blocking Issues
-
-    </h3>
-
-    <ul>
-
-        {% for error in manual_mode_result.errors %}
-
-        <li>
-
-            {{ error }}
-
-        </li>
-
-        {% endfor %}
-
-    </ul>
-
-    {% endif %}
-
-    {% if manual_mode_result.warnings %}
-
-    <br>
-
-    <h3>
-
-        Notes
-
-    </h3>
-
-    <ul>
-
-        {% for warning in manual_mode_result.warnings %}
-
-        <li>
-
-            {{ warning }}
-
-        </li>
-
-        {% endfor %}
-
-    </ul>
-
-    {% endif %}
-
-</div>
-
-{% endif %}
-
-{% if dry_run_result %}
-
-<br>
-
-<div class="dashboard-card">
-
-    <h3>
-
-        Dry Run Result
-
-    </h3>
-
-    <br>
-
-    <table>
-
-        <tr>
-
-            <td>Status</td>
-
-            <td>
-
-                {% if dry_run_result.ready %}
-
-                    <strong>READY</strong>
-
-                {% else %}
-
-                    <strong>BLOCKED</strong>
-
-                {% endif %}
-
-            </td>
-
-        </tr>
-
-        {% if dry_run_result.plc %}
-
-        <tr>
-
-            <td>Selected PLC</td>
-
-            <td>
-
-                {{ dry_run_result.plc.plc_name }}
-                -
-                {{ dry_run_result.plc.ip_address }}
-
-            </td>
-
-        </tr>
-
-        {% endif %}
-
-    </table>
-
-    <br>
-
-    <table>
-
-        <tr>
-
-            <th colspan="2">
-
-                Parameter Validation Summary
-
-            </th>
-
-        </tr>
-
-        <tr>
-
-            <td>Total Parameters</td>
-
-            <td>{{ dry_run_result.parameter_validation.summary.total_parameters }}</td>
-
-        </tr>
-
-        <tr>
-
-            <td>Valid Parameters</td>
-
-            <td>{{ dry_run_result.parameter_validation.summary.valid_parameters }}</td>
-
-        </tr>
-
-        <tr>
-
-            <td>Invalid Parameters</td>
-
-            <td>{{ dry_run_result.parameter_validation.summary.invalid_parameters }}</td>
-
-        </tr>
-
-    </table>
-
-    <br>
-
-    <table>
-
-        <tr>
-
-            <th colspan="2">
-
-                Recipe Payload Summary
-
-            </th>
-
-        </tr>
-
-        <tr>
-
-            <td>Payload Size</td>
-
-            <td>{{ dry_run_result.payload_summary.payload_size }}</td>
-
-        </tr>
-
-        <tr>
-
-            <td>Total Parameters</td>
-
-            <td>{{ dry_run_result.payload_summary.total_parameters }}</td>
-
-        </tr>
-
-        <tr>
-
-            <td>Mapped Parameters</td>
-
-            <td>{{ dry_run_result.payload_summary.mapped_parameters }}</td>
-
-        </tr>
-
-        <tr>
-
-            <td>Non Zero Values</td>
-
-            <td>{{ dry_run_result.payload_summary.non_zero_values }}</td>
-
-        </tr>
-
-        <tr>
-
-            <td>Minimum PLC Array Index</td>
-
-            <td>{{ dry_run_result.payload_summary.minimum_plc_array_index }}</td>
-
-        </tr>
-
-        <tr>
-
-            <td>Maximum PLC Array Index</td>
-
-            <td>{{ dry_run_result.payload_summary.maximum_plc_array_index }}</td>
-
-        </tr>
-
-    </table>
-
-    <br>
-
-    <table>
-
-        <tr>
-
-            <th colspan="2">
-
-                Phase Control Summary
-
-            </th>
-
-        </tr>
-
-        <tr>
-
-            <td>Total Phase Rows</td>
-
-            <td>{{ dry_run_result.phase_summary.total_phase_rows }}</td>
-
-        </tr>
-
-        <tr>
-
-            <td>Ready Phase Rows</td>
-
-            <td>{{ dry_run_result.phase_summary.ready_phase_rows }}</td>
-
-        </tr>
-
-    </table>
-
-    {% if dry_run_result.errors %}
-
-    <br>
-
-    <h3>
-
-        Blocking Issues
-
-    </h3>
-
-    <ul>
-
-        {% for error in dry_run_result.errors[:15] %}
-
-        <li>
-
-            {{ error }}
-
-        </li>
-
-        {% endfor %}
-
-    </ul>
-
-    {% endif %}
-
-    {% if dry_run_result.warnings %}
-
-    <br>
-
-    <h3>
-
-        Notes
-
-    </h3>
-
-    <ul>
-
-        {% for warning in dry_run_result.warnings %}
-
-        <li>
-
-            {{ warning }}
-
-        </li>
-
-        {% endfor %}
-
-    </ul>
-
-    {% endif %}
-
-</div>
-
-{% endif %}
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        var form = document.getElementById(
+            "bufferOperationForm"
+        );
+
+        if (!form) {
+            return;
+        }
+
+        form.addEventListener(
+            "submit",
+            function (event) {
+
+                var submitter = event.submitter;
+
+                if (!submitter) {
+                    return;
+                }
+
+                var selectedAction = document.getElementById(
+                    "selectedAction"
+                );
+
+                if (selectedAction) {
+                    selectedAction.value = submitter.value;
+                }
+
+                if (
+                    submitter.dataset.confirmMessage
+                    &&
+                    !window.confirm(
+                        submitter.dataset.confirmMessage
+                    )
+                ) {
+                    event.preventDefault();
+                    return;
+                }
+
+                var panel = document.getElementById(
+                    "liveProgress"
+                );
+
+                var title = document.getElementById(
+                    "liveProgressTitle"
+                );
+
+                var fill = document.getElementById(
+                    "liveProgressFill"
+                );
+
+                var percentText = document.getElementById(
+                    "liveProgressPercent"
+                );
+
+                var text = document.getElementById(
+                    "liveProgressText"
+                );
+
+                if (panel) {
+                    panel.style.display = "block";
+                }
+
+                var oldResultPanel = document.getElementById(
+                    "operationResultPanel"
+                );
+
+                if (oldResultPanel) {
+                    oldResultPanel.style.display = "none";
+                }
+
+                if (title) {
+                    title.textContent = (
+                        submitter.dataset.loadingTitle
+                        || "PLC Buffer Operation"
+                    );
+                }
+
+                if (text) {
+                    text.textContent = (
+                        "Backend validation, PLC connection, interlock checks, "
+                        + "buffer transfer, and readback verification are running."
+                    );
+                }
+
+                var percent = 7;
+
+                if (fill) {
+                    fill.style.width = percent + "%";
+                }
+
+                if (percentText) {
+                    percentText.textContent = percent + "%";
+                }
+
+                window.setInterval(
+                    function () {
+                        if (percent < 92) {
+                            percent = percent + 3;
+                            if (fill) {
+                                fill.style.width = percent + "%";
+                            }
+                            if (percentText) {
+                                percentText.textContent = percent + "%";
+                            }
+                        }
+                    },
+                    450
+                );
+
+                var buttons = form.querySelectorAll(
+                    "button"
+                );
+
+                buttons.forEach(
+                    function (button) {
+                        button.disabled = true;
+                    }
+                );
+
+                submitter.textContent = "Running...";
+
+            }
+        );
+
+    }
+);
+
+</script>
 
 {% endblock %}

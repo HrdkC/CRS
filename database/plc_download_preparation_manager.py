@@ -465,6 +465,8 @@ class PLCDownloadPreparationManager:
 
             "checked": True,
 
+            "connected": False,
+
             "ready": False,
 
             "status": "BLOCKED",
@@ -563,6 +565,8 @@ class PLCDownloadPreparationManager:
                 )
 
                 return result
+
+            result["connected"] = True
 
             result["actual_value"] = getattr(
                 read_result,

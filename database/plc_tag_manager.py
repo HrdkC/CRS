@@ -241,7 +241,7 @@ class PLCTagManager:
 
             "DOWNLOAD_REQUEST": "CRS_Download_Request",
 
-            "DOWNLOAD_COMPLETE": "CSR_Download_Complete"
+            "DOWNLOAD_COMPLETE": "CRS_Download_Complete"
 
         }
 
@@ -347,6 +347,147 @@ class PLCTagManager:
         return (
             True,
             f"{row['tag_name']} selected for {tag_purpose}"
+        )
+
+    @staticmethod
+    def upsert_tag(
+
+        machine_id,
+
+        stage_id,
+
+        tag_name,
+
+        tag_type="",
+
+        is_array=0,
+
+        array_size=None,
+
+        array_start_index=None,
+
+        array_end_index=None,
+
+        description="",
+
+        created_by=None,
+
+        tag_purpose=None
+
+    ):
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT *
+
+            FROM plc_tags
+
+            WHERE
+                machine_id = ?
+                AND stage_id = ?
+                AND UPPER(tag_name) = UPPER(?)
+            """,
+            (
+                machine_id,
+                stage_id,
+                tag_name
+            )
+        )
+
+        row = cursor.fetchone()
+
+        if row:
+
+            tag_id = row[
+                "id"
+            ]
+
+            cursor.execute(
+                """
+                UPDATE plc_tags
+
+                SET
+                    tag_type = ?,
+                    is_array = ?,
+                    array_size = ?,
+                    array_start_index = ?,
+                    array_end_index = ?,
+                    description = ?
+
+                WHERE id = ?
+                """,
+                (
+                    tag_type,
+                    is_array,
+                    array_size,
+                    array_start_index,
+                    array_end_index,
+                    description,
+                    tag_id
+                )
+            )
+
+            created = False
+
+        else:
+
+            cursor.execute(
+                """
+                INSERT INTO plc_tags
+                (
+                    machine_id,
+                    stage_id,
+                    tag_name,
+                    tag_type,
+                    is_array,
+                    array_size,
+                    array_start_index,
+                    array_end_index,
+                    description,
+                    created_by
+                )
+                VALUES
+                (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    machine_id,
+                    stage_id,
+                    tag_name,
+                    tag_type,
+                    is_array,
+                    array_size,
+                    array_start_index,
+                    array_end_index,
+                    description,
+                    created_by
+                )
+            )
+
+            tag_id = cursor.lastrowid
+
+            created = True
+
+        conn.commit()
+
+        conn.close()
+
+        if tag_purpose:
+
+            PLCTagManager.set_tag_purpose(
+
+                tag_id=tag_id,
+
+                tag_purpose=tag_purpose
+
+            )
+
+        return (
+            tag_id,
+            created
         )
         
     @staticmethod

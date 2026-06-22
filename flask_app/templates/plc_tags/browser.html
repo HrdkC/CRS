@@ -24,7 +24,16 @@ PLC Tag Browser
 
 </p>
 
-<form method="GET">
+<form
+    method="GET"
+    class="plc-online-action-form"
+>
+
+    <input
+        type="hidden"
+        name="online_search"
+        value="1"
+    >
 
     {% if purpose_to_assign %}
 
@@ -48,9 +57,13 @@ PLC Tag Browser
 
     >
 
-    <button type="submit">
+    <button
+        type="submit"
+        data-plc-online-action="1"
+        data-loading-message="PLC connection in progress. Searching online PLC tag database. Please wait."
+    >
 
-        Search
+        Search Online PLC
 
     </button>
 
@@ -73,6 +86,44 @@ PLC Tag Browser
 
 </form>
 
+<div
+    class="plc-action-message"
+    style="
+        display:none;
+        margin-top:12px;
+        padding:12px;
+        border:1px solid #7e57c2;
+        background:#f3ecff;
+        color:#3d176f;
+        font-weight:bold;
+    "
+>
+</div>
+
+<br>
+
+<p>
+
+    Active PLC :
+
+    <b>
+
+        {% if active_plc %}
+
+            {{ active_plc.plc_name }}
+            -
+            {{ active_plc.ip_address }}
+
+        {% else %}
+
+            Not Configured
+
+        {% endif %}
+
+    </b>
+
+</p>
+
 <br>
 
 {% if purpose_to_assign %}
@@ -91,11 +142,327 @@ PLC Tag Browser
 
 <br>
 
+{% if online_result %}
+
 <div class="dashboard-card">
 
     <h3>
 
-        Add PLC Tag For Purpose
+        Online PLC Available Tags
+
+    </h3>
+
+    <br>
+
+    {% if online_result.connected %}
+
+    <p
+        style="
+            padding:12px;
+            border:1px solid #2e7d32;
+            background:#e8f5e9;
+            color:#1b5e20;
+            font-weight:bold;
+        "
+    >
+
+        PLC connection successful. Online tag search completed.
+
+    </p>
+
+    {% elif online_result.errors %}
+
+    <p
+        style="
+            padding:12px;
+            border:1px solid #c62828;
+            background:#ffebee;
+            color:#b71c1c;
+            font-weight:bold;
+        "
+    >
+
+        PLC connection/search failed. Check PLC network and active PLC configuration.
+
+    </p>
+
+    {% endif %}
+
+    <br>
+
+    <table>
+
+        <tr>
+
+            <td>PLC</td>
+
+            <td>
+
+                {% if online_result.plc %}
+
+                    {{ online_result.plc.plc_name }}
+                    -
+                    {{ online_result.plc.ip_address }}
+
+                {% else %}
+
+                    -
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Connection</td>
+
+            <td>
+
+                {% if online_result.connected %}
+
+                    CONNECTED
+
+                {% else %}
+
+                    NOT CONNECTED
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>Total Controller Tags</td>
+
+            <td>{{ online_result.total_controller_tags }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Matched Tags</td>
+
+            <td>{{ online_result.matched_count }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>Displayed Tags</td>
+
+            <td>{{ online_result.returned_count }}</td>
+
+        </tr>
+
+    </table>
+
+    {% if online_result.errors %}
+
+    <br>
+
+    <h3>
+
+        Online Search Issues
+
+    </h3>
+
+    <ul>
+
+        {% for error in online_result.errors %}
+
+        <li>
+
+            {{ error }}
+
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+    {% endif %}
+
+    {% if online_result.warnings %}
+
+    <br>
+
+    <h3>
+
+        Notes
+
+    </h3>
+
+    <ul>
+
+        {% for warning in online_result.warnings %}
+
+        <li>
+
+            {{ warning }}
+
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+    {% endif %}
+
+    {% if online_result.tags %}
+
+    <br>
+
+    <table border="1" width="100%">
+
+        <tr>
+
+            <th>PLC Tag Name</th>
+
+            <th>Data Type</th>
+
+            <th>Array</th>
+
+            <th>Dimensions</th>
+
+            <th>Size</th>
+
+            <th>Action</th>
+
+        </tr>
+
+        {% for online_tag in online_result.tags %}
+
+        <tr>
+
+            <td>{{ online_tag.tag_name }}</td>
+
+            <td>{{ online_tag.tag_type }}</td>
+
+            <td>
+
+                {% if online_tag.is_array %}
+
+                    YES
+
+                {% else %}
+
+                    NO
+
+                {% endif %}
+
+            </td>
+
+            <td>{{ online_tag.dimensions }}</td>
+
+            <td>
+
+                {% if online_tag.array_size %}
+
+                    {{ online_tag.array_size }}
+
+                {% else %}
+
+                    -
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                <form
+                    method="POST"
+                    action="/plc-tags/select-online/{{ machine_id }}/{{ stage_id }}"
+                    style="box-shadow:none;border:none;padding:0;margin:0;background:transparent;"
+                >
+
+                    <input
+                        type="hidden"
+                        name="tag_purpose"
+                        value="{{ purpose_to_assign }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="search_text"
+                        value="{{ search_text }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="bool_only"
+                        value="{{ bool_only }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="tag_name"
+                        value="{{ online_tag.tag_name }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="tag_type"
+                        value="{{ online_tag.tag_type }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="is_array"
+                        value="{{ online_tag.is_array }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="array_size"
+                        value="{% if online_tag.array_size %}{{ online_tag.array_size }}{% endif %}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="array_start_index"
+                        value="{% if online_tag.array_start_index is not none %}{{ online_tag.array_start_index }}{% endif %}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="array_end_index"
+                        value="{% if online_tag.array_end_index is not none %}{{ online_tag.array_end_index }}{% endif %}"
+                    >
+
+                    <button type="submit">
+
+                        Select
+
+                    </button>
+
+                </form>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    {% endif %}
+
+</div>
+
+<br>
+
+{% endif %}
+
+<div class="dashboard-card">
+
+    <h3>
+
+        Manual Add Fallback
 
     </h3>
 
@@ -403,5 +770,65 @@ PLC Tag Browser
     {% endfor %}
 
 </table>
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        var forms = document.querySelectorAll(
+            ".plc-online-action-form"
+        );
+
+        forms.forEach(
+            function (form) {
+
+                form.addEventListener(
+                    "submit",
+                    function (event) {
+
+                        var submitter = event.submitter;
+
+                        if (
+                            !submitter
+                            ||
+                            submitter.dataset.plcOnlineAction !== "1"
+                        ) {
+
+                            return;
+
+                        }
+
+                        var message = form.parentElement.querySelector(
+                            ".plc-action-message"
+                        );
+
+                        if (message) {
+
+                            message.textContent = (
+                                submitter.dataset.loadingMessage
+                                ||
+                                "PLC connection in progress. Please wait."
+                            );
+
+                            message.style.display = "block";
+
+                        }
+
+                        submitter.disabled = true;
+
+                        submitter.textContent = "Please Wait...";
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+</script>
 
 {% endblock %}
