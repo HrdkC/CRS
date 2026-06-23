@@ -1,3 +1,6 @@
+import time
+from datetime import datetime
+
 from pycomm3 import (
     LogixDriver
 )
@@ -52,6 +55,26 @@ class PLCBufferOperationManager:
     MANUAL_PURPOSE = "MACHINE_IN_MANUAL"
 
     ENABLE_PURPOSE = "DOWNLOAD_ENABLE"
+
+    REQUEST_PURPOSE = "DOWNLOAD_REQUEST"
+
+    COMPLETE_PURPOSE = "DOWNLOAD_COMPLETE"
+
+    ACK_PURPOSE = "DOWNLOAD_ACK"
+
+    BUSY_PURPOSE = "DOWNLOAD_BUSY"
+
+    ERROR_PURPOSE = "DOWNLOAD_ERROR"
+
+    RESULT_PURPOSE = "DOWNLOAD_RESULT"
+
+    OS_PURPOSE = "DOWNLOAD_OS"
+
+    LAST_DOWNLOAD_TIME_PURPOSE = "LAST_DOWNLOAD_TIME"
+
+    LAST_DOWNLOAD_USER_PURPOSE = "LAST_DOWNLOAD_USER"
+
+    DOWNLOAD_HANDSHAKE_TIMEOUT_SECONDS = 20
 
     OPERATIONS = {
 
@@ -506,7 +529,16 @@ class PLCBufferOperationManager:
             PLCBufferOperationManager.DESTINATION_PURPOSE,
             PLCBufferOperationManager.RECIPE_CODE_PURPOSE,
             PLCBufferOperationManager.MANUAL_PURPOSE,
-            PLCBufferOperationManager.ENABLE_PURPOSE
+            PLCBufferOperationManager.ENABLE_PURPOSE,
+            PLCBufferOperationManager.REQUEST_PURPOSE,
+            PLCBufferOperationManager.COMPLETE_PURPOSE,
+            PLCBufferOperationManager.ACK_PURPOSE,
+            PLCBufferOperationManager.BUSY_PURPOSE,
+            PLCBufferOperationManager.ERROR_PURPOSE,
+            PLCBufferOperationManager.RESULT_PURPOSE,
+            PLCBufferOperationManager.OS_PURPOSE,
+            PLCBufferOperationManager.LAST_DOWNLOAD_TIME_PURPOSE,
+            PLCBufferOperationManager.LAST_DOWNLOAD_USER_PURPOSE
         ]:
 
             context["tags"][purpose] = (
@@ -537,6 +569,25 @@ class PLCBufferOperationManager:
 
                 context["issues"].append(
                     f"{purpose} must be configured as REAL[500]."
+                )
+
+        for purpose in [
+            PLCBufferOperationManager.MANUAL_PURPOSE,
+            PLCBufferOperationManager.ENABLE_PURPOSE,
+            PLCBufferOperationManager.REQUEST_PURPOSE,
+            PLCBufferOperationManager.COMPLETE_PURPOSE
+        ]:
+
+            tag = context["tags"].get(
+                purpose
+            )
+
+            if not PLCBufferOperationManager.valid_bool_tag(
+                tag
+            ):
+
+                context["issues"].append(
+                    f"{purpose} must be configured as BOOL."
                 )
 
         if context["issues"]:
@@ -1165,11 +1216,22 @@ class PLCBufferOperationManager:
                 98
             )
 
+        with LogixDriver(
+            result["plc"]["ip_address"]
+        ) as plc_conn:
+
+            PLCBufferOperationManager.perform_download_handshake(
+                plc_conn=plc_conn,
+                result=result,
+                recipe=recipe,
+                username=username
+            )
+
         PLCBufferOperationManager.add_step(
             result,
             "Download verified",
             "OK",
-            "CRS_Recipe_Data copied to PLC destination buffer.",
+            "PLC destination buffer and download handshake completed.",
             100
         )
 
@@ -1185,7 +1247,7 @@ class PLCBufferOperationManager:
 
                 DownloadHistoryManager.complete_download_record(
                     download_id,
-                    "CRS buffer downloaded to PLC destination buffer"
+                    "CRS buffer downloaded to PLC destination buffer and handshake completed"
                 )
 
             except Exception as exc:
@@ -1376,6 +1438,545 @@ class PLCBufferOperationManager:
             )
 
         return result
+
+
+    @staticmethod
+    def perform_download_handshake(
+
+        plc_conn,
+
+        result,
+
+        recipe,
+
+        username
+
+    ):
+
+        request_tag = PLCBufferOperationManager.require_bool_tag(
+
+            recipe,
+
+            PLCBufferOperationManager.REQUEST_PURPOSE,
+
+            "Download request"
+
+        )
+
+        complete_tag = PLCBufferOperationManager.require_bool_tag(
+
+            recipe,
+
+            PLCBufferOperationManager.COMPLETE_PURPOSE,
+
+            "Download complete"
+
+        )
+
+        ack_tag = PLCBufferOperationManager.get_optional_tag(
+
+            recipe,
+
+            PLCBufferOperationManager.ACK_PURPOSE
+
+        )
+
+        busy_tag = PLCBufferOperationManager.get_optional_tag(
+
+            recipe,
+
+            PLCBufferOperationManager.BUSY_PURPOSE
+
+        )
+
+        error_tag = PLCBufferOperationManager.get_optional_tag(
+
+            recipe,
+
+            PLCBufferOperationManager.ERROR_PURPOSE
+
+        )
+
+        result_tag = PLCBufferOperationManager.get_optional_tag(
+
+            recipe,
+
+            PLCBufferOperationManager.RESULT_PURPOSE
+
+        )
+
+        PLCBufferOperationManager.write_or_block(
+
+            plc_conn=plc_conn,
+
+            tag_name=request_tag["tag_name"],
+
+            value=False,
+
+            result=result,
+
+            label="Reset download request",
+
+            percent=96
+
+        )
+
+        if ack_tag:
+
+            PLCBufferOperationManager.write_or_block(
+
+                plc_conn=plc_conn,
+
+                tag_name=ack_tag["tag_name"],
+
+                value=False,
+
+                result=result,
+
+                label="Reset download acknowledge",
+
+                percent=96
+
+            )
+
+        PLCBufferOperationManager.write_optional_download_metadata(
+
+            plc_conn=plc_conn,
+
+            recipe=recipe,
+
+            username=username,
+
+            result=result
+
+        )
+
+        PLCBufferOperationManager.write_or_block(
+
+            plc_conn=plc_conn,
+
+            tag_name=request_tag["tag_name"],
+
+            value=True,
+
+            result=result,
+
+            label="Set download request",
+
+            percent=97
+
+        )
+
+        handshake = PLCBufferOperationManager.wait_for_download_complete(
+
+            plc_conn=plc_conn,
+
+            complete_tag=complete_tag,
+
+            error_tag=error_tag,
+
+            busy_tag=busy_tag,
+
+            result_tag=result_tag,
+
+            result=result
+
+        )
+
+        result["metrics"]["handshake_wait_seconds"] = handshake[
+            "wait_seconds"
+        ]
+
+        if handshake.get(
+            "result_value"
+        ) is not None:
+
+            result["metrics"]["download_result_code"] = handshake[
+                "result_value"
+            ]
+
+        if not handshake["success"]:
+
+            PLCBufferOperationManager.write_or_block(
+
+                plc_conn=plc_conn,
+
+                tag_name=request_tag["tag_name"],
+
+                value=False,
+
+                result=result,
+
+                label="Reset download request after failure",
+
+                percent=99
+
+            )
+
+            PLCBufferOperationManager.fail_with_step(
+
+                result,
+
+                "Download handshake",
+
+                handshake["message"],
+
+                99
+
+            )
+
+        PLCBufferOperationManager.add_step(
+
+            result,
+
+            "Download complete confirmed",
+
+            "OK",
+
+            handshake["message"],
+
+            99
+
+        )
+
+        PLCBufferOperationManager.write_or_block(
+
+            plc_conn=plc_conn,
+
+            tag_name=request_tag["tag_name"],
+
+            value=False,
+
+            result=result,
+
+            label="Reset download request",
+
+            percent=99
+
+        )
+
+        if ack_tag:
+
+            PLCBufferOperationManager.write_or_block(
+
+                plc_conn=plc_conn,
+
+                tag_name=ack_tag["tag_name"],
+
+                value=True,
+
+                result=result,
+
+                label="Pulse download acknowledge",
+
+                percent=99
+
+            )
+
+            time.sleep(
+                0.3
+            )
+
+            PLCBufferOperationManager.write_or_block(
+
+                plc_conn=plc_conn,
+
+                tag_name=ack_tag["tag_name"],
+
+                value=False,
+
+                result=result,
+
+                label="Reset download acknowledge",
+
+                percent=99
+
+            )
+
+    @staticmethod
+    def wait_for_download_complete(
+
+        plc_conn,
+
+        complete_tag,
+
+        error_tag,
+
+        busy_tag,
+
+        result_tag,
+
+        result
+
+    ):
+
+        timeout_seconds = (
+            PLCBufferOperationManager.DOWNLOAD_HANDSHAKE_TIMEOUT_SECONDS
+        )
+
+        start_time = time.monotonic()
+
+        last_busy_value = None
+
+        last_result_value = None
+
+        while True:
+
+            elapsed = time.monotonic() - start_time
+
+            complete_value = PLCBufferOperationManager.read_bool_value(
+
+                plc_conn,
+
+                complete_tag["tag_name"]
+
+            )
+
+            if error_tag:
+
+                error_value = PLCBufferOperationManager.read_bool_value(
+
+                    plc_conn,
+
+                    error_tag["tag_name"]
+
+                )
+
+                if error_value:
+
+                    if result_tag:
+
+                        last_result_value = (
+                            PLCBufferOperationManager.read_scalar_value(
+                                plc_conn,
+                                result_tag["tag_name"]
+                            )
+                        )
+
+                    return {
+                        "success": False,
+                        "message": (
+                            "PLC download error bit became TRUE. "
+                            f"Result code: {last_result_value}"
+                        ),
+                        "wait_seconds": round(
+                            elapsed,
+                            2
+                        ),
+                        "result_value": last_result_value
+                    }
+
+            if complete_value:
+
+                if result_tag:
+
+                    last_result_value = PLCBufferOperationManager.read_scalar_value(
+                        plc_conn,
+                        result_tag["tag_name"]
+                    )
+
+                return {
+                    "success": True,
+                    "message": (
+                        "PLC download complete bit confirmed TRUE. "
+                        f"Result code: {last_result_value}"
+                    ),
+                    "wait_seconds": round(
+                        elapsed,
+                        2
+                    ),
+                    "result_value": last_result_value
+                }
+
+            if busy_tag:
+
+                last_busy_value = PLCBufferOperationManager.read_bool_value(
+
+                    plc_conn,
+
+                    busy_tag["tag_name"]
+
+                )
+
+            if elapsed >= timeout_seconds:
+
+                return {
+                    "success": False,
+                    "message": (
+                        "PLC download handshake timeout. "
+                        f"Complete did not become TRUE within {timeout_seconds} seconds. "
+                        f"Busy: {last_busy_value}."
+                    ),
+                    "wait_seconds": round(
+                        elapsed,
+                        2
+                    ),
+                    "result_value": last_result_value
+                }
+
+            time.sleep(
+                0.25
+            )
+
+    @staticmethod
+    def write_optional_download_metadata(
+
+        plc_conn,
+
+        recipe,
+
+        username,
+
+        result
+
+    ):
+
+        time_tag = PLCBufferOperationManager.get_optional_tag(
+
+            recipe,
+
+            PLCBufferOperationManager.LAST_DOWNLOAD_TIME_PURPOSE
+
+        )
+
+        user_tag = PLCBufferOperationManager.get_optional_tag(
+
+            recipe,
+
+            PLCBufferOperationManager.LAST_DOWNLOAD_USER_PURPOSE
+
+        )
+
+        if time_tag:
+
+            PLCBufferOperationManager.write_or_block(
+
+                plc_conn=plc_conn,
+
+                tag_name=time_tag["tag_name"],
+
+                value=datetime.now().strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                ),
+
+                result=result,
+
+                label="Write last download time",
+
+                percent=96
+
+            )
+
+        if user_tag:
+
+            PLCBufferOperationManager.write_or_block(
+
+                plc_conn=plc_conn,
+
+                tag_name=user_tag["tag_name"],
+
+                value=str(
+                    username
+                    or
+                    "system"
+                )[:80],
+
+                result=result,
+
+                label="Write last download user",
+
+                percent=96
+
+            )
+
+    @staticmethod
+    def get_optional_tag(
+
+        recipe,
+
+        purpose
+
+    ):
+
+        return PLCTagManager.get_tag_by_purpose(
+
+            machine_id=recipe["machine_id"],
+
+            stage_id=recipe["stage_id"],
+
+            tag_purpose=purpose
+
+        )
+
+    @staticmethod
+    def read_bool_value(
+
+        plc_conn,
+
+        tag_name
+
+    ):
+
+        read_result = plc_conn.read(
+            tag_name
+        )
+
+        error = getattr(
+            read_result,
+            "error",
+            None
+        )
+
+        if (
+            read_result is None
+            or
+            error
+        ):
+
+            raise Exception(
+                f"{tag_name} read failed: {error}"
+            )
+
+        return PLCDownloadPreparationManager.is_true_value(
+            getattr(
+                read_result,
+                "value",
+                None
+            )
+        )
+
+    @staticmethod
+    def read_scalar_value(
+
+        plc_conn,
+
+        tag_name
+
+    ):
+
+        read_result = plc_conn.read(
+            tag_name
+        )
+
+        error = getattr(
+            read_result,
+            "error",
+            None
+        )
+
+        if (
+            read_result is None
+            or
+            error
+        ):
+
+            return None
+
+        return getattr(
+            read_result,
+            "value",
+            None
+        )
 
     @staticmethod
     def make_result(
@@ -1738,6 +2339,35 @@ class PLCBufferOperationManager:
             or
             0
         ) < PLCBufferOperationManager.PAYLOAD_SIZE:
+
+            return False
+
+        return True
+
+    @staticmethod
+    def valid_bool_tag(
+
+        tag
+
+    ):
+
+        if not tag:
+
+            return False
+
+        if str(
+            tag.get(
+                "tag_type"
+            )
+            or
+            ""
+        ).upper() != "BOOL":
+
+            return False
+
+        if tag.get(
+            "is_array"
+        ) == 1:
 
             return False
 

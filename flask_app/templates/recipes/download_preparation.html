@@ -395,8 +395,8 @@ Recipe PLC Buffer Operations
                 <p>
                     Database is master. CRS buffer is
                     <strong>CRS_Recipe_Data</strong>.
-                    Test PLC destination is
-                    <strong>CRS_Test_Recipe_Data</strong>.
+                    PLC destination buffer is
+                    <strong>CRS_Test_Recipe_Data</strong> with request/complete handshake.
                 </p>
 
             </div>
@@ -600,7 +600,7 @@ Recipe PLC Buffer Operations
                     name="action"
                     value="download_to_plc"
                     data-loading-title="Download To PLC"
-                    data-confirm-message="Download CRS_Recipe_Data to CRS_Test_Recipe_Data now?"
+                    data-confirm-message="Final Download To PLC will validate database, compare CRS_Recipe_Data, verify Manual mode and Download Enable, write CRS_Test_Recipe_Data, wait for Download Complete, and audit history. Continue?"
                     {% if not can_download_recipe %}
                     disabled
                     {% endif %}
@@ -912,7 +912,7 @@ Recipe PLC Buffer Operations
                     <div class="flow-row">
                         <div class="flow-node">CRS_Recipe_Data</div>
                         <div class="flow-arrow">-></div>
-                        <div class="flow-node">CRS_Test_Recipe_Data</div>
+                        <div class="flow-node">CRS_Test_Recipe_Data + Request/Complete Handshake</div>
                     </div>
                     <div class="flow-row">
                         <div class="flow-node">CRS_Test_Recipe_Data</div>
