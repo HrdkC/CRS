@@ -3,6 +3,20 @@ from database.database import get_connection
 
 class AuditManager:
 
+    SORT_COLUMNS = {
+        "id": "id",
+        "timestamp": "timestamp",
+        "username": "username",
+        "role": "role",
+        "action": "action",
+        "recipe_code": "recipe_code",
+        "parameter_name": "parameter_name",
+        "old_value": "old_value",
+        "new_value": "new_value",
+        "change_source": "change_source",
+        "reason": "reason",
+    }
+
     @staticmethod
     def log_event(
         username,
@@ -94,8 +108,7 @@ class AuditManager:
         )
 
     @staticmethod
-    def get_audit_history(
-        limit=100,
+    def _build_conditions(
         username=None,
         role=None,
         action=None,
@@ -104,9 +117,6 @@ class AuditManager:
         date_to=None,
         keyword=None
     ):
-        conn = get_connection()
-        cursor = conn.cursor()
-
         conditions = []
         params = []
 
@@ -139,7 +149,7 @@ class AuditManager:
         if keyword:
             keyword_value = f"%{keyword.strip()}%"
             conditions.append(
-                "(" 
+                "("
                 "LOWER(COALESCE(username, '')) LIKE LOWER(?) OR "
                 "LOWER(COALESCE(role, '')) LIKE LOWER(?) OR "
                 "LOWER(COALESCE(action, '')) LIKE LOWER(?) OR "
@@ -148,29 +158,68 @@ class AuditManager:
                 "LOWER(COALESCE(recipe_code, '')) LIKE LOWER(?) OR "
                 "LOWER(COALESCE(parameter_name, '')) LIKE LOWER(?) OR "
                 "LOWER(COALESCE(plc_name, '')) LIKE LOWER(?) OR "
+                "LOWER(COALESCE(record_id, '')) LIKE LOWER(?) OR "
                 "LOWER(COALESCE(old_value, '')) LIKE LOWER(?) OR "
                 "LOWER(COALESCE(new_value, '')) LIKE LOWER(?)"
                 ")"
             )
-            params.extend([keyword_value] * 10)
+            params.extend([keyword_value] * 11)
 
         where_clause = ""
         if conditions:
             where_clause = "WHERE " + " AND ".join(conditions)
 
+        return where_clause, params
+
+    @staticmethod
+    def _safe_limit(limit, default=250):
         try:
             safe_limit = int(limit)
         except (TypeError, ValueError):
-            safe_limit = 100
+            safe_limit = default
+        return max(25, min(safe_limit, 5000))
 
-        safe_limit = max(10, min(safe_limit, 5000))
+    @staticmethod
+    def _safe_sort(sort_by=None, sort_dir=None):
+        column = AuditManager.SORT_COLUMNS.get(sort_by or "timestamp", "timestamp")
+        direction = "ASC" if str(sort_dir).lower() == "asc" else "DESC"
+        return column, direction
+
+    @staticmethod
+    def get_audit_history(
+        limit=250,
+        username=None,
+        role=None,
+        action=None,
+        change_source=None,
+        date_from=None,
+        date_to=None,
+        keyword=None,
+        sort_by="timestamp",
+        sort_dir="desc"
+    ):
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        where_clause, params = AuditManager._build_conditions(
+            username=username,
+            role=role,
+            action=action,
+            change_source=change_source,
+            date_from=date_from,
+            date_to=date_to,
+            keyword=keyword
+        )
+
+        safe_limit = AuditManager._safe_limit(limit)
+        sort_column, direction = AuditManager._safe_sort(sort_by, sort_dir)
 
         cursor.execute(
             f"""
             SELECT *
             FROM audit_log
             {where_clause}
-            ORDER BY id DESC
+            ORDER BY {sort_column} {direction}, id DESC
             LIMIT ?
             """,
             params + [safe_limit]
@@ -179,6 +228,42 @@ class AuditManager:
         rows = cursor.fetchall()
         conn.close()
         return [dict(row) for row in rows]
+
+    @staticmethod
+    def get_audit_count(
+        username=None,
+        role=None,
+        action=None,
+        change_source=None,
+        date_from=None,
+        date_to=None,
+        keyword=None
+    ):
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        where_clause, params = AuditManager._build_conditions(
+            username=username,
+            role=role,
+            action=action,
+            change_source=change_source,
+            date_from=date_from,
+            date_to=date_to,
+            keyword=keyword
+        )
+
+        cursor.execute(
+            f"""
+            SELECT COUNT(*)
+            FROM audit_log
+            {where_clause}
+            """,
+            params
+        )
+
+        count = cursor.fetchone()[0]
+        conn.close()
+        return count
 
     @staticmethod
     def get_filter_options():
