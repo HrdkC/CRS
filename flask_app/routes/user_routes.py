@@ -24,6 +24,10 @@ from database.audit_manager import (
     AuditManager
 )
 
+from flask_app.security.role_guard import (
+    role_options
+)
+
 def register_user_routes(
 
     app
@@ -72,7 +76,7 @@ def register_user_routes(
 
             role = request.form.get("role")
 
-            UserManager.create_user(
+            created = UserManager.create_user(
 
                 username=username,
 
@@ -84,25 +88,36 @@ def register_user_routes(
 
             )
 
-            AuditManager.log_event(
+            if created:
 
-                username=session["username"],
+                AuditManager.log_event(
 
-                role=session["role"],
+                    username=session["username"],
 
-                action="USER_CREATED",
+                    role=session["role"],
 
-                change_source="WEB",
+                    action="USER_CREATED",
 
-                record_id=username,
+                    change_source="WEB",
 
-                new_value=role
+                    record_id=username,
 
+                    new_value=role
+
+                )
+
+                return redirect("/users")
+
+            return render_template(
+                "users/create_user.html",
+                role_options=role_options(),
+                error="User create failed. Check duplicate username or role."
             )
 
-            return redirect("/users")
-
-        return render_template("users/create_user.html")
+        return render_template(
+            "users/create_user.html",
+            role_options=role_options()
+        )
     
     @app.route("/users/disable/<username>")
     def disable_user(username):

@@ -61,6 +61,14 @@ class RecipeDownloadEligibilityManager:
                 f"Only RELEASED recipes can be downloaded."
             )
 
+        if recipe.get("is_test_only") == 1:
+
+            result["eligible"] = False
+
+            result["errors"].append(
+                "Recipe is marked TEST ONLY and is blocked from PLC download."
+            )
+
         if recipe["version_usage_status"] == "HISTORY_RELEASED":
 
             result["eligible"] = False

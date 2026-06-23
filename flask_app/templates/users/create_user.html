@@ -26,6 +26,12 @@ Create User
         </div>
 
         <form method="POST" class="parameter-edit-form">
+            {% if error %}
+            <p class="muted-text">
+                <span class="status-badge status-danger">Blocked</span>
+                {{ error }}
+            </p>
+            {% endif %}
             <label>
                 <span>Username</span>
                 <input type="text" name="username" required>
@@ -37,9 +43,9 @@ Create User
             <label>
                 <span>Role</span>
                 <select name="role">
-                    <option>ADMIN</option>
-                    <option>EDITOR</option>
-                    <option>VIEWER</option>
+                    {% for role in role_options %}
+                    <option>{{ role }}</option>
+                    {% endfor %}
                 </select>
             </label>
             <div class="form-action-row">

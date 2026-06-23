@@ -28,6 +28,20 @@ Recipe PLC Buffer Operations
     padding: 16px;
 }
 
+.buffer-header-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: end;
+}
+
+.buffer-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
 .recipe-strip {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -111,6 +125,12 @@ Recipe PLC Buffer Operations
     font-weight: 800;
     min-height: 48px;
     cursor: pointer;
+}
+
+.operation-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    filter: grayscale(0.35);
 }
 
 .btn-restore {
@@ -348,6 +368,7 @@ Recipe PLC Buffer Operations
 }
 
 @media (max-width: 900px) {
+    .buffer-header-row,
     .buffer-hero,
     .top-controls,
     .button-row,
@@ -365,14 +386,61 @@ Recipe PLC Buffer Operations
 
     <div class="page-header">
 
-        <h1>Recipe PLC Buffer Operations</h1>
+        <div class="buffer-header-row">
 
-        <p>
-            Database is master. CRS buffer is
-            <strong>CRS_Recipe_Data</strong>.
-            Test PLC destination is
-            <strong>CRS_Test_Recipe_Data</strong>.
-        </p>
+            <div>
+
+                <h1>Recipe PLC Buffer Operations</h1>
+
+                <p>
+                    Database is master. CRS buffer is
+                    <strong>CRS_Recipe_Data</strong>.
+                    Test PLC destination is
+                    <strong>CRS_Test_Recipe_Data</strong>.
+                </p>
+
+            </div>
+
+            <div class="buffer-header-actions">
+
+                <a
+                    href="/recipe-editor/{{ recipe.id }}"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Editor
+                </a>
+
+                <a
+                    href="/recipes/{{ recipe.machine_id }}/{{ recipe.stage_id }}"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Recipe List
+                </a>
+
+                <a
+                    href="/recipe-editor/versions/{{ recipe.id }}"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Versions
+                </a>
+
+                <a
+                    href="/recipe-editor/status-history/{{ recipe.id }}"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Status History
+                </a>
+
+                <a
+                    href="/recipes/{{ recipe.id }}/phase-control"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Phase Control
+                </a>
+
+            </div>
+
+        </div>
 
     </div>
 
@@ -506,6 +574,9 @@ Recipe PLC Buffer Operations
                     name="action"
                     value="recipe_restore"
                     data-loading-title="Recipe Restore"
+                    {% if not can_download_recipe %}
+                    disabled
+                    {% endif %}
                 >
                     Recipe Restore
                 </button>
@@ -516,6 +587,9 @@ Recipe PLC Buffer Operations
                     name="action"
                     value="recipe_save"
                     data-loading-title="Recipe Save"
+                    {% if not can_edit_recipe %}
+                    disabled
+                    {% endif %}
                 >
                     Recipe Save
                 </button>
@@ -527,6 +601,9 @@ Recipe PLC Buffer Operations
                     value="download_to_plc"
                     data-loading-title="Download To PLC"
                     data-confirm-message="Download CRS_Recipe_Data to CRS_Test_Recipe_Data now?"
+                    {% if not can_download_recipe %}
+                    disabled
+                    {% endif %}
                 >
                     Download To PLC
                 </button>
@@ -537,6 +614,9 @@ Recipe PLC Buffer Operations
                     name="action"
                     value="upload_from_plc"
                     data-loading-title="Upload From PLC"
+                    {% if not can_edit_recipe %}
+                    disabled
+                    {% endif %}
                 >
                     Upload From PLC
                 </button>

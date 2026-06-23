@@ -61,6 +61,34 @@ from database.plc_operation_job_manager import (
     PLCOperationJobManager
 )
 
+from flask_app.security.role_guard import (
+    role_can
+)
+
+
+def _buffer_operation_capability(operation):
+
+    if operation in [
+        "recipe_save",
+        "upload_from_plc"
+    ]:
+
+        return "recipe_edit"
+
+    return "recipe_download"
+
+
+def _deny(message, redirect_url="/"):
+
+    flash(
+        message,
+        "error"
+    )
+
+    return redirect(
+        redirect_url
+    )
+
 
 def _get_parameter_group(
 
@@ -639,6 +667,39 @@ def register_recipe_editor_routes(app):
             )
         )
 
+        user_role = session.get(
+            "role"
+        )
+
+        can_edit_values = (
+            can_edit_values
+            and
+            role_can(
+                user_role,
+                "recipe_edit"
+            )
+        )
+
+        can_submit_review = role_can(
+            user_role,
+            "recipe_submit_review"
+        )
+
+        can_approve_recipe = role_can(
+            user_role,
+            "recipe_approve"
+        )
+
+        can_download_recipe = role_can(
+            user_role,
+            "recipe_download"
+        )
+
+        can_copy_recipe = role_can(
+            user_role,
+            "recipe_copy"
+        )
+
         edit_lock_reason = ""
 
         if (
@@ -675,6 +736,14 @@ def register_recipe_editor_routes(app):
             editor_metrics=editor_metrics,
 
             can_edit_values=can_edit_values,
+
+            can_submit_review=can_submit_review,
+
+            can_approve_recipe=can_approve_recipe,
+
+            can_download_recipe=can_download_recipe,
+
+            can_copy_recipe=can_copy_recipe,
 
             edit_lock_reason=edit_lock_reason,
 
@@ -750,6 +819,21 @@ def register_recipe_editor_routes(app):
                 recipe
             )
         )
+
+        if not role_can(
+            session.get(
+                "role"
+            ),
+            "recipe_edit"
+        ):
+
+            return _deny(
+                (
+                    "Your role can view and download recipes, "
+                    "but cannot edit recipe values."
+                ),
+                f"/recipe-editor/{value['recipe_id']}"
+            )
 
         if (
             recipe
@@ -997,6 +1081,18 @@ def register_recipe_editor_routes(app):
 
             return redirect("/")
 
+        if not role_can(
+            session.get(
+                "role"
+            ),
+            "recipe_edit"
+        ):
+
+            return _deny(
+                "Your role cannot create recipe versions.",
+                f"/recipe-editor/{recipe_id}"
+            )
+
         recipe = (
             RecipeManager
             .get_recipe_by_id(
@@ -1050,6 +1146,18 @@ def register_recipe_editor_routes(app):
         ):
 
             return redirect("/")
+
+        if not role_can(
+            session.get(
+                "role"
+            ),
+            "recipe_download"
+        ):
+
+            return _deny(
+                "Your role cannot access PLC buffer operations.",
+                f"/recipe-editor/{recipe_id}"
+            )
 
         recipe = (
             RecipeManager
@@ -1120,6 +1228,18 @@ def register_recipe_editor_routes(app):
 
             return redirect("/")
 
+        if not role_can(
+            session.get(
+                "role"
+            ),
+            "recipe_edit"
+        ):
+
+            return _deny(
+                "Your role cannot create production revisions.",
+                f"/recipe-editor/{recipe_id}"
+            )
+
         remarks = (
             request.form.get(
                 "remarks"
@@ -1188,6 +1308,18 @@ def register_recipe_editor_routes(app):
 
             return redirect("/")
 
+        if not role_can(
+            session.get(
+                "role"
+            ),
+            "recipe_approve"
+        ):
+
+            return _deny(
+                "Only Technology or Admin can release production revisions.",
+                f"/recipe-editor/{recipe_id}"
+            )
+
         remarks = (
             request.form.get(
                 "remarks"
@@ -1248,6 +1380,20 @@ def register_recipe_editor_routes(app):
         ):
 
             return redirect("/")
+
+        if not role_can(
+            session.get(
+                "role"
+            ),
+            "recipe_edit"
+        ):
+
+            return _deny(
+                "Your role cannot restore recipe versions.",
+                request.referrer
+                or
+                "/dashboard"
+            )
 
         version = (
             RecipeVersionManager
@@ -1340,6 +1486,41 @@ def register_recipe_editor_routes(app):
         if status not in valid_status:
 
             return redirect("/")
+
+        if (
+            status == "REVIEW"
+            and
+            not role_can(
+                session.get(
+                    "role"
+                ),
+                "recipe_submit_review"
+            )
+        ):
+
+            return _deny(
+                "Your role cannot submit recipes for review.",
+                f"/recipe-editor/{recipe_id}"
+            )
+
+        if (
+            status in [
+                "APPROVED",
+                "DRAFT"
+            ]
+            and
+            not role_can(
+                session.get(
+                    "role"
+                ),
+                "recipe_approve"
+            )
+        ):
+
+            return _deny(
+                "Only Technology or Admin can approve or reject recipes.",
+                f"/recipe-editor/{recipe_id}"
+            )
 
         remarks = (
             request.form.get("remarks")
@@ -1592,6 +1773,24 @@ def register_recipe_editor_routes(app):
                     ""
                 )
 
+                if not role_can(
+                    session.get(
+                        "role"
+                    ),
+                    _buffer_operation_capability(
+                        action
+                    )
+                ):
+
+                    flash(
+                        "Your role cannot run this PLC buffer operation.",
+                        "error"
+                    )
+
+                    return redirect(
+                        f"/recipe-editor/download-preparation/{recipe_id}"
+                    )
+
                 operation_result = (
                     PLCBufferOperationManager
                     .run_operation(
@@ -1654,7 +1853,21 @@ def register_recipe_editor_routes(app):
 
             operation_result=operation_result,
 
-            recent_operations=recent_operations
+            recent_operations=recent_operations,
+
+            can_edit_recipe=role_can(
+                session.get(
+                    "role"
+                ),
+                "recipe_edit"
+            ),
+
+            can_download_recipe=role_can(
+                session.get(
+                    "role"
+                ),
+                "recipe_download"
+            )
 
         )
 
@@ -1676,6 +1889,18 @@ def register_recipe_editor_routes(app):
                 "success": False,
                 "message": "Login required."
             }), 401
+
+        if not role_can(
+            session.get(
+                "role"
+            ),
+            "recipe_download"
+        ):
+
+            return jsonify({
+                "success": False,
+                "message": "Your role cannot access PLC buffer operations."
+            }), 403
 
         recipe = (
             RecipeManager
@@ -1728,6 +1953,20 @@ def register_recipe_editor_routes(app):
                 "success": False,
                 "message": "Unknown PLC buffer operation."
             }), 400
+
+        if not role_can(
+            session.get(
+                "role"
+            ),
+            _buffer_operation_capability(
+                action
+            )
+        ):
+
+            return jsonify({
+                "success": False,
+                "message": "Your role cannot run this PLC buffer operation."
+            }), 403
 
         selected_plc_id = (
             request.form.get(

@@ -683,8 +683,7 @@ class PLCDownloadTagReadinessManager:
             ],
 
             "DOWNLOAD_COMPLETE": [
-                "CRS_DOWNLOAD_COMPLETE",
-                "CSR_DOWNLOAD_COMPLETE"
+                "CRS_DOWNLOAD_COMPLETE"
             ]
 
         }

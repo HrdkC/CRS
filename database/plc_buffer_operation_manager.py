@@ -34,6 +34,10 @@ from database.upload_history_manager import (
     UploadHistoryManager
 )
 
+from flask_app.security.role_guard import (
+    role_can
+)
+
 
 class PLCBufferOperationManager:
 
@@ -71,6 +75,13 @@ class PLCBufferOperationManager:
             "action": "PLC_UPLOAD_TO_CRS_BUFFER"
         }
 
+    }
+
+    OPERATION_CAPABILITIES = {
+        "recipe_restore": "recipe_download",
+        "download_to_plc": "recipe_download",
+        "recipe_save": "recipe_edit",
+        "upload_from_plc": "recipe_edit"
     }
 
     @staticmethod
@@ -113,6 +124,32 @@ class PLCBufferOperationManager:
                 result,
                 False,
                 "Unknown operation"
+            )
+
+            return result
+
+        required_capability = (
+            PLCBufferOperationManager
+            .OPERATION_CAPABILITIES
+            .get(
+                operation,
+                "recipe_download"
+            )
+        )
+
+        if not role_can(
+            user_role,
+            required_capability
+        ):
+
+            result["errors"].append(
+                "Your role cannot run this PLC buffer operation."
+            )
+
+            PLCBufferOperationManager.finish(
+                result,
+                False,
+                "PLC buffer operation blocked by role"
             )
 
             return result
@@ -239,14 +276,46 @@ class PLCBufferOperationManager:
 
         except Exception as exc:
 
-            message = str(
+            raw_message = str(
                 exc
+            )
+
+            message = (
+                PLCBufferOperationManager
+                .format_operation_exception(
+                    raw_message,
+                    result
+                )
             )
 
             if message not in result["errors"]:
 
                 result["errors"].append(
                     message
+                )
+
+            if (
+                PLCBufferOperationManager
+                .is_plc_connection_error(
+                    raw_message
+                )
+            ):
+
+                PLCBufferOperationManager.add_step(
+                    result,
+                    "PLC connection",
+                    "FAILED",
+                    message,
+                    min(
+                        max(
+                            result.get(
+                                "progress_percent",
+                                0
+                            ) + 5,
+                            30
+                        ),
+                        45
+                    )
                 )
 
             if not result["success"]:
@@ -298,6 +367,69 @@ class PLCBufferOperationManager:
             )
 
         return result
+
+    @staticmethod
+    def is_plc_connection_error(
+
+        message
+
+    ):
+
+        normalized = (
+            message
+            or
+            ""
+        ).lower()
+
+        connection_markers = [
+            "failed to open a connection",
+            "connection refused",
+            "timed out",
+            "timeout",
+            "unreachable",
+            "no route to host"
+        ]
+
+        return any(
+            marker in normalized
+            for marker in connection_markers
+        )
+
+    @staticmethod
+    def format_operation_exception(
+
+        message,
+
+        result
+
+    ):
+
+        if not PLCBufferOperationManager.is_plc_connection_error(
+            message
+        ):
+
+            return message
+
+        plc = result.get(
+            "plc"
+        ) or {}
+
+        plc_name = plc.get(
+            "plc_name",
+            "selected PLC"
+        )
+
+        plc_ip = plc.get(
+            "ip_address",
+            "unknown IP"
+        )
+
+        return (
+            "PLC connection failed after database validation. "
+            f"CRS could not connect to {plc_name} ({plc_ip}). "
+            "Check PLC power, network path, controller mode, and selected "
+            f"PLC configuration, then retry. Technical detail: {message}"
+        )
 
     @staticmethod
     def get_operation_context(

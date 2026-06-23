@@ -8,6 +8,34 @@ from helper.datetime_helper import (
     utc_to_ist
 )
 
+from flask_app.security.role_guard import (
+    role_can
+)
+
+
+def _is_historical_recipe(recipe):
+
+    return (
+        recipe
+        and
+        recipe.get("version_usage_status")
+        == "HISTORY_RELEASED"
+    )
+
+
+def _is_legacy_historical_version(recipe, selected_version):
+
+    if not recipe:
+        return False
+
+    try:
+        selected_version = int(selected_version)
+        current_version = int(recipe.get("current_version"))
+    except Exception:
+        return False
+
+    return selected_version != current_version
+
 
 def register_recipe_routes(app):
 
@@ -38,6 +66,20 @@ def register_recipe_routes(app):
 
         if not session.get("logged_in"):
             return redirect("/login")
+
+        if not role_can(
+            session.get("role"),
+            "recipe_edit"
+        ):
+
+            flash(
+                "Your role cannot create recipes.",
+                "error"
+            )
+
+            return redirect(
+                f"/recipes/{machine_id}/{stage_id}"
+            )
 
         if request.method == "POST":
 
@@ -116,10 +158,11 @@ def register_recipe_routes(app):
         if not session.get("logged_in"):
             return redirect("/login")
 
-        if session["role"] not in [
-            "EDITOR",
-            "ADMIN"
-        ]:
+        if not role_can(
+            session.get("role"),
+            "recipe_edit"
+        ):
+
             return redirect("/recipes")
 
         recipe = RecipeManager.get_recipe(
@@ -235,10 +278,11 @@ def register_recipe_routes(app):
         if not session.get("logged_in"):
             return redirect("/login")
 
-        if session["role"] not in [
-            "EDITOR",
-            "ADMIN"
-        ]:
+        if not role_can(
+            session.get("role"),
+            "recipe_edit"
+        ):
+
             return redirect("/recipes")
 
         selected_version = request.args.get(
@@ -246,15 +290,41 @@ def register_recipe_routes(app):
             type=int
         )
 
-        if not selected_version:
+        recipe = RecipeManager.get_recipe(
+            recipe_code
+        )
 
-            recipe = RecipeManager.get_recipe(
-                recipe_code
+        if not recipe:
+
+            flash(
+                "Recipe not found.",
+                "error"
             )
+
+            return redirect("/recipes")
+
+        if not selected_version:
 
             selected_version = recipe[
                 "current_version"
             ]
+
+        if _is_legacy_historical_version(
+            recipe,
+            selected_version
+        ):
+
+            flash(
+                (
+                    "Historical recipe versions are locked. "
+                    "Open the current production version for changes."
+                ),
+                "error"
+            )
+
+            return redirect(
+                f"/recipes/{recipe_code}/parameters?version={selected_version}"
+            )
 
         parameter = RecipeManager.get_parameter(
             recipe_code,
@@ -331,15 +401,41 @@ def register_recipe_routes(app):
             type=int
         )
 
-        if not selected_version:
+        recipe = RecipeManager.get_recipe(
+            recipe_code
+        )
 
-            recipe = RecipeManager.get_recipe(
-                recipe_code
+        if not recipe:
+
+            flash(
+                "Recipe not found.",
+                "error"
             )
+
+            return redirect("/recipes")
+
+        if not selected_version:
 
             selected_version = recipe[
                 "current_version"
             ]
+
+        if _is_legacy_historical_version(
+            recipe,
+            selected_version
+        ):
+
+            flash(
+                (
+                    "Historical recipe metadata is locked. "
+                    "Open the current production version for changes."
+                ),
+                "error"
+            )
+
+            return redirect(
+                f"/recipes/{recipe_code}/parameters?version={selected_version}"
+            )
 
         parameter = RecipeManager.get_parameter(
             recipe_code,
@@ -435,6 +531,28 @@ def register_recipe_routes(app):
 
         )
 
+        if not recipe:
+
+            flash(
+                "Recipe Not Found",
+                "error"
+            )
+
+            return redirect(
+                "/recipes"
+            )
+
+        can_edit_phase_control = (
+            not _is_historical_recipe(
+                recipe
+            )
+            and
+            role_can(
+                session.get("role"),
+                "recipe_edit"
+            )
+        )
+
         phase_controls = (
 
             PhaseControlManager
@@ -447,6 +565,20 @@ def register_recipe_routes(app):
         )
 
         if request.method == "POST":
+
+            if not can_edit_phase_control:
+
+                flash(
+                    (
+                        "Historical released recipe phase controls are "
+                        "locked. Open the current production version."
+                    ),
+                    "error"
+                )
+
+                return redirect(
+                    f"/recipes/{recipe_id}/phase-control"
+                )
 
             phase_rows = (
 
@@ -561,7 +693,9 @@ def register_recipe_routes(app):
 
             phase_rows=phase_rows,
 
-            phase_controls=phase_controls
+            phase_controls=phase_controls,
+
+            can_edit_phase_control=can_edit_phase_control
 
         )
 
@@ -948,6 +1082,20 @@ def register_recipe_routes(app):
 
             return redirect(
                 "/recipes"
+            )
+
+        if not role_can(
+            session.get("role"),
+            "recipe_copy"
+        ):
+
+            flash(
+                "Your role cannot copy recipes.",
+                "error"
+            )
+
+            return redirect(
+                f"/recipe-editor/{recipe_id}"
             )
 
         if request.method == "POST":

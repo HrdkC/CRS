@@ -49,7 +49,14 @@ Recipe Editor
 
         <div class="workbench-actions">
 
-            {% if recipe.status != "RELEASED" %}
+            <a
+                class="crs-btn crs-btn-soft"
+                href="/recipes/{{ recipe.machine_id }}/{{ recipe.stage_id }}"
+            >
+                Recipe List
+            </a>
+
+            {% if recipe.status != "RELEASED" and can_edit_values %}
 
             <a
                 class="crs-btn crs-btn-soft"
@@ -75,11 +82,20 @@ Recipe Editor
             </a>
 
             <a
+                class="crs-btn crs-btn-soft"
+                href="/recipes/{{ recipe.id }}/phase-control"
+            >
+                Phase Control
+            </a>
+
+            {% if can_download_recipe %}
+            <a
                 class="crs-btn crs-btn-primary"
                 href="/recipe-editor/download-preparation/{{ recipe.id }}"
             >
                 PLC Buffer
             </a>
+            {% endif %}
 
         </div>
 
@@ -112,11 +128,23 @@ Recipe Editor
 
             </div>
 
-            {% if is_current_released %}
+            {% if recipe.is_test_only is defined and recipe.is_test_only == 1 %}
 
             <p>
-                Current released recipe values are editable with audit.
-                Historical versions remain locked.
+                This recipe is marked TEST ONLY. It is kept for audit/reference
+                but is blocked from PLC download.
+            </p>
+
+            {% elif is_current_released %}
+
+            <p>
+                {% if can_edit_values %}
+                    Current released recipe values are editable with audit.
+                    Historical versions remain locked.
+                {% else %}
+                    Current released recipe is available for viewing and PLC
+                    buffer operations. Your role cannot edit recipe values.
+                {% endif %}
             </p>
 
             {% elif is_historical %}
@@ -153,6 +181,7 @@ Recipe Editor
                 Release after verifying changes.
             </p>
 
+            {% if can_approve_recipe %}
             <form
                 class="inline-action-form release-form"
                 method="POST"
@@ -172,6 +201,7 @@ Recipe Editor
                     Release Change
                 </button>
             </form>
+            {% endif %}
 
             {% elif recipe.status == "DRAFT" %}
 
@@ -179,6 +209,7 @@ Recipe Editor
                 Draft recipe is editable. Submit it for review when ready.
             </p>
 
+            {% if can_submit_review %}
             <form
                 class="inline-action-form"
                 method="POST"
@@ -191,6 +222,7 @@ Recipe Editor
                     Submit For Review
                 </button>
             </form>
+            {% endif %}
 
             {% elif recipe.status == "REVIEW" %}
 
@@ -198,6 +230,7 @@ Recipe Editor
                 Review pending. Approve or reject with remarks.
             </p>
 
+            {% if can_approve_recipe %}
             <div class="review-actions">
 
                 <form
@@ -234,6 +267,7 @@ Recipe Editor
                 </form>
 
             </div>
+            {% endif %}
 
             {% endif %}
 

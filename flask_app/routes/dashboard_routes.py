@@ -1,122 +1,276 @@
 from flask import (
-
-    render_template,
-
     redirect,
-
+    render_template,
     session
-
 )
 
 from database.database import (
     get_connection
 )
 
+from flask_app.security.role_guard import (
+    normalize_role
+)
 
-def register_dashboard_routes(
 
-    app
+def _safe_count(cursor, query, params=()):
 
-):
+    try:
+
+        cursor.execute(
+            query,
+            params
+        )
+
+        return cursor.fetchone()[0]
+
+    except Exception:
+
+        return 0
+
+
+def _build_dashboard_alerts(role, counts):
+
+    normalized_role = normalize_role(
+        role
+    )
+
+    alert_map = {
+        "current_released": {
+            "label": "Current Production",
+            "count": counts["current_released_count"],
+            "detail": "Released recipes available for PLC buffer operations",
+            "href": "/recipes/5/11",
+            "status_class": "status-success"
+        },
+        "draft": {
+            "label": "Draft Recipes",
+            "count": counts["draft_count"],
+            "detail": "Recipes still under production preparation",
+            "href": "/recipes/5/11",
+            "status_class": "status-warning"
+        },
+        "review": {
+            "label": "Pending Review",
+            "count": counts["review_count"],
+            "detail": "Recipes waiting for Technology/Admin decision",
+            "href": "/recipes/5/11",
+            "status_class": "status-info"
+        },
+        "plc_blocked": {
+            "label": "PLC Operation Blocks",
+            "count": counts["blocked_operation_count"],
+            "detail": "Recent blocked PLC buffer operation jobs",
+            "href": "/audit-history",
+            "status_class": "status-danger"
+        },
+        "incomplete": {
+            "label": "Incomplete Recipes",
+            "count": counts["incomplete_recipe_count"],
+            "detail": "Recipes missing parameters or phase-control rows",
+            "href": "/recipes",
+            "status_class": "status-danger"
+        },
+        "tag_typo": {
+            "label": "PLC Tag Cleanup",
+            "count": counts["plc_tag_typo_count"],
+            "detail": "Legacy CSR download-complete tag names found",
+            "href": "/plcs",
+            "status_class": "status-warning"
+        },
+        "test_only": {
+            "label": "Test Only Recipes",
+            "count": counts["test_only_recipe_count"],
+            "detail": "Non-production recipes kept for trial/reference use",
+            "href": "/recipes",
+            "status_class": "status-neutral"
+        }
+    }
+
+    role_alert_keys = {
+        "ADMIN": [
+            "review",
+            "plc_blocked",
+            "incomplete",
+            "tag_typo",
+            "test_only"
+        ],
+        "TECHNOLOGY": [
+            "review",
+            "draft",
+            "plc_blocked",
+            "current_released"
+        ],
+        "PRODUCTION": [
+            "draft",
+            "review",
+            "plc_blocked",
+            "current_released"
+        ],
+        "EDITOR": [
+            "draft",
+            "review",
+            "plc_blocked",
+            "current_released"
+        ],
+        "OPERATOR": [
+            "current_released",
+            "plc_blocked"
+        ],
+        "VIEWER": [
+            "current_released"
+        ]
+    }
+
+    return [
+        alert_map[key]
+        for key in role_alert_keys.get(
+            normalized_role,
+            [
+                "current_released"
+            ]
+        )
+    ]
+
+
+def register_dashboard_routes(app):
 
     @app.route("/")
     def dashboard():
 
-        if not session.get(
+        if not session.get("logged_in"):
 
-            "logged_in"
-
-        ):
-
-            return redirect(
-                "/login"
-            )
+            return redirect("/login")
 
         conn = get_connection()
-
         cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM tbm_families
-            """
+        family_count = _safe_count(
+            cursor,
+            "SELECT COUNT(*) FROM tbm_families"
+        )
+        recipe_count = _safe_count(
+            cursor,
+            "SELECT COUNT(*) FROM recipes"
+        )
+        plc_count = _safe_count(
+            cursor,
+            "SELECT COUNT(*) FROM plc_master"
+        )
+        configured_plc_count = _safe_count(
+            cursor,
+            "SELECT COUNT(*) FROM plc_registry"
+        )
+        machine_count = _safe_count(
+            cursor,
+            "SELECT COUNT(*) FROM tbm_machines"
+        )
+        stage_count = _safe_count(
+            cursor,
+            "SELECT COUNT(*) FROM machine_stages"
+        )
+        user_count = _safe_count(
+            cursor,
+            "SELECT COUNT(*) FROM users"
         )
 
-        family_count = cursor.fetchone()[0]
+        dashboard_counts = {
+            "current_released_count": _safe_count(
+                cursor,
+                """
+                SELECT COUNT(*)
+                FROM recipes r
+                WHERE COALESCE(r.is_test_only, 0) = 0
+                AND r.status = 'RELEASED'
+                AND r.version = (
+                    SELECT MAX(x.version)
+                    FROM recipes x
+                    WHERE x.machine_id = r.machine_id
+                    AND x.stage_id = r.stage_id
+                    AND UPPER(x.recipe_code) = UPPER(r.recipe_code)
+                    AND x.status = 'RELEASED'
+                )
+                """
+            ),
+            "draft_count": _safe_count(
+                cursor,
+                """
+                SELECT COUNT(*)
+                FROM recipes
+                WHERE status = 'DRAFT'
+                AND COALESCE(is_test_only, 0) = 0
+                """
+            ),
+            "review_count": _safe_count(
+                cursor,
+                """
+                SELECT COUNT(*)
+                FROM recipes
+                WHERE status = 'REVIEW'
+                AND COALESCE(is_test_only, 0) = 0
+                """
+            ),
+            "blocked_operation_count": _safe_count(
+                cursor,
+                """
+                SELECT COUNT(*)
+                FROM plc_operation_jobs
+                WHERE status IN ('BLOCKED', 'FAILED')
+                """
+            ),
+            "incomplete_recipe_count": _safe_count(
+                cursor,
+                """
+                SELECT COUNT(*)
+                FROM recipes r
+                WHERE COALESCE(r.is_test_only, 0) = 0
+                AND (
+                    NOT EXISTS (
+                        SELECT 1
+                        FROM recipe_parameter_values v
+                        WHERE v.recipe_id = r.id
+                    )
+                    OR NOT EXISTS (
+                        SELECT 1
+                        FROM recipe_phase_control pc
+                        WHERE pc.recipe_id = r.id
+                    )
+                )
+                """
+            ),
+            "plc_tag_typo_count": _safe_count(
+                cursor,
+                """
+                SELECT COUNT(*)
+                FROM plc_tags
+                WHERE UPPER(tag_name) = 'CSR_DOWNLOAD_COMPLETE'
+                """
+            ),
+            "test_only_recipe_count": _safe_count(
+                cursor,
+                """
+                SELECT COUNT(*)
+                FROM recipes
+                WHERE COALESCE(is_test_only, 0) = 1
+                """
+            )
+        }
 
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM recipes
-            """
+        dashboard_alerts = _build_dashboard_alerts(
+            session.get("role"),
+            dashboard_counts
         )
-
-        recipe_count = cursor.fetchone()[0]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM plc_master
-            """
-        )
-
-        plc_count = cursor.fetchone()[0]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM plc_registry
-            """
-        )
-
-        configured_plc_count = cursor.fetchone()[0]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM tbm_machines
-            """
-        )
-
-        machine_count = cursor.fetchone()[0]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM machine_stages
-            """
-        )
-
-        stage_count = cursor.fetchone()[0]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*)
-            FROM users
-            """
-        )
-
-        user_count = cursor.fetchone()[0]
 
         conn.close()
 
         return render_template(
-
             "dashboard/dashboard.html",
-
             family_count=family_count,
-
             recipe_count=recipe_count,
-
             plc_count=plc_count,
-
             configured_plc_count=configured_plc_count,
-
             machine_count=machine_count,
-
             stage_count=stage_count,
-
-            user_count=user_count
-
+            user_count=user_count,
+            dashboard_alerts=dashboard_alerts
         )

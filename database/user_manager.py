@@ -5,12 +5,9 @@ from werkzeug.security import (
 
 from database.database import get_connection
 
-
-VALID_ROLES = [
-    "ADMIN",
-    "EDITOR",
-    "VIEWER"
-]
+from flask_app.security.role_guard import (
+    VALID_ROLES
+)
 
 
 class UserManager:

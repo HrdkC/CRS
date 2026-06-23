@@ -50,6 +50,10 @@ from database.create_recipe_download_history_table import (
     create_recipe_download_history_table
 )
 
+from database.upgrade_recipes_test_only import (
+    upgrade_recipes_test_only
+)
+
 class MigrationManager:
 
     @staticmethod
@@ -80,6 +84,8 @@ class MigrationManager:
         create_system_settings_table()
         
         create_recipe_download_history_table()
+
+        upgrade_recipes_test_only()
 
         print(
             "All Database Migrations Completed"

@@ -122,7 +122,9 @@ Recipes
                             {% endif %}
                         </td>
                         <td>
-                            {% if recipe.version_usage_status == "CURRENT_RELEASED" %}
+                            {% if recipe.is_test_only is defined and recipe.is_test_only == 1 %}
+                            <span class="status-badge status-neutral">Test Only</span>
+                            {% elif recipe.version_usage_status == "CURRENT_RELEASED" %}
                             <span class="status-badge status-info">Current Production</span>
                             {% elif recipe.version_usage_status == "HISTORY_RELEASED" %}
                             <span class="status-badge status-neutral">Historical</span>
@@ -139,6 +141,24 @@ Recipes
                                     class="row-action primary"
                                 >
                                     Open
+                                </a>
+                                <a
+                                    href="/recipe-editor/download-preparation/{{ recipe.id }}"
+                                    class="row-action"
+                                >
+                                    Buffer
+                                </a>
+                                <a
+                                    href="/recipe-editor/versions/{{ recipe.id }}"
+                                    class="row-action"
+                                >
+                                    Versions
+                                </a>
+                                <a
+                                    href="/recipe-editor/status-history/{{ recipe.id }}"
+                                    class="row-action"
+                                >
+                                    History
                                 </a>
                                 <a
                                     href="/recipes/{{ recipe.id }}/copy"

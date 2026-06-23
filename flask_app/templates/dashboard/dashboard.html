@@ -69,6 +69,32 @@ Apollo CRS Dashboard
         </a>
     </div>
 
+    <div class="data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Role Action Alerts</span>
+                <p>Priority items for {{ session.get("role") }} login.</p>
+            </div>
+        </div>
+
+        <div class="metric-grid">
+            {% for alert in dashboard_alerts %}
+            <a href="{{ alert.href }}" class="metric-card metric-link">
+                <span class="metric-label">{{ alert.label }}</span>
+                <strong>{{ alert.count }}</strong>
+                <small>{{ alert.detail }}</small>
+                <span class="status-badge {{ alert.status_class }}">
+                    {% if alert.count > 0 %}
+                        Action
+                    {% else %}
+                        OK
+                    {% endif %}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
     <div class="insight-layout">
         <div class="workbench-card">
             <div class="panel-heading">
