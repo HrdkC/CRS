@@ -164,6 +164,7 @@ class UserManager:
                     WHEN 'TECHNOLOGY' THEN 3
                     WHEN 'PRODUCTION' THEN 4
                     WHEN 'OPERATOR' THEN 5
+                    WHEN 'VIEWER' THEN 6
                     ELSE 9
                 END,
                 username

@@ -19,9 +19,76 @@ document.addEventListener(
 
         initializeSessionCountdown();
 
+        initializeLoginAttemptAlertAcknowledge();
+
     }
 
 );
+
+
+/* =====================================================
+   Login Attempt Alert Acknowledge
+   ===================================================== */
+
+function initializeLoginAttemptAlertAcknowledge() {
+    document.addEventListener("submit", async function (event) {
+        const form = event.target;
+
+        if (!form || !form.classList || !form.classList.contains("login-attempt-alert-form")) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const alertCard = form.closest(".login-attempt-alert");
+        const button = form.querySelector("button[type='submit']");
+
+        if (button) {
+            button.disabled = true;
+            button.textContent = "Acknowledging...";
+        }
+
+        try {
+            const response = await fetch(form.action, {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            const payload = await response.json().catch(function () {
+                return {};
+            });
+
+            if (response.status === 401 || payload.redirect) {
+                window.location.href = payload.redirect || "/login";
+                return;
+            }
+
+            if (!response.ok || !payload.ok) {
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = "Acknowledge";
+                }
+                return;
+            }
+
+            if (alertCard) {
+                alertCard.style.transition = "opacity 0.2s ease, transform 0.2s ease";
+                alertCard.style.opacity = "0";
+                alertCard.style.transform = "translateY(-6px)";
+                setTimeout(function () {
+                    alertCard.remove();
+                }, 220);
+            }
+        } catch (error) {
+            if (button) {
+                button.disabled = false;
+                button.textContent = "Acknowledge";
+            }
+        }
+    });
+}
 
 /* =====================================================
    Auto Hide Flash Messages
@@ -76,42 +143,57 @@ function initializeFlashMessages() {
 
 function initializeConfirmButtons() {
 
-    const buttons =
-        document.querySelectorAll(
-            "[data-confirm]"
-        );
+    /*
+     * Confirm handling must be submit-safe.
+     * Older logic attached a click handler to every [data-confirm] element.
+     * When data-confirm was placed on a form, every click inside inputs opened
+     * the browser confirm dialog. This version confirms only on actual form
+     * submit, and only once per submit attempt.
+     */
 
-    buttons.forEach(
+    const confirmedForms = new WeakSet();
 
-        function (button) {
-
-            button.addEventListener(
-
-                "click",
-
+    document.querySelectorAll("form[data-confirm]").forEach(
+        function (form) {
+            form.addEventListener(
+                "submit",
                 function (event) {
-
-                    const message =
-                        button.getAttribute(
-                            "data-confirm"
-                        );
-
-                    if (
-
-                        !confirm(message)
-
-                    ) {
-
-                        event.preventDefault();
-
+                    if (confirmedForms.has(form)) {
+                        return;
                     }
 
+                    const message = form.getAttribute("data-confirm");
+
+                    if (message && !confirm(message)) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    confirmedForms.add(form);
                 }
-
             );
-
         }
+    );
 
+    document.querySelectorAll("a[data-confirm], button[data-confirm]").forEach(
+        function (element) {
+            const parentForm = element.closest("form[data-confirm]");
+
+            if (parentForm && element.type === "submit") {
+                return;
+            }
+
+            element.addEventListener(
+                "click",
+                function (event) {
+                    const message = element.getAttribute("data-confirm");
+
+                    if (message && !confirm(message)) {
+                        event.preventDefault();
+                    }
+                }
+            );
+        }
     );
 
 }
@@ -370,6 +452,7 @@ function initializeSessionCountdown() {
     let lastHeartbeatMs = 0;
     let userActivitySinceHeartbeat = false;
     let expireInProgress = false;
+    const heartbeatIntervalMs = 15000;
 
     function formatSeconds(totalSeconds) {
         totalSeconds = Math.max(0, Math.floor(totalSeconds));
@@ -411,14 +494,62 @@ function initializeSessionCountdown() {
         }
     }
 
-    async function heartbeat() {
+    function showLoginAttemptAlerts(alerts) {
+        if (!alerts || !alerts.length) {
+            return;
+        }
+
+        let stack = document.querySelector(".login-attempt-alert-stack");
+        if (!stack) {
+            stack = document.createElement("div");
+            stack.className = "login-attempt-alert-stack";
+
+            const mainContainer = document.querySelector(".main-container");
+            if (mainContainer) {
+                mainContainer.prepend(stack);
+            } else {
+                document.body.appendChild(stack);
+            }
+        }
+
+        alerts.forEach(function (alert) {
+            if (document.querySelector('[data-login-alert-id="' + alert.id + '"]')) {
+                return;
+            }
+
+            const item = document.createElement("div");
+            item.className = "login-attempt-alert";
+            item.setAttribute("role", "alert");
+            item.setAttribute("data-login-alert-id", alert.id);
+
+            const workstation = alert.attempted_workstation_name || "Unknown workstation";
+            const clientIp = alert.attempted_client_ip || "-";
+            const attemptedAt = alert.attempted_at || "";
+
+            item.innerHTML =
+                '<div class="login-attempt-alert-icon">⚠</div>' +
+                '<div class="login-attempt-alert-body">' +
+                    '<strong>Another workstation tried to login with your username</strong>' +
+                    '<div>Attempted from <b>' + workstation + '</b> / IP <b>' + clientIp + '</b> at ' + attemptedAt + '.</div>' +
+                    '<div class="login-attempt-alert-meta">Your active CRS session remains protected. Finish your work and logout when ready.</div>' +
+                '</div>' +
+                '<form method="POST" action="/login-attempt-alerts/' + alert.id + '/ack" class="login-attempt-alert-form">' +
+                    '<button type="submit" class="btn btn-secondary btn-sm">Acknowledge</button>' +
+                '</form>';
+
+            stack.prepend(item);
+        });
+    }
+
+    async function heartbeat(forceActivity) {
         const nowMs = Date.now();
 
-        if (nowMs - lastHeartbeatMs < 30000) {
+        if (!forceActivity && nowMs - lastHeartbeatMs < heartbeatIntervalMs) {
             return;
         }
 
         lastHeartbeatMs = nowMs;
+        const hadUserActivity = Boolean(forceActivity || userActivitySinceHeartbeat);
         userActivitySinceHeartbeat = false;
 
         try {
@@ -427,8 +558,12 @@ function initializeSessionCountdown() {
                 {
                     method: "POST",
                     headers: {
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
+                        "X-Requested-With": "XMLHttpRequest",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        user_activity: hadUserActivity
+                    })
                 }
             );
 
@@ -450,8 +585,7 @@ function initializeSessionCountdown() {
             );
 
             lastActivityEpoch = parseInt(
-                payload.last_activity_epoch ||
-                Math.floor(Date.now() / 1000),
+                payload.last_activity_epoch || lastActivityEpoch,
                 10
             );
 
@@ -466,6 +600,10 @@ function initializeSessionCountdown() {
                 "data-last-activity-epoch",
                 String(lastActivityEpoch)
             );
+
+            if (payload.login_attempt_alerts) {
+                showLoginAttemptAlerts(payload.login_attempt_alerts);
+            }
 
             renderCountdown();
         } catch (error) {
@@ -497,7 +635,6 @@ function initializeSessionCountdown() {
 
     function markUserActivity() {
         userActivitySinceHeartbeat = true;
-        heartbeat();
     }
 
     [
@@ -516,16 +653,26 @@ function initializeSessionCountdown() {
         }
     );
 
+    // Passive heartbeat proves the browser tab is still open, without extending
+    // the idle auto-logout timer. User activity is sent separately.
+    setInterval(
+        function () {
+            heartbeat(false);
+        },
+        heartbeatIntervalMs
+    );
+
     setInterval(
         function () {
             renderCountdown();
 
             if (userActivitySinceHeartbeat) {
-                heartbeat();
+                heartbeat(true);
             }
         },
         1000
     );
 
+    heartbeat(false);
     renderCountdown();
 }

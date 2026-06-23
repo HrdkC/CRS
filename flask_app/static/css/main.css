@@ -28,7 +28,7 @@
 
     --danger: #ef4444;
 
-    --header-height: 126px;
+    --header-height: 100px;
 
     --footer-height: 42px;
 
@@ -193,7 +193,7 @@ a {
 
 .brand-title {
 
-    font-size: 28px;
+    font-size: 30px;
 
     line-height: 1.1;
 
@@ -211,9 +211,9 @@ a {
 
     font-size: 13px;
 
-    line-height: 1.35;
+    line-height: 1.4;
 
-    margin-top: 2px;
+    margin-top: 6px;
 
 }
 
@@ -223,7 +223,7 @@ a {
 
     font-size: 12px;
 
-    line-height: 1.45;
+    line-height: 1.3;
 
     color: var(--apollo-dark);
 
@@ -233,7 +233,7 @@ a {
 
     border-radius: 8px;
 
-    padding: 8px 10px;
+    padding: 4px 8px;
 
     min-width: 0;
 
@@ -251,7 +251,7 @@ a {
 
 .navbar {
 
-    margin-top: 9px;
+    margin-top: 1px;
 
     max-width: var(--content-max-width);
 
@@ -430,6 +430,8 @@ a {
     margin: 0 auto;
 
     padding: 14px 18px;
+
+    padding-top: calc(var(--header-height) + 2px);
 
     min-height: calc(
         100vh - var(--header-height) - var(--footer-height)
@@ -2708,7 +2710,7 @@ button:hover {
 
 .session-countdown {
 
-    margin-top: 8px;
+    /* margin-top: 8px; */
 
     display: inline-flex;
 
@@ -2716,7 +2718,7 @@ button:hover {
 
     gap: 6px;
 
-    padding: 6px 9px;
+    padding: 3px 6px;
 
     border-radius: 999px;
 
@@ -3197,3 +3199,110 @@ button:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* Priority 11: blocked second login alert for active user */
+.login-attempt-alert-stack {
+    margin: 0 0 16px 0;
+    display: grid;
+    gap: 10px;
+}
+
+.login-attempt-alert {
+    display: grid;
+    grid-template-columns: 42px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid #facc15;
+    border-left: 5px solid #d97706;
+    background: #fffbeb;
+    color: #78350f;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 12px 28px rgba(120, 53, 15, 0.08);
+}
+
+.login-attempt-alert-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fef3c7;
+    color: #b45309;
+    font-weight: 900;
+}
+
+.login-attempt-alert-body {
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.login-attempt-alert-body strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.login-attempt-alert-meta {
+    color: #92400e;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.login-attempt-alert-form {
+    margin: 0;
+}
+
+/* Priority 11 FIX: keep login-attempt alerts below fixed header and inside content flow */
+.main-container > .login-attempt-alert-stack {
+    margin: 14px 0 18px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.login-attempt-alert-stack {
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.login-attempt-alert {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    min-height: 72px;
+}
+
+.login-attempt-alert-form {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+}
+
+.login-attempt-alert-form .btn,
+.login-attempt-alert-form button {
+    white-space: nowrap;
+}
+
+.settings-workbench .settings-form[data-confirm] input,
+.settings-workbench .settings-form[data-confirm] select,
+.settings-workbench .settings-form[data-confirm] textarea {
+    cursor: text;
+}
+
+@media screen and (max-width: 900px) {
+    .login-attempt-alert {
+        grid-template-columns: 34px 1fr;
+    }
+
+    .login-attempt-alert-form {
+        grid-column: 2;
+    }
+}
+
+
+
+

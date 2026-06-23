@@ -31,9 +31,9 @@ Auto Logout Settings
             <small>Same timer as header</small>
         </div>
         <div class="metric-card">
-            <span class="metric-label">Allowed Range</span>
-            <strong class="metric-text">{{ min_timeout }}-{{ max_timeout }}</strong>
-            <small>Minutes</small>
+            <span class="metric-label">Browser Close Grace</span>
+            <strong class="metric-text">{{ heartbeat_grace_seconds }} sec</strong>
+            <small>Seconds after heartbeat stops</small>
         </div>
         <div class="metric-card">
             <span class="metric-label">Audit</span>
@@ -46,7 +46,7 @@ Auto Logout Settings
         <div class="panel-heading table-heading">
             <div>
                 <span>Auto Logout Configuration</span>
-                <p>Changing this value affects all active and future users. Use 1 minute only for GUI testing, then restore the production value.</p>
+                <p>Idle timeout is configured in minutes. Browser-close grace is configured in seconds only.</p>
             </div>
         </div>
 
@@ -72,6 +72,20 @@ Auto Logout Settings
                 </div>
 
                 <div class="form-group">
+                    <label for="heartbeat_grace_seconds">Browser Close Grace Time (Seconds)</label>
+                    <input
+                        type="number"
+                        id="heartbeat_grace_seconds"
+                        name="heartbeat_grace_seconds"
+                        min="{{ min_heartbeat_grace }}"
+                        max="{{ max_heartbeat_grace }}"
+                        value="{{ heartbeat_grace_seconds }}"
+                        required
+                    >
+                    <small>Allowed range: {{ min_heartbeat_grace }} to {{ max_heartbeat_grace }} seconds. Enter seconds only. Recommended plant value: 60 to 120 seconds.</small>
+                </div>
+
+                <div class="form-group">
                     <label for="change_reason">Change Reason</label>
                     <input
                         type="text"
@@ -84,16 +98,17 @@ Auto Logout Settings
             </div>
 
             <div class="form-actions left-actions">
-                <button type="submit" class="primary-action">Save Auto Logout Time</button>
+                <button type="submit" class="primary-action">Save Auto Logout Settings</button>
                 <a class="secondary-action" href="/audit-history?action=SESSION_TIMEOUT_UPDATED">View Timeout Audit</a>
             </div>
 
             {% if timeout_record %}
             <p class="settings-note">
-                Last updated by
+                Timeout last updated by
                 <strong>{{ timeout_record.updated_by or 'SYSTEM' }}</strong>
                 at
                 <strong>{{ timeout_record.updated_at or timeout_record.created_at }}</strong>.
+                Browser-close grace is saved in seconds and audit tracked.
             </p>
             {% endif %}
         </form>

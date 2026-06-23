@@ -19,4 +19,5 @@ if __name__ == "__main__":
     print("- operator    / operator123     / OPERATOR     / password reset required")
     print("- engineering / Engineering@123 / ENGINEERING  / password reset required")
     print("- hardik      / Hardik@123      / ADMIN backup / password reset required")
+    print("- viewer      / viewer123       / VIEWER       / password reset required")
     print("Change all temporary passwords immediately after first login.")

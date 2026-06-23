@@ -3,12 +3,13 @@ FINAL_ROLES = [
     "ENGINEERING",
     "TECHNOLOGY",
     "PRODUCTION",
-    "OPERATOR"
+    "OPERATOR",
+    "VIEWER"
 ]
 
+# Backward compatibility only. New users should not be created with legacy roles.
 LEGACY_ROLES = [
-    "EDITOR",
-    "VIEWER"
+    "EDITOR"
 ]
 
 VALID_ROLES = FINAL_ROLES + LEGACY_ROLES
@@ -19,8 +20,8 @@ ROLE_HIERARCHY = {
     "TECHNOLOGY": 60,
     "PRODUCTION": 40,
     "OPERATOR": 20,
-    "EDITOR": 30,
-    "VIEWER": 10
+    "VIEWER": 10,
+    "EDITOR": 30
 }
 
 ROLE_CAPABILITIES = {
@@ -68,16 +69,19 @@ ROLE_CAPABILITIES = {
         "recipe_view",
         "recipe_download"
     },
-    # Backward compatibility only. New users should not be created with these.
+    # Viewer is a final CRS role. It can only view current database recipe values
+    # and read-only recipe/history screens. It cannot download, upload, save,
+    # approve, configure, or manage users/sessions.
+    "VIEWER": {
+        "recipe_view"
+    },
+    # Legacy editor remains supported for existing accounts only.
     "EDITOR": {
         "recipe_view",
         "recipe_download",
         "recipe_edit",
         "recipe_copy",
         "recipe_submit_review"
-    },
-    "VIEWER": {
-        "recipe_view"
     }
 }
 
@@ -87,8 +91,8 @@ ROLE_LABELS = {
     "TECHNOLOGY": "Technology / Approval",
     "PRODUCTION": "Production / Recipe Preparation",
     "OPERATOR": "Operator / Download Only",
-    "EDITOR": "Legacy Editor",
-    "VIEWER": "Legacy Viewer"
+    "VIEWER": "Viewer / Read Only",
+    "EDITOR": "Legacy Editor"
 }
 
 PROTECTED_SUPER_USERS = {

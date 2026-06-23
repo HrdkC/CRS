@@ -41,8 +41,18 @@ def upgrade_user_management_schema():
 
     _add_column_if_missing(cursor, "user_sessions", "role", "TEXT")
     _add_column_if_missing(cursor, "user_sessions", "last_activity", "DATETIME")
+    _add_column_if_missing(cursor, "user_sessions", "heartbeat_at", "DATETIME")
     _add_column_if_missing(cursor, "user_sessions", "logout_reason", "TEXT")
     _add_column_if_missing(cursor, "user_sessions", "auto_logged_out", "INTEGER DEFAULT 0")
+    _add_column_if_missing(cursor, "user_sessions", "user_agent", "TEXT")
+    _add_column_if_missing(cursor, "user_sessions", "forwarded_for", "TEXT")
+    _add_column_if_missing(cursor, "user_sessions", "request_host", "TEXT")
+    _add_column_if_missing(cursor, "user_sessions", "login_source", "TEXT")
+    _add_column_if_missing(cursor, "user_sessions", "replaced_existing_sessions", "INTEGER DEFAULT 0")
+
+    _add_column_if_missing(cursor, "audit_log", "user_agent", "TEXT")
+    _add_column_if_missing(cursor, "audit_log", "forwarded_for", "TEXT")
+    _add_column_if_missing(cursor, "audit_log", "request_host", "TEXT")
 
     cursor.execute(
         """
@@ -52,10 +62,120 @@ def upgrade_user_management_schema():
         """
     )
 
+    cursor.execute(
+        """
+        UPDATE user_sessions
+        SET heartbeat_at = COALESCE(heartbeat_at, last_activity, login_time)
+        WHERE heartbeat_at IS NULL
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user_login_attempt_alerts
+        (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            active_session_id INTEGER,
+            attempted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            attempted_client_ip TEXT,
+            attempted_workstation_name TEXT,
+            attempted_user_agent TEXT,
+            attempted_forwarded_for TEXT,
+            attempted_request_host TEXT,
+            active_client_ip TEXT,
+            active_workstation_name TEXT,
+            active_login_time DATETIME,
+            login_source TEXT,
+            status TEXT DEFAULT 'UNREAD',
+            acknowledged_at DATETIME,
+            acknowledged_by TEXT
+        )
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_user_login_attempt_alerts_username_status
+        ON user_login_attempt_alerts(username, status, attempted_at)
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS recipe_resource_locks
+        (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            resource_type TEXT NOT NULL,
+            resource_id INTEGER NOT NULL,
+            operation_type TEXT NOT NULL,
+            locked_by TEXT NOT NULL,
+            user_role TEXT,
+            session_id INTEGER,
+            workstation_name TEXT,
+            client_ip TEXT,
+            user_agent TEXT,
+            status TEXT DEFAULT 'ACTIVE',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            expires_at DATETIME,
+            released_at DATETIME,
+            release_reason TEXT,
+            notes TEXT
+        )
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS audit_log_archive
+        (
+            archive_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            original_audit_id INTEGER,
+            username TEXT,
+            role TEXT,
+            workstation_name TEXT,
+            client_ip TEXT,
+            plc_name TEXT,
+            recipe_code TEXT,
+            recipe_version INTEGER,
+            record_id TEXT,
+            parameter_name TEXT,
+            old_value TEXT,
+            new_value TEXT,
+            action TEXT,
+            change_source TEXT,
+            reason TEXT,
+            user_agent TEXT,
+            request_host TEXT,
+            forwarded_for TEXT,
+            timestamp DATETIME,
+            archived_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            archived_by TEXT,
+            archive_batch_id TEXT
+        )
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS audit_archive_exports
+        (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            export_type TEXT,
+            export_path TEXT,
+            file_name TEXT,
+            row_count INTEGER DEFAULT 0,
+            exported_by TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            remarks TEXT
+        )
+        """
+    )
+
     conn.commit()
     conn.close()
 
-    print("Priority 11 user/session schema upgrade completed.")
+    print("Priority 11 user/session/schema/archive upgrade completed.")
 
 
 def ensure_seed_user(
@@ -218,11 +338,28 @@ def ensure_backup_admin_user(
     )
 
 
+def ensure_default_viewer_user(
+    username="viewer",
+    password="viewer123",
+    created_by="SYSTEM"
+):
+    ensure_seed_user(
+        username=username,
+        password=password,
+        role="VIEWER",
+        created_by=created_by,
+        remarks="Default read-only viewer user created by Priority 11 helper. Viewer can only inspect recipe/current database values and history.",
+        force_password_reset=True,
+        protect_existing_password=True
+    )
+
+
 def ensure_priority11_default_users():
     upgrade_user_management_schema()
     ensure_default_operator_user()
     ensure_default_engineering_user()
     ensure_backup_admin_user()
+    ensure_default_viewer_user()
 
 
 if __name__ == "__main__":

@@ -30,14 +30,64 @@ def register_auth_routes(app):
                 user = UserManager.get_user(username)
                 last_login_ist = utc_to_ist(user["last_login"])
 
-                client_ip = request.remote_addr
-                workstation_name = socket.gethostname()
+                client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+                forwarded_for = request.headers.get("X-Forwarded-For")
+                request_host = request.host
+                user_agent = request.headers.get("User-Agent", "")
 
-                session_id = UserSessionManager.login(
+                try:
+                    workstation_name = socket.gethostbyaddr(request.remote_addr)[0]
+                except Exception:
+                    workstation_name = socket.gethostname()
+
+                active_session = UserSessionManager.get_live_active_session_for_username(username)
+                if active_session:
+                    UserSessionManager.record_blocked_login_attempt(
+                        username=username,
+                        active_session=active_session,
+                        attempted_client_ip=client_ip,
+                        attempted_workstation_name=workstation_name,
+                        attempted_user_agent=user_agent,
+                        attempted_forwarded_for=forwarded_for,
+                        attempted_request_host=request_host,
+                        login_source="WEB_LOGIN_BLOCKED_ACTIVE_SESSION"
+                    )
+
+                    AuditManager.log_event(
+                        username=username,
+                        role=user["role"],
+                        action="LOGIN_BLOCKED_ACTIVE_SESSION",
+                        change_source="AUTH_ACTIVE_SESSION_GUARD",
+                        workstation_name=workstation_name,
+                        client_ip=client_ip,
+                        user_agent=user_agent,
+                        forwarded_for=forwarded_for,
+                        request_host=request_host,
+                        record_id=active_session.get("id"),
+                        reason=(
+                            "Login blocked because the same username is already active "
+                            f"on workstation {active_session.get('workstation_name') or '-'} "
+                            f"IP {active_session.get('client_ip') or '-'}"
+                        )
+                    )
+
+                    return render_template(
+                        "auth/login.html",
+                        error=(
+                            "This username is already logged in. "
+                            "Existing active user has priority. Please wait until that user logs out or the session expires."
+                        )
+                    )
+
+                session_id, replaced_count = UserSessionManager.login(
                     username=username,
                     role=user["role"],
                     client_ip=client_ip,
-                    workstation_name=workstation_name
+                    workstation_name=workstation_name,
+                    user_agent=user_agent,
+                    forwarded_for=forwarded_for,
+                    request_host=request_host,
+                    login_source="WEB_LOGIN"
                 )
 
                 now = int(time.time())
@@ -58,7 +108,11 @@ def register_auth_routes(app):
                     action="LOGIN_SUCCESS",
                     change_source="AUTH",
                     workstation_name=workstation_name,
-                    client_ip=client_ip
+                    client_ip=client_ip,
+                    user_agent=user_agent,
+                    forwarded_for=forwarded_for,
+                    request_host=request_host,
+                    reason="Single-session login established. Existing active sessions are never replaced automatically."
                 )
 
                 print("LAST LOGIN IST =", session["last_login_ist"])
@@ -74,7 +128,10 @@ def register_auth_routes(app):
                 role="UNKNOWN",
                 action="LOGIN_FAILED",
                 change_source="AUTH",
-                client_ip=request.remote_addr,
+                client_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+                user_agent=request.headers.get("User-Agent", ""),
+                forwarded_for=request.headers.get("X-Forwarded-For"),
+                request_host=request.host,
                 reason="Invalid username or password"
             )
 
@@ -99,7 +156,10 @@ def register_auth_routes(app):
                 role=session.get("role"),
                 action="LOGOUT",
                 change_source="AUTH",
-                client_ip=request.remote_addr
+                client_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+                user_agent=request.headers.get("User-Agent", ""),
+                forwarded_for=request.headers.get("X-Forwarded-For"),
+                request_host=request.host
             )
 
         session.clear()
@@ -148,8 +208,11 @@ def register_auth_routes(app):
                 role=session.get("role"),
                 action="MY_PASSWORD_CHANGED",
                 change_source="AUTH",
-                client_ip=request.remote_addr,
-                record_id=username
+                client_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+                record_id=username,
+                user_agent=request.headers.get("User-Agent", ""),
+                forwarded_for=request.headers.get("X-Forwarded-For"),
+                request_host=request.host
             )
 
             flash("Password changed successfully.", "success")

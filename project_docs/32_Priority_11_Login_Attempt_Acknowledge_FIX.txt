@@ -1,0 +1,15 @@
+# Priority 11 - Login Attempt Acknowledge Fix
+
+## Problem
+Clicking Acknowledge on same-username login attempt alerts opened `/login-attempt-alerts/<id>/ack` and returned 404 because the POST route was not registered.
+
+## Resolution
+- Added POST route `/login-attempt-alerts/<alert_id>/ack`.
+- The route marks the alert as ACKNOWLEDGED for the logged-in active username only.
+- Added audit action `LOGIN_ATTEMPT_ALERT_ACKNOWLEDGED`.
+- Added AJAX acknowledge handling so the alert card is removed without leaving the dashboard.
+- Added `data-login-alert-id` to server-rendered alert cards so heartbeat does not duplicate the same alert on screen.
+
+## Security
+- New login screen still does not expose workstation/IP metadata.
+- Metadata remains visible only to authenticated active user and ADMIN audit/archive pages.

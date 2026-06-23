@@ -4,7 +4,8 @@ from flask import (
     request,
     session,
     redirect,
-    flash
+    flash,
+    g
 )
 
 from database.audit_manager import AuditManager
@@ -44,6 +45,41 @@ def register_session_guard(app):
         if endpoint in SKIP_ENDPOINTS:
             return None
 
+        # Permanent stale-session prevention:
+        # close other expired/stale sessions before guarding the current request.
+        # Never close this current browser here; auto logout logic below handles it.
+        try:
+            UserSessionManager.close_expired_and_stale_sessions(
+                exclude_session_id=session.get("session_id")
+            )
+        except Exception:
+            pass
+
+        # Existing active user has priority. A second login attempt for the same
+        # username is blocked at /login and logged as an alert. Here we only
+        # reject the browser session if it was closed by logout, force logout,
+        # or auto logout.
+        if not UserSessionManager.is_session_active(
+            session.get("session_id"),
+            username=session.get("username")
+        ):
+            username = session.get("username")
+            role = session.get("role")
+            AuditManager.log_event(
+                username=username,
+                role=role,
+                action="SESSION_CLOSED_BROWSER_REQUEST",
+                change_source="SESSION_GUARD",
+                client_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+                user_agent=request.headers.get("User-Agent", ""),
+                forwarded_for=request.headers.get("X-Forwarded-For"),
+                request_host=request.host,
+                reason="Browser used a session cookie for a closed CRS session."
+            )
+            session.clear()
+            flash("Your CRS session is no longer active. Please login again.", "warning")
+            return redirect("/login")
+
         now = int(time.time())
         last_activity = int(session.get("last_activity_epoch", now))
         timeout_minutes = _current_timeout_minutes()
@@ -65,7 +101,10 @@ def register_session_guard(app):
                 role=role,
                 action="AUTO_LOGOUT",
                 change_source="SESSION_GUARD",
-                client_ip=request.remote_addr,
+                client_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+                user_agent=request.headers.get("User-Agent", ""),
+                forwarded_for=request.headers.get("X-Forwarded-For"),
+                request_host=request.host,
                 reason=f"Idle timeout exceeded {timeout_minutes} minutes"
             )
 
@@ -82,5 +121,13 @@ def register_session_guard(app):
 
         if session.get("password_reset_required") == 1:
             return redirect("/my-password")
+
+        try:
+            g.login_attempt_alerts = UserSessionManager.get_pending_login_attempt_alerts(
+                session.get("username"),
+                limit=3
+            )
+        except Exception:
+            g.login_attempt_alerts = []
 
         return None

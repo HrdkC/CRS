@@ -122,6 +122,7 @@
                         {% endif %}
 
                         {% if is_admin() %}
+                        <a href="/audit-archive">Audit Archive / Export</a>
                         <a href="/auto-logout-settings">Auto Logout Settings</a>
                         {% endif %}
 
@@ -187,6 +188,32 @@
                 </div>
             {% endif %}
         {% endwith %}
+
+
+        {% if g is defined and g.login_attempt_alerts %}
+        <div class="login-attempt-alert-stack">
+            {% for alert in g.login_attempt_alerts %}
+            <div class="login-attempt-alert" role="alert" data-login-alert-id="{{ alert.id }}">
+                <div class="login-attempt-alert-icon">⚠</div>
+                <div class="login-attempt-alert-body">
+                    <strong>Another workstation tried to login as {{ session.get("username") }}</strong>
+                    <div>
+                        Attempted from
+                        <b>{{ alert.attempted_workstation_name or "Unknown workstation" }}</b>
+                        / IP <b>{{ alert.attempted_client_ip or "-" }}</b>
+                        at {{ alert.attempted_at }}.
+                    </div>
+                    <div class="login-attempt-alert-meta">
+                        Current active session remains protected. Finish your work and logout when ready.
+                    </div>
+                </div>
+                <form method="POST" action="/login-attempt-alerts/{{ alert.id }}/ack" class="login-attempt-alert-form">
+                    <button type="submit" class="btn btn-secondary btn-sm">Acknowledge</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
         {% block content %}
         {% endblock %}

@@ -32,7 +32,10 @@ class AuditManager:
         parameter_name=None,
         old_value=None,
         new_value=None,
-        reason=None
+        reason=None,
+        user_agent=None,
+        forwarded_for=None,
+        request_host=None
     ):
 
         conn = get_connection()
@@ -55,11 +58,14 @@ class AuditManager:
                 new_value,
                 action,
                 change_source,
-                reason
+                reason,
+                user_agent,
+                forwarded_for,
+                request_host
             )
             VALUES
             (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
             """,
             (
@@ -76,7 +82,10 @@ class AuditManager:
                 new_value,
                 action,
                 change_source,
-                reason
+                reason,
+                user_agent,
+                forwarded_for,
+                request_host
             )
         )
 
@@ -160,10 +169,13 @@ class AuditManager:
                 "LOWER(COALESCE(plc_name, '')) LIKE LOWER(?) OR "
                 "LOWER(COALESCE(record_id, '')) LIKE LOWER(?) OR "
                 "LOWER(COALESCE(old_value, '')) LIKE LOWER(?) OR "
-                "LOWER(COALESCE(new_value, '')) LIKE LOWER(?)"
+                "LOWER(COALESCE(new_value, '')) LIKE LOWER(?) OR "
+                "LOWER(COALESCE(user_agent, '')) LIKE LOWER(?) OR "
+                "LOWER(COALESCE(request_host, '')) LIKE LOWER(?) OR "
+                "LOWER(COALESCE(forwarded_for, '')) LIKE LOWER(?)"
                 ")"
             )
-            params.extend([keyword_value] * 11)
+            params.extend([keyword_value] * 14)
 
         where_clause = ""
         if conditions:

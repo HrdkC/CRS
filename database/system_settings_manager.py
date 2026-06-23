@@ -11,8 +11,14 @@ class SystemSettingsManager:
     """
 
     SESSION_TIMEOUT_KEY = "SESSION_TIMEOUT_MINUTES"
+    HEARTBEAT_STALE_GRACE_KEY = "SESSION_HEARTBEAT_STALE_GRACE_SECONDS"
+
     MIN_SESSION_TIMEOUT_MINUTES = 1
     MAX_SESSION_TIMEOUT_MINUTES = 480
+
+    MIN_HEARTBEAT_STALE_GRACE_SECONDS = 30
+    MAX_HEARTBEAT_STALE_GRACE_SECONDS = 600
+    DEFAULT_HEARTBEAT_STALE_GRACE_SECONDS = 75
 
     @staticmethod
     def ensure_table():
@@ -156,6 +162,7 @@ class SystemSettingsManager:
         )
 
         if existing:
+            SystemSettingsManager.ensure_heartbeat_stale_grace_setting()
             return
 
         default_minutes = int(default_minutes or SESSION_TIMEOUT_MINUTES)
@@ -169,6 +176,8 @@ class SystemSettingsManager:
             description="Idle auto logout timeout in minutes. Configurable by ADMIN super user from Active Sessions GUI.",
             updated_by="SYSTEM"
         )
+
+        SystemSettingsManager.ensure_heartbeat_stale_grace_setting()
 
     @staticmethod
     def validate_session_timeout_minutes(timeout_minutes):
@@ -188,6 +197,87 @@ class SystemSettingsManager:
             )
 
         return timeout_minutes
+
+    @staticmethod
+    def validate_heartbeat_stale_grace_seconds(grace_seconds):
+        try:
+            grace_seconds = int(grace_seconds)
+        except (TypeError, ValueError):
+            raise ValueError("Browser-close stale grace must be a number of seconds.")
+
+        if grace_seconds < SystemSettingsManager.MIN_HEARTBEAT_STALE_GRACE_SECONDS:
+            raise ValueError(
+                f"Browser-close stale grace must be at least {SystemSettingsManager.MIN_HEARTBEAT_STALE_GRACE_SECONDS} seconds."
+            )
+
+        if grace_seconds > SystemSettingsManager.MAX_HEARTBEAT_STALE_GRACE_SECONDS:
+            raise ValueError(
+                f"Browser-close stale grace cannot exceed {SystemSettingsManager.MAX_HEARTBEAT_STALE_GRACE_SECONDS} seconds."
+            )
+
+        return grace_seconds
+
+    @staticmethod
+    def ensure_heartbeat_stale_grace_setting(default_seconds=None):
+        SystemSettingsManager.ensure_table()
+
+        existing = SystemSettingsManager.get_setting_record(
+            SystemSettingsManager.HEARTBEAT_STALE_GRACE_KEY
+        )
+
+        if existing:
+            return
+
+        default_seconds = int(
+            default_seconds or SystemSettingsManager.DEFAULT_HEARTBEAT_STALE_GRACE_SECONDS
+        )
+        default_seconds = SystemSettingsManager.validate_heartbeat_stale_grace_seconds(
+            default_seconds
+        )
+
+        SystemSettingsManager.set_setting(
+            setting_key=SystemSettingsManager.HEARTBEAT_STALE_GRACE_KEY,
+            setting_value=default_seconds,
+            description=(
+                "Seconds without GUI heartbeat after which an active browser session is treated as stale. "
+                "This protects plant operation when a browser is closed without logout."
+            ),
+            updated_by="SYSTEM"
+        )
+
+    @staticmethod
+    def get_heartbeat_stale_grace_seconds():
+        SystemSettingsManager.ensure_heartbeat_stale_grace_setting()
+
+        grace_seconds = SystemSettingsManager.get_int(
+            setting_key=SystemSettingsManager.HEARTBEAT_STALE_GRACE_KEY,
+            default_value=SystemSettingsManager.DEFAULT_HEARTBEAT_STALE_GRACE_SECONDS
+        )
+
+        try:
+            return SystemSettingsManager.validate_heartbeat_stale_grace_seconds(
+                grace_seconds
+            )
+        except ValueError:
+            return SystemSettingsManager.DEFAULT_HEARTBEAT_STALE_GRACE_SECONDS
+
+    @staticmethod
+    def set_heartbeat_stale_grace_seconds(grace_seconds, updated_by):
+        grace_seconds = SystemSettingsManager.validate_heartbeat_stale_grace_seconds(
+            grace_seconds
+        )
+
+        SystemSettingsManager.set_setting(
+            setting_key=SystemSettingsManager.HEARTBEAT_STALE_GRACE_KEY,
+            setting_value=grace_seconds,
+            description=(
+                "Seconds without GUI heartbeat after which an active browser session is treated as stale. "
+                "This protects plant operation when a browser is closed without logout."
+            ),
+            updated_by=updated_by
+        )
+
+        return grace_seconds
 
     @staticmethod
     def get_session_timeout_minutes():
