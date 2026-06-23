@@ -2701,3 +2701,151 @@ button:hover {
     }
 
 }
+
+/* =====================================================
+   Session Countdown / Auto Logout GUI
+   ===================================================== */
+
+.session-countdown {
+
+    margin-top: 8px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 6px 9px;
+
+    border-radius: 999px;
+
+    background: #eff6ff;
+
+    border: 1px solid #bfdbfe;
+
+    color: #1d4ed8;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+}
+
+.session-countdown-icon {
+
+    font-size: 13px;
+
+}
+
+.session-countdown-label {
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.04em;
+
+}
+
+#session-countdown-value {
+
+    font-variant-numeric: tabular-nums;
+
+}
+
+.session-countdown-warning {
+
+    background: #fffbeb;
+
+    border-color: #fde68a;
+
+    color: #92400e;
+
+}
+
+.session-countdown-danger {
+
+    background: #fef2f2;
+
+    border-color: #fecaca;
+
+    color: #991b1b;
+
+    animation: sessionCountdownPulse 1s ease-in-out infinite;
+
+}
+
+@keyframes sessionCountdownPulse {
+
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.03);
+    }
+
+}
+
+.settings-workbench {
+
+    margin-bottom: 18px;
+
+}
+
+.settings-form {
+
+    display: grid;
+
+    gap: 16px;
+
+}
+
+.compact-form-grid {
+
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+
+}
+
+.session-timeout-preview {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    min-height: 42px;
+
+    padding: 10px 14px;
+
+    border-radius: 12px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+
+    font-size: 22px;
+
+    font-weight: 900;
+
+    color: var(--apollo-violet, #6f2dbd);
+
+    font-variant-numeric: tabular-nums;
+
+}
+
+.settings-note {
+
+    color: #64748b;
+
+    font-size: 13px;
+
+    margin: 0;
+
+}
+
+.left-actions {
+
+    justify-content: flex-start;
+
+}

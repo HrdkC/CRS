@@ -7,8 +7,8 @@ from flask import (
     flash
 )
 
-from config.settings import SESSION_TIMEOUT_MINUTES
 from database.audit_manager import AuditManager
+from database.system_settings_manager import SystemSettingsManager
 from database.user_session_manager import UserSessionManager
 
 
@@ -16,8 +16,17 @@ SKIP_ENDPOINTS = {
     "login",
     "logout",
     "static",
-    "my_password"
+    "my_password",
+    "session_auto_expire"
 }
+
+
+def _current_timeout_minutes():
+    try:
+        return SystemSettingsManager.get_session_timeout_minutes()
+    except Exception:
+        # Conservative fallback if DB is temporarily unavailable.
+        return 30
 
 
 def register_session_guard(app):
@@ -37,7 +46,11 @@ def register_session_guard(app):
 
         now = int(time.time())
         last_activity = int(session.get("last_activity_epoch", now))
-        timeout_seconds = SESSION_TIMEOUT_MINUTES * 60
+        timeout_minutes = _current_timeout_minutes()
+        timeout_seconds = timeout_minutes * 60
+
+        session["session_timeout_minutes"] = timeout_minutes
+        session["session_timeout_seconds"] = timeout_seconds
 
         if now - last_activity > timeout_seconds:
             username = session.get("username")
@@ -53,7 +66,7 @@ def register_session_guard(app):
                 action="AUTO_LOGOUT",
                 change_source="SESSION_GUARD",
                 client_ip=request.remote_addr,
-                reason=f"Idle timeout exceeded {SESSION_TIMEOUT_MINUTES} minutes"
+                reason=f"Idle timeout exceeded {timeout_minutes} minutes"
             )
 
             session.clear()

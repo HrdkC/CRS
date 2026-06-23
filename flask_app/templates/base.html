@@ -63,6 +63,17 @@
                 <br>
                 Last : {{ session["last_login_ist"] }}
                 {% endif %}
+
+                <div
+                    id="session-countdown"
+                    class="session-countdown"
+                    data-timeout-seconds="{{ session.get('session_timeout_seconds', session_timeout_seconds|default(1800)) }}"
+                    data-last-activity-epoch="{{ session.get('last_activity_epoch', current_epoch|default(0)) }}"
+                >
+                    <span class="session-countdown-icon">⏱</span>
+                    <span class="session-countdown-label">Auto Logout</span>
+                    <strong id="session-countdown-value">--:--</strong>
+                </div>
             </div>
 
         </div>

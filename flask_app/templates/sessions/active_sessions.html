@@ -12,7 +12,7 @@ Active Sessions
         <div class="workbench-title">
             <span class="section-kicker">Security</span>
             <h1>Active Sessions</h1>
-            <p>Currently logged-in CRS users, workstation source, last activity, and forced logout control.</p>
+            <p>Currently logged-in CRS users, workstation source, last activity, forced logout control, and idle auto logout configuration.</p>
         </div>
     </div>
 
@@ -24,8 +24,8 @@ Active Sessions
         </div>
         <div class="metric-card">
             <span class="metric-label">Auto Logout</span>
-            <strong class="metric-text">Enabled</strong>
-            <small>Idle session protection</small>
+            <strong>{{ timeout_minutes }} min</strong>
+            <small>Current idle timeout</small>
         </div>
         <div class="metric-card">
             <span class="metric-label">Scope</span>
@@ -37,6 +37,60 @@ Active Sessions
             <strong class="metric-text">Force Logout</strong>
             <small>Admin controlled</small>
         </div>
+    </div>
+
+    <div class="workbench-card settings-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Auto Logout Configuration</span>
+                <p>ADMIN super user can configure idle logout time from GUI. Header countdown confirms the remaining allowed idle time for every logged-in user.</p>
+            </div>
+        </div>
+
+        <form
+            method="POST"
+            action="/active-sessions/auto-logout-config"
+            class="settings-form"
+            data-confirm="Changing auto logout time affects all active and future users. Continue?"
+        >
+            <div class="form-grid compact-form-grid">
+                <div class="form-group">
+                    <label for="timeout_minutes">Auto Logout Time</label>
+                    <input
+                        type="number"
+                        id="timeout_minutes"
+                        name="timeout_minutes"
+                        min="{{ min_timeout }}"
+                        max="{{ max_timeout }}"
+                        value="{{ timeout_minutes }}"
+                        required
+                    >
+                    <small>Allowed range: {{ min_timeout }} to {{ max_timeout }} minutes.</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Current GUI Countdown</label>
+                    <div class="session-timeout-preview">
+                        <span class="session-countdown-icon">⏱</span>
+                        <span id="session-settings-countdown">--:--</span>
+                    </div>
+                    <small>Same ticking timer appears in the page header.</small>
+                </div>
+            </div>
+
+            <div class="form-actions left-actions">
+                <button type="submit" class="primary-action">Save Auto Logout Time</button>
+            </div>
+
+            {% if timeout_record %}
+            <p class="settings-note">
+                Last updated by
+                <strong>{{ timeout_record.updated_by or 'SYSTEM' }}</strong>
+                at
+                <strong>{{ timeout_record.updated_at or timeout_record.created_at }}</strong>.
+            </p>
+            {% endif %}
+        </form>
     </div>
 
     <div class="workbench-card data-workbench">

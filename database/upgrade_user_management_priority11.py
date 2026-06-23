@@ -9,6 +9,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from database.database import get_connection
+from database.system_settings_manager import SystemSettingsManager
 
 
 def _column_exists(cursor, table_name, column_name):
@@ -25,6 +26,8 @@ def _add_column_if_missing(cursor, table_name, column_name, column_definition):
 
 
 def upgrade_user_management_schema():
+    SystemSettingsManager.ensure_session_timeout_setting()
+
     conn = get_connection()
     cursor = conn.cursor()
 

@@ -33,6 +33,10 @@ def create_app():
 
     @app.context_processor
     def inject_role_helpers():
+        import time
+
+        from database.system_settings_manager import SystemSettingsManager
+
         from flask_app.security.role_guard import (
             role_can as _role_can,
             role_label as _role_label,
@@ -55,10 +59,20 @@ def create_app():
                 session.get("role")
             )
 
+        try:
+            session_timeout_minutes = (
+                SystemSettingsManager.get_session_timeout_minutes()
+            )
+        except Exception:
+            session_timeout_minutes = 30
+
         return {
             "role_can": can,
             "current_role_label": current_role_label,
-            "is_admin": is_admin
+            "is_admin": is_admin,
+            "session_timeout_minutes": session_timeout_minutes,
+            "session_timeout_seconds": session_timeout_minutes * 60,
+            "current_epoch": int(time.time())
         }
 
     return app
