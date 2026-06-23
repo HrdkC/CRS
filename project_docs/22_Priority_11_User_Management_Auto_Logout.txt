@@ -1,0 +1,219 @@
+# Priority 11 - User Management Completion + Auto Logout
+
+## Goal
+Complete plant-ready user management and session control for CRS.
+
+## Final Roles
+New users must use only these final CRS roles:
+
+- ADMIN
+- ENGINEERING
+- TECHNOLOGY
+- PRODUCTION
+- OPERATOR
+
+Legacy roles EDITOR and VIEWER remain supported only for old accounts until migration is complete.
+
+## Role Hierarchy
+
+ADMIN > ENGINEERING > TECHNOLOGY > PRODUCTION > OPERATOR
+
+## Role Meaning
+
+ADMIN:
+- Super user
+- Full access
+- User management
+- Session management
+- System configuration
+- Engineering/PLC/master configuration
+- Backup/admin recovery
+
+ENGINEERING:
+- Technical engineering user below ADMIN
+- Recipe view/download/edit/copy
+- Submit review
+- Approve/reject
+- Engineering/PLC/master configuration access where routes support engineering capability
+- Audit view where routes support audit capability
+- No user management
+- No active-session force logout
+- No admin-only recovery functions
+
+TECHNOLOGY:
+- Recipe edit/copy
+- Submit review
+- Approve/reject
+- Download
+- No user management
+- No admin configuration
+
+PRODUCTION:
+- Recipe edit/copy
+- Submit review
+- Download
+- No approve/reject
+- No user management
+
+OPERATOR:
+- View recipe
+- Download released recipe
+- No recipe editing
+- No approval
+- No admin/engineering configuration
+
+## Required Default Users
+
+The Priority 11 default-users helper creates/enables:
+
+1. operator
+   - Role: OPERATOR
+   - Temporary password: operator123
+   - Forced password reset: yes
+
+2. engineering
+   - Role: ENGINEERING
+   - Temporary password: Engineering@123
+   - Forced password reset: yes
+
+3. hardik
+   - Role: ADMIN
+   - Purpose: backup super user
+   - Temporary password: Hardik@123
+   - Forced password reset: yes
+
+The default primary admin user remains ADMIN. The hardik user is a backup ADMIN super user for recovery.
+
+## Protected Super Users
+
+The UI protects these accounts from disable/demote actions:
+
+- admin
+- hardik
+
+The system also blocks disabling/demoting the last active ADMIN account.
+
+## User Management Features Added
+
+- Add User with final role selection
+- Disable User
+- Enable User
+- Reset Password
+- Require Password Change on Next Login
+- Update User Role
+- Default Operator User helper
+- Default Engineering User helper
+- Backup Admin User helper
+- Combined default users helper
+- User action audit events
+
+## Auto Logout
+
+Idle logged-in sessions are automatically logged out after:
+
+CRS_SESSION_TIMEOUT_MINUTES environment variable, default 30 minutes.
+
+Auto logout records:
+
+- user_sessions.logout_time
+- user_sessions.logout_reason = AUTO_LOGOUT
+- user_sessions.auto_logged_out = 1
+- audit_log action AUTO_LOGOUT
+
+## Active Sessions
+
+Active Sessions page now displays:
+
+- username
+- role
+- login time
+- last activity
+- active minutes
+- client IP
+- workstation name
+- force logout action
+
+Only ADMIN can view and force logout active sessions.
+
+## New/Upgraded DB Columns
+
+users:
+- password_reset_required
+- password_changed_at
+- disabled_at
+- disabled_by
+- role_updated_at
+- role_updated_by
+- remarks
+
+user_sessions:
+- role
+- last_activity
+- logout_reason
+- auto_logged_out
+
+## Default Users Helper
+
+Run:
+
+python database\ensure_default_priority11_users.py
+
+Creates/enables:
+
+username: operator
+password: operator123
+role: OPERATOR
+password_reset_required: 1
+
+username: engineering
+password: Engineering@123
+role: ENGINEERING
+password_reset_required: 1
+
+username: hardik
+password: Hardik@123
+role: ADMIN
+password_reset_required: 1
+
+Change all temporary passwords immediately after first login.
+
+## Test Checklist
+
+1. Start Flask app.
+2. Open Users page as admin.
+3. Confirm role dropdown shows ADMIN/ENGINEERING/TECHNOLOGY/PRODUCTION/OPERATOR only.
+4. Run default users helper.
+5. Confirm operator, engineering, and hardik accounts exist.
+6. Login as operator/operator123.
+7. Confirm forced My Password page.
+8. Change operator password.
+9. Confirm operator reaches dashboard and cannot open /users or /active-sessions.
+10. Login as engineering/Engineering@123.
+11. Confirm forced My Password page.
+12. Change engineering password.
+13. Confirm engineering cannot open /users or /active-sessions.
+14. Login as hardik/Hardik@123.
+15. Confirm forced My Password page.
+16. Change hardik password.
+17. Confirm hardik has ADMIN access to /users and /active-sessions.
+18. Confirm admin/hardik accounts cannot be disabled/demoted from Users UI.
+19. Confirm active sessions page shows last activity.
+20. Test admin reset password and disable/enable normal users.
+21. Set CRS_SESSION_TIMEOUT_MINUTES=1 and confirm idle auto logout.
+22. Confirm audit_log records login/logout/password/user/session events.
+
+## Completion Criteria
+
+Priority 11 is complete when:
+
+- Admin can create final-role users including ENGINEERING
+- Backup ADMIN user hardik exists and can login after password change
+- Engineering user exists and can login after password change
+- Engineering is below ADMIN and cannot manage users or active sessions
+- Admin can disable/enable normal users
+- Admin can reset password and require reset
+- Operator user exists and can login after password change
+- Operator is restricted from admin pages
+- Active session tracking works
+- Auto logout works
+- Audit log records user/session actions

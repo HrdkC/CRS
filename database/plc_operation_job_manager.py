@@ -1,5 +1,6 @@
 import json
 import uuid
+from datetime import datetime, timedelta
 
 from sqlalchemy import (
     func,
@@ -98,6 +99,62 @@ class PLCOperationJobManager:
             )
 
         return job_id
+
+
+    @staticmethod
+    def get_active_for_plc(
+
+        plc_id,
+
+        stale_minutes=30
+
+    ):
+
+        PLCOperationJobManager.ensure_table()
+
+        cutoff = datetime.utcnow() - timedelta(
+            minutes=stale_minutes
+        )
+
+        with session_scope() as session:
+
+            job = session.execute(
+                select(
+                    PLCOperationJob
+                )
+                .where(
+                    PLCOperationJob.plc_id == plc_id
+                )
+                .where(
+                    PLCOperationJob.completed_at.is_(None)
+                )
+                .where(
+                    PLCOperationJob.status.in_(
+                        [
+                            "QUEUED",
+                            "RUNNING"
+                        ]
+                    )
+                )
+                .where(
+                    PLCOperationJob.updated_at >= cutoff
+                )
+                .order_by(
+                    PLCOperationJob.created_at.desc(),
+                    PLCOperationJob.updated_at.desc()
+                )
+                .limit(
+                    1
+                )
+            ).scalars().first()
+
+            if not job:
+
+                return None
+
+            return PLCOperationJobManager.to_dict(
+                job
+            )
 
     @staticmethod
     def update_from_result(

@@ -28,12 +28,14 @@ TBM Families
 
         <div class="workbench-actions">
 
+            {% if role_can("engineering_config") %}
             <a
                 href="/families/create"
                 class="crs-btn crs-btn-primary"
             >
                 Create Family
             </a>
+            {% endif %}
 
         </div>
 

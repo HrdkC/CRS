@@ -14,14 +14,31 @@ Apollo CRS Dashboard
             <h1>CRS Dashboard</h1>
             <p>Apollo Tyres Ltd. | PCR Limda Plant | Centralized Recipe System</p>
         </div>
+
+        {% if role_can("engineering_config") %}
         <div class="workbench-actions">
             <a href="/machines" class="crs-btn crs-btn-primary">Machines</a>
             <a href="/plcs" class="crs-btn crs-btn-soft">PLC Registry</a>
             <a href="/stages" class="crs-btn crs-btn-soft">Stages</a>
         </div>
+        {% endif %}
     </div>
 
     <div class="metric-grid">
+        {% if role_can("recipe_view") %}
+        <a href="/recipes" class="metric-card metric-link">
+            <span class="metric-label">Recipes</span>
+            <strong>{{ recipe_count if recipe_count is defined else "-" }}</strong>
+            <small>Recipe master records</small>
+        </a>
+        <a href="/recipes" class="metric-card metric-link">
+            <span class="metric-label">Current Production</span>
+            <strong>{{ current_released_count if current_released_count is defined else "-" }}</strong>
+            <small>Released recipes available</small>
+        </a>
+        {% endif %}
+
+        {% if role_can("engineering_config") %}
         <a href="/families" class="metric-card metric-link">
             <span class="metric-label">TBM Families</span>
             <strong>{{ family_count if family_count is defined else "-" }}</strong>
@@ -42,31 +59,33 @@ Apollo CRS Dashboard
             <strong>{{ configured_plc_count }}</strong>
             <small>Machine-stage assigned</small>
         </a>
-    </div>
-
-    <div class="metric-grid">
         <a href="/stages" class="metric-card metric-link">
             <span class="metric-label">Stages</span>
             <strong>{{ stage_count }}</strong>
             <small>First and second stage records</small>
         </a>
-        {% if session.get("role") == "ADMIN" %}
+        <a href="/engineering-units" class="metric-card metric-link">
+            <span class="metric-label">Units</span>
+            <strong class="metric-text">Master</strong>
+            <small>Engineering unit setup</small>
+        </a>
+        {% endif %}
+
+        {% if role_can("user_manage") %}
         <a href="/users" class="metric-card metric-link">
             <span class="metric-label">Users</span>
             <strong>{{ user_count }}</strong>
             <small>CRS user accounts</small>
         </a>
         {% endif %}
-        <a href="/engineering-units" class="metric-card metric-link">
-            <span class="metric-label">Units</span>
-            <strong class="metric-text">Master</strong>
-            <small>Engineering unit setup</small>
-        </a>
+
+        {% if role_can("audit_view") %}
         <a href="/audit-history" class="metric-card metric-link">
             <span class="metric-label">Audit</span>
             <strong class="metric-text">Trace</strong>
             <small>System change history</small>
         </a>
+        {% endif %}
     </div>
 
     <div class="data-workbench">
@@ -85,9 +104,17 @@ Apollo CRS Dashboard
                 <small>{{ alert.detail }}</small>
                 <span class="status-badge {{ alert.status_class }}">
                     {% if alert.count > 0 %}
-                        Action
+                        {% if alert.status_class == "status-danger" %}
+                            ⚠ Action
+                        {% elif alert.status_class == "status-warning" %}
+                            ! Action
+                        {% elif alert.status_class == "status-info" %}
+                            ℹ Action
+                        {% else %}
+                            Action
+                        {% endif %}
                     {% else %}
-                        OK
+                        ✓ OK
                     {% endif %}
                 </span>
             </a>
@@ -102,6 +129,7 @@ Apollo CRS Dashboard
                 <span class="status-badge status-info">Machine First</span>
             </div>
             <div class="flow-map dashboard-flow">
+                {% if role_can("engineering_config") %}
                 <div class="flow-row">
                     <div class="flow-node">TBM Family</div>
                     <div class="flow-arrow">-></div>
@@ -112,6 +140,7 @@ Apollo CRS Dashboard
                     <div class="flow-arrow">-></div>
                     <div class="flow-node">PLC Registry</div>
                 </div>
+                {% endif %}
                 <div class="flow-row">
                     <div class="flow-node">Template Parameters</div>
                     <div class="flow-arrow">-></div>

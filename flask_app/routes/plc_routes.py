@@ -28,12 +28,28 @@ from database.plc_verification_manager import (
     PLCVerificationManager
 )
 
+from flask_app.security.role_guard import (
+    role_can
+)
+
+
+def _engineering_config_allowed():
+    return (
+        session.get("logged_in")
+        and
+        role_can(
+            session.get("role"),
+            "engineering_config"
+        )
+    )
+
+
 def register_plc_routes(app):
 
     @app.route("/plcs")
     def plcs():
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -55,7 +71,7 @@ def register_plc_routes(app):
     )
     def create_plc():
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -130,9 +146,7 @@ def register_plc_routes(app):
 
     ):
 
-        if session.get(
-            "role"
-        ) != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -258,9 +272,7 @@ def register_plc_routes(app):
 
     ):
 
-        if session.get(
-            "role"
-        ) != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -321,9 +333,7 @@ def register_plc_routes(app):
 
     ):
 
-        if session.get(
-            "role"
-        ) != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -400,9 +410,7 @@ def register_plc_routes(app):
 
     ):
 
-        if session.get(
-            "role"
-        ) != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -421,9 +429,7 @@ def register_plc_routes(app):
 
     ):
 
-        if session.get(
-            "role"
-        ) != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 

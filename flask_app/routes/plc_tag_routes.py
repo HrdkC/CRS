@@ -23,6 +23,22 @@ from database.plc_online_tag_browser_manager import (
 )
 
 
+from flask_app.security.role_guard import (
+    role_can
+)
+
+
+def _engineering_config_allowed():
+    return (
+        session.get("logged_in")
+        and
+        role_can(
+            session.get("role"),
+            "engineering_config"
+        )
+    )
+
+
 def register_plc_tag_routes(app):
 
     @app.route(
@@ -36,9 +52,7 @@ def register_plc_tag_routes(app):
 
     ):
 
-        if not session.get(
-            "username"
-        ):
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -163,9 +177,7 @@ def register_plc_tag_routes(app):
 
     ):
 
-        if not session.get(
-            "username"
-        ):
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -230,9 +242,7 @@ def register_plc_tag_routes(app):
 
     ):
 
-        if not session.get(
-            "username"
-        ):
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -371,9 +381,7 @@ def register_plc_tag_routes(app):
 
     ):
 
-        if not session.get(
-            "username"
-        ):
+        if not _engineering_config_allowed():
 
             return redirect("/")
 

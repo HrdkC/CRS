@@ -2002,6 +2002,40 @@ def register_recipe_editor_routes(app):
             "PRODUCTION"
         )
 
+        active_job = (
+            PLCOperationJobManager
+            .get_active_for_plc(
+                selected_plc_id_int
+            )
+        )
+
+        if active_job:
+
+            return jsonify({
+                "success": False,
+                "message": (
+                    "Another PLC buffer operation is already running for this PLC. "
+                    "Wait until it reaches 100% success or failure before starting a new command."
+                ),
+                "active_job_id": active_job.get(
+                    "id"
+                ),
+                "active_operation": active_job.get(
+                    "title"
+                ),
+                "active_started_by": active_job.get(
+                    "started_by"
+                ),
+                "active_status_url": (
+                    "/recipe-editor/download-preparation/job/"
+                    + str(
+                        active_job.get(
+                            "id"
+                        )
+                    )
+                )
+            }), 409
+
         operation_title = (
             PLCBufferOperationManager
             .OPERATIONS[

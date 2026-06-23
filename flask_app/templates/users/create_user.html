@@ -12,7 +12,7 @@ Create User
         <div class="workbench-title">
             <span class="section-kicker">Administration</span>
             <h1>Create User</h1>
-            <p>Create a CRS account with role-based access.</p>
+            <p>Create a CRS account with final role-based access.</p>
         </div>
         <div class="workbench-actions">
             <a href="/users" class="crs-btn crs-btn-soft">Back To Users</a>
@@ -32,22 +32,41 @@ Create User
                 {{ error }}
             </p>
             {% endif %}
+
             <label>
                 <span>Username</span>
                 <input type="text" name="username" required>
             </label>
+
             <label>
                 <span>Password</span>
-                <input type="password" name="password" required>
+                <input type="password" name="password" minlength="6" required>
             </label>
+
+            <label>
+                <span>Confirm Password</span>
+                <input type="password" name="confirm_password" minlength="6" required>
+            </label>
+
             <label>
                 <span>Role</span>
-                <select name="role">
+                <select name="role" required>
                     {% for role in role_options %}
-                    <option>{{ role }}</option>
+                    <option value="{{ role }}">{{ role }}</option>
                     {% endfor %}
                 </select>
             </label>
+
+            <label>
+                <span>Remarks</span>
+                <textarea name="remarks" rows="3" placeholder="Optional reason or department note"></textarea>
+            </label>
+
+            <label class="checkbox-row">
+                <input type="checkbox" name="password_reset_required" checked>
+                <span>Require password change on first login</span>
+            </label>
+
             <div class="form-action-row">
                 <button type="submit" class="crs-btn crs-btn-primary">Create User</button>
                 <a href="/users" class="crs-btn crs-btn-soft">Cancel</a>

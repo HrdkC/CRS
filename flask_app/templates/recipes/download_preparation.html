@@ -367,6 +367,111 @@ Recipe PLC Buffer Operations
     display: none;
 }
 
+
+.operation-lock-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(18, 16, 24, 0.58);
+    backdrop-filter: blur(3px);
+    pointer-events: all;
+}
+
+.operation-lock-overlay.is-active {
+    display: flex;
+}
+
+.operation-lock-card {
+    width: min(560px, 96vw);
+    background: #ffffff;
+    border: 1px solid #e5e0ec;
+    border-radius: 14px;
+    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.28);
+    padding: 22px;
+    text-align: center;
+}
+
+.operation-lock-icon {
+    width: 52px;
+    height: 52px;
+    border: 5px solid #eadff8;
+    border-top-color: #6f2dbd;
+    border-radius: 50%;
+    margin: 0 auto 14px;
+    animation: operationSpin 0.9s linear infinite;
+}
+
+.operation-lock-title {
+    color: #172033;
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.operation-lock-text {
+    color: #4d5668;
+    line-height: 1.45;
+    margin-bottom: 14px;
+}
+
+.operation-lock-warning {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 8px;
+    color: #6d4c00;
+    font-weight: 800;
+    padding: 10px 12px;
+    margin-top: 14px;
+}
+
+.operation-lock-progress-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.operation-lock-track {
+    height: 10px;
+    border-radius: 999px;
+    background: #ece7f2;
+    overflow: hidden;
+}
+
+.operation-lock-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #2e7d32, #16a085);
+    transition: width 0.25s ease;
+}
+
+.operation-lock-percent {
+    color: #6f2dbd;
+    font-size: 18px;
+    font-weight: 900;
+    min-width: 54px;
+    text-align: right;
+}
+
+body.operation-running {
+    overflow: hidden;
+}
+
+body.operation-running * {
+    cursor: wait !important;
+}
+
+@keyframes operationSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @media (max-width: 900px) {
     .buffer-header-row,
     .buffer-hero,
@@ -381,6 +486,36 @@ Recipe PLC Buffer Operations
 }
 
 </style>
+
+
+<div
+    id="operationLockOverlay"
+    class="operation-lock-overlay"
+    role="alertdialog"
+    aria-modal="true"
+    aria-live="assertive"
+    aria-labelledby="operationLockTitle"
+    aria-describedby="operationLockText"
+>
+    <div class="operation-lock-card">
+        <div class="operation-lock-icon" aria-hidden="true"></div>
+        <div class="operation-lock-title" id="operationLockTitle">
+            PLC Buffer Operation Running
+        </div>
+        <div class="operation-lock-text" id="operationLockText">
+            Please wait. Do not refresh, close, go back, or click another menu until this operation finishes with success or failure.
+        </div>
+        <div class="operation-lock-progress-row">
+            <div class="operation-lock-track">
+                <div class="operation-lock-fill" id="operationLockFill"></div>
+            </div>
+            <div class="operation-lock-percent" id="operationLockPercent">0%</div>
+        </div>
+        <div class="operation-lock-warning">
+            ⚠️ PLC communication is active. Screen is locked to prevent duplicate commands or interrupted handshake.
+        </div>
+    </div>
+</div>
 
 <div class="buffer-shell">
 
@@ -985,6 +1120,162 @@ document.addEventListener(
             return;
         }
 
+        var operationLockActive = false;
+        var operationLockReleaseTimer = null;
+
+        function blockNavigationWhileRunning(event) {
+            if (!operationLockActive) {
+                return;
+            }
+
+            var target = event.target;
+            var link = target && target.closest ? target.closest("a") : null;
+
+            if (link) {
+                event.preventDefault();
+                event.stopPropagation();
+                updateOperationLockMessage(
+                    "Operation is still running. Please wait until the result reaches 100% success or failure."
+                );
+            }
+        }
+
+        function blockRefreshKeysWhileRunning(event) {
+            if (!operationLockActive) {
+                return;
+            }
+
+            var key = event.key;
+            var isRefresh = key === "F5" || (event.ctrlKey && key && key.toLowerCase() === "r");
+            var isBack = event.altKey && key === "ArrowLeft";
+            var isForward = event.altKey && key === "ArrowRight";
+            var isEscape = key === "Escape";
+
+            if (isRefresh || isBack || isForward || isEscape) {
+                event.preventDefault();
+                event.stopPropagation();
+                updateOperationLockMessage(
+                    "Navigation is locked while PLC communication is active. Wait for completion."
+                );
+            }
+        }
+
+        function beforeUnloadWhileRunning(event) {
+            if (!operationLockActive) {
+                return;
+            }
+
+            event.preventDefault();
+            event.returnValue = "PLC buffer operation is running. Leaving this page may interrupt operator visibility.";
+            return event.returnValue;
+        }
+
+        document.addEventListener(
+            "click",
+            blockNavigationWhileRunning,
+            true
+        );
+
+        document.addEventListener(
+            "keydown",
+            blockRefreshKeysWhileRunning,
+            true
+        );
+
+        window.addEventListener(
+            "beforeunload",
+            beforeUnloadWhileRunning
+        );
+
+        function activateOperationLock(operationTitle) {
+            operationLockActive = true;
+
+            if (operationLockReleaseTimer) {
+                window.clearTimeout(operationLockReleaseTimer);
+                operationLockReleaseTimer = null;
+            }
+
+            document.body.classList.add("operation-running");
+
+            var overlay = document.getElementById("operationLockOverlay");
+            var title = document.getElementById("operationLockTitle");
+            var text = document.getElementById("operationLockText");
+            var fill = document.getElementById("operationLockFill");
+            var percent = document.getElementById("operationLockPercent");
+
+            if (title) {
+                title.textContent = operationTitle || "PLC Buffer Operation Running";
+            }
+
+            if (text) {
+                text.textContent = "Please wait. Do not refresh, close, go back, or click another menu until this operation finishes with success or failure.";
+            }
+
+            if (fill) {
+                fill.style.width = "0%";
+            }
+
+            if (percent) {
+                percent.textContent = "0%";
+            }
+
+            if (overlay) {
+                overlay.classList.add("is-active");
+            }
+        }
+
+        function updateOperationLockMessage(message) {
+            var text = document.getElementById("operationLockText");
+            if (text && message) {
+                text.textContent = message;
+            }
+        }
+
+        function updateOperationLockProgress(percentValue, message) {
+            var percent = Number(percentValue || 0);
+            if (percent < 0) {
+                percent = 0;
+            }
+            if (percent > 100) {
+                percent = 100;
+            }
+
+            var fill = document.getElementById("operationLockFill");
+            var percentText = document.getElementById("operationLockPercent");
+
+            if (fill) {
+                fill.style.width = percent + "%";
+            }
+
+            if (percentText) {
+                percentText.textContent = percent + "%";
+            }
+
+            if (message) {
+                updateOperationLockMessage(message);
+            }
+        }
+
+        function releaseOperationLock(finalStatus, finalMessage) {
+            updateOperationLockProgress(
+                finalStatus === "ERROR" || finalStatus === "BLOCKED" ? 100 : 100,
+                finalMessage || "Operation completed. Screen unlocked."
+            );
+
+            operationLockReleaseTimer = window.setTimeout(
+                function () {
+                    operationLockActive = false;
+                    document.body.classList.remove("operation-running");
+
+                    var overlay = document.getElementById("operationLockOverlay");
+                    if (overlay) {
+                        overlay.classList.remove("is-active");
+                    }
+                },
+                900
+            );
+        }
+
         form.addEventListener(
             "submit",
             function (event) {
@@ -1014,6 +1305,11 @@ document.addEventListener(
                 ) {
                     return;
                 }
+
+                activateOperationLock(
+                    submitter.dataset.loadingTitle
+                    || "PLC Buffer Operation"
+                );
 
                 var panel = document.getElementById(
                     "liveProgress"
@@ -1218,6 +1514,32 @@ document.addEventListener(
                         );
 
                         if (payload.done) {
+                            var finalStatus = (
+                                payload.job
+                                && (
+                                    payload.job.status
+                                    || (
+                                        payload.job.result
+                                        && payload.job.result.status
+                                    )
+                                )
+                            ) || "SUCCESS";
+
+                            var finalMessage = "Operation finished. Screen unlocked.";
+
+                            if (
+                                payload.job
+                                && payload.job.result
+                                && payload.job.result.current_step
+                            ) {
+                                finalMessage = payload.job.result.current_step;
+                            }
+
+                            releaseOperationLock(
+                                finalStatus,
+                                finalMessage
+                            );
+
                             restoreButtons(
                                 buttons
                             );
@@ -1263,6 +1585,11 @@ document.addEventListener(
                 result.progress_percent
                 || job.progress_percent
                 || 0
+            );
+
+            updateOperationLockProgress(
+                percent,
+                result.current_step || job.current_step || "PLC operation is running. Please wait."
             );
 
             var panel = document.getElementById(
@@ -1729,6 +2056,11 @@ document.addEventListener(
                     message
                 ]
             });
+
+            releaseOperationLock(
+                "ERROR",
+                message || "Operation failed. Screen unlocked."
+            );
 
             restoreButtons(
                 buttons

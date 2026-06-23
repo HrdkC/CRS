@@ -37,6 +37,18 @@ def _is_legacy_historical_version(recipe, selected_version):
     return selected_version != current_version
 
 
+
+def _engineering_config_allowed():
+    return (
+        session.get("logged_in")
+        and
+        role_can(
+            session.get("role"),
+            "engineering_config"
+        )
+    )
+
+
 def register_recipe_routes(app):
 
     @app.route("/recipes")
@@ -393,7 +405,7 @@ def register_recipe_routes(app):
         if not session.get("logged_in"):
             return redirect("/login")
 
-        if session["role"] != "ADMIN":
+        if not _engineering_config_allowed():
             return redirect("/recipes")
 
         selected_version = request.args.get(
@@ -795,7 +807,7 @@ def register_recipe_routes(app):
         if not session.get("logged_in"):
             return redirect("/login")
 
-        if session["role"] != "ADMIN":
+        if not _engineering_config_allowed():
             return redirect("/recipes")
 
         units = RecipeManager.get_all_engineering_units()
@@ -817,7 +829,7 @@ def register_recipe_routes(app):
         if not session.get("logged_in"):
             return redirect("/login")
 
-        if session["role"] != "ADMIN":
+        if not _engineering_config_allowed():
             return redirect("/recipes")
 
         if request.method == "POST":
@@ -874,7 +886,7 @@ def register_recipe_routes(app):
         if not session.get("logged_in"):
             return redirect("/login")
 
-        if session["role"] != "ADMIN":
+        if not _engineering_config_allowed():
             return redirect("/recipes")
 
         unit = RecipeManager.get_engineering_unit(
@@ -942,7 +954,7 @@ def register_recipe_routes(app):
         if not session.get("logged_in"):
             return redirect("/login")
 
-        if session["role"] != "ADMIN":
+        if not _engineering_config_allowed():
             return redirect("/recipes")
 
         RecipeManager.disable_engineering_unit(
@@ -980,7 +992,7 @@ def register_recipe_routes(app):
         if not session.get("logged_in"):
             return redirect("/login")
 
-        if session["role"] != "ADMIN":
+        if not _engineering_config_allowed():
             return redirect("/recipes")
 
         RecipeManager.enable_engineering_unit(

@@ -12,7 +12,7 @@ Active Sessions
         <div class="workbench-title">
             <span class="section-kicker">Security</span>
             <h1>Active Sessions</h1>
-            <p>Currently logged-in CRS users, workstation source, and client IP visibility.</p>
+            <p>Currently logged-in CRS users, workstation source, last activity, and forced logout control.</p>
         </div>
     </div>
 
@@ -23,9 +23,9 @@ Active Sessions
             <small>Currently open logins</small>
         </div>
         <div class="metric-card">
-            <span class="metric-label">Status</span>
-            <strong class="metric-text">Live</strong>
-            <small>Session table snapshot</small>
+            <span class="metric-label">Auto Logout</span>
+            <strong class="metric-text">Enabled</strong>
+            <small>Idle session protection</small>
         </div>
         <div class="metric-card">
             <span class="metric-label">Scope</span>
@@ -34,8 +34,8 @@ Active Sessions
         </div>
         <div class="metric-card">
             <span class="metric-label">Action</span>
-            <strong class="metric-text">Monitor</strong>
-            <small>Forced logout can be added later</small>
+            <strong class="metric-text">Force Logout</strong>
+            <small>Admin controlled</small>
         </div>
     </div>
 
@@ -52,24 +52,38 @@ Active Sessions
                 <thead>
                     <tr>
                         <th>Username</th>
-                        <th>Login Time (IST)</th>
+                        <th>Role</th>
+                        <th>Login Time</th>
+                        <th>Last Activity</th>
+                        <th>Active Minutes</th>
                         <th>Client IP</th>
                         <th>Workstation</th>
-                        <th>Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in sessions %}
                     <tr>
                         <td><strong>{{ row.username }}</strong></td>
+                        <td><span class="status-badge status-info">{{ row.role }}</span></td>
                         <td>{{ row.login_time_ist }}</td>
+                        <td>{{ row.last_activity_ist }}</td>
+                        <td>{{ row.active_minutes }}</td>
                         <td>{{ row.client_ip }}</td>
                         <td>{{ row.workstation_name }}</td>
-                        <td><span class="status-badge status-success">Active</span></td>
+                        <td>
+                            {% if row.id == session.get("session_id") %}
+                            <span class="status-badge status-neutral">Current</span>
+                            {% else %}
+                            <form method="POST" action="/active-sessions/logout/{{ row.id }}">
+                                <button type="submit" class="row-action danger">Force Logout</button>
+                            </form>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="empty-state">No active sessions.</td>
+                        <td colspan="8" class="empty-state">No active sessions.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

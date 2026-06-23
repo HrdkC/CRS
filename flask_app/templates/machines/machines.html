@@ -28,12 +28,14 @@ Machine Registry
 
         <div class="workbench-actions">
 
+            {% if role_can("engineering_config") %}
             <a
                 href="/machines/create"
                 class="crs-btn crs-btn-primary"
             >
                 Create Machine
             </a>
+            {% endif %}
 
         </div>
 

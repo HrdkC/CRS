@@ -9,62 +9,44 @@ Users
 <section class="recipe-workbench">
 
     <div class="workbench-hero">
-
         <div class="workbench-title">
-
-            <span class="section-kicker">
-                Administration
-            </span>
-
-            <h1>
-                Users
-            </h1>
-
-            <p>
-                CRS account registry, access role, login activity, and password maintenance.
-            </p>
-
+            <span class="section-kicker">Administration</span>
+            <h1>Users</h1>
+            <p>CRS account registry, final role assignment, password reset, disable/enable, backup super user, and login activity.</p>
         </div>
 
         <div class="workbench-actions">
-
-            <a
-                href="/users/create"
-                class="crs-btn crs-btn-primary"
-            >
-                Create User
-            </a>
-
+            <a href="/users/create" class="crs-btn crs-btn-primary">Create User</a>
+            <a href="/active-sessions" class="crs-btn crs-btn-soft">Active Sessions</a>
         </div>
-
     </div>
 
     <div class="metric-grid">
-
         <div class="metric-card">
             <span class="metric-label">Users</span>
             <strong>{{ users|length }}</strong>
             <small>Total accounts</small>
         </div>
-
         <div class="metric-card">
-            <span class="metric-label">Active</span>
-            <strong>{{ users|selectattr("active", "equalto", 1)|list|length }}</strong>
-            <small>Can log in</small>
+            <span class="metric-label">Admins</span>
+            <strong>{{ role_counts.get("ADMIN", 0) }}</strong>
+            <small>Super users</small>
         </div>
-
         <div class="metric-card">
-            <span class="metric-label">Disabled</span>
-            <strong>{{ users|rejectattr("active", "equalto", 1)|list|length }}</strong>
-            <small>Blocked from login</small>
+            <span class="metric-label">Engineering</span>
+            <strong>{{ role_counts.get("ENGINEERING", 0) }}</strong>
+            <small>Technical users</small>
         </div>
-
         <div class="metric-card">
-            <span class="metric-label">Admin</span>
-            <strong>{{ users|selectattr("role", "equalto", "ADMIN")|list|length }}</strong>
-            <small>Privileged accounts</small>
+            <span class="metric-label">Operators</span>
+            <strong>{{ role_counts.get("OPERATOR", 0) }}</strong>
+            <small>Download-only users</small>
         </div>
-
+        <div class="metric-card">
+            <span class="metric-label">Password Reset</span>
+            <strong>{{ users|selectattr("password_reset_required", "equalto", 1)|list|length }}</strong>
+            <small>Must change on login</small>
+        </div>
     </div>
 
     <div class="workbench-card data-workbench">
@@ -72,7 +54,7 @@ Users
         <div class="panel-heading table-heading">
             <div>
                 <span>User Records</span>
-                <p>Disable unused accounts and keep password changes traceable.</p>
+                <p>Use only final CRS roles for new users: ADMIN, ENGINEERING, TECHNOLOGY, PRODUCTION, OPERATOR.</p>
             </div>
         </div>
 
@@ -85,33 +67,59 @@ Users
                         <th>Username</th>
                         <th>Role</th>
                         <th>Status</th>
+                        <th>Password</th>
                         <th>Created By</th>
-                        <th>Created At (IST)</th>
-                        <th>Last Login (IST)</th>
+                        <th>Created At</th>
+                        <th>Last Login</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
-
                     {% for user in users %}
-
                     <tr>
                         <td>
                             <strong>{{ user.username }}</strong>
+                            {% if user.is_protected_super_user %}
+                            <br><span class="status-badge status-info">Protected Super User</span>
+                            {% endif %}
+                            {% if user.role in ["EDITOR", "VIEWER"] %}
+                            <br><span class="status-badge status-warning">Legacy Role</span>
+                            {% endif %}
                         </td>
                         <td>
-                            {% if user.role == "ADMIN" %}
-                            <span class="status-badge status-info">{{ user.role }}</span>
+                            {% if user.is_protected_super_user %}
+                                <span class="status-badge status-info">{{ user.role }}</span>
                             {% else %}
-                            <span class="status-badge status-neutral">{{ user.role }}</span>
+                                <form method="POST" action="/users/update_role/{{ user.username }}" class="inline-form">
+                                    <select name="role">
+                                        {% for role in role_options %}
+                                        <option value="{{ role }}" {% if role == user.role %}selected{% endif %}>{{ role }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="row-action primary">Save</button>
+                                </form>
                             {% endif %}
+                            <small class="muted-text">{{ user.role_label }}</small>
                         </td>
                         <td>
                             {% if user.active == 1 %}
                             <span class="status-badge status-success">Active</span>
                             {% else %}
                             <span class="status-badge status-danger">Disabled</span>
+                            {% endif %}
+                            {% if user.disabled_at %}
+                            <br><small class="muted-text">{{ user.disabled_at_ist }} by {{ user.disabled_by }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.password_reset_required == 1 %}
+                            <span class="status-badge status-warning">Reset Required</span>
+                            {% else %}
+                            <span class="status-badge status-success">OK</span>
+                            {% endif %}
+                            {% if user.password_changed_at %}
+                            <br><small class="muted-text">Changed: {{ user.password_changed_at_ist }}</small>
                             {% endif %}
                         </td>
                         <td>{{ user.created_by }}</td>
@@ -125,43 +133,24 @@ Users
                         </td>
                         <td>
                             <div class="row-actions">
-                                {% if user.username != "admin" %}
+                                {% if not user.is_protected_super_user and user.username != session.get("username") %}
                                     {% if user.active == 1 %}
-                                    <a
-                                        href="/users/disable/{{ user.username }}"
-                                        class="row-action danger"
-                                    >
-                                        Disable
-                                    </a>
+                                    <a href="/users/disable/{{ user.username }}" class="row-action danger">Disable</a>
                                     {% else %}
-                                    <a
-                                        href="/users/enable/{{ user.username }}"
-                                        class="row-action success"
-                                    >
-                                        Enable
-                                    </a>
+                                    <a href="/users/enable/{{ user.username }}" class="row-action success">Enable</a>
                                     {% endif %}
                                 {% endif %}
-                                <a
-                                    href="/users/change_password/{{ user.username }}"
-                                    class="row-action primary"
-                                >
-                                    Password
-                                </a>
+
+                                <a href="/users/change_password/{{ user.username }}" class="row-action primary">Reset Password</a>
+                                <a href="/users/require_password_reset/{{ user.username }}" class="row-action warning">Require Reset</a>
                             </div>
                         </td>
                     </tr>
-
                     {% else %}
-
                     <tr>
-                        <td colspan="7" class="empty-state">
-                            No users configured.
-                        </td>
+                        <td colspan="8" class="empty-state">No users configured.</td>
                     </tr>
-
                     {% endfor %}
-
                 </tbody>
 
             </table>

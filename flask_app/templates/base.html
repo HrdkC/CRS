@@ -12,11 +12,9 @@
     >
 
     <title>
-
         {% block title %}
         Apollo CRS
         {% endblock %}
-
     </title>
 
     <link
@@ -35,169 +33,98 @@
         <div class="header-top">
 
             <div class="header-logo-panel">
-
                 <img
                     src="{{ url_for('static', filename='images/apollo_logo.png') }}"
                     alt="Apollo Logo"
                     class="logo"
                 >
-
             </div>
 
             <div class="brand-area">
-
                 <div class="brand-title">
-
                     Centralized Recipe System (CRS)
-
                 </div>
-
                 <div class="brand-subtitle">
-
                     Apollo Tyres Ltd. | PCR Limda Plant
-
                 </div>
-
             </div>
 
             <div class="user-info">
-
-                <strong>
-
-                    {{ session["username"] }}
-
-                </strong>
-
+                <strong>{{ session["username"] }}</strong>
                 <br>
+                Role : {{ session["role"] }}
 
-                Role :  {{ session["role"] }}
-
-                {% if session.get("last_login_ist") %}
-
+                {% if session.get("password_reset_required") == 1 %}
                 <br>
-
-                Last :  {{ session["last_login_ist"] }}
-
+                <span class="status-badge status-warning">Password Reset Required</span>
                 {% endif %}
 
+                {% if session.get("last_login_ist") %}
+                <br>
+                Last : {{ session["last_login_ist"] }}
+                {% endif %}
             </div>
 
         </div>
 
         <nav class="navbar">
-
             <ul>
-
                 <li class="menu-item">
-
-                    <a href="/">
-
-                        Dashboard
-
-                    </a>
-
+                    <a href="/">Dashboard</a>
                 </li>
 
+                {% if role_can("recipe_view") %}
                 <li class="dropdown menu-item">
-
-                    <a href="#">
-
-                        Production ▼
-
-                    </a>
-
+                    <a href="#">Production ▼</a>
                     <div class="dropdown-menu">
+                        <a href="/recipes">Recipes</a>
 
-                        <a href="/families">
-
-                            TBM Families
-
-                        </a>
-
-                        <a href="/machines">
-
-                            Machines
-
-                        </a>
-
+                        {% if role_can("engineering_config") %}
+                        <a href="/families">TBM Families</a>
+                        <a href="/machines">Machines</a>
+                        <a href="/stages">Stages</a>
+                        {% endif %}
                     </div>
-
                 </li>
+                {% endif %}
 
+                {% if role_can("engineering_config") %}
                 <li class="dropdown menu-item">
-
-                    <a href="#">
-
-                        Masters ▼
-
-                    </a>
-
+                    <a href="#">Masters ▼</a>
                     <div class="dropdown-menu">
-
-                        <a href="/plcs">
-
-                            PLC Registry
-
-                        </a>
-
-                        <a href="/engineering-units">
-
-                            Engineering Units
-
-                        </a>
-
+                        <a href="/plcs">PLC Registry</a>
+                        <a href="/engineering-units">Engineering Units</a>
                     </div>
-
                 </li>
+                {% endif %}
 
-                {% if session.get("role") == "ADMIN" %}
-
+                {% if role_can("user_manage") or role_can("session_manage") or is_admin() %}
                 <li class="dropdown menu-item">
-
-                    <a href="#">
-
-                        Administration ▼
-
-                    </a>
-
+                    <a href="#">Administration ▼</a>
                     <div class="dropdown-menu">
+                        {% if role_can("user_manage") %}
+                        <a href="/users">Users</a>
+                        {% endif %}
 
-                        <a href="/users">
+                        {% if is_admin() %}
+                        <a href="/audit-history">Audit History</a>
+                        {% endif %}
 
-                            Users
-
-                        </a>
-
-                        <a href="/audit-history">
-
-                            Audit History
-
-                        </a>
-
-                        <a href="/active-sessions">
-
-                            Active Sessions
-
-                        </a>
-
+                        {% if role_can("session_manage") %}
+                        <a href="/active-sessions">Active Sessions</a>
+                        {% endif %}
                     </div>
-
                 </li>
-
                 {% endif %}
 
                 <li class="menu-item">
-
-                    <a href="/logout">
-
-                        Logout
-
-                    </a>
-
+                    <a href="/my-password">My Password</a>
                 </li>
 
+                <li class="menu-item">
+                    <a href="/logout">Logout</a>
+                </li>
             </ul>
-
         </nav>
 
     </header>
@@ -206,25 +133,44 @@
 
     <div class="main-container">
 
-        {% with messages =
-        get_flashed_messages(
-            with_categories=true
-        ) %}
-
+        {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-
+                <div class="flash-stack">
                 {% for category, message in messages %}
+                    {% set flash_category = (category or "message")|lower %}
 
-                    <div class="flash-message">
+                    {% if flash_category in ["error", "danger"] %}
+                        {% set flash_class = "flash-danger" %}
+                        {% set flash_icon = "⚠" %}
+                        {% set flash_title = "Error" %}
+                    {% elif flash_category in ["warning", "warn"] %}
+                        {% set flash_class = "flash-warning" %}
+                        {% set flash_icon = "!" %}
+                        {% set flash_title = "Warning" %}
+                    {% elif flash_category in ["success", "ok"] %}
+                        {% set flash_class = "flash-success" %}
+                        {% set flash_icon = "✓" %}
+                        {% set flash_title = "Success" %}
+                    {% elif flash_category in ["info", "notice"] %}
+                        {% set flash_class = "flash-info" %}
+                        {% set flash_icon = "i" %}
+                        {% set flash_title = "Info" %}
+                    {% else %}
+                        {% set flash_class = "flash-message-neutral" %}
+                        {% set flash_icon = "•" %}
+                        {% set flash_title = "Message" %}
+                    {% endif %}
 
-                        {{ message }}
-
+                    <div class="flash-message {{ flash_class }}" role="alert">
+                        <span class="flash-icon" aria-hidden="true">{{ flash_icon }}</span>
+                        <div class="flash-content">
+                            <div class="flash-title">{{ flash_title }}</div>
+                            <div class="flash-text">{{ message }}</div>
+                        </div>
                     </div>
-
                 {% endfor %}
-
+                </div>
             {% endif %}
-
         {% endwith %}
 
         {% block content %}
@@ -235,72 +181,22 @@
     {% if session.get("logged_in") %}
 
     <footer class="site-footer">
-
         <div class="footer-content">
-
-            <span>
-
-                © 2026 Apollo Tyres Ltd.
-
-            </span>
-
-            <span class="footer-separator">
-
-                |
-
-            </span>
-
-            <span>
-
-                Centralized Recipe System (CRS)
-
-            </span>
-
-            <span class="footer-separator">
-
-                |
-
-            </span>
-
-            <span>
-
-                Version 0.1 Beta
-
-            </span>
-
-            <span class="footer-separator">
-
-                |
-
-            </span>
-
-            <span>
-
-                Developed by Hardik Chauhan
-
-            </span>
-
-            <span class="footer-separator">
-
-                |
-
-            </span>
-
-            <span>
-
-                PCR Engineering – Limda Plant
-
-            </span>
-
+            <span>© 2026 Apollo Tyres Ltd.</span>
+            <span class="footer-separator">|</span>
+            <span>Centralized Recipe System (CRS)</span>
+            <span class="footer-separator">|</span>
+            <span>Version 0.1 Beta</span>
+            <span class="footer-separator">|</span>
+            <span>Developed by Hardik Chauhan</span>
+            <span class="footer-separator">|</span>
+            <span>PCR Engineering – Limda Plant</span>
         </div>
-
     </footer>
 
     {% endif %}
 
-    <script
-        src="{{ url_for('static', filename='js/main.js') }}"
-    ></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 </body>
 

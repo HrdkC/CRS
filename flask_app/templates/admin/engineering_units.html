@@ -15,9 +15,11 @@ Engineering Units
             <p>Approved unit list used by recipe parameters and validation screens.</p>
         </div>
         <div class="workbench-actions">
+            {% if role_can("engineering_config") %}
             <a href="/engineering-units/create" class="crs-btn crs-btn-primary">
                 Add Unit
             </a>
+            {% endif %}
         </div>
     </div>
 
@@ -76,6 +78,7 @@ Engineering Units
                         </td>
                         <td>
                             <div class="row-actions">
+                                {% if role_can("engineering_config") %}
                                 <a href="/engineering-units/{{ unit.id }}/edit" class="row-action primary">
                                     Edit
                                 </a>

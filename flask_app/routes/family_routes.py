@@ -19,6 +19,22 @@ from database.audit_manager import (
 )
 
 
+from flask_app.security.role_guard import (
+    role_can
+)
+
+
+def _engineering_config_allowed():
+    return (
+        session.get("logged_in")
+        and
+        role_can(
+            session.get("role"),
+            "engineering_config"
+        )
+    )
+
+
 def register_family_routes(
 
     app
@@ -28,7 +44,7 @@ def register_family_routes(
     @app.route("/families")
     def families():
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -50,7 +66,7 @@ def register_family_routes(
     )
     def create_family():
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -103,7 +119,7 @@ def register_family_routes(
 
     ):
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -136,7 +152,7 @@ def register_family_routes(
 
     ):
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 

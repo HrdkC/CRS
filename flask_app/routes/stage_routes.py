@@ -9,12 +9,28 @@ from database.stage_manager import (
 )
 
 
+from flask_app.security.role_guard import (
+    role_can
+)
+
+
+def _engineering_config_allowed():
+    return (
+        session.get("logged_in")
+        and
+        role_can(
+            session.get("role"),
+            "engineering_config"
+        )
+    )
+
+
 def register_stage_routes(app):
 
     @app.route("/stages")
     def stages():
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 

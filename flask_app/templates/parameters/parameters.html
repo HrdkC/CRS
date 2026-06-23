@@ -21,12 +21,14 @@ Recipe Parameters
             </p>
         </div>
         <div class="workbench-actions">
+            {% if role_can("engineering_config") %}
             <a
                 href="/parameters/add/{{ machine_id }}/{{ stage_id }}"
                 class="crs-btn crs-btn-primary"
             >
                 Add Parameter
             </a>
+            {% endif %}
         </div>
     </div>
 
@@ -104,12 +106,14 @@ Recipe Parameters
                         <td>{{ parameter.default_value }}</td>
                         <td>
                             <div class="row-actions">
+                                {% if role_can("engineering_config") %}
                                 <a href="/parameters/edit/{{ parameter.id }}" class="row-action primary">
                                     Edit
                                 </a>
                                 <a href="/parameters/disable/{{ parameter.id }}" class="row-action danger">
                                     Disable
                                 </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

@@ -11,6 +11,22 @@ from database.parameter_definition_manager import (
 )
 
 
+from flask_app.security.role_guard import (
+    role_can
+)
+
+
+def _engineering_config_allowed():
+    return (
+        session.get("logged_in")
+        and
+        role_can(
+            session.get("role"),
+            "engineering_config"
+        )
+    )
+
+
 def register_parameter_routes(app):
 
     @app.route(
@@ -24,9 +40,7 @@ def register_parameter_routes(app):
 
     ):
 
-        if not session.get(
-            "username"
-        ):
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -75,6 +89,10 @@ def register_parameter_routes(app):
         stage_id
 
     ):
+
+        if not _engineering_config_allowed():
+
+            return redirect("/")
 
         if request.method == "POST":
 
@@ -148,6 +166,10 @@ def register_parameter_routes(app):
 
     ):
 
+        if not _engineering_config_allowed():
+
+            return redirect("/")
+
         parameter = (
 
             ParameterDefinitionManager
@@ -210,6 +232,10 @@ def register_parameter_routes(app):
 
     ):
 
+        if not _engineering_config_allowed():
+
+            return redirect("/")
+
         parameter = (
 
             ParameterDefinitionManager
@@ -245,6 +271,10 @@ def register_parameter_routes(app):
         parameter_id
 
     ):
+
+        if not _engineering_config_allowed():
+
+            return redirect("/")
 
         parameter = (
 

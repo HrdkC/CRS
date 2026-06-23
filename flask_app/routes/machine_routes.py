@@ -18,12 +18,28 @@ from database.audit_manager import (
 )
 
 
+from flask_app.security.role_guard import (
+    role_can
+)
+
+
+def _engineering_config_allowed():
+    return (
+        session.get("logged_in")
+        and
+        role_can(
+            session.get("role"),
+            "engineering_config"
+        )
+    )
+
+
 def register_machine_routes(app):
 
     @app.route("/machines")
     def machines():
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -45,7 +61,7 @@ def register_machine_routes(app):
     )
     def create_machine():
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -130,7 +146,7 @@ def register_machine_routes(app):
 
     ):
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 
@@ -163,7 +179,7 @@ def register_machine_routes(app):
 
     ):
 
-        if session.get("role") != "ADMIN":
+        if not _engineering_config_allowed():
 
             return redirect("/")
 

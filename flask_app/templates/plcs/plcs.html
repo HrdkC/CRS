@@ -28,12 +28,14 @@ PLC Registry
 
         <div class="workbench-actions">
 
+            {% if role_can("engineering_config") %}
             <a
                 href="/plcs/create"
                 class="crs-btn crs-btn-primary"
             >
                 Create PLC
             </a>
+            {% endif %}
 
         </div>
 
@@ -113,12 +115,14 @@ PLC Registry
                         </td>
                         <td>
                             <div class="row-actions">
+                                {% if role_can("engineering_config") %}
                                 <a
                                     href="/plcs/edit/{{ plc.id }}"
                                     class="row-action primary"
                                 >
                                     Edit
                                 </a>
+                                {% endif %}
                                 <a
                                     href="/plcs/test_connection/{{ plc.id }}"
                                     class="row-action"

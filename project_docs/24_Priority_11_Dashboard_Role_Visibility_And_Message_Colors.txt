@@ -1,0 +1,63 @@
+Priority 11 Follow-up: Dashboard Role Visibility and Message Color Standard
+Date: 2026-06-23
+
+Reason
+------
+During Operator/Engineering role testing, some dashboard quick links and metric cards were visible even when the logged-in role was not allowed to open the target pages. This caused confusion because the route correctly blocked access, but the dashboard still displayed the buttons.
+
+Decision
+--------
+Every visible dashboard link, action button, menu item, and card must match the logged-in user's actual permission. If the user cannot open or execute something, the UI should not show it.
+
+Role Visibility Updates
+-----------------------
+- Dashboard quick actions Machines / PLC Registry / Stages are visible only to roles with engineering_config capability.
+- Engineering master metric cards are visible only to roles with engineering_config capability.
+- User metric card is visible only to roles with user_manage capability.
+- Audit metric card is visible only to roles with audit_view capability.
+- Operator dashboard now shows only recipe/current-production information and allowed recipe alerts.
+- PLC Operation Blocks alert is shown only to roles that can access Audit History.
+- PLC Tag Cleanup alert is shown only to roles that can access PLC Registry.
+
+Engineering Access
+------------------
+Engineering role is allowed to access engineering/master pages but is not allowed to access user management or active session management.
+
+Message Display Standard
+------------------------
+Flash messages now use category-specific color and symbols:
+- error/danger: red with danger symbol
+- warning/warn: yellow with exclamation symbol
+- success/ok: green with check symbol
+- info/notice: blue with information symbol
+- message/default: neutral color with message symbol
+
+Files Updated
+-------------
+- flask_app/templates/dashboard/dashboard.html
+- flask_app/routes/dashboard_routes.py
+- flask_app/templates/base.html
+- flask_app/static/css/main.css
+- flask_app/routes/audit_routes.py
+- flask_app/security/role_guard.py
+- flask_app/__init__.py
+
+Test Checklist
+--------------
+1. Login as OPERATOR.
+   - Dashboard must not show Machines, PLC Registry, Stages, TBM Families, Plant PLCs, Configured PLCs, Units, Users, Audit.
+   - Operator should see recipe/current-production items only.
+
+2. Login as ENGINEERING.
+   - Dashboard should show Machines, PLC Registry, Stages, TBM Families, Plant PLCs, Units, Audit.
+   - Engineering should open /machines, /plcs, /stages, /families, /engineering-units.
+   - Engineering should not open /users or /active-sessions.
+
+3. Login as ADMIN or hardik.
+   - All dashboard links and administration links should show.
+
+4. Trigger messages.
+   - Error messages should be red with danger symbol.
+   - Warning messages should be yellow with exclamation symbol.
+   - Success messages should be green with check symbol.
+   - Info messages should be blue with information symbol.

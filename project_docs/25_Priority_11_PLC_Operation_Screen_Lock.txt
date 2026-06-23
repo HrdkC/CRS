@@ -1,0 +1,53 @@
+# Priority 11 Add-On: PLC Operation Screen Lock and Concurrency Guard
+
+Date: 2026-06-23
+
+## Purpose
+
+When a user clicks any PLC buffer operation button, the browser screen must be locked until the operation reaches a final result. This prevents duplicate commands, accidental menu navigation, refresh/back actions, and operator confusion during PLC communication.
+
+Applies to:
+
+- Recipe Restore
+- Recipe Save
+- Download To PLC
+- Upload From PLC
+
+## Final Behavior
+
+After confirmation and operation start:
+
+1. A full-screen operation lock overlay is shown.
+2. All page clicks and navigation links are blocked while the PLC job is running.
+3. Buttons are disabled.
+4. Refresh/back keyboard shortcuts are blocked where browser allows it.
+5. Browser close/refresh/back shows a leave-page warning while the operation is running.
+6. The overlay progress follows the live PLC job percentage.
+7. Screen unlocks only after the job reaches a final success/failure state.
+
+## Server-Side Protection
+
+A second PLC operation for the same PLC is blocked while a QUEUED/RUNNING operation is active. This protects against another tab, double click, or another user starting a conflicting PLC command.
+
+The active-job guard ignores stale jobs older than 30 minutes.
+
+## Updated Files
+
+- flask_app/templates/recipes/download_preparation.html
+- flask_app/routes/recipe_editor_routes.py
+- database/plc_operation_job_manager.py
+
+## Test Checklist
+
+1. Login as OPERATOR and open a current released recipe PLC buffer page.
+2. Click Recipe Restore or Download To PLC.
+3. Confirm the full screen lock overlay appears immediately.
+4. Try clicking Dashboard/Production/My Password/Logout while running. It should not navigate.
+5. Try F5 or Alt+Left while running. Browser should be blocked/warned where supported.
+6. Wait until 100% SUCCESS or ERROR/BLOCKED.
+7. Confirm the screen unlocks after the final result.
+8. Open the same PLC operation page in another browser/session and try to start a second operation while the first is running. It should be blocked with an active operation message.
+
+## Note
+
+No browser can absolutely prevent closing the browser, power loss, or network loss. This implementation prevents normal UI navigation, double-clicking, and accidental commands, while backend concurrency guard protects the PLC from duplicate operation start requests.

@@ -14,7 +14,21 @@ DATABASE_URL = os.getenv(
 )
 
 RECIPE_EXPORT_FOLDER = PROJECT_ROOT / "recipe_exports"
-
 RECIPE_IMPORT_FOLDER = PROJECT_ROOT / "recipe_imports"
 
 DEFAULT_RECIPE_VERSION = 1
+
+# Priority 11: security/session configuration
+# For plant operator terminals, keep this practical but finite.
+SESSION_TIMEOUT_MINUTES = int(
+    os.getenv(
+        "CRS_SESSION_TIMEOUT_MINUTES",
+        "30"
+    )
+)
+
+# Development fallback only. Production should set CRS_SECRET_KEY.
+SECRET_KEY = os.getenv(
+    "CRS_SECRET_KEY",
+    "crs_secret_key"
+)

@@ -9,7 +9,8 @@ from database.database import (
 )
 
 from flask_app.security.role_guard import (
-    normalize_role
+    normalize_role,
+    role_can
 )
 
 
@@ -27,6 +28,28 @@ def _safe_count(cursor, query, params=()):
     except Exception:
 
         return 0
+
+
+def _alert_is_accessible(role, href):
+
+    normalized_role = normalize_role(role)
+
+    if href.startswith("/recipes"):
+        return role_can(normalized_role, "recipe_view")
+
+    if href.startswith("/plcs"):
+        return role_can(normalized_role, "engineering_config")
+
+    if href.startswith("/audit-history"):
+        return role_can(normalized_role, "audit_view")
+
+    if href.startswith("/users"):
+        return role_can(normalized_role, "user_manage")
+
+    if href.startswith("/active-sessions"):
+        return role_can(normalized_role, "session_manage")
+
+    return True
 
 
 def _build_dashboard_alerts(role, counts):
@@ -93,44 +116,47 @@ def _build_dashboard_alerts(role, counts):
             "plc_blocked",
             "incomplete",
             "tag_typo",
-            "test_only"
+            "test_only",
+            "current_released"
+        ],
+        "ENGINEERING": [
+            "plc_blocked",
+            "incomplete",
+            "tag_typo",
+            "test_only",
+            "current_released"
         ],
         "TECHNOLOGY": [
             "review",
             "draft",
-            "plc_blocked",
             "current_released"
         ],
         "PRODUCTION": [
             "draft",
             "review",
-            "plc_blocked",
             "current_released"
         ],
         "EDITOR": [
             "draft",
             "review",
-            "plc_blocked",
             "current_released"
         ],
         "OPERATOR": [
-            "current_released",
-            "plc_blocked"
+            "current_released"
         ],
         "VIEWER": [
             "current_released"
         ]
     }
 
-    return [
-        alert_map[key]
-        for key in role_alert_keys.get(
-            normalized_role,
-            [
-                "current_released"
-            ]
-        )
-    ]
+    alerts = []
+
+    for key in role_alert_keys.get(normalized_role, ["current_released"]):
+        alert = alert_map[key]
+        if _alert_is_accessible(normalized_role, alert["href"]):
+            alerts.append(alert)
+
+    return alerts
 
 
 def register_dashboard_routes(app):
@@ -272,5 +298,6 @@ def register_dashboard_routes(app):
             machine_count=machine_count,
             stage_count=stage_count,
             user_count=user_count,
+            current_released_count=dashboard_counts["current_released_count"],
             dashboard_alerts=dashboard_alerts
         )
