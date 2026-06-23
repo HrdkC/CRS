@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}
+Auto Logout Settings
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Security Configuration</span>
+            <h1>Auto Logout Settings</h1>
+            <p>ADMIN super user configures the allowed idle time. Every logged-in user sees a live ticking countdown in the header.</p>
+        </div>
+        <div class="workbench-actions">
+            <a class="secondary-action" href="/active-sessions">Active Sessions</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Current Timeout</span>
+            <strong>{{ timeout_minutes }} min</strong>
+            <small>Allowed idle time</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">GUI Countdown</span>
+            <strong id="session-settings-countdown" class="metric-text">--:--</strong>
+            <small>Same timer as header</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Allowed Range</span>
+            <strong class="metric-text">{{ min_timeout }}-{{ max_timeout }}</strong>
+            <small>Minutes</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Audit</span>
+            <strong class="metric-text">Tracked</strong>
+            <small>SESSION_TIMEOUT_UPDATED</small>
+        </div>
+    </div>
+
+    <div class="workbench-card settings-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Auto Logout Configuration</span>
+                <p>Changing this value affects all active and future users. Use 1 minute only for GUI testing, then restore the production value.</p>
+            </div>
+        </div>
+
+        <form
+            method="POST"
+            action="/auto-logout-settings/update"
+            class="settings-form"
+            data-confirm="Changing auto logout time affects all active and future users. Continue?"
+        >
+            <div class="form-grid compact-form-grid">
+                <div class="form-group">
+                    <label for="timeout_minutes">Auto Logout Time</label>
+                    <input
+                        type="number"
+                        id="timeout_minutes"
+                        name="timeout_minutes"
+                        min="{{ min_timeout }}"
+                        max="{{ max_timeout }}"
+                        value="{{ timeout_minutes }}"
+                        required
+                    >
+                    <small>Allowed range: {{ min_timeout }} to {{ max_timeout }} minutes.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="change_reason">Change Reason</label>
+                    <input
+                        type="text"
+                        id="change_reason"
+                        name="change_reason"
+                        placeholder="Example: Priority 11 GUI auto logout test"
+                    >
+                    <small>Reason is saved in audit history.</small>
+                </div>
+            </div>
+
+            <div class="form-actions left-actions">
+                <button type="submit" class="primary-action">Save Auto Logout Time</button>
+                <a class="secondary-action" href="/audit-history?action=SESSION_TIMEOUT_UPDATED">View Timeout Audit</a>
+            </div>
+
+            {% if timeout_record %}
+            <p class="settings-note">
+                Last updated by
+                <strong>{{ timeout_record.updated_by or 'SYSTEM' }}</strong>
+                at
+                <strong>{{ timeout_record.updated_at or timeout_record.created_at }}</strong>.
+            </p>
+            {% endif %}
+        </form>
+    </div>
+
+</section>
+
+{% endblock %}

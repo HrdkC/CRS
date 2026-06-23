@@ -12,7 +12,7 @@ Audit History
         <div class="workbench-title">
             <span class="section-kicker">Traceability</span>
             <h1>Audit History</h1>
-            <p>User, role, action, source, reason, and timestamp trail for CRS changes.</p>
+            <p>User, role, action, source, old/new value, reason, and timestamp trail for CRS changes.</p>
         </div>
     </div>
 
@@ -20,7 +20,7 @@ Audit History
         <div class="metric-card">
             <span class="metric-label">Records</span>
             <strong>{{ history|length }}</strong>
-            <small>Visible audit events</small>
+            <small>Visible after filters</small>
         </div>
         <div class="metric-card">
             <span class="metric-label">Time Zone</span>
@@ -28,15 +28,92 @@ Audit History
             <small>Displayed from UTC storage</small>
         </div>
         <div class="metric-card">
-            <span class="metric-label">Source</span>
-            <strong class="metric-text">CRS</strong>
-            <small>Database and PLC operations</small>
+            <span class="metric-label">Filter</span>
+            <strong class="metric-text">Ready</strong>
+            <small>Use filters for long history</small>
         </div>
         <div class="metric-card">
             <span class="metric-label">Retention</span>
             <strong class="metric-text">Trace</strong>
             <small>No delete path from UI</small>
         </div>
+    </div>
+
+    <div class="workbench-card settings-workbench audit-filter-panel">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Audit Filters</span>
+                <p>Use filters when history becomes lengthy. Leave blank to show recent records.</p>
+            </div>
+        </div>
+
+        <form method="GET" action="/audit-history" class="settings-form audit-filter-form">
+            <div class="form-grid audit-filter-grid">
+                <div class="form-group">
+                    <label for="date_from">Date From</label>
+                    <input type="date" id="date_from" name="date_from" value="{{ filters.date_from }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="date_to">Date To</label>
+                    <input type="date" id="date_to" name="date_to" value="{{ filters.date_to }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" value="{{ filters.username }}" placeholder="admin, hardik, operator">
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role">
+                        <option value="">All Roles</option>
+                        {% for role in filter_options.roles %}
+                        <option value="{{ role }}" {% if filters.role == role %}selected{% endif %}>{{ role }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="action">Action</label>
+                    <select id="action" name="action">
+                        <option value="">All Actions</option>
+                        {% for action in filter_options.actions %}
+                        <option value="{{ action }}" {% if filters.action == action %}selected{% endif %}>{{ action }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="change_source">Source</label>
+                    <select id="change_source" name="change_source">
+                        <option value="">All Sources</option>
+                        {% for source in filter_options.sources %}
+                        <option value="{{ source }}" {% if filters.change_source == source %}selected{% endif %}>{{ source }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="keyword">Keyword</label>
+                    <input type="text" id="keyword" name="keyword" value="{{ filters.keyword }}" placeholder="recipe, parameter, reason, PLC">
+                </div>
+
+                <div class="form-group">
+                    <label for="limit">Limit</label>
+                    <select id="limit" name="limit">
+                        {% for option in [100, 250, 500, 1000, 2000, 5000] %}
+                        <option value="{{ option }}" {% if filters.limit|int == option %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions left-actions">
+                <button type="submit" class="primary-action">Apply Filters</button>
+                <a href="/audit-history" class="secondary-action">Clear Filters</a>
+            </div>
+        </form>
     </div>
 
     <div class="workbench-card data-workbench">
@@ -48,14 +125,16 @@ Audit History
         </div>
 
         <div class="professional-table-wrap registry-table-wrap">
-            <table class="professional-table registry-table">
+            <table class="professional-table registry-table audit-history-table">
                 <thead>
                     <tr>
                         <th>Date/Time (IST)</th>
                         <th>User</th>
                         <th>Role</th>
                         <th>Action</th>
-                        <th>Record</th>
+                        <th>Recipe / Record</th>
+                        <th>Parameter</th>
+                        <th>Old → New</th>
                         <th>Source</th>
                         <th>Reason</th>
                     </tr>
@@ -66,14 +145,31 @@ Audit History
                         <td>{{ row.timestamp_ist }}</td>
                         <td><strong>{{ row.username }}</strong></td>
                         <td><span class="status-badge status-neutral">{{ row.role }}</span></td>
-                        <td>{{ row.action }}</td>
-                        <td>{{ row.record_id }}</td>
+                        <td><span class="status-badge status-info">{{ row.action }}</span></td>
+                        <td>
+                            {% if row.recipe_code %}
+                            <strong>{{ row.recipe_code }}</strong>
+                            {% if row.recipe_version %} V{{ row.recipe_version }}{% endif %}
+                            {% else %}
+                            {{ row.record_id or '-' }}
+                            {% endif %}
+                        </td>
+                        <td>{{ row.parameter_name or '-' }}</td>
+                        <td>
+                            {% if row.old_value is not none or row.new_value is not none %}
+                            <span class="audit-old-value">{{ row.old_value }}</span>
+                            →
+                            <span class="audit-new-value">{{ row.new_value }}</span>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
                         <td>{{ row.change_source }}</td>
                         <td>{{ row.reason }}</td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="7" class="empty-state">No audit records found.</td>
+                        <td colspan="9" class="empty-state">No audit records found for selected filters.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

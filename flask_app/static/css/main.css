@@ -2849,3 +2849,43 @@ button:hover {
     justify-content: flex-start;
 
 }
+
+/* =====================================================
+   Priority 11 - Auto Logout Settings + Audit Filters
+   ===================================================== */
+
+.audit-filter-panel {
+    margin-bottom: 1rem;
+}
+
+.audit-filter-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.audit-filter-form select,
+.audit-filter-form input[type="date"],
+.audit-filter-form input[type="text"] {
+    width: 100%;
+}
+
+.audit-history-table th,
+.audit-history-table td {
+    vertical-align: top;
+}
+
+.audit-old-value {
+    color: #991b1b;
+    font-weight: 700;
+}
+
+.audit-new-value {
+    color: #166534;
+    font-weight: 700;
+}
+
+.settings-note {
+    margin-top: 1rem;
+    color: var(--text-muted, #526070);
+    font-size: 0.9rem;
+}

@@ -109,7 +109,7 @@
                 </li>
                 {% endif %}
 
-                {% if role_can("user_manage") or role_can("session_manage") or is_admin() %}
+                {% if role_can("user_manage") or role_can("session_manage") or role_can("audit_view") or is_admin() %}
                 <li class="dropdown menu-item">
                     <a href="#">Administration ▼</a>
                     <div class="dropdown-menu">
@@ -117,8 +117,12 @@
                         <a href="/users">Users</a>
                         {% endif %}
 
-                        {% if is_admin() %}
+                        {% if role_can("audit_view") %}
                         <a href="/audit-history">Audit History</a>
+                        {% endif %}
+
+                        {% if is_admin() %}
+                        <a href="/auto-logout-settings">Auto Logout Settings</a>
                         {% endif %}
 
                         {% if role_can("session_manage") %}
