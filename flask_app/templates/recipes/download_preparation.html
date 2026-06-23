@@ -397,6 +397,8 @@ Recipe PLC Buffer Operations
                     <strong>CRS_Recipe_Data</strong>.
                     PLC destination buffer is
                     <strong>CRS_Test_Recipe_Data</strong> with request/complete handshake.
+                    Upload From PLC copies PLC destination values back to CRS buffer;
+                    Recipe Save commits them to database with parameter audit.
                 </p>
 
             </div>
@@ -587,6 +589,7 @@ Recipe PLC Buffer Operations
                     name="action"
                     value="recipe_save"
                     data-loading-title="Recipe Save"
+                    data-confirm-message="Recipe Save will update database values from CRS_Recipe_Data and create parameter-level audit rows for every changed value. Continue?"
                     {% if not can_edit_recipe %}
                     disabled
                     {% endif %}
@@ -614,6 +617,7 @@ Recipe PLC Buffer Operations
                     name="action"
                     value="upload_from_plc"
                     data-loading-title="Upload From PLC"
+                    data-confirm-message="Upload From PLC will read CRS_Test_Recipe_Data, validate min/max, compare against database, and copy values to CRS_Recipe_Data only. Use Recipe Save afterward to commit database changes with audit. Continue?"
                     {% if not can_edit_recipe %}
                     disabled
                     {% endif %}
@@ -734,6 +738,24 @@ Recipe PLC Buffer Operations
                     <div class="metric-label">DB Verified</div>
                     <div class="metric-value">
                         {{ operation_result.metrics.verified_parameters }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if operation_result.metrics.upload_candidate_changes is defined %}
+                <div class="metric-chip">
+                    <div class="metric-label">Upload Candidates</div>
+                    <div class="metric-value">
+                        {{ operation_result.metrics.upload_candidate_changes }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if operation_result.metrics.validated_parameters is defined %}
+                <div class="metric-chip">
+                    <div class="metric-label">Upload Validated</div>
+                    <div class="metric-value">
+                        {{ operation_result.metrics.validated_parameters }}
                     </div>
                 </div>
                 {% endif %}
@@ -1477,6 +1499,22 @@ document.addEventListener(
                 result.metrics
                 &&
                 result.metrics.verified_parameters
+            );
+
+            addMetric(
+                metricStrip,
+                "Upload Candidates",
+                result.metrics
+                &&
+                result.metrics.upload_candidate_changes
+            );
+
+            addMetric(
+                metricStrip,
+                "Upload Validated",
+                result.metrics
+                &&
+                result.metrics.validated_parameters
             );
 
             if (

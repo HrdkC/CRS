@@ -292,7 +292,9 @@ class PLCBufferOperationManager:
 
                         result=result,
 
-                        username=username
+                        username=username,
+
+                        user_role=user_role
 
                     )
                 )
@@ -874,7 +876,11 @@ class PLCBufferOperationManager:
 
                 username=username,
 
-                user_role=user_role
+                user_role=user_role,
+
+                change_source="CRS_BUFFER_SAVE_TO_RECIPE",
+
+                change_reason="Recipe Save from CRS_Recipe_Data buffer"
 
             )
         )
@@ -1263,7 +1269,9 @@ class PLCBufferOperationManager:
 
         result,
 
-        username
+        username,
+
+        user_role
 
     ):
 
@@ -1350,6 +1358,39 @@ class PLCBufferOperationManager:
 
             )
 
+            database_compare = (
+                PLCBufferOperationManager
+                .compare_recipe_values_to_payload(
+
+                    recipe_values=values,
+
+                    payload=source_payload
+
+                )
+            )
+
+            result["payload_compare"] = database_compare
+
+            result["metrics"]["upload_candidate_changes"] = (
+                database_compare["mismatch_count"]
+            )
+
+            result["metrics"]["validated_parameters"] = (
+                database_compare["checked_parameters"]
+            )
+
+            PLCBufferOperationManager.add_step(
+                result,
+                "PLC upload compared to database",
+                "OK",
+                (
+                    f"{database_compare['mismatch_count']} candidate "
+                    "parameter change(s) found. Use Recipe Save to "
+                    "write these PLC values to the recipe database with audit."
+                ),
+                72
+            )
+
             PLCBufferOperationManager.write_or_block(
 
                 plc_conn=plc_conn,
@@ -1388,7 +1429,7 @@ class PLCBufferOperationManager:
             destination_readback
         )
 
-        result["payload_compare"] = compare
+        result["destination_compare"] = compare
 
         if not compare["matched"]:
 
@@ -1415,6 +1456,16 @@ class PLCBufferOperationManager:
 
         try:
 
+            upload_candidate_changes = result["metrics"].get(
+                "upload_candidate_changes",
+                0
+            )
+
+            validated_parameters = result["metrics"].get(
+                "validated_parameters",
+                0
+            )
+
             UploadHistoryManager.log_upload(
 
                 plc_name=result["plc"]["plc_name"],
@@ -1427,14 +1478,63 @@ class PLCBufferOperationManager:
 
                 uploaded_by=username,
 
-                remarks="PLC destination buffer copied to CRS buffer"
+                remarks=(
+                    "PLC destination buffer copied to CRS buffer. "
+                    f"Candidate recipe changes: {upload_candidate_changes}. "
+                    "Use Recipe Save to commit database values with audit."
+                ),
+
+                user_role=user_role,
+
+                plc_id=result["plc"].get("id"),
+
+                source_tag=source_tag["tag_name"],
+
+                destination_tag=destination_tag["tag_name"],
+
+                candidate_change_count=upload_candidate_changes,
+
+                validated_parameters=validated_parameters,
+
+                payload_mismatch_count=result["payload_compare"].get(
+                    "mismatch_count",
+                    0
+                )
+
+            )
+
+            AuditManager.log_event(
+
+                username=username,
+
+                role=user_role,
+
+                action="PLC_UPLOAD_FROM_PLC",
+
+                change_source="PLC_UPLOAD_TO_CRS_BUFFER",
+
+                plc_name=result["plc"]["plc_name"],
+
+                recipe_code=recipe["recipe_code"],
+
+                recipe_version=recipe["version"],
+
+                old_value="PLC destination buffer",
+
+                new_value="CRS_Recipe_Data",
+
+                reason=(
+                    "PLC buffer uploaded to CRS buffer. "
+                    "Recipe Save is required for database update and "
+                    "parameter-level audit."
+                )
 
             )
 
         except Exception as exc:
 
             result["warnings"].append(
-                f"Upload history record failed: {exc}"
+                f"Upload history/audit record failed: {exc}"
             )
 
         return result
@@ -2954,7 +3054,11 @@ class PLCBufferOperationManager:
 
         username,
 
-        user_role
+        user_role,
+
+        change_source="CRS_BUFFER_SAVE_TO_RECIPE",
+
+        change_reason="Recipe Save from CRS_Recipe_Data buffer"
 
     ):
 
@@ -3008,9 +3112,11 @@ class PLCBufferOperationManager:
 
                 changed_by=username,
 
-                change_reason="Recipe Save from CRS_Recipe_Data buffer",
+                change_reason=change_reason,
 
-                user_role=user_role
+                user_role=user_role,
+
+                change_source=change_source
 
             )
 

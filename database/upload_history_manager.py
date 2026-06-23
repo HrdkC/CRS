@@ -3,6 +3,92 @@ from database.database import get_connection
 
 class UploadHistoryManager:
 
+    OPTIONAL_COLUMNS = {
+
+        "user_role": "TEXT",
+
+        "plc_id": "INTEGER",
+
+        "source_tag": "TEXT",
+
+        "destination_tag": "TEXT",
+
+        "candidate_change_count": "INTEGER DEFAULT 0",
+
+        "validated_parameters": "INTEGER DEFAULT 0",
+
+        "payload_mismatch_count": "INTEGER DEFAULT 0"
+
+    }
+
+    @staticmethod
+    def ensure_schema(cursor=None):
+
+        own_connection = False
+
+        if cursor is None:
+
+            conn = get_connection()
+
+            cursor = conn.cursor()
+
+            own_connection = True
+
+        else:
+
+            conn = None
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS recipe_upload_history (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            plc_name TEXT,
+
+            recipe_code TEXT,
+
+            recipe_version INTEGER,
+
+            uploaded_by TEXT,
+
+            uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+            status TEXT,
+
+            remarks TEXT
+        )
+        """)
+
+        cursor.execute(
+            "PRAGMA table_info(recipe_upload_history)"
+        )
+
+        existing_columns = {
+            row["name"]
+            for row in cursor.fetchall()
+        }
+
+        for column_name, column_type in (
+            UploadHistoryManager
+            .OPTIONAL_COLUMNS
+            .items()
+        ):
+
+            if column_name not in existing_columns:
+
+                cursor.execute(
+                    f"""
+                    ALTER TABLE recipe_upload_history
+                    ADD COLUMN {column_name} {column_type}
+                    """
+                )
+
+        if own_connection:
+
+            conn.commit()
+
+            conn.close()
+
     @staticmethod
     def log_upload(
 
@@ -16,13 +102,31 @@ class UploadHistoryManager:
 
         uploaded_by="PLC_UPLOAD",
 
-        remarks=None
+        remarks=None,
+
+        user_role=None,
+
+        plc_id=None,
+
+        source_tag=None,
+
+        destination_tag=None,
+
+        candidate_change_count=0,
+
+        validated_parameters=0,
+
+        payload_mismatch_count=0
 
     ):
 
         conn = get_connection()
 
         cursor = conn.cursor()
+
+        UploadHistoryManager.ensure_schema(
+            cursor
+        )
 
         cursor.execute("""
         INSERT INTO recipe_upload_history (
@@ -37,11 +141,25 @@ class UploadHistoryManager:
 
             status,
 
-            remarks
+            remarks,
+
+            user_role,
+
+            plc_id,
+
+            source_tag,
+
+            destination_tag,
+
+            candidate_change_count,
+
+            validated_parameters,
+
+            payload_mismatch_count
 
         )
 
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
 
             plc_name,
@@ -54,7 +172,21 @@ class UploadHistoryManager:
 
             status,
 
-            remarks
+            remarks,
+
+            user_role,
+
+            plc_id,
+
+            source_tag,
+
+            destination_tag,
+
+            candidate_change_count,
+
+            validated_parameters,
+
+            payload_mismatch_count
 
         ))
 
@@ -72,6 +204,10 @@ class UploadHistoryManager:
         conn = get_connection()
 
         cursor = conn.cursor()
+
+        UploadHistoryManager.ensure_schema(
+            cursor
+        )
 
         cursor.execute("""
         SELECT *
@@ -97,6 +233,10 @@ class UploadHistoryManager:
         conn = get_connection()
 
         cursor = conn.cursor()
+
+        UploadHistoryManager.ensure_schema(
+            cursor
+        )
 
         cursor.execute("""
         SELECT *
@@ -128,6 +268,10 @@ class UploadHistoryManager:
         conn = get_connection()
 
         cursor = conn.cursor()
+
+        UploadHistoryManager.ensure_schema(
+            cursor
+        )
 
         cursor.execute("""
         SELECT *
