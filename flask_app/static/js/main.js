@@ -1,9 +1,7 @@
 /* =====================================================
-   Apollo CRS - UI JavaScript
-   Version 0.1 Beta
-   Purpose: Single-source JS aligned to base.html
+   Apollo CRS - Professional UI Runtime
+   Version: Priority 11.5 Stabilized
    ===================================================== */
-
 (function () {
     "use strict";
 
@@ -16,101 +14,64 @@
         CRS.session.init();
     });
 
-    window.CRS = window.CRS || {};
+    const CRS = window.CRS = window.CRS || {};
 
-    /* =====================================================
-       01. Utilities
-       ===================================================== */
     CRS.util = {
-        qs: function (selector, root) {
+        qs(selector, root) {
             return (root || document).querySelector(selector);
         },
-
-        qsa: function (selector, root) {
+        qsa(selector, root) {
             return Array.prototype.slice.call((root || document).querySelectorAll(selector));
         },
-
-        toInt: function (value, fallback) {
-            const parsed = parseInt(value, 10);
-            return Number.isFinite(parsed) ? parsed : fallback;
+        isJsonResponse(response) {
+            const type = response.headers.get("content-type") || "";
+            return type.indexOf("application/json") !== -1;
         },
-
-        postJson: async function (url, body) {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(body || {})
-            });
-
-            const payload = await response.json().catch(function () {
-                return {};
-            });
-
-            return { response: response, payload: payload };
-        },
-
-        escapeHtml: function (value) {
-            return String(value || "")
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+        formatSeconds(totalSeconds) {
+            const safeTotal = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+            const minutes = Math.floor(safeTotal / 60);
+            const seconds = safeTotal % 60;
+            return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
         }
     };
 
-    /* =====================================================
-       02. Flash Messages
-       ===================================================== */
     CRS.flash = {
-        init: function () {
+        init() {
             CRS.util.qsa(".flash-message").forEach(function (message) {
+                const sticky = message.dataset.sticky === "1";
+                if (sticky) return;
                 setTimeout(function () {
                     message.style.transition = "opacity 0.35s ease, transform 0.35s ease";
                     message.style.opacity = "0";
                     message.style.transform = "translateY(-4px)";
-
-                    setTimeout(function () {
-                        if (message && message.parentNode) {
-                            message.remove();
-                        }
-                    }, 380);
+                    setTimeout(function () { message.remove(); }, 380);
                 }, 4500);
             });
         }
     };
 
-    /* =====================================================
-       03. Confirmation Framework
-       - form[data-confirm] confirms only on submit
-       - a/button[data-confirm] confirms only on click
-       ===================================================== */
     CRS.confirm = {
-        init: function () {
+        init() {
+            const confirmedForms = new WeakSet();
+
             CRS.util.qsa("form[data-confirm]").forEach(function (form) {
                 form.addEventListener("submit", function (event) {
+                    if (confirmedForms.has(form)) return;
                     const message = form.getAttribute("data-confirm");
-
                     if (message && !window.confirm(message)) {
                         event.preventDefault();
+                        return;
                     }
+                    confirmedForms.add(form);
                 });
             });
 
             CRS.util.qsa("a[data-confirm], button[data-confirm]").forEach(function (element) {
-                const parentConfirmForm = element.closest("form[data-confirm]");
-                const isSubmitButton = String(element.getAttribute("type") || "").toLowerCase() === "submit";
-
-                if (parentConfirmForm && isSubmitButton) {
-                    return;
-                }
+                const parentForm = element.closest("form[data-confirm]");
+                if (parentForm && (element.type || "").toLowerCase() === "submit") return;
 
                 element.addEventListener("click", function (event) {
                     const message = element.getAttribute("data-confirm");
-
                     if (message && !window.confirm(message)) {
                         event.preventDefault();
                     }
@@ -119,66 +80,68 @@
         }
     };
 
-    /* =====================================================
-       04. Header Dropdown Menus
-       ===================================================== */
     CRS.dropdown = {
-        init: function () {
+        init() {
             CRS.util.qsa(".dropdown").forEach(function (dropdown) {
                 let closeTimer = null;
 
                 dropdown.addEventListener("mouseenter", function () {
-                    if (closeTimer) {
-                        clearTimeout(closeTimer);
-                    }
+                    if (closeTimer) clearTimeout(closeTimer);
                     dropdown.classList.add("dropdown-open");
                 });
 
                 dropdown.addEventListener("mouseleave", function () {
                     closeTimer = setTimeout(function () {
                         dropdown.classList.remove("dropdown-open");
-                    }, 450);
+                    }, 500);
+                });
+
+                const trigger = dropdown.querySelector("a");
+                if (trigger) {
+                    trigger.addEventListener("click", function (event) {
+                        if (trigger.getAttribute("href") === "#") {
+                            event.preventDefault();
+                            dropdown.classList.toggle("dropdown-open");
+                        }
+                    });
+                }
+            });
+
+            document.addEventListener("click", function (event) {
+                if (event.target.closest(".dropdown")) return;
+                CRS.util.qsa(".dropdown.dropdown-open").forEach(function (dropdown) {
+                    dropdown.classList.remove("dropdown-open");
                 });
             });
         }
     };
 
-    /* =====================================================
-       05. Subtle Card Animation
-       ===================================================== */
     CRS.cards = {
-        init: function () {
+        init() {
             CRS.util.qsa(".dashboard-card").forEach(function (card, index) {
                 card.style.opacity = "0";
-                card.style.transform = "translateY(8px)";
-
+                card.style.transform = "translateY(10px)";
                 setTimeout(function () {
                     card.style.transition = "opacity 0.25s ease, transform 0.25s ease";
                     card.style.opacity = "1";
                     card.style.transform = "translateY(0)";
-                }, Math.min(index * 45, 300));
+                }, Math.min(index * 50, 400));
             });
         }
     };
 
-    /* =====================================================
-       06. Login Attempt Alert Acknowledge
-       ===================================================== */
     CRS.loginAlerts = {
-        init: function () {
+        init() {
             document.addEventListener("submit", async function (event) {
                 const form = event.target;
-
-                if (!form || !form.classList || !form.classList.contains("login-attempt-alert-form")) {
-                    return;
-                }
+                if (!form || !form.classList || !form.classList.contains("login-attempt-alert-form")) return;
 
                 event.preventDefault();
                 await CRS.loginAlerts.acknowledge(form);
             });
         },
 
-        acknowledge: async function (form) {
+        async acknowledge(form) {
             const alertCard = form.closest(".login-attempt-alert");
             const button = form.querySelector("button[type='submit']");
             const originalText = button ? button.textContent : "";
@@ -194,9 +157,7 @@
                     headers: { "X-Requested-With": "XMLHttpRequest" }
                 });
 
-                const payload = await response.json().catch(function () {
-                    return {};
-                });
+                const payload = await (CRS.util.isJsonResponse(response) ? response.json() : Promise.resolve({}));
 
                 if (response.status === 401 || payload.redirect) {
                     window.location.href = payload.redirect || "/login";
@@ -214,10 +175,8 @@
                 if (alertCard) {
                     alertCard.style.transition = "opacity 0.18s ease, transform 0.18s ease";
                     alertCard.style.opacity = "0";
-                    alertCard.style.transform = "translateY(-4px)";
-                    setTimeout(function () {
-                        alertCard.remove();
-                    }, 200);
+                    alertCard.style.transform = "translateY(-5px)";
+                    setTimeout(function () { alertCard.remove(); }, 220);
                 }
             } catch (error) {
                 if (button) {
@@ -227,42 +186,29 @@
             }
         },
 
-        show: function (alerts) {
-            if (!alerts || !alerts.length) {
-                return;
-            }
+        show(alerts) {
+            if (!alerts || !alerts.length) return;
 
             let stack = CRS.util.qs(".login-attempt-alert-stack");
-            const mainContainer = CRS.util.qs(".main-container");
-
             if (!stack) {
                 stack = document.createElement("div");
                 stack.className = "login-attempt-alert-stack";
-                if (mainContainer) {
-                    mainContainer.prepend(stack);
-                } else {
-                    document.body.appendChild(stack);
-                }
+                const main = CRS.util.qs(".main-container");
+                if (main) main.prepend(stack);
+                else document.body.appendChild(stack);
             }
 
             alerts.forEach(function (alert) {
-                if (!alert || !alert.id) {
-                    return;
-                }
+                if (document.querySelector('[data-login-alert-id="' + alert.id + '"]')) return;
 
-                if (CRS.util.qs('[data-login-alert-id="' + alert.id + '"]')) {
-                    return;
-                }
-
-                const workstation = CRS.util.escapeHtml(alert.attempted_workstation_name || "Unknown workstation");
-                const clientIp = CRS.util.escapeHtml(alert.attempted_client_ip || "-");
-                const attemptedAt = CRS.util.escapeHtml(alert.attempted_at || "");
+                const workstation = alert.attempted_workstation_name || "Unknown workstation";
+                const clientIp = alert.attempted_client_ip || "-";
+                const attemptedAt = alert.attempted_at || "";
 
                 const item = document.createElement("div");
                 item.className = "login-attempt-alert";
                 item.setAttribute("role", "alert");
                 item.setAttribute("data-login-alert-id", alert.id);
-
                 item.innerHTML =
                     '<div class="login-attempt-alert-icon">⚠</div>' +
                     '<div class="login-attempt-alert-body">' +
@@ -279,165 +225,130 @@
         }
     };
 
-    /* =====================================================
-       07. Session Countdown + Browser Heartbeat
-       ===================================================== */
     CRS.session = {
-        init: function () {
+        init() {
             const countdown = CRS.util.qs("#session-countdown");
-            if (!countdown) {
-                return;
-            }
+            if (!countdown) return;
 
             const countdownValue = CRS.util.qs("#session-countdown-value");
             const settingsPreview = CRS.util.qs("#session-settings-countdown");
+            let timeoutSeconds = parseInt(countdown.getAttribute("data-timeout-seconds") || "1800", 10);
+            let lastActivityEpoch = parseInt(countdown.getAttribute("data-last-activity-epoch") || "0", 10);
+            if (!lastActivityEpoch) lastActivityEpoch = Math.floor(Date.now() / 1000);
 
-            let timeoutSeconds = CRS.util.toInt(countdown.getAttribute("data-timeout-seconds"), 1800);
-            let lastActivityEpoch = CRS.util.toInt(countdown.getAttribute("data-last-activity-epoch"), Math.floor(Date.now() / 1000));
             let deadlineEpoch = lastActivityEpoch + timeoutSeconds;
             let lastHeartbeatMs = 0;
             let userActivitySinceHeartbeat = false;
             let expireInProgress = false;
             const heartbeatIntervalMs = 15000;
 
-            function formatSeconds(totalSeconds) {
-                const safeSeconds = Math.max(0, Math.floor(totalSeconds));
-                const minutes = Math.floor(safeSeconds / 60);
-                const seconds = safeSeconds % 60;
-                return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
-            }
+            function render() {
+                const remaining = deadlineEpoch - Math.floor(Date.now() / 1000);
+                const display = CRS.util.formatSeconds(remaining);
 
-            function renderCountdown() {
-                const nowEpoch = Math.floor(Date.now() / 1000);
-                const remainingSeconds = deadlineEpoch - nowEpoch;
-                const displayValue = formatSeconds(remainingSeconds);
-
-                if (countdownValue) {
-                    countdownValue.textContent = displayValue;
-                }
-
-                if (settingsPreview) {
-                    settingsPreview.textContent = displayValue;
-                }
+                if (countdownValue) countdownValue.textContent = display;
+                if (settingsPreview) settingsPreview.textContent = display;
 
                 countdown.classList.remove("session-countdown-warning", "session-countdown-danger");
+                if (remaining <= 60) countdown.classList.add("session-countdown-danger");
+                else if (remaining <= 180) countdown.classList.add("session-countdown-warning");
 
-                if (remainingSeconds <= 60) {
-                    countdown.classList.add("session-countdown-danger");
-                } else if (remainingSeconds <= 180) {
-                    countdown.classList.add("session-countdown-warning");
-                }
-
-                if (remainingSeconds <= 0 && !expireInProgress) {
+                if (remaining <= 0 && !expireInProgress) {
                     expireInProgress = true;
-                    expireSessionFromClientTimer();
+                    expireFromClientTimer();
                 }
             }
 
             async function heartbeat(forceActivity) {
                 const nowMs = Date.now();
-                if (!forceActivity && nowMs - lastHeartbeatMs < heartbeatIntervalMs) {
-                    return;
-                }
+                if (!forceActivity && nowMs - lastHeartbeatMs < heartbeatIntervalMs) return;
 
                 lastHeartbeatMs = nowMs;
                 const hadUserActivity = Boolean(forceActivity || userActivitySinceHeartbeat);
                 userActivitySinceHeartbeat = false;
 
                 try {
-                    const result = await CRS.util.postJson("/session-heartbeat", {
-                        user_activity: hadUserActivity
+                    const response = await fetch("/session-heartbeat", {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest",
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ user_activity: hadUserActivity })
                     });
 
-                    if (!result.response.ok || !result.payload.ok) {
-                        window.location.href = result.payload.redirect || "/login";
+                    if (!response.ok) {
+                        window.location.href = "/login";
                         return;
                     }
 
-                    timeoutSeconds = CRS.util.toInt(result.payload.timeout_seconds, timeoutSeconds);
-                    lastActivityEpoch = CRS.util.toInt(result.payload.last_activity_epoch, lastActivityEpoch);
-                    deadlineEpoch = lastActivityEpoch + timeoutSeconds;
+                    const payload = await response.json();
+                    if (!payload.ok) {
+                        window.location.href = payload.redirect || "/login";
+                        return;
+                    }
 
+                    timeoutSeconds = parseInt(payload.timeout_seconds || timeoutSeconds, 10);
+                    lastActivityEpoch = parseInt(payload.last_activity_epoch || lastActivityEpoch, 10);
+                    deadlineEpoch = lastActivityEpoch + timeoutSeconds;
                     countdown.setAttribute("data-timeout-seconds", String(timeoutSeconds));
                     countdown.setAttribute("data-last-activity-epoch", String(lastActivityEpoch));
 
-                    if (result.payload.login_attempt_alerts) {
-                        CRS.loginAlerts.show(result.payload.login_attempt_alerts);
-                    }
-
-                    renderCountdown();
+                    if (payload.login_attempt_alerts) CRS.loginAlerts.show(payload.login_attempt_alerts);
+                    render();
                 } catch (error) {
-                    // Local countdown continues; server will enforce timeout on next request.
+                    // Server remains the source of truth on the next successful request.
                 }
             }
 
-            async function expireSessionFromClientTimer() {
-                if (countdownValue) {
-                    countdownValue.textContent = "00:00";
-                }
-
+            async function expireFromClientTimer() {
+                if (countdownValue) countdownValue.textContent = "00:00";
                 try {
                     await fetch("/session-auto-expire", {
                         method: "POST",
                         headers: { "X-Requested-With": "XMLHttpRequest" }
                     });
                 } catch (error) {
-                    // Redirect still protects UI.
+                    // Redirect still protects the UI.
                 }
-
                 window.location.href = "/login";
             }
 
-            function markUserActivity() {
+            function markActivity() {
                 userActivitySinceHeartbeat = true;
             }
 
-            ["click", "keydown", "scroll", "touchstart"].forEach(function (eventName) {
-                document.addEventListener(eventName, markUserActivity, { passive: true });
+            ["click", "keydown", "mousemove", "scroll", "touchstart"].forEach(function (eventName) {
+                document.addEventListener(eventName, markActivity, { passive: true });
             });
 
-            // Mousemove can be noisy. Use pointerdown/click/keyboard/scroll for idle reset.
+            setInterval(function () { heartbeat(false); }, heartbeatIntervalMs);
             setInterval(function () {
-                heartbeat(false);
-            }, heartbeatIntervalMs);
-
-            setInterval(function () {
-                renderCountdown();
-                if (userActivitySinceHeartbeat) {
-                    heartbeat(true);
-                }
+                render();
+                if (userActivitySinceHeartbeat) heartbeat(true);
             }, 1000);
 
             heartbeat(false);
-            renderCountdown();
+            render();
         }
     };
 
-    /* =====================================================
-       08. Loading Overlay Public Hooks
-       ===================================================== */
-    window.showLoading = function () {
-        if (CRS.util.qs("#loading-overlay")) {
-            return;
-        }
-
-        const overlay = document.createElement("div");
-        overlay.id = "loading-overlay";
-        overlay.style.position = "fixed";
-        overlay.style.inset = "0";
-        overlay.style.zIndex = "99999";
-        overlay.style.display = "flex";
-        overlay.style.alignItems = "center";
-        overlay.style.justifyContent = "center";
-        overlay.style.background = "rgba(255, 255, 255, 0.72)";
-        overlay.innerHTML = "<h2>Loading...</h2>";
-        document.body.appendChild(overlay);
-    };
-
-    window.hideLoading = function () {
-        const overlay = CRS.util.qs("#loading-overlay");
-        if (overlay) {
-            overlay.remove();
+    CRS.loading = {
+        show(message) {
+            if (CRS.util.qs("#loading-overlay")) return;
+            const overlay = document.createElement("div");
+            overlay.id = "loading-overlay";
+            overlay.className = "operation-lock-overlay";
+            overlay.style.display = "grid";
+            overlay.innerHTML = '<div class="operation-lock-card"><div class="operation-lock-title">' + (message || "Loading...") + '</div></div>';
+            document.body.appendChild(overlay);
+        },
+        hide() {
+            const overlay = CRS.util.qs("#loading-overlay");
+            if (overlay) overlay.remove();
         }
     };
+
+    window.showLoading = CRS.loading.show;
+    window.hideLoading = CRS.loading.hide;
 })();

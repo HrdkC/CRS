@@ -6,109 +6,146 @@ Apollo CRS Login
 
 {% block content %}
 
-<div class="login-container">
+<div class="corporate-login-shell corporate-login-v6">
 
-    <div class="login-card">
+    <section class="corporate-login-hero campaign-carousel-panel" aria-label="Apollo Tyres Har Safar Mein Dum Hai campaign panel">
 
-        <div class="login-logo">
+        <div class="campaign-carousel-viewport" aria-hidden="true">
+            <div class="campaign-carousel-track">
+                <div class="campaign-carousel-slide">
+                    <img
+                        src="{{ url_for('static', filename='images/branding/apollo_campaign_01.webp') }}"
+                        alt=""
+                    >
+                </div>
+                <div class="campaign-carousel-slide">
+                    <img
+                        src="{{ url_for('static', filename='images/branding/apollo_campaign_02.webp') }}"
+                        alt=""
+                    >
+                </div>
+            </div>
+        </div>
 
+        <div class="corporate-login-hero-overlay"></div>
+
+        <div class="campaign-logo-lockup">
+            <img
+                src="{{ url_for('static', filename='images/branding/apollo_bcci_lead_sponsor_lockup.webp') }}"
+                alt="BCCI Apollo Tyres Lead Sponsor"
+            >
+        </div>
+
+        <div class="corporate-login-hero-content">
+            <!-- <div class="campaign-kicker">Apollo Tyres Campaign</div> -->
+            <h1>HAR SAFAR MEIN DUM HAI</h1>
+
+            <a
+                class="campaign-film-link"
+                href="https://youtu.be/D_RJhCZNNT8"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Watch Film
+            </a>
+        </div>
+    </section>
+
+    <section class="corporate-login-panel compact-corporate-login-panel" aria-label="CRS login panel">
+
+        <div class="login-panel-head compact-login-panel-head">
             <img
                 src="{{ url_for('static', filename='images/apollo_logo.png') }}"
-                alt="Apollo Logo"
+                alt="Apollo Tyres Ltd."
+                class="login-panel-logo"
             >
-
+            <div>
+                <div class="login-system-title">Centralized Recipe System</div>
+                <div class="login-system-subtitle">PCR Engineering · Limda Plant · Industrial Recipe Control</div>
+            </div>
         </div>
-
-        <div class="login-title">
-
-            Centralized Recipe System
-
-        </div>
-
-
 
         {% if error %}
-
-        <div class="flash-message">
-
-            {{ error }}
-
+        <div class="flash-message flash-danger login-error-message" role="alert">
+            <span class="flash-icon">⚠</span>
+            <div class="flash-content">
+                <div class="flash-title">Login Blocked</div>
+                <div class="flash-text">{{ error }}</div>
+            </div>
         </div>
-
         {% endif %}
 
-        <div class="login-form-panel">
-
-            <form method="POST">
-
-                <label>
-
-                    Username
-
-                </label>
-
+        <form method="POST" autocomplete="off" class="corporate-login-form compact-login-form">
+            <div class="login-field-stack">
+                <label for="username">Username</label>
                 <input
+                    id="username"
                     type="text"
                     name="username"
                     required
                     autofocus
+                    autocomplete="username"
                 >
 
-                <label>
-
-                    Password
-
-                </label>
-
+                <label for="password">Password</label>
                 <input
+                    id="password"
                     type="password"
                     name="password"
                     required
+                    autocomplete="current-password"
                 >
 
-                <button type="submit">
+                <button type="submit" class="login-submit-button">Sign In</button>
+            </div>
+        </form>
 
-                    Sign In
-
-                </button>
-
-            </form>
-
+        <div class="corporate-values-panel compact-values-panel" aria-label="Apollo vision purpose values">
+            <div class="corporate-value-card value-primary">
+                <span>Vision</span>
+                <strong>Driving Progress, Together</strong>
+            </div>
+            <div class="corporate-value-card value-primary">
+                <span>Purpose</span>
+                <strong>Enabling Excellence</strong>
+            </div>
+            <div class="corporate-value-card value-wide value-primary">
+                <span>Values</span>
+                <strong>Passion · One Family · Responsibility</strong>
+            </div>
         </div>
 
-        <div class="login-footer">
-
-            <div class="login-version">
-
-                Version 0.1 Beta
-
+        <div class="leadership-mini-panel leadership-large-panel" aria-label="Apollo leadership reference">
+            <div class="leader-mini-card">
+                <img
+                    src="{{ url_for('static', filename='images/branding/apollo_chairman_onkar.webp') }}"
+                    alt="Apollo Tyres Chairman"
+                >
+                <div>
+                    <strong>Shree Onkar S Kanwar</strong>
+                    <span>Chairman</span>
+                    <span>Apollo Tyres Ltd.</span>
+                </div>
             </div>
-
-            Centralized Recipe System (CRS)
-
-            <div>
-
-            Designed & Developed by
-
+            <div class="leader-mini-card">
+                <img
+                    src="{{ url_for('static', filename='images/branding/apollo_vcmd_neeraj.webp') }}"
+                    alt="Apollo Tyres Vice-Chairman and Managing Director"
+                >
+                <div>
+                    <strong>Shree Neeraj Kanwar</strong>
+                    <span>Vice Chairman &amp; Managing Director</span>
+                    <span>Apollo Tyres Ltd.</span>
+                </div>
             </div>
-
-            <div>
-
-                Hardik Chauhan
-
-            </div>
-
-            <div>
-
-            Apollo Tyres Ltd.
-
-            </div>
-
-            PCR Engineering – Limda Plant
-
         </div>
 
-    </div>
+        <div class="corporate-login-footer">
+            <strong>Version 0.1 Beta</strong>
+            <span>Designed &amp; Developed by Hardik Chauhan · Apollo Tyres Ltd. · PCR Engineering</span>
+        </div>
+
+    </section>
 
 </div>
 

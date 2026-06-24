@@ -103,21 +103,21 @@ Recipe Parameters
                             <div class="row-actions">
                                 <a
                                     href="/recipes/{{ recipe_code }}/parameters/{{ parameter.parameter_name }}/edit?version={{ selected_version }}"
-                                    class="row-action primary"
+                                    class="row-action open"
                                 >
                                     Edit Value
                                 </a>
                                 {% if session["role"] == "ADMIN" %}
                                 <a
                                     href="/recipes/{{ recipe_code }}/parameters/{{ parameter.parameter_name }}/metadata?version={{ selected_version }}"
-                                    class="row-action"
+                                    class="row-action neutral"
                                 >
                                     Metadata
                                 </a>
                                 {% endif %}
                                 <a
                                     href="/recipes/{{ recipe_code }}/parameters/{{ parameter.parameter_name }}/history?version={{ selected_version }}"
-                                    class="row-action"
+                                    class="row-action history"
                                 >
                                     History
                                 </a>

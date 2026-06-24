@@ -61,6 +61,10 @@ from database.plc_operation_job_manager import (
     PLCOperationJobManager
 )
 
+from database.recipe_resource_lock_manager import (
+    RecipeResourceLockManager
+)
+
 from flask_app.security.role_guard import (
     role_can
 )
@@ -77,6 +81,79 @@ def _buffer_operation_capability(operation):
 
     return "recipe_download"
 
+
+
+
+def _lock_context():
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    client_ip = (forwarded_for.split(",")[0].strip() if forwarded_for else request.remote_addr)
+    return {
+        "username": session.get("username"),
+        "user_role": session.get("role"),
+        "session_id": session.get("session_id"),
+        "workstation_name": (
+            request.headers.get("X-Workstation-Name")
+            or request.headers.get("X-Client-Workstation")
+            or request.headers.get("X-Forwarded-Host")
+            or request.host
+        ),
+        "client_ip": client_ip,
+        "user_agent": request.headers.get("User-Agent", ""),
+    }
+
+
+def _lock_belongs_to_current_user(lock_row):
+    return RecipeResourceLockManager.active_lock_belongs_to(
+        lock_row,
+        username=session.get("username"),
+        session_id=session.get("session_id")
+    )
+
+
+def _format_lock_owner(lock_row):
+    if not lock_row:
+        return "another user"
+    return (
+        f"{lock_row.get('locked_by') or 'another user'} "
+        f"({lock_row.get('operation_type') or 'operation'})"
+    )
+
+
+def _active_recipe_operation_lock(recipe_id):
+    lock_row = RecipeResourceLockManager.get_active_lock(
+        "RECIPE_OPERATION",
+        recipe_id
+    )
+    if lock_row and not _lock_belongs_to_current_user(lock_row):
+        return lock_row
+    return None
+
+
+def _active_plc_operation_lock(plc_id):
+    lock_row = RecipeResourceLockManager.get_active_lock(
+        "PLC_OPERATION",
+        plc_id
+    )
+    if lock_row and not _lock_belongs_to_current_user(lock_row):
+        return lock_row
+    return None
+
+
+def _acquire_recipe_edit_lock(recipe_id):
+    ctx = _lock_context()
+    return RecipeResourceLockManager.acquire_lock(
+        resource_type="RECIPE_EDIT",
+        resource_id=recipe_id,
+        operation_type="PARAMETER_EDIT",
+        username=ctx["username"],
+        user_role=ctx["user_role"],
+        session_id=ctx["session_id"],
+        workstation_name=ctx["workstation_name"],
+        client_ip=ctx["client_ip"],
+        user_agent=ctx["user_agent"],
+        ttl_minutes=15,
+        notes="Recipe parameter edit lock"
+    )
 
 def _deny(message, redirect_url="/"):
 
@@ -700,7 +777,19 @@ def register_recipe_editor_routes(app):
             "recipe_copy"
         )
 
+        active_operation_lock = _active_recipe_operation_lock(recipe_id)
+        if active_operation_lock:
+            can_edit_values = False
+            can_download_recipe = False
+
         edit_lock_reason = ""
+
+        if active_operation_lock:
+            edit_lock_reason = (
+                "Recipe is locked by "
+                + _format_lock_owner(active_operation_lock)
+                + ". Wait until the active operation reaches 100% success/failure."
+            )
 
         if (
             recipe
@@ -855,6 +944,29 @@ def register_recipe_editor_routes(app):
                 f"/recipe-editor/{value['recipe_id']}"
             )
 
+        active_operation_lock = _active_recipe_operation_lock(value["recipe_id"])
+        if active_operation_lock:
+            flash(
+                "Recipe edit is blocked because "
+                + _format_lock_owner(active_operation_lock)
+                + " is still running. Wait until it reaches 100% success/failure.",
+                "warning"
+            )
+            return redirect(f"/recipe-editor/{value['recipe_id']}")
+
+        edit_lock_result = _acquire_recipe_edit_lock(value["recipe_id"])
+        if not edit_lock_result.get("acquired"):
+            active_lock = edit_lock_result.get("active_lock")
+            flash(
+                "Recipe is currently being edited by "
+                + _format_lock_owner(active_lock)
+                + ". Please wait until that user saves/closes or the edit lock expires.",
+                "warning"
+            )
+            return redirect(f"/recipe-editor/{value['recipe_id']}")
+
+        edit_lock_id = (edit_lock_result.get("lock") or {}).get("id")
+
         if request.method == "POST":
 
             try:
@@ -870,6 +982,11 @@ def register_recipe_editor_routes(app):
                 flash(
                     "Enter a valid numeric parameter value.",
                     "error"
+                )
+
+                RecipeResourceLockManager.release_lock(
+                    edit_lock_id,
+                    reason="PARAMETER_EDIT_VALIDATION_FAILED"
                 )
 
                 return redirect(
@@ -893,6 +1010,11 @@ def register_recipe_editor_routes(app):
                     "error"
                 )
 
+                RecipeResourceLockManager.release_lock(
+                    edit_lock_id,
+                    reason="PARAMETER_EDIT_VALIDATION_FAILED"
+                )
+
                 return redirect(
                     f"/recipe-editor/edit/{value_id}"
                 )
@@ -912,6 +1034,11 @@ def register_recipe_editor_routes(app):
                         f"({value['max_value']})."
                     ),
                     "error"
+                )
+
+                RecipeResourceLockManager.release_lock(
+                    edit_lock_id,
+                    reason="PARAMETER_EDIT_VALIDATION_FAILED"
                 )
 
                 return redirect(
@@ -1002,6 +1129,11 @@ def register_recipe_editor_routes(app):
                     ),
                     "error"
                 )
+
+            RecipeResourceLockManager.release_lock(
+                edit_lock_id,
+                reason="PARAMETER_EDIT_COMPLETED"
+            )
 
             return redirect(
                 f"/recipe-editor/{value['recipe_id']}"
@@ -1706,6 +1838,16 @@ def register_recipe_editor_routes(app):
                 f"{recipe['current_released_recipe_id']}"
             )
 
+        active_operation_lock = _active_recipe_operation_lock(recipe_id)
+        if active_operation_lock:
+            flash(
+                "PLC buffer page is locked by "
+                + _format_lock_owner(active_operation_lock)
+                + ". Wait until operation reaches 100% success/failure.",
+                "warning"
+            )
+            return redirect("/recipes")
+
         download_eligibility = (
             RecipeDownloadEligibilityManager
             .check_eligibility(
@@ -1993,6 +2135,22 @@ def register_recipe_editor_routes(app):
                 "message": "Select PLC for recipe buffer operation."
             }), 400
 
+        recipe_lock = _active_recipe_operation_lock(recipe_id)
+        if recipe_lock:
+            return jsonify({
+                "success": False,
+                "message": "Recipe is already locked by " + _format_lock_owner(recipe_lock) + ". Wait until operation reaches 100% success/failure.",
+                "active_lock_id": recipe_lock.get("id")
+            }), 409
+
+        plc_lock = _active_plc_operation_lock(selected_plc_id_int)
+        if plc_lock:
+            return jsonify({
+                "success": False,
+                "message": "PLC is already locked by " + _format_lock_owner(plc_lock) + ". Wait until operation reaches 100% success/failure.",
+                "active_lock_id": plc_lock.get("id")
+            }), 409
+
         username = session.get(
             "username"
         )
@@ -2035,6 +2193,56 @@ def register_recipe_editor_routes(app):
                     )
                 )
             }), 409
+
+        ctx = _lock_context()
+        recipe_operation_lock = RecipeResourceLockManager.acquire_lock(
+            resource_type="RECIPE_OPERATION",
+            resource_id=recipe_id,
+            operation_type=action,
+            username=username,
+            user_role=user_role,
+            session_id=ctx["session_id"],
+            workstation_name=ctx["workstation_name"],
+            client_ip=ctx["client_ip"],
+            user_agent=ctx["user_agent"],
+            ttl_minutes=180,
+            notes="PLC buffer operation recipe lock"
+        )
+        if not recipe_operation_lock.get("acquired"):
+            active_lock = recipe_operation_lock.get("active_lock")
+            return jsonify({
+                "success": False,
+                "message": "Recipe is already locked by " + _format_lock_owner(active_lock) + ".",
+                "active_lock_id": active_lock.get("id") if active_lock else None
+            }), 409
+
+        plc_operation_lock = RecipeResourceLockManager.acquire_lock(
+            resource_type="PLC_OPERATION",
+            resource_id=selected_plc_id_int,
+            operation_type=action,
+            username=username,
+            user_role=user_role,
+            session_id=ctx["session_id"],
+            workstation_name=ctx["workstation_name"],
+            client_ip=ctx["client_ip"],
+            user_agent=ctx["user_agent"],
+            ttl_minutes=180,
+            notes="PLC buffer operation PLC lock"
+        )
+        if not plc_operation_lock.get("acquired"):
+            RecipeResourceLockManager.release_lock(
+                (recipe_operation_lock.get("lock") or {}).get("id"),
+                reason="PLC_OPERATION_LOCK_FAILED"
+            )
+            active_lock = plc_operation_lock.get("active_lock")
+            return jsonify({
+                "success": False,
+                "message": "PLC is already locked by " + _format_lock_owner(active_lock) + ".",
+                "active_lock_id": active_lock.get("id") if active_lock else None
+            }), 409
+
+        recipe_operation_lock_id = (recipe_operation_lock.get("lock") or {}).get("id")
+        plc_operation_lock_id = (plc_operation_lock.get("lock") or {}).get("id")
 
         operation_title = (
             PLCBufferOperationManager
@@ -2091,6 +2299,17 @@ def register_recipe_editor_routes(app):
                     message=str(
                         exc
                     )
+                )
+
+            finally:
+
+                RecipeResourceLockManager.release_lock(
+                    recipe_operation_lock_id,
+                    reason="PLC_OPERATION_COMPLETED"
+                )
+                RecipeResourceLockManager.release_lock(
+                    plc_operation_lock_id,
+                    reason="PLC_OPERATION_COMPLETED"
                 )
 
         thread = threading.Thread(

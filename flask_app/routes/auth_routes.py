@@ -6,7 +6,6 @@ from flask import (
     flash
 )
 
-import socket
 import time
 
 from database.user_manager import UserManager
@@ -14,6 +13,29 @@ from database.user_session_manager import UserSessionManager
 from database.audit_manager import AuditManager
 
 from helper.datetime_helper import utc_to_ist
+
+
+def _client_metadata():
+    """Return traceability metadata without exposing it on blocked login page."""
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    client_ip = (forwarded_for.split(",")[0].strip() if forwarded_for else request.remote_addr)
+    request_host = request.host
+    user_agent = request.headers.get("User-Agent", "")
+    workstation_name = (
+        request.headers.get("X-Workstation-Name")
+        or request.headers.get("X-Client-Workstation")
+        or request.headers.get("X-Forwarded-Host")
+        or request.headers.get("X-Real-IP")
+        or client_ip
+        or "UNKNOWN_CLIENT"
+    )
+    return {
+        "client_ip": client_ip,
+        "forwarded_for": forwarded_for,
+        "request_host": request_host,
+        "user_agent": user_agent,
+        "workstation_name": workstation_name,
+    }
 
 
 def register_auth_routes(app):
@@ -25,20 +47,13 @@ def register_auth_routes(app):
             password = request.form.get("password")
 
             if UserManager.verify_user(username, password):
-                UserManager.update_last_login(username)
-
                 user = UserManager.get_user(username)
-                last_login_ist = utc_to_ist(user["last_login"])
-
-                client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
-                forwarded_for = request.headers.get("X-Forwarded-For")
-                request_host = request.host
-                user_agent = request.headers.get("User-Agent", "")
-
-                try:
-                    workstation_name = socket.gethostbyaddr(request.remote_addr)[0]
-                except Exception:
-                    workstation_name = socket.gethostname()
+                meta = _client_metadata()
+                client_ip = meta["client_ip"]
+                forwarded_for = meta["forwarded_for"]
+                request_host = meta["request_host"]
+                user_agent = meta["user_agent"]
+                workstation_name = meta["workstation_name"]
 
                 active_session = UserSessionManager.get_live_active_session_for_username(username)
                 if active_session:
@@ -79,6 +94,10 @@ def register_auth_routes(app):
                         )
                     )
 
+                UserManager.update_last_login(username)
+                user = UserManager.get_user(username)
+                last_login_ist = utc_to_ist(user["last_login"])
+
                 session_id, replaced_count = UserSessionManager.login(
                     username=username,
                     role=user["role"],
@@ -115,7 +134,6 @@ def register_auth_routes(app):
                     reason="Single-session login established. Existing active sessions are never replaced automatically."
                 )
 
-                print("LAST LOGIN IST =", session["last_login_ist"])
 
                 if session.get("password_reset_required") == 1:
                     flash("Please change your temporary password before continuing.", "warning")
@@ -123,15 +141,17 @@ def register_auth_routes(app):
 
                 return redirect("/")
 
+            meta = _client_metadata()
             AuditManager.log_event(
                 username=username,
                 role="UNKNOWN",
                 action="LOGIN_FAILED",
                 change_source="AUTH",
-                client_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
-                user_agent=request.headers.get("User-Agent", ""),
-                forwarded_for=request.headers.get("X-Forwarded-For"),
-                request_host=request.host,
+                client_ip=meta["client_ip"],
+                user_agent=meta["user_agent"],
+                forwarded_for=meta["forwarded_for"],
+                request_host=meta["request_host"],
+                workstation_name=meta["workstation_name"],
                 reason="Invalid username or password"
             )
 

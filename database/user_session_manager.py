@@ -1,5 +1,6 @@
 from database.database import get_connection
 from database.system_settings_manager import SystemSettingsManager
+from database.recipe_resource_lock_manager import RecipeResourceLockManager
 
 
 class UserSessionManager:
@@ -96,6 +97,7 @@ class UserSessionManager:
 
         conn.commit()
         conn.close()
+        RecipeResourceLockManager.release_session_locks(session_id, reason=reason)
 
     @staticmethod
     def auto_logout(session_id, reason="AUTO_LOGOUT"):
@@ -116,6 +118,7 @@ class UserSessionManager:
 
         conn.commit()
         conn.close()
+        RecipeResourceLockManager.release_session_locks(session_id, reason=reason)
 
     @staticmethod
     def force_logout(session_id, forced_by="SYSTEM"):
@@ -136,6 +139,9 @@ class UserSessionManager:
         conn.commit()
         updated = cursor.rowcount > 0
         conn.close()
+
+        if updated:
+            RecipeResourceLockManager.release_session_locks(session_id, reason=f"FORCED_BY_{forced_by}")
 
         return updated
 
@@ -216,6 +222,31 @@ class UserSessionManager:
         conn = get_connection()
         cursor = conn.cursor()
 
+        select_params = list(params[2:])
+        # Build a matching SELECT using the same username/exclude filters.
+        lock_where_extra = ""
+        lock_select_params = []
+        if username:
+            lock_where_extra += " AND username = ?"
+            lock_select_params.append(username)
+        if exclude_session_id:
+            lock_where_extra += " AND id <> ?"
+            lock_select_params.append(exclude_session_id)
+        cursor.execute(
+            f"""
+            SELECT id
+            FROM user_sessions
+            WHERE logout_time IS NULL
+              {lock_where_extra}
+              AND (
+                    (julianday('now') - julianday(COALESCE(last_activity, login_time))) * 24 * 60 > ?
+                 OR (julianday('now') - julianday(COALESCE(heartbeat_at, last_activity, login_time))) * 24 * 60 * 60 > ?
+              )
+            """,
+            lock_select_params + [int(timeout_minutes), int(heartbeat_grace_seconds)]
+        )
+        stale_session_ids = [row[0] for row in cursor.fetchall()]
+
         cursor.execute(
             f"""
             UPDATE user_sessions
@@ -238,6 +269,13 @@ class UserSessionManager:
         closed_count = cursor.rowcount
         conn.commit()
         conn.close()
+
+        for stale_session_id in stale_session_ids:
+            RecipeResourceLockManager.release_session_locks(
+                stale_session_id,
+                reason="STALE_OR_EXPIRED_SESSION_CLOSED"
+            )
+
         return closed_count
 
     @staticmethod

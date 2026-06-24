@@ -6,427 +6,18 @@ Audit Archive / Export
 
 {% block content %}
 
-<style>
-/* =====================================================
-   Audit Archive Professional UI - scoped to this page
-   Keeps layout compact, readable, and resource friendly
-   ===================================================== */
-.audit-archive-pro {
-    max-width: 1380px;
-    margin: 0 auto;
-    padding: 18px 18px 80px 18px;
-}
-
-.audit-archive-pro * {
-    box-sizing: border-box;
-}
-
-.audit-archive-hero {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 18px;
-    padding: 20px 24px;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #ffffff 0%, #fbf7ff 100%);
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
-    margin-bottom: 14px;
-}
-
-.audit-archive-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #047857;
-    background: #d1fae5;
-    border: 1px solid #99f6e4;
-    border-radius: 999px;
-    padding: 5px 10px;
-    margin-bottom: 10px;
-}
-
-.audit-archive-title h1 {
-    margin: 0;
-    font-size: 28px;
-    line-height: 1.15;
-    color: #0f172a;
-}
-
-.audit-archive-title p {
-    margin: 6px 0 0 0;
-    color: #475569;
-    font-size: 14px;
-    max-width: 760px;
-}
-
-.audit-archive-hero-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.audit-archive-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 34px;
-    padding: 8px 13px;
-    border-radius: 10px;
-    border: 1px solid #d8b4fe;
-    background: #ffffff;
-    color: #6b21a8;
-    font-weight: 800;
-    font-size: 13px;
-    text-decoration: none;
-}
-
-.audit-archive-link:hover {
-    background: #f3e8ff;
-}
-
-.audit-archive-metrics {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 14px;
-}
-
-.audit-archive-metric {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    background: #ffffff;
-    padding: 14px 16px;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.045);
-}
-
-.audit-archive-metric span {
-    display: block;
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #64748b;
-    margin-bottom: 4px;
-}
-
-.audit-archive-metric strong {
-    display: block;
-    font-size: 24px;
-    line-height: 1.1;
-    color: #0f172a;
-}
-
-.audit-archive-metric small {
-    display: block;
-    margin-top: 6px;
-    color: #64748b;
-    font-size: 12px;
-}
-
-.audit-archive-main-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) 360px;
-    gap: 14px;
-    align-items: start;
-    margin-bottom: 14px;
-}
-
-.audit-archive-card {
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    background: #ffffff;
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.055);
-    overflow: hidden;
-}
-
-.audit-archive-card-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 16px 18px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
-}
-
-.audit-archive-card-head h2,
-.audit-archive-card-head h3 {
-    margin: 0;
-    font-size: 16px;
-    color: #0f172a;
-}
-
-.audit-archive-card-head p {
-    margin: 4px 0 0 0;
-    color: #64748b;
-    font-size: 12px;
-}
-
-.audit-archive-form {
-    padding: 18px;
-}
-
-.audit-archive-form-grid {
-    display: grid;
-    grid-template-columns: 1.35fr 0.65fr;
-    gap: 14px;
-    margin-bottom: 14px;
-}
-
-.audit-archive-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.audit-archive-field label {
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #334155;
-}
-
-.audit-archive-field input,
-.audit-archive-field select {
-    width: 100%;
-    min-height: 40px;
-    border: 1px solid #cbd5e1;
-    border-radius: 10px;
-    background: #ffffff;
-    color: #0f172a;
-    padding: 9px 12px;
-    font-size: 14px;
-    outline: none;
-}
-
-.audit-archive-field input:focus,
-.audit-archive-field select:focus {
-    border-color: #7e22ce;
-    box-shadow: 0 0 0 3px rgba(126, 34, 206, 0.12);
-}
-
-.audit-archive-field small {
-    color: #64748b;
-    font-size: 12px;
-    line-height: 1.35;
-}
-
-.audit-archive-form-grid.secondary-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    padding-top: 14px;
-    border-top: 1px dashed #e2e8f0;
-}
-
-.audit-archive-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-}
-
-.audit-archive-primary {
-    min-height: 40px;
-    border: none;
-    border-radius: 10px;
-    background: #6d28d9;
-    color: #ffffff;
-    font-weight: 900;
-    padding: 10px 16px;
-    cursor: pointer;
-    box-shadow: 0 10px 20px rgba(109, 40, 217, 0.20);
-}
-
-.audit-archive-primary:hover {
-    background: #5b21b6;
-}
-
-.audit-archive-secondary {
-    min-height: 40px;
-    display: inline-flex;
-    align-items: center;
-    border-radius: 10px;
-    color: #6d28d9;
-    font-weight: 800;
-    text-decoration: none;
-    padding: 0 8px;
-}
-
-.audit-archive-guide {
-    padding: 14px 16px 16px 16px;
-}
-
-.audit-guide-list {
-    display: grid;
-    gap: 10px;
-}
-
-.audit-guide-item {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px;
-    background: #fbfdff;
-}
-
-.audit-guide-item strong {
-    display: block;
-    color: #0f172a;
-    font-size: 13px;
-    margin-bottom: 4px;
-}
-
-.audit-guide-item span {
-    display: block;
-    color: #64748b;
-    font-size: 12px;
-    line-height: 1.35;
-}
-
-.audit-safe-note {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    margin-top: 12px;
-    border: 1px solid #fde68a;
-    background: #fffbeb;
-    color: #92400e;
-    border-radius: 12px;
-    padding: 12px;
-    font-size: 12px;
-    line-height: 1.35;
-}
-
-.audit-safe-note b {
-    color: #78350f;
-}
-
-.audit-archive-table-card {
-    margin-top: 14px;
-}
-
-.audit-archive-table-wrap {
-    max-height: 360px;
-    overflow: auto;
-    border-top: 1px solid #e2e8f0;
-}
-
-.audit-archive-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 12px;
-}
-
-.audit-archive-table thead th {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background: #1e293b;
-    color: #ffffff;
-    text-align: left;
-    font-size: 11px;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    padding: 11px 12px;
-    white-space: nowrap;
-}
-
-.audit-archive-table tbody td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #e2e8f0;
-    color: #0f172a;
-    vertical-align: top;
-}
-
-.audit-archive-table tbody tr:hover {
-    background: #f8fafc;
-}
-
-.audit-archive-chip {
-    display: inline-flex;
-    align-items: center;
-    max-width: 180px;
-    border-radius: 999px;
-    padding: 4px 8px;
-    background: #e0f2fe;
-    color: #0369a1;
-    font-weight: 900;
-    font-size: 11px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.audit-clip {
-    max-width: 260px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.audit-empty {
-    text-align: center;
-    color: #64748b !important;
-    padding: 22px !important;
-}
-
-.audit-archive-muted-count {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border-radius: 999px;
-    background: #f1f5f9;
-    color: #475569;
-    padding: 5px 10px;
-    font-size: 12px;
-    font-weight: 900;
-}
-
-@media (max-width: 1100px) {
-    .audit-archive-main-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .audit-archive-metrics {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 760px) {
-    .audit-archive-pro {
-        padding: 12px;
-    }
-
-    .audit-archive-hero,
-    .audit-archive-card-head {
-        flex-direction: column;
-    }
-
-    .audit-archive-form-grid,
-    .audit-archive-form-grid.secondary-grid,
-    .audit-archive-metrics {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
-
 <section class="audit-archive-pro">
 
     <div class="audit-archive-hero">
         <div class="audit-archive-title">
             <span class="audit-archive-kicker">Admin Archive</span>
             <h1>Audit Archive / Excel Export</h1>
-            <p>Export active audit records, archive old traceability records, and keep the active audit screen fast for daily plant use.</p>
+            <p>
+                Keep active audit history fast, archive older records, and export traceability data through browser download or approved plant storage.
+            </p>
         </div>
-        <div class="audit-archive-hero-actions">
-            <a href="/audit-history" class="audit-archive-link">Active Audit</a>
+        <div class="workbench-actions">
+            <a class="secondary-action" href="/audit-history">Active Audit</a>
         </div>
     </div>
 
@@ -434,20 +25,20 @@ Audit Archive / Export
         <div class="audit-archive-metric">
             <span>Archived Records</span>
             <strong>{{ archive_count }}</strong>
-            <small>Historical audit rows</small>
+            <small>Historical audit storage</small>
         </div>
         <div class="audit-archive-metric">
-            <span>Access Level</span>
+            <span>Access</span>
             <strong>ADMIN</strong>
             <small>Super user only</small>
         </div>
         <div class="audit-archive-metric">
-            <span>Export Format</span>
+            <span>Export</span>
             <strong>Excel</strong>
-            <small>Browser download or approved path</small>
+            <small>Browser or server path</small>
         </div>
         <div class="audit-archive-metric">
-            <span>Storage Policy</span>
+            <span>Storage</span>
             <strong>Controlled</strong>
             <small>No uncontrolled app-folder growth</small>
         </div>
@@ -458,7 +49,7 @@ Audit Archive / Export
             <div class="audit-archive-card-head">
                 <div>
                     <h2>Archive / Export Controls</h2>
-                    <p>Select one action. Use browser download for manual save location, or approved server path for plant-controlled storage.</p>
+                    <p>Select one action. Browser download lets the user choose location through browser settings.</p>
                 </div>
             </div>
 
@@ -469,30 +60,21 @@ Audit Archive / Export
                         <select id="archive_action" name="archive_action" required>
                             <option value="download_active_records">Download active audit Excel to this computer</option>
                             <option value="export_active_records">Save active audit Excel to approved server path</option>
-                            <option value="archive_old_records">Archive old audit records</option>
                             <option value="download_archive_records">Download archived audit Excel to this computer</option>
                             <option value="export_archive_records">Save archived audit Excel to approved server path</option>
+                            <option value="archive_old_records">Archive old audit records</option>
                         </select>
-                        <small id="archiveActionHelp">Browser download lets Chrome/Edge choose the save location.</small>
+                        <small>Use download for browser Save As. Use server path for approved plant-controlled storage.</small>
                     </div>
 
                     <div class="audit-archive-field">
                         <label for="retention_days">Retention Days</label>
-                        <input type="number" id="retention_days" name="retention_days" value="90" min="1" max="3650">
-                        <small>Used only for archive action.</small>
+                        <input type="number" id="retention_days" name="retention_days" min="1" max="3650" value="90">
+                        <small>Used only for Archive old audit records.</small>
                     </div>
                 </div>
 
                 <div class="audit-archive-form-grid secondary-grid">
-                    <div class="audit-archive-field">
-                        <label for="export_excel">Excel Backup During Archive</label>
-                        <select id="export_excel" name="export_excel">
-                            <option value="1">Yes - create Excel backup also</option>
-                            <option value="0">No - archive to database only</option>
-                        </select>
-                        <small>Used only when action is Archive old audit records.</small>
-                    </div>
-
                     <div class="audit-archive-field">
                         <label for="export_path">Approved Server Export Location</label>
                         <select id="export_path" name="export_path">
@@ -501,21 +83,28 @@ Audit Archive / Export
                             <option value="{{ location }}">{{ location }}</option>
                             {% endfor %}
                         </select>
-                        <small>Required for server-save actions and archive with Excel backup.</small>
+                        <small>Required only for server-save actions or archive with Excel backup.</small>
+                    </div>
+
+                    <div class="audit-archive-field">
+                        <label for="export_excel">Export Excel During Archive</label>
+                        <select id="export_excel" name="export_excel">
+                            <option value="1">Yes - create Excel backup also</option>
+                            <option value="0">No - archive DB rows only</option>
+                        </select>
+                        <small>Used only when action is Archive old audit records.</small>
                     </div>
                 </div>
 
-                <div class="audit-archive-form-grid secondary-grid">
-                    <div class="audit-archive-field" style="grid-column: 1 / -1;">
-                        <label for="reason">Reason / Remarks</label>
-                        <input type="text" id="reason" name="reason" placeholder="Example: Monthly audit archive / maintenance export">
-                        <small>Reason is captured in Audit History for traceability.</small>
-                    </div>
+                <div class="audit-archive-field">
+                    <label for="reason">Reason / Remarks</label>
+                    <input type="text" id="reason" name="reason" placeholder="Example: Monthly audit archive / maintenance export">
+                    <small>Reason is captured in active audit history.</small>
                 </div>
 
                 <div class="audit-archive-actions">
-                    <button type="submit" class="audit-archive-primary">Run Archive / Export</button>
-                    <a href="/audit-history?action=AUDIT_EXPORTED" class="audit-archive-secondary">View Export Audit</a>
+                    <button type="submit" class="primary-action">Run Archive / Export</button>
+                    <a class="secondary-action" href="/audit-history?action=AUDIT_EXPORTED">View Export Audit</a>
                 </div>
             </form>
         </div>
@@ -524,81 +113,65 @@ Audit Archive / Export
             <div class="audit-archive-card-head">
                 <div>
                     <h3>Operation Guide</h3>
-                    <p>Short explanation for safe plant operation.</p>
+                    <p>Use the right action for the maintenance job.</p>
                 </div>
             </div>
             <div class="audit-archive-guide">
-                <div class="audit-guide-list">
-                    <div class="audit-guide-item">
-                        <strong>Download active audit</strong>
-                        <span>Creates Excel and downloads through the browser. Best for manual Save As.</span>
-                    </div>
-                    <div class="audit-guide-item">
-                        <strong>Save to approved server path</strong>
-                        <span>CRS saves Excel only to whitelisted plant locations.</span>
-                    </div>
-                    <div class="audit-guide-item">
-                        <strong>Archive old records</strong>
-                        <span>Moves old rows from active audit to archive table using Retention Days.</span>
-                    </div>
-                    <div class="audit-guide-item">
-                        <strong>Excel backup during archive</strong>
-                        <span>Recommended. Creates Excel backup of the same rows before archiving.</span>
-                    </div>
+                <div class="audit-archive-guide-item">
+                    <strong>Download active audit</strong>
+                    <span>Creates Excel and downloads through browser. User chooses save path in browser.</span>
                 </div>
-
-                <div class="audit-safe-note">
-                    <span>⚠</span>
-                    <div>
-                        <b>Path rule:</b> Web pages cannot browse arbitrary server folders. Use browser download for user-selected path, or approved dropdown for server storage.
-                    </div>
+                <div class="audit-archive-guide-item">
+                    <strong>Save to approved server path</strong>
+                    <span>CRS writes Excel to a configured plant/server folder from the dropdown.</span>
+                </div>
+                <div class="audit-archive-guide-item">
+                    <strong>Archive old audit records</strong>
+                    <span>Moves old rows from active audit table to archive table. Active audit stays fast.</span>
+                </div>
+                <div class="audit-archive-guide-item">
+                    <strong>Export Excel during archive</strong>
+                    <span>Yes creates an Excel backup of archived rows. No only moves rows to archive.</span>
                 </div>
             </div>
         </aside>
     </div>
 
-    <div class="audit-archive-card audit-archive-table-card">
+    <div class="audit-archive-card">
         <div class="audit-archive-card-head">
             <div>
-                <h3>Recent Archive Records</h3>
-                <p>Archived rows remain visible to ADMIN and can be exported to Excel.</p>
+                <h2>Recent Archive Records</h2>
+                <p>Historical audit data viewable by ADMIN and exportable as Excel.</p>
             </div>
-            <span class="audit-archive-muted-count">{{ archived_history|length }} shown</span>
+            <span class="status-badge status-neutral">{{ archived_history|length }} shown</span>
         </div>
-
-        <div class="audit-archive-table-wrap">
-            <table class="audit-archive-table">
+        <div class="professional-table-wrap">
+            <table class="professional-table">
                 <thead>
                     <tr>
-                        <th>Original ID</th>
-                        <th>Date/Time</th>
+                        <th>Archived At</th>
+                        <th>Original Time</th>
                         <th>User</th>
                         <th>Role</th>
                         <th>Action</th>
                         <th>Source</th>
-                        <th>Recipe / Record</th>
-                        <th>Old → New</th>
                         <th>Reason</th>
-                        <th>Archived</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in archived_history %}
                     <tr>
-                        <td>{{ row.original_audit_id }}</td>
-                        <td>{{ row.timestamp_ist }}</td>
-                        <td><strong>{{ row.username or '-' }}</strong></td>
-                        <td><span class="audit-archive-chip">{{ row.role or '-' }}</span></td>
-                        <td><span class="audit-archive-chip">{{ row.action or '-' }}</span></td>
-                        <td class="audit-clip" title="{{ row.change_source or '-' }}">{{ row.change_source or '-' }}</td>
-                        <td class="audit-clip" title="{{ row.recipe_code or row.record_id or '-' }}">{{ row.recipe_code or row.record_id or '-' }}</td>
-                        <td class="audit-clip" title="{{ row.old_value or '-' }} → {{ row.new_value or '-' }}">{{ row.old_value or '-' }} → {{ row.new_value or '-' }}</td>
-                        <td class="audit-clip" title="{{ row.reason or '-' }}">{{ row.reason or '-' }}</td>
                         <td>{{ row.archived_at_ist }}</td>
+                        <td>{{ row.timestamp_ist }}</td>
+                        <td>{{ row.username or '-' }}</td>
+                        <td><span class="status-badge status-neutral">{{ row.role or '-' }}</span></td>
+                        <td><span class="status-badge status-info">{{ row.action or '-' }}</span></td>
+                        <td>{{ row.change_source or '-' }}</td>
+                        <td>{{ row.reason or '-' }}</td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="10" class="audit-empty">No archive records yet.</td>
+                        <td colspan="7" class="empty-state">No archived audit records yet.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -606,40 +179,39 @@ Audit Archive / Export
         </div>
     </div>
 
-    <div class="audit-archive-card audit-archive-table-card">
+    <div class="audit-archive-card">
         <div class="audit-archive-card-head">
             <div>
-                <h3>Recent Server Export Jobs</h3>
-                <p>Server-saved files are recorded here. Browser downloads are tracked in Audit History.</p>
+                <h2>Recent Export Jobs</h2>
+                <p>Shows latest Excel export operations and selected storage destination.</p>
             </div>
-            <span class="audit-archive-muted-count">{{ recent_exports|length }} shown</span>
+            <span class="status-badge status-neutral">{{ recent_exports|length }} shown</span>
         </div>
-
-        <div class="audit-archive-table-wrap">
-            <table class="audit-archive-table">
+        <div class="professional-table-wrap">
+            <table class="professional-table">
                 <thead>
                     <tr>
-                        <th>Created</th>
+                        <th>Created At</th>
                         <th>Type</th>
-                        <th>Path</th>
-                        <th>File</th>
                         <th>Rows</th>
-                        <th>User</th>
+                        <th>Exported By</th>
+                        <th>Path / File</th>
+                        <th>Remarks</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in recent_exports %}
                     <tr>
                         <td>{{ row.created_at }}</td>
-                        <td><span class="audit-archive-chip">{{ row.export_type }}</span></td>
-                        <td class="audit-clip" title="{{ row.export_path }}">{{ row.export_path }}</td>
-                        <td class="audit-clip" title="{{ row.file_name }}">{{ row.file_name }}</td>
+                        <td><span class="status-badge status-info">{{ row.export_type }}</span></td>
                         <td>{{ row.row_count }}</td>
                         <td>{{ row.exported_by }}</td>
+                        <td>{{ row.export_path or row.file_name }}</td>
+                        <td>{{ row.remarks or '-' }}</td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="audit-empty">No server-saved Excel exports yet.</td>
+                        <td colspan="6" class="empty-state">No export jobs yet.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -648,46 +220,5 @@ Audit Archive / Export
     </div>
 
 </section>
-
-<script>
-(function () {
-    const action = document.getElementById("archive_action");
-    const exportPath = document.getElementById("export_path");
-    const exportExcel = document.getElementById("export_excel");
-    const retentionDays = document.getElementById("retention_days");
-    const help = document.getElementById("archiveActionHelp");
-
-    function updateArchiveControls() {
-        if (!action) return;
-        const value = action.value;
-        const needsServerPath = value === "export_active_records" || value === "export_archive_records" || value === "archive_old_records";
-        const isArchive = value === "archive_old_records";
-        const isDownload = value === "download_active_records" || value === "download_archive_records";
-
-        if (exportPath) {
-            exportPath.disabled = isDownload;
-            exportPath.closest(".audit-archive-field").style.opacity = isDownload ? "0.55" : "1";
-        }
-        if (exportExcel) {
-            exportExcel.disabled = !isArchive;
-            exportExcel.closest(".audit-archive-field").style.opacity = isArchive ? "1" : "0.55";
-        }
-        if (retentionDays) {
-            retentionDays.disabled = !isArchive;
-            retentionDays.closest(".audit-archive-field").style.opacity = isArchive ? "1" : "0.55";
-        }
-        if (help) {
-            if (isDownload) help.textContent = "Excel downloads through browser. User selects save path in browser/download settings.";
-            else if (value.indexOf("export_") === 0) help.textContent = "Excel is saved by CRS to the selected approved plant server path.";
-            else help.textContent = "Old rows are moved to archive table. Excel backup uses approved server path when enabled.";
-        }
-    }
-
-    if (action) {
-        action.addEventListener("change", updateArchiveControls);
-        updateArchiveControls();
-    }
-})();
-</script>
 
 {% endblock %}

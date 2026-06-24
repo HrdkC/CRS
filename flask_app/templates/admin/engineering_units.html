@@ -85,7 +85,7 @@ Engineering Units
                                 {% if unit.is_active == 1 %}
                                 <a
                                     href="/engineering-units/{{ unit.id }}/disable"
-                                    class="row-action danger"
+                                    class="row-action disable"
                                     onclick="return confirm('Disable this engineering unit?')"
                                 >
                                     Disable
@@ -93,11 +93,12 @@ Engineering Units
                                 {% else %}
                                 <a
                                     href="/engineering-units/{{ unit.id }}/enable"
-                                    class="row-action success"
+                                    class="row-action enable"
                                     onclick="return confirm('Enable this engineering unit?')"
                                 >
                                     Enable
                                 </a>
+                                {% endif %}
                                 {% endif %}
                             </div>
                         </td>

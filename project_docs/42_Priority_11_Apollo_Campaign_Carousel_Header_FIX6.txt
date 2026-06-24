@@ -1,0 +1,32 @@
+Priority 11 - Apollo Campaign Carousel Header FIX6
+Date: 2026-06-24
+
+Purpose
+- Improve Apollo corporate campaign login page using approved local campaign assets.
+- Add horizontal Apollo campaign image carousel changing every 2 seconds.
+- Reduce CRS login form width/height for compact Full HD fit.
+- Increase leadership image size and add Shree prefix as requested.
+- Move BCCI logo beside Apollo logo in application header.
+- Put Har Safar Mein Dum Hai text below the combined Apollo/BCCI lockup.
+
+Files changed
+- flask_app/templates/auth/login.html
+- flask_app/templates/base.html
+- flask_app/static/css/main.css
+- flask_app/static/images/branding/apollo_campaign_01.webp
+- flask_app/static/images/branding/apollo_campaign_02.webp
+- flask_app/static/images/branding/apollo_bcci_mark.webp
+- flask_app/static/images/branding/apollo_bcci_lead_sponsor_lockup.webp
+- flask_app/static/images/branding/apollo_campaign_header_thumb.webp
+
+Implementation notes
+- Carousel is CSS-only for resource efficiency; no JS interval required.
+- Campaign image changes horizontally every 2 seconds using a 4-second keyframe cycle.
+- YouTube campaign film is linked externally; the app does not embed video to avoid extra load.
+- Header uses compact BCCI mark next to Apollo logo at equal visual box size.
+
+Validation
+- /login fits in one screen at Full HD browser 100% zoom.
+- / dashboard header shows Apollo + BCCI lockup and Har Safar Mein Dum Hai caption.
+- Login input width is compact and operator-friendly.
+- Leadership cards show Shree Onkar S Kanwar and Shree Neeraj Kanwar.

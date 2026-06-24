@@ -33,11 +33,23 @@
         <div class="header-top">
 
             <div class="header-logo-panel">
-                <img
-                    src="{{ url_for('static', filename='images/apollo_logo.png') }}"
-                    alt="Apollo Logo"
-                    class="logo"
-                >
+                <div class="header-brand-lockup" aria-label="Apollo Tyres and BCCI campaign branding">
+                    <div class="header-brand-logo-row">
+                        <img
+                            src="{{ url_for('static', filename='images/apollo_logo.png') }}"
+                            alt="Apollo Tyres Ltd."
+                            class="logo header-logo-main"
+                        >
+                        <img
+                            src="{{ url_for('static', filename='images/branding/apollo_bcci_lead_sponsor.webp') }}"
+                            alt="BCCI"
+                            class="header-logo-bcci"
+                        >
+                    </div>
+                    <div class="header-campaign-caption">
+                        Har Safar Mein Dum Hai
+                    </div>
+                </div>
             </div>
 
             <div class="brand-area">

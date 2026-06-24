@@ -125,6 +125,22 @@ def upgrade_user_management_schema():
         """
     )
 
+
+
+    cursor.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_recipe_resource_locks_active
+        ON recipe_resource_locks(resource_type, resource_id, status, expires_at)
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_recipe_resource_locks_session
+        ON recipe_resource_locks(session_id, status)
+        """
+    )
+
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS audit_log_archive
