@@ -1,0 +1,30 @@
+Priority 11 UI Visual Tuning FIX3
+================================
+
+Purpose:
+- Correct over-scaled UI after previous CSS standardization.
+- Reduce global visual scale by about 2px.
+- Ensure login page fits in a single Full HD browser viewport at 100% zoom.
+- Add clear industrial color strategy for actions, status badges, active/disabled/open/buffer/history/version/copy controls.
+- Add wider horizontal action button padding for better operator click targets.
+
+Files changed:
+- flask_app/static/css/main.css
+- flask_app/static/js/main.js
+
+Notes:
+- base.html is unchanged.
+- Header remains sticky to avoid content overlap.
+- Login screen is compacted with reduced card, logo, title, input, button, footer spacing.
+- Action colors are applied by classes and common href patterns where templates use plain text links.
+
+Test pages:
+- /login
+- /
+- /recipes
+- /stages
+- /audit-history
+- /audit-archive
+- /auto-logout-settings
+- /active-sessions
+- /recipe-editor/download-preparation/8

@@ -1,678 +1,443 @@
 /* =====================================================
-   Apollo CRS
+   Apollo CRS - UI JavaScript
    Version 0.1 Beta
+   Purpose: Single-source JS aligned to base.html
    ===================================================== */
 
-document.addEventListener(
+(function () {
+    "use strict";
 
-    "DOMContentLoaded",
+    document.addEventListener("DOMContentLoaded", function () {
+        CRS.flash.init();
+        CRS.confirm.init();
+        CRS.dropdown.init();
+        CRS.cards.init();
+        CRS.loginAlerts.init();
+        CRS.session.init();
+    });
 
-    function () {
+    window.CRS = window.CRS || {};
 
-        initializeFlashMessages();
+    /* =====================================================
+       01. Utilities
+       ===================================================== */
+    CRS.util = {
+        qs: function (selector, root) {
+            return (root || document).querySelector(selector);
+        },
 
-        initializeConfirmButtons();
+        qsa: function (selector, root) {
+            return Array.prototype.slice.call((root || document).querySelectorAll(selector));
+        },
 
-        initializeDropdownMenus();
+        toInt: function (value, fallback) {
+            const parsed = parseInt(value, 10);
+            return Number.isFinite(parsed) ? parsed : fallback;
+        },
 
-        initializeCardAnimations();
-
-        initializeSessionCountdown();
-
-        initializeLoginAttemptAlertAcknowledge();
-
-    }
-
-);
-
-
-/* =====================================================
-   Login Attempt Alert Acknowledge
-   ===================================================== */
-
-function initializeLoginAttemptAlertAcknowledge() {
-    document.addEventListener("submit", async function (event) {
-        const form = event.target;
-
-        if (!form || !form.classList || !form.classList.contains("login-attempt-alert-form")) {
-            return;
-        }
-
-        event.preventDefault();
-
-        const alertCard = form.closest(".login-attempt-alert");
-        const button = form.querySelector("button[type='submit']");
-
-        if (button) {
-            button.disabled = true;
-            button.textContent = "Acknowledging...";
-        }
-
-        try {
-            const response = await fetch(form.action, {
+        postJson: async function (url, body) {
+            const response = await fetch(url, {
                 method: "POST",
                 headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body || {})
             });
 
             const payload = await response.json().catch(function () {
                 return {};
             });
 
-            if (response.status === 401 || payload.redirect) {
-                window.location.href = payload.redirect || "/login";
-                return;
-            }
+            return { response: response, payload: payload };
+        },
 
-            if (!response.ok || !payload.ok) {
-                if (button) {
-                    button.disabled = false;
-                    button.textContent = "Acknowledge";
-                }
-                return;
-            }
+        escapeHtml: function (value) {
+            return String(value || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    };
 
-            if (alertCard) {
-                alertCard.style.transition = "opacity 0.2s ease, transform 0.2s ease";
-                alertCard.style.opacity = "0";
-                alertCard.style.transform = "translateY(-6px)";
+    /* =====================================================
+       02. Flash Messages
+       ===================================================== */
+    CRS.flash = {
+        init: function () {
+            CRS.util.qsa(".flash-message").forEach(function (message) {
                 setTimeout(function () {
-                    alertCard.remove();
-                }, 220);
-            }
-        } catch (error) {
-            if (button) {
-                button.disabled = false;
-                button.textContent = "Acknowledge";
-            }
-        }
-    });
-}
-
-/* =====================================================
-   Auto Hide Flash Messages
-   ===================================================== */
-
-function initializeFlashMessages() {
-
-    const messages = document.querySelectorAll(
-        ".flash-message"
-    );
-
-    messages.forEach(
-
-        function (message) {
-
-            setTimeout(
-
-                function () {
-
-                    message.style.transition =
-                        "opacity 0.5s ease";
-
+                    message.style.transition = "opacity 0.35s ease, transform 0.35s ease";
                     message.style.opacity = "0";
+                    message.style.transform = "translateY(-4px)";
 
-                    setTimeout(
-
-                        function () {
-
+                    setTimeout(function () {
+                        if (message && message.parentNode) {
                             message.remove();
-
-                        },
-
-                        500
-
-                    );
-
-                },
-
-                4000
-
-            );
-
+                        }
+                    }, 380);
+                }, 4500);
+            });
         }
+    };
 
-    );
-
-}
-
-/* =====================================================
-   Confirmation Dialog Framework
-   ===================================================== */
-
-function initializeConfirmButtons() {
-
-    /*
-     * Confirm handling must be submit-safe.
-     * Older logic attached a click handler to every [data-confirm] element.
-     * When data-confirm was placed on a form, every click inside inputs opened
-     * the browser confirm dialog. This version confirms only on actual form
-     * submit, and only once per submit attempt.
-     */
-
-    const confirmedForms = new WeakSet();
-
-    document.querySelectorAll("form[data-confirm]").forEach(
-        function (form) {
-            form.addEventListener(
-                "submit",
-                function (event) {
-                    if (confirmedForms.has(form)) {
-                        return;
-                    }
-
+    /* =====================================================
+       03. Confirmation Framework
+       - form[data-confirm] confirms only on submit
+       - a/button[data-confirm] confirms only on click
+       ===================================================== */
+    CRS.confirm = {
+        init: function () {
+            CRS.util.qsa("form[data-confirm]").forEach(function (form) {
+                form.addEventListener("submit", function (event) {
                     const message = form.getAttribute("data-confirm");
 
-                    if (message && !confirm(message)) {
+                    if (message && !window.confirm(message)) {
                         event.preventDefault();
+                    }
+                });
+            });
+
+            CRS.util.qsa("a[data-confirm], button[data-confirm]").forEach(function (element) {
+                const parentConfirmForm = element.closest("form[data-confirm]");
+                const isSubmitButton = String(element.getAttribute("type") || "").toLowerCase() === "submit";
+
+                if (parentConfirmForm && isSubmitButton) {
+                    return;
+                }
+
+                element.addEventListener("click", function (event) {
+                    const message = element.getAttribute("data-confirm");
+
+                    if (message && !window.confirm(message)) {
+                        event.preventDefault();
+                    }
+                });
+            });
+        }
+    };
+
+    /* =====================================================
+       04. Header Dropdown Menus
+       ===================================================== */
+    CRS.dropdown = {
+        init: function () {
+            CRS.util.qsa(".dropdown").forEach(function (dropdown) {
+                let closeTimer = null;
+
+                dropdown.addEventListener("mouseenter", function () {
+                    if (closeTimer) {
+                        clearTimeout(closeTimer);
+                    }
+                    dropdown.classList.add("dropdown-open");
+                });
+
+                dropdown.addEventListener("mouseleave", function () {
+                    closeTimer = setTimeout(function () {
+                        dropdown.classList.remove("dropdown-open");
+                    }, 450);
+                });
+            });
+        }
+    };
+
+    /* =====================================================
+       05. Subtle Card Animation
+       ===================================================== */
+    CRS.cards = {
+        init: function () {
+            CRS.util.qsa(".dashboard-card").forEach(function (card, index) {
+                card.style.opacity = "0";
+                card.style.transform = "translateY(8px)";
+
+                setTimeout(function () {
+                    card.style.transition = "opacity 0.25s ease, transform 0.25s ease";
+                    card.style.opacity = "1";
+                    card.style.transform = "translateY(0)";
+                }, Math.min(index * 45, 300));
+            });
+        }
+    };
+
+    /* =====================================================
+       06. Login Attempt Alert Acknowledge
+       ===================================================== */
+    CRS.loginAlerts = {
+        init: function () {
+            document.addEventListener("submit", async function (event) {
+                const form = event.target;
+
+                if (!form || !form.classList || !form.classList.contains("login-attempt-alert-form")) {
+                    return;
+                }
+
+                event.preventDefault();
+                await CRS.loginAlerts.acknowledge(form);
+            });
+        },
+
+        acknowledge: async function (form) {
+            const alertCard = form.closest(".login-attempt-alert");
+            const button = form.querySelector("button[type='submit']");
+            const originalText = button ? button.textContent : "";
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = "Acknowledging...";
+            }
+
+            try {
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+
+                const payload = await response.json().catch(function () {
+                    return {};
+                });
+
+                if (response.status === 401 || payload.redirect) {
+                    window.location.href = payload.redirect || "/login";
+                    return;
+                }
+
+                if (!response.ok || !payload.ok) {
+                    if (button) {
+                        button.disabled = false;
+                        button.textContent = originalText || "Acknowledge";
+                    }
+                    return;
+                }
+
+                if (alertCard) {
+                    alertCard.style.transition = "opacity 0.18s ease, transform 0.18s ease";
+                    alertCard.style.opacity = "0";
+                    alertCard.style.transform = "translateY(-4px)";
+                    setTimeout(function () {
+                        alertCard.remove();
+                    }, 200);
+                }
+            } catch (error) {
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = originalText || "Acknowledge";
+                }
+            }
+        },
+
+        show: function (alerts) {
+            if (!alerts || !alerts.length) {
+                return;
+            }
+
+            let stack = CRS.util.qs(".login-attempt-alert-stack");
+            const mainContainer = CRS.util.qs(".main-container");
+
+            if (!stack) {
+                stack = document.createElement("div");
+                stack.className = "login-attempt-alert-stack";
+                if (mainContainer) {
+                    mainContainer.prepend(stack);
+                } else {
+                    document.body.appendChild(stack);
+                }
+            }
+
+            alerts.forEach(function (alert) {
+                if (!alert || !alert.id) {
+                    return;
+                }
+
+                if (CRS.util.qs('[data-login-alert-id="' + alert.id + '"]')) {
+                    return;
+                }
+
+                const workstation = CRS.util.escapeHtml(alert.attempted_workstation_name || "Unknown workstation");
+                const clientIp = CRS.util.escapeHtml(alert.attempted_client_ip || "-");
+                const attemptedAt = CRS.util.escapeHtml(alert.attempted_at || "");
+
+                const item = document.createElement("div");
+                item.className = "login-attempt-alert";
+                item.setAttribute("role", "alert");
+                item.setAttribute("data-login-alert-id", alert.id);
+
+                item.innerHTML =
+                    '<div class="login-attempt-alert-icon">⚠</div>' +
+                    '<div class="login-attempt-alert-body">' +
+                        '<strong>Another workstation tried to login with your username</strong>' +
+                        '<div>Attempted from <b>' + workstation + '</b> / IP <b>' + clientIp + '</b> at ' + attemptedAt + '.</div>' +
+                        '<div class="login-attempt-alert-meta">Your active CRS session remains protected. Finish your work and logout when ready.</div>' +
+                    '</div>' +
+                    '<form method="POST" action="/login-attempt-alerts/' + alert.id + '/ack" class="login-attempt-alert-form">' +
+                        '<button type="submit" class="btn btn-secondary btn-sm">Acknowledge</button>' +
+                    '</form>';
+
+                stack.prepend(item);
+            });
+        }
+    };
+
+    /* =====================================================
+       07. Session Countdown + Browser Heartbeat
+       ===================================================== */
+    CRS.session = {
+        init: function () {
+            const countdown = CRS.util.qs("#session-countdown");
+            if (!countdown) {
+                return;
+            }
+
+            const countdownValue = CRS.util.qs("#session-countdown-value");
+            const settingsPreview = CRS.util.qs("#session-settings-countdown");
+
+            let timeoutSeconds = CRS.util.toInt(countdown.getAttribute("data-timeout-seconds"), 1800);
+            let lastActivityEpoch = CRS.util.toInt(countdown.getAttribute("data-last-activity-epoch"), Math.floor(Date.now() / 1000));
+            let deadlineEpoch = lastActivityEpoch + timeoutSeconds;
+            let lastHeartbeatMs = 0;
+            let userActivitySinceHeartbeat = false;
+            let expireInProgress = false;
+            const heartbeatIntervalMs = 15000;
+
+            function formatSeconds(totalSeconds) {
+                const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+                const minutes = Math.floor(safeSeconds / 60);
+                const seconds = safeSeconds % 60;
+                return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+            }
+
+            function renderCountdown() {
+                const nowEpoch = Math.floor(Date.now() / 1000);
+                const remainingSeconds = deadlineEpoch - nowEpoch;
+                const displayValue = formatSeconds(remainingSeconds);
+
+                if (countdownValue) {
+                    countdownValue.textContent = displayValue;
+                }
+
+                if (settingsPreview) {
+                    settingsPreview.textContent = displayValue;
+                }
+
+                countdown.classList.remove("session-countdown-warning", "session-countdown-danger");
+
+                if (remainingSeconds <= 60) {
+                    countdown.classList.add("session-countdown-danger");
+                } else if (remainingSeconds <= 180) {
+                    countdown.classList.add("session-countdown-warning");
+                }
+
+                if (remainingSeconds <= 0 && !expireInProgress) {
+                    expireInProgress = true;
+                    expireSessionFromClientTimer();
+                }
+            }
+
+            async function heartbeat(forceActivity) {
+                const nowMs = Date.now();
+                if (!forceActivity && nowMs - lastHeartbeatMs < heartbeatIntervalMs) {
+                    return;
+                }
+
+                lastHeartbeatMs = nowMs;
+                const hadUserActivity = Boolean(forceActivity || userActivitySinceHeartbeat);
+                userActivitySinceHeartbeat = false;
+
+                try {
+                    const result = await CRS.util.postJson("/session-heartbeat", {
+                        user_activity: hadUserActivity
+                    });
+
+                    if (!result.response.ok || !result.payload.ok) {
+                        window.location.href = result.payload.redirect || "/login";
                         return;
                     }
 
-                    confirmedForms.add(form);
-                }
-            );
-        }
-    );
+                    timeoutSeconds = CRS.util.toInt(result.payload.timeout_seconds, timeoutSeconds);
+                    lastActivityEpoch = CRS.util.toInt(result.payload.last_activity_epoch, lastActivityEpoch);
+                    deadlineEpoch = lastActivityEpoch + timeoutSeconds;
 
-    document.querySelectorAll("a[data-confirm], button[data-confirm]").forEach(
-        function (element) {
-            const parentForm = element.closest("form[data-confirm]");
+                    countdown.setAttribute("data-timeout-seconds", String(timeoutSeconds));
+                    countdown.setAttribute("data-last-activity-epoch", String(lastActivityEpoch));
 
-            if (parentForm && element.type === "submit") {
-                return;
-            }
-
-            element.addEventListener(
-                "click",
-                function (event) {
-                    const message = element.getAttribute("data-confirm");
-
-                    if (message && !confirm(message)) {
-                        event.preventDefault();
-                    }
-                }
-            );
-        }
-    );
-
-}
-
-/* =====================================================
-   Header Dropdown Hold Delay
-   ===================================================== */
-
-function initializeDropdownMenus() {
-
-    const dropdowns =
-        document.querySelectorAll(
-            ".dropdown"
-        );
-
-    dropdowns.forEach(
-
-        function (dropdown) {
-
-            let closeTimer = null;
-
-            dropdown.addEventListener(
-
-                "mouseenter",
-
-                function () {
-
-                    if (closeTimer) {
-
-                        clearTimeout(
-                            closeTimer
-                        );
-
+                    if (result.payload.login_attempt_alerts) {
+                        CRS.loginAlerts.show(result.payload.login_attempt_alerts);
                     }
 
-                    dropdown.classList.add(
-                        "dropdown-open"
-                    );
-
+                    renderCountdown();
+                } catch (error) {
+                    // Local countdown continues; server will enforce timeout on next request.
                 }
-
-            );
-
-            dropdown.addEventListener(
-
-                "mouseleave",
-
-                function () {
-
-                    closeTimer = setTimeout(
-
-                        function () {
-
-                            dropdown.classList.remove(
-                                "dropdown-open"
-                            );
-
-                        },
-
-                        850
-
-                    );
-
-                }
-
-            );
-
-        }
-
-    );
-
-}
-
-/* =====================================================
-   Dashboard Card Animation
-   ===================================================== */
-
-function initializeCardAnimations() {
-
-    const cards =
-        document.querySelectorAll(
-            ".dashboard-card"
-        );
-
-    cards.forEach(
-
-        function (
-
-            card,
-
-            index
-
-        ) {
-
-            card.style.opacity = "0";
-
-            card.style.transform =
-                "translateY(15px)";
-
-            setTimeout(
-
-                function () {
-
-                    card.style.transition =
-                        "all 0.4s ease";
-
-                    card.style.opacity = "1";
-
-                    card.style.transform =
-                        "translateY(0px)";
-
-                },
-
-                index * 100
-
-            );
-
-        }
-
-    );
-
-}
-
-/* =====================================================
-   Loading Overlay Support
-   ===================================================== */
-
-function showLoading() {
-
-    const existing =
-        document.getElementById(
-            "loading-overlay"
-        );
-
-    if (existing) {
-
-        return;
-
-    }
-
-    const overlay =
-        document.createElement("div");
-
-    overlay.id =
-        "loading-overlay";
-
-    overlay.style.position =
-        "fixed";
-
-    overlay.style.top = "0";
-
-    overlay.style.left = "0";
-
-    overlay.style.width = "100%";
-
-    overlay.style.height = "100%";
-
-    overlay.style.background =
-        "rgba(255,255,255,0.7)";
-
-    overlay.style.display =
-        "flex";
-
-    overlay.style.justifyContent =
-        "center";
-
-    overlay.style.alignItems =
-        "center";
-
-    overlay.style.zIndex =
-        "9999";
-
-    overlay.innerHTML =
-        "<h2>Loading...</h2>";
-
-    document.body.appendChild(
-        overlay
-    );
-
-}
-
-function hideLoading() {
-
-    const overlay =
-        document.getElementById(
-            "loading-overlay"
-        );
-
-    if (
-
-        overlay
-
-    ) {
-
-        overlay.remove();
-
-    }
-
-}
-
-/* =====================================================
-   Future CRS Hooks
-   ===================================================== */
-
-/*
-
-Future Features
-
-- PLC Upload Progress
-- Dashboard Charts
-- Recipe Search
-- Live PLC Status
-- Approval Workflow Notifications
-- User Activity Dashboard
-
-*/
-
-
-/* =====================================================
-   Session Countdown + Heartbeat
-   ===================================================== */
-
-function initializeSessionCountdown() {
-
-    const countdown = document.getElementById(
-        "session-countdown"
-    );
-
-    if (!countdown) {
-        return;
-    }
-
-    const countdownValue = document.getElementById(
-        "session-countdown-value"
-    );
-
-    const settingsPreview = document.getElementById(
-        "session-settings-countdown"
-    );
-
-    let timeoutSeconds = parseInt(
-        countdown.getAttribute("data-timeout-seconds") || "1800",
-        10
-    );
-
-    let lastActivityEpoch = parseInt(
-        countdown.getAttribute("data-last-activity-epoch") || "0",
-        10
-    );
-
-    if (!lastActivityEpoch) {
-        lastActivityEpoch = Math.floor(Date.now() / 1000);
-    }
-
-    let deadlineEpoch = lastActivityEpoch + timeoutSeconds;
-    let lastHeartbeatMs = 0;
-    let userActivitySinceHeartbeat = false;
-    let expireInProgress = false;
-    const heartbeatIntervalMs = 15000;
-
-    function formatSeconds(totalSeconds) {
-        totalSeconds = Math.max(0, Math.floor(totalSeconds));
-
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-
-        return String(minutes).padStart(2, "0") + ":" +
-            String(seconds).padStart(2, "0");
-    }
-
-    function renderCountdown() {
-        const nowEpoch = Math.floor(Date.now() / 1000);
-        const remainingSeconds = deadlineEpoch - nowEpoch;
-        const displayValue = formatSeconds(remainingSeconds);
-
-        if (countdownValue) {
-            countdownValue.textContent = displayValue;
-        }
-
-        if (settingsPreview) {
-            settingsPreview.textContent = displayValue;
-        }
-
-        countdown.classList.remove(
-            "session-countdown-warning",
-            "session-countdown-danger"
-        );
-
-        if (remainingSeconds <= 60) {
-            countdown.classList.add("session-countdown-danger");
-        } else if (remainingSeconds <= 180) {
-            countdown.classList.add("session-countdown-warning");
-        }
-
-        if (remainingSeconds <= 0 && !expireInProgress) {
-            expireInProgress = true;
-            expireSessionFromClientTimer();
-        }
-    }
-
-    function showLoginAttemptAlerts(alerts) {
-        if (!alerts || !alerts.length) {
-            return;
-        }
-
-        let stack = document.querySelector(".login-attempt-alert-stack");
-        if (!stack) {
-            stack = document.createElement("div");
-            stack.className = "login-attempt-alert-stack";
-
-            const mainContainer = document.querySelector(".main-container");
-            if (mainContainer) {
-                mainContainer.prepend(stack);
-            } else {
-                document.body.appendChild(stack);
-            }
-        }
-
-        alerts.forEach(function (alert) {
-            if (document.querySelector('[data-login-alert-id="' + alert.id + '"]')) {
-                return;
             }
 
-            const item = document.createElement("div");
-            item.className = "login-attempt-alert";
-            item.setAttribute("role", "alert");
-            item.setAttribute("data-login-alert-id", alert.id);
-
-            const workstation = alert.attempted_workstation_name || "Unknown workstation";
-            const clientIp = alert.attempted_client_ip || "-";
-            const attemptedAt = alert.attempted_at || "";
-
-            item.innerHTML =
-                '<div class="login-attempt-alert-icon">⚠</div>' +
-                '<div class="login-attempt-alert-body">' +
-                    '<strong>Another workstation tried to login with your username</strong>' +
-                    '<div>Attempted from <b>' + workstation + '</b> / IP <b>' + clientIp + '</b> at ' + attemptedAt + '.</div>' +
-                    '<div class="login-attempt-alert-meta">Your active CRS session remains protected. Finish your work and logout when ready.</div>' +
-                '</div>' +
-                '<form method="POST" action="/login-attempt-alerts/' + alert.id + '/ack" class="login-attempt-alert-form">' +
-                    '<button type="submit" class="btn btn-secondary btn-sm">Acknowledge</button>' +
-                '</form>';
-
-            stack.prepend(item);
-        });
-    }
-
-    async function heartbeat(forceActivity) {
-        const nowMs = Date.now();
-
-        if (!forceActivity && nowMs - lastHeartbeatMs < heartbeatIntervalMs) {
-            return;
-        }
-
-        lastHeartbeatMs = nowMs;
-        const hadUserActivity = Boolean(forceActivity || userActivitySinceHeartbeat);
-        userActivitySinceHeartbeat = false;
-
-        try {
-            const response = await fetch(
-                "/session-heartbeat",
-                {
-                    method: "POST",
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        user_activity: hadUserActivity
-                    })
+            async function expireSessionFromClientTimer() {
+                if (countdownValue) {
+                    countdownValue.textContent = "00:00";
                 }
-            );
 
-            if (!response.ok) {
+                try {
+                    await fetch("/session-auto-expire", {
+                        method: "POST",
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    });
+                } catch (error) {
+                    // Redirect still protects UI.
+                }
+
                 window.location.href = "/login";
-                return;
             }
 
-            const payload = await response.json();
-
-            if (!payload.ok) {
-                window.location.href = payload.redirect || "/login";
-                return;
+            function markUserActivity() {
+                userActivitySinceHeartbeat = true;
             }
 
-            timeoutSeconds = parseInt(
-                payload.timeout_seconds || timeoutSeconds,
-                10
-            );
+            ["click", "keydown", "scroll", "touchstart"].forEach(function (eventName) {
+                document.addEventListener(eventName, markUserActivity, { passive: true });
+            });
 
-            lastActivityEpoch = parseInt(
-                payload.last_activity_epoch || lastActivityEpoch,
-                10
-            );
+            // Mousemove can be noisy. Use pointerdown/click/keyboard/scroll for idle reset.
+            setInterval(function () {
+                heartbeat(false);
+            }, heartbeatIntervalMs);
 
-            deadlineEpoch = lastActivityEpoch + timeoutSeconds;
-
-            countdown.setAttribute(
-                "data-timeout-seconds",
-                String(timeoutSeconds)
-            );
-
-            countdown.setAttribute(
-                "data-last-activity-epoch",
-                String(lastActivityEpoch)
-            );
-
-            if (payload.login_attempt_alerts) {
-                showLoginAttemptAlerts(payload.login_attempt_alerts);
-            }
-
-            renderCountdown();
-        } catch (error) {
-            // Keep local countdown running; server will enforce timeout on next request.
-        }
-    }
-
-    async function expireSessionFromClientTimer() {
-        if (countdownValue) {
-            countdownValue.textContent = "00:00";
-        }
-
-        try {
-            await fetch(
-                "/session-auto-expire",
-                {
-                    method: "POST",
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
+            setInterval(function () {
+                renderCountdown();
+                if (userActivitySinceHeartbeat) {
+                    heartbeat(true);
                 }
-            );
-        } catch (error) {
-            // Ignore network errors; redirect still protects the UI.
-        }
+            }, 1000);
 
-        window.location.href = "/login";
-    }
-
-    function markUserActivity() {
-        userActivitySinceHeartbeat = true;
-    }
-
-    [
-        "click",
-        "keydown",
-        "mousemove",
-        "scroll",
-        "touchstart"
-    ].forEach(
-        function (eventName) {
-            document.addEventListener(
-                eventName,
-                markUserActivity,
-                { passive: true }
-            );
-        }
-    );
-
-    // Passive heartbeat proves the browser tab is still open, without extending
-    // the idle auto-logout timer. User activity is sent separately.
-    setInterval(
-        function () {
             heartbeat(false);
-        },
-        heartbeatIntervalMs
-    );
-
-    setInterval(
-        function () {
             renderCountdown();
+        }
+    };
 
-            if (userActivitySinceHeartbeat) {
-                heartbeat(true);
-            }
-        },
-        1000
-    );
+    /* =====================================================
+       08. Loading Overlay Public Hooks
+       ===================================================== */
+    window.showLoading = function () {
+        if (CRS.util.qs("#loading-overlay")) {
+            return;
+        }
 
-    heartbeat(false);
-    renderCountdown();
-}
+        const overlay = document.createElement("div");
+        overlay.id = "loading-overlay";
+        overlay.style.position = "fixed";
+        overlay.style.inset = "0";
+        overlay.style.zIndex = "99999";
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.background = "rgba(255, 255, 255, 0.72)";
+        overlay.innerHTML = "<h2>Loading...</h2>";
+        document.body.appendChild(overlay);
+    };
+
+    window.hideLoading = function () {
+        const overlay = CRS.util.qs("#loading-overlay");
+        if (overlay) {
+            overlay.remove();
+        }
+    };
+})();
