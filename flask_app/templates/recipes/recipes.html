@@ -28,6 +28,13 @@ Recipes
 
         <div class="workbench-actions">
 
+            <a
+                href="/recipes/import-export"
+                class="crs-btn crs-btn-soft"
+            >
+                Import / Export
+            </a>
+
             {% if machine_id is defined and stage_id is defined %}
             <a
                 href="/recipes/create/{{ machine_id }}/{{ stage_id }}"
@@ -159,6 +166,12 @@ Recipes
                                     class="row-action history"
                                 >
                                     History
+                                </a>
+                                <a
+                                    href="/recipes/{{ recipe.id }}/export-excel"
+                                    class="row-action success"
+                                >
+                                    Export
                                 </a>
                                 <a
                                     href="/recipes/{{ recipe.id }}/copy"

@@ -1,4 +1,4 @@
-from flask import render_template, session, redirect, request, flash
+from flask import render_template, session, redirect, request, flash, send_file
 
 from database.recipe_manager import RecipeManager
 
@@ -63,6 +63,203 @@ def register_recipe_routes(app):
             "recipes/recipes.html",
             recipes=recipes
         )
+
+    @app.route("/recipes/import-export")
+    def recipe_import_export_page():
+
+        if not session.get("logged_in"):
+            return redirect("/login")
+
+        if not role_can(session.get("role"), "recipe_view"):
+            flash("Your role cannot view recipe import/export.", "error")
+            return redirect("/")
+
+        from database.recipe_excel_import_export_manager import (
+            RecipeExcelImportExportManager
+        )
+
+        targets = RecipeExcelImportExportManager.get_template_targets()
+
+        return render_template(
+            "recipes/recipe_import_export.html",
+            targets=targets,
+            preview=None,
+            token=None
+        )
+
+    @app.route("/recipes/<int:recipe_id>/export-excel")
+    def recipe_export_excel(recipe_id):
+
+        if not session.get("logged_in"):
+            return redirect("/login")
+
+        if not role_can(session.get("role"), "recipe_view"):
+            flash("Your role cannot export recipes.", "error")
+            return redirect("/recipes")
+
+        from database.recipe_excel_import_export_manager import (
+            RecipeExcelImportExportManager
+        )
+
+        try:
+            workbook, recipe = RecipeExcelImportExportManager.build_export_workbook(
+                recipe_id=recipe_id,
+                exported_by=session.get("username")
+            )
+            stream = RecipeExcelImportExportManager.workbook_to_bytes(workbook)
+            file_name = RecipeExcelImportExportManager.export_filename(recipe)
+
+            AuditManager.log_event(
+                username=session.get("username"),
+                role=session.get("role"),
+                action="RECIPE_EXPORTED_EXCEL",
+                change_source="WEB_RECIPE_IMPORT_EXPORT",
+                recipe_code=recipe.get("recipe_code"),
+                recipe_version=recipe.get("version"),
+                record_id=recipe_id,
+                new_value=file_name,
+                reason="Recipe exported with parameters and phase control"
+            )
+
+            return send_file(
+                stream,
+                as_attachment=True,
+                download_name=file_name,
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+        except Exception as exc:
+            flash(f"Recipe export failed: {exc}", "error")
+            return redirect(f"/recipe-editor/{recipe_id}")
+
+    @app.route("/recipes/import-template-excel")
+    def recipe_import_template_excel():
+
+        if not session.get("logged_in"):
+            return redirect("/login")
+
+        if not role_can(session.get("role"), "recipe_edit"):
+            flash("Your role cannot download import templates.", "error")
+            return redirect("/recipes/import-export")
+
+        from database.recipe_excel_import_export_manager import (
+            RecipeExcelImportExportManager
+        )
+
+        machine_id = request.args.get("machine_id", type=int)
+        stage_id = request.args.get("stage_id", type=int)
+
+        if not machine_id or not stage_id:
+            flash("Select machine/stage before downloading import template.", "warning")
+            return redirect("/recipes/import-export")
+
+        try:
+            workbook, target = RecipeExcelImportExportManager.build_blank_template_workbook(
+                machine_id=machine_id,
+                stage_id=stage_id,
+                exported_by=session.get("username")
+            )
+            stream = RecipeExcelImportExportManager.workbook_to_bytes(workbook)
+            file_name = RecipeExcelImportExportManager.template_filename(target)
+
+            AuditManager.log_event(
+                username=session.get("username"),
+                role=session.get("role"),
+                action="RECIPE_IMPORT_TEMPLATE_DOWNLOADED",
+                change_source="WEB_RECIPE_IMPORT_EXPORT",
+                new_value=file_name,
+                reason=f"Template target machine={machine_id}; stage={stage_id}"
+            )
+
+            return send_file(
+                stream,
+                as_attachment=True,
+                download_name=file_name,
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+        except Exception as exc:
+            flash(f"Template download failed: {exc}", "error")
+            return redirect("/recipes/import-export")
+
+    @app.route("/recipes/import-preview", methods=["POST"])
+    def recipe_import_preview():
+
+        if not session.get("logged_in"):
+            return redirect("/login")
+
+        if not role_can(session.get("role"), "recipe_edit"):
+            flash("Your role cannot import recipes.", "error")
+            return redirect("/recipes/import-export")
+
+        from database.recipe_excel_import_export_manager import (
+            RecipeExcelImportExportManager
+        )
+
+        try:
+            token, file_path = RecipeExcelImportExportManager.save_pending_upload(
+                request.files.get("recipe_file")
+            )
+            preview = RecipeExcelImportExportManager.preview_import(file_path)
+        except Exception as exc:
+            flash(str(exc), "error")
+            return redirect("/recipes/import-export")
+
+        targets = RecipeExcelImportExportManager.get_template_targets()
+
+        if preview.get("ok"):
+            flash("Import preview passed. Confirm to save recipe as DRAFT.", "success")
+        else:
+            flash("Import preview failed. Correct the Excel file and upload again.", "error")
+
+        return render_template(
+            "recipes/recipe_import_export.html",
+            targets=targets,
+            preview=preview,
+            token=token
+        )
+
+    @app.route("/recipes/import-confirm", methods=["POST"])
+    def recipe_import_confirm():
+
+        if not session.get("logged_in"):
+            return redirect("/login")
+
+        if not role_can(session.get("role"), "recipe_edit"):
+            flash("Your role cannot import recipes.", "error")
+            return redirect("/recipes/import-export")
+
+        from database.recipe_excel_import_export_manager import (
+            RecipeExcelImportExportManager
+        )
+
+        token = request.form.get("token")
+        reason = (request.form.get("reason") or "").strip()
+
+        try:
+            success, recipe_id, preview = RecipeExcelImportExportManager.import_pending_file(
+                token=token,
+                imported_by=session.get("username"),
+                user_role=session.get("role"),
+                reason=reason or "Recipe imported from Excel template",
+                request_obj=request
+            )
+        except Exception as exc:
+            flash(f"Recipe import failed: {exc}", "error")
+            return redirect("/recipes/import-export")
+
+        if not success:
+            flash("Recipe import failed validation. Correct the Excel file and upload again.", "error")
+            targets = RecipeExcelImportExportManager.get_template_targets()
+            return render_template(
+                "recipes/recipe_import_export.html",
+                targets=targets,
+                preview=preview,
+                token=token
+            )
+
+        flash("Recipe imported successfully as DRAFT. Review values before release or PLC use.", "success")
+        return redirect(f"/recipe-editor/{recipe_id}")
 
     @app.route(
         "/recipes/create/<int:machine_id>/<int:stage_id>",

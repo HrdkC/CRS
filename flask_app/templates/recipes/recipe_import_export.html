@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Import / Export
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench recipe-import-export-page">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Recipe Excel Control</span>
+            <h1>Recipe Import / Export</h1>
+            <p>Export complete recipe details and import a new recipe from the approved Excel template.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipes" class="crs-btn crs-btn-soft">Recipe List</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Export Includes</span>
+            <strong class="metric-text">Full Recipe</strong>
+            <small>Name, GT code, version, parameters, phase control</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Import Mode</span>
+            <strong class="metric-text">Draft</strong>
+            <small>Imported recipes are saved as DRAFT for safety</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Validation</span>
+            <strong class="metric-text">Strict</strong>
+            <small>Min/max, tag mapping, 12 phase rows checked</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Audit</span>
+            <strong class="metric-text">Tracked</strong>
+            <small>Export/import events saved in audit history</small>
+        </div>
+    </div>
+
+    <div class="import-export-layout">
+
+        <div class="workbench-card import-export-card">
+            <div class="panel-heading table-heading">
+                <div>
+                    <span>Download Blank Import Template</span>
+                    <p>Select machine/stage. Template will contain the current parameter master and default 12-line phase control.</p>
+                </div>
+                <span class="status-badge status-info">Template</span>
+            </div>
+
+            <form method="GET" action="/recipes/import-template-excel" class="template-download-form">
+                <label>
+                    <span>Machine / Stage</span>
+                    <select name="target" required onchange="if(this.value){const p=this.value.split('|'); this.form.machine_id.value=p[0]; this.form.stage_id.value=p[1];}">
+                        <option value="">Select target</option>
+                        {% for target in targets %}
+                        <option value="{{ target.machine_id }}|{{ target.stage_id }}">
+                            {{ target.machine_code }} / {{ target.stage_type }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <input type="hidden" name="machine_id">
+                <input type="hidden" name="stage_id">
+                <button type="submit" class="crs-btn crs-btn-primary">Download Template</button>
+            </form>
+        </div>
+
+        <div class="workbench-card import-export-card">
+            <div class="panel-heading table-heading">
+                <div>
+                    <span>Import Recipe From Excel</span>
+                    <p>Upload the CRS template/export file. CRS will preview and validate before saving.</p>
+                </div>
+                <span class="status-badge status-warning">Preview First</span>
+            </div>
+
+            <form method="POST" action="/recipes/import-preview" enctype="multipart/form-data" class="template-upload-form">
+                <label>
+                    <span>Recipe Excel File</span>
+                    <input type="file" name="recipe_file" accept=".xlsx" required>
+                </label>
+                <button type="submit" class="crs-btn crs-btn-primary">Preview Import</button>
+            </form>
+        </div>
+
+    </div>
+
+    <div class="workbench-card import-guide-card">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Template Sheet Rules</span>
+                <p>Keep the template structure unchanged. Edit only recipe identity, parameter values and phase control selections.</p>
+            </div>
+        </div>
+
+        <div class="import-rules-grid">
+            <div>
+                <strong>Recipe_Info</strong>
+                <span>Recipe Code / GT Code, Recipe Name, Version, Is Test Only</span>
+            </div>
+            <div>
+                <strong>Parameters</strong>
+                <span>Edit Parameter Value only. Master limits/unit/tag data are used for validation.</span>
+            </div>
+            <div>
+                <strong>Phase_Control</strong>
+                <span>12 lines required. Phase name/ID, Stop, Position and Sequence are checked.</span>
+            </div>
+            <div>
+                <strong>Safety</strong>
+                <span>Imported recipe is DRAFT. It is not released to production automatically.</span>
+            </div>
+        </div>
+    </div>
+
+    {% if preview %}
+    <div class="workbench-card import-preview-card">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Import Preview</span>
+                <p>Review validation result before saving recipe to database.</p>
+            </div>
+            {% if preview.ok %}
+            <span class="status-badge status-success">Ready To Import</span>
+            {% else %}
+            <span class="status-badge status-danger">Blocked</span>
+            {% endif %}
+        </div>
+
+        <div class="metric-grid compact-preview-metrics">
+            <div class="metric-card">
+                <span class="metric-label">GT Code</span>
+                <strong class="metric-text">{{ preview.summary.recipe_code }}</strong>
+                <small>{{ preview.summary.recipe_name }}</small>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Target</span>
+                <strong class="metric-text">{{ preview.summary.machine_code }}</strong>
+                <small>{{ preview.summary.stage_type }}</small>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Parameters</span>
+                <strong>{{ preview.summary.parameter_count }}</strong>
+                <small>Validated parameter rows</small>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Phase Lines</span>
+                <strong>{{ preview.summary.phase_count }}</strong>
+                <small>Expected 12</small>
+            </div>
+        </div>
+
+        {% if preview.errors %}
+        <div class="import-message-block import-errors">
+            <strong>Errors</strong>
+            <ul>
+                {% for error in preview.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if preview.warnings %}
+        <div class="import-message-block import-warnings">
+            <strong>Warnings</strong>
+            <ul>
+                {% for warning in preview.warnings[:12] %}
+                <li>{{ warning }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if preview.ok %}
+        <form method="POST" action="/recipes/import-confirm" class="import-confirm-form" data-confirm="This will save the uploaded recipe as DRAFT in CRS database. Continue?">
+            <input type="hidden" name="token" value="{{ token }}">
+            <label>
+                <span>Import Reason / Remarks</span>
+                <input type="text" name="reason" placeholder="Example: New GT recipe imported from approved template" required>
+            </label>
+            <button type="submit" class="crs-btn crs-btn-primary">Confirm Import As Draft</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</section>
+
+{% endblock %}
