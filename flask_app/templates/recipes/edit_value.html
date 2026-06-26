@@ -6,7 +6,9 @@ Edit Recipe Parameter
 
 {% block content %}
 
-<section class="recipe-workbench">
+<section class="recipe-workbench recipe-edit-lock-page"
+         data-edit-lock-release-url="/recipe-editor/edit/{{ value.id }}/release-lock"
+         data-edit-lock-id="{{ edit_lock_id or '' }}">
 
     <div class="workbench-hero">
 
@@ -30,12 +32,16 @@ Edit Recipe Parameter
 
         <div class="workbench-actions">
 
-            <a
-                class="crs-btn crs-btn-soft"
-                href="/recipe-editor/{{ value.recipe_id }}"
+            <form
+                class="inline-action-form recipe-edit-release-form"
+                method="POST"
+                action="/recipe-editor/edit/{{ value.id }}/cancel"
             >
-                Back To Editor
-            </a>
+                <input type="hidden" name="lock_id" value="{{ edit_lock_id or '' }}">
+                <button class="crs-btn crs-btn-soft" type="submit">
+                    Release Lock & Back
+                </button>
+            </form>
 
             <a
                 class="crs-btn crs-btn-soft"
@@ -158,9 +164,10 @@ Edit Recipe Parameter
         </div>
 
         <form
-            class="parameter-edit-form"
+            class="parameter-edit-form recipe-edit-save-form"
             method="POST"
         >
+            <input type="hidden" name="lock_id" value="{{ edit_lock_id or '' }}">
 
             <label>
                 <span>
@@ -201,12 +208,15 @@ Edit Recipe Parameter
                     Save Parameter
                 </button>
 
-                <a
+                <button
                     class="crs-btn crs-btn-soft"
-                    href="/recipe-editor/{{ value.recipe_id }}"
+                    type="submit"
+                    formmethod="POST"
+                    formaction="/recipe-editor/edit/{{ value.id }}/cancel"
+                    formnovalidate
                 >
-                    Cancel
-                </a>
+                    Cancel / Release Lock
+                </button>
 
             </div>
 

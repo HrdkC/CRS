@@ -213,7 +213,10 @@
                         Attempted from
                         <b>{{ alert.attempted_workstation_name or "Unknown workstation" }}</b>
                         / IP <b>{{ alert.attempted_client_ip or "-" }}</b>
-                        at {{ alert.attempted_at }}.
+                        at {{ alert.last_attempted_at or alert.attempted_at }}.
+                        {% if alert.attempt_count and alert.attempt_count|int > 1 %}
+                        <span class="status-badge status-warning">{{ alert.attempt_count }} attempts</span>
+                        {% endif %}
                     </div>
                     <div class="login-attempt-alert-meta">
                         Current active session remains protected. Finish your work and logout when ready.

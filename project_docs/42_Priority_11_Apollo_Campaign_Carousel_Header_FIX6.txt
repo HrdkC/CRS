@@ -3,7 +3,7 @@ Date: 2026-06-24
 
 Purpose
 - Improve Apollo corporate campaign login page using approved local campaign assets.
-- Add horizontal Apollo campaign image carousel changing every 2 seconds.
+- Add horizontal Apollo campaign image carousel transitioning slowly for operator-friendly viewing.
 - Reduce CRS login form width/height for compact Full HD fit.
 - Increase leadership image size and add Shree prefix as requested.
 - Move BCCI logo beside Apollo logo in application header.
@@ -21,7 +21,7 @@ Files changed
 
 Implementation notes
 - Carousel is CSS-only for resource efficiency; no JS interval required.
-- Campaign image changes horizontally every 2 seconds using a 4-second keyframe cycle.
+- Campaign image changes horizontally slowly, approximately every 7-8 seconds per image, using the accepted final carousel timing.
 - YouTube campaign film is linked externally; the app does not embed video to avoid extra load.
 - Header uses compact BCCI mark next to Apollo logo at equal visual box size.
 

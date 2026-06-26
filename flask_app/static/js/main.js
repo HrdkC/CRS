@@ -11,6 +11,7 @@
         CRS.dropdown.init();
         CRS.cards.init();
         CRS.loginAlerts.init();
+        CRS.recipeEditLock.init();
         CRS.session.init();
     });
 
@@ -203,7 +204,11 @@
 
                 const workstation = alert.attempted_workstation_name || "Unknown workstation";
                 const clientIp = alert.attempted_client_ip || "-";
-                const attemptedAt = alert.attempted_at || "";
+                const attemptedAt = alert.last_attempted_at || alert.attempted_at || "";
+                const attemptCount = parseInt(alert.attempt_count || "1", 10);
+                const attemptBadge = attemptCount > 1
+                    ? ' <span class="status-badge status-warning">' + attemptCount + ' attempts</span>'
+                    : '';
 
                 const item = document.createElement("div");
                 item.className = "login-attempt-alert";
@@ -213,7 +218,7 @@
                     '<div class="login-attempt-alert-icon">⚠</div>' +
                     '<div class="login-attempt-alert-body">' +
                         '<strong>Another workstation tried to login with your username</strong>' +
-                        '<div>Attempted from <b>' + workstation + '</b> / IP <b>' + clientIp + '</b> at ' + attemptedAt + '.</div>' +
+                        '<div>Attempted from <b>' + workstation + '</b> / IP <b>' + clientIp + '</b> at ' + attemptedAt + '.' + attemptBadge + '</div>' +
                         '<div class="login-attempt-alert-meta">Your active CRS session remains protected. Finish your work and logout when ready.</div>' +
                     '</div>' +
                     '<form method="POST" action="/login-attempt-alerts/' + alert.id + '/ack" class="login-attempt-alert-form">' +
@@ -221,6 +226,64 @@
                     '</form>';
 
                 stack.prepend(item);
+            });
+        }
+    };
+
+
+    CRS.recipeEditLock = {
+        init() {
+            const page = CRS.util.qs(".recipe-edit-lock-page[data-edit-lock-release-url]");
+            if (!page) return;
+
+            const releaseUrl = page.getAttribute("data-edit-lock-release-url");
+            const lockId = page.getAttribute("data-edit-lock-id") || "";
+            let normalSubmitInProgress = false;
+            let released = false;
+
+            CRS.util.qsa(".recipe-edit-save-form, .recipe-edit-release-form", page).forEach(function (form) {
+                form.addEventListener("submit", function () {
+                    normalSubmitInProgress = true;
+                });
+            });
+
+            function releaseLock(reason) {
+                if (released || normalSubmitInProgress || !releaseUrl) return;
+                released = true;
+
+                const payload = new FormData();
+                payload.append("lock_id", lockId);
+                payload.append("reason", reason || "PAGE_UNLOAD");
+
+                if (navigator.sendBeacon) {
+                    try {
+                        navigator.sendBeacon(releaseUrl, payload);
+                        return;
+                    } catch (error) {
+                        // Fall through to fetch keepalive.
+                    }
+                }
+
+                try {
+                    fetch(releaseUrl, {
+                        method: "POST",
+                        body: payload,
+                        keepalive: true,
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    });
+                } catch (error) {
+                    // Server-side expiry still protects plant operation.
+                }
+            }
+
+            window.addEventListener("pagehide", function () {
+                releaseLock("PAGE_HIDE");
+            });
+
+            document.addEventListener("visibilitychange", function () {
+                if (document.visibilityState === "hidden") {
+                    releaseLock("PAGE_HIDDEN");
+                }
             });
         }
     };

@@ -1147,9 +1147,60 @@ def register_recipe_editor_routes(app):
 
             recipe=recipe,
 
-            is_current_released_edit=is_current_released_edit
+            is_current_released_edit=is_current_released_edit,
+
+            edit_lock_id=edit_lock_id
 
         )
+
+
+    @app.route(
+        "/recipe-editor/edit/<int:value_id>/cancel",
+        methods=["POST"]
+    )
+    def cancel_recipe_value_edit(value_id):
+        """Explicitly release the current user's edit lock and return to editor."""
+        if not session.get("username"):
+            return redirect("/")
+
+        value = RecipeParameterValueManager.get_recipe_value_by_id(value_id)
+        if not value:
+            flash("Recipe parameter value not found.", "error")
+            return redirect("/recipes")
+
+        RecipeResourceLockManager.release_current_user_resource(
+            resource_type="RECIPE_EDIT",
+            resource_id=value["recipe_id"],
+            username=session.get("username"),
+            session_id=session.get("session_id"),
+            reason="PARAMETER_EDIT_CANCELLED_BY_USER"
+        )
+
+        flash("Recipe edit lock released.", "info")
+        return redirect(f"/recipe-editor/{value['recipe_id']}")
+
+    @app.route(
+        "/recipe-editor/edit/<int:value_id>/release-lock",
+        methods=["POST"]
+    )
+    def release_recipe_value_edit_lock(value_id):
+        """AJAX/beacon release for edit-page close/back navigation."""
+        if not session.get("username"):
+            return jsonify({"ok": False, "message": "Login required."}), 401
+
+        value = RecipeParameterValueManager.get_recipe_value_by_id(value_id)
+        if not value:
+            return jsonify({"ok": False, "message": "Parameter not found."}), 404
+
+        released = RecipeResourceLockManager.release_current_user_resource(
+            resource_type="RECIPE_EDIT",
+            resource_id=value["recipe_id"],
+            username=session.get("username"),
+            session_id=session.get("session_id"),
+            reason="PARAMETER_EDIT_PAGE_CLOSED"
+        )
+
+        return jsonify({"ok": True, "released": int(released or 0)})
 
     @app.route(
         "/recipe-editor/history/<int:value_id>"
@@ -1798,6 +1849,22 @@ def register_recipe_editor_routes(app):
         ):
 
             return redirect("/")
+
+        if not role_can(
+            session.get(
+                "role"
+            ),
+            "recipe_download"
+        ):
+
+            flash(
+                "Your role can view recipe values but cannot access PLC buffer operations.",
+                "warning"
+            )
+
+            return redirect(
+                f"/recipe-editor/{recipe_id}"
+            )
 
         recipe = (
             RecipeManager

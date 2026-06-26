@@ -28,6 +28,21 @@ def _add_column_if_missing(cursor, table_name, column_name, column_definition):
 def upgrade_user_management_schema():
     SystemSettingsManager.ensure_session_timeout_setting()
 
+    # Final Priority 11 production baseline: GUI tests used 5 minutes, but
+    # plant terminals should not keep the test value as the release default.
+    # If the DB still has <=5 minutes, normalize it to 30 minutes. Admin can
+    # still change it later from Auto Logout Settings.
+    try:
+        current_timeout = SystemSettingsManager.get_session_timeout_minutes()
+        if int(current_timeout) <= 5:
+            SystemSettingsManager.set_session_timeout_minutes(
+                30,
+                updated_by="SYSTEM_PRIORITY11_FINALIZATION"
+            )
+            print("Updated SESSION_TIMEOUT_MINUTES to production baseline: 30")
+    except Exception as exc:
+        print(f"WARNING: could not normalize session timeout: {exc}")
+
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -94,10 +109,30 @@ def upgrade_user_management_schema():
         """
     )
 
+    _add_column_if_missing(cursor, "user_login_attempt_alerts", "attempt_count", "INTEGER DEFAULT 1")
+    _add_column_if_missing(cursor, "user_login_attempt_alerts", "last_attempted_at", "DATETIME")
+
+    cursor.execute(
+        """
+        UPDATE user_login_attempt_alerts
+        SET attempt_count = COALESCE(attempt_count, 1),
+            last_attempted_at = COALESCE(last_attempted_at, attempted_at)
+        WHERE attempt_count IS NULL
+           OR last_attempted_at IS NULL
+        """
+    )
+
     cursor.execute(
         """
         CREATE INDEX IF NOT EXISTS idx_user_login_attempt_alerts_username_status
         ON user_login_attempt_alerts(username, status, attempted_at)
+        """
+    )
+
+    cursor.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_user_login_attempt_alerts_dedupe
+        ON user_login_attempt_alerts(username, active_session_id, attempted_client_ip, status, last_attempted_at)
         """
     )
 

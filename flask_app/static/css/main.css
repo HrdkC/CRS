@@ -1475,3 +1475,170 @@ button:disabled,
     margin-left: auto !important;
     margin-right: auto !important;
 }
+
+/* =====================================================
+   RECIPE EDITOR - PHASE CONTROL PROFESSIONAL VIEW
+   Makes phase-control rows compact, readable and aligned
+   ===================================================== */
+
+.phase-workbench {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.phase-workbench .panel-heading {
+    margin: 0 !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid var(--line-200);
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+}
+
+.phase-workbench .panel-heading span:first-child {
+    color: var(--ink-900);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.phase-workbench .muted-text {
+    font-size: 11.5px;
+    font-weight: 750;
+    color: var(--ink-500);
+}
+
+/* Main phase list */
+.phase-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    padding: 14px 16px 16px !important;
+}
+
+/* Each phase row/card */
+.phase-card {
+    display: grid !important;
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 10px !important;
+
+    min-height: 56px !important;
+    padding: 9px 11px !important;
+
+    border: 1px solid var(--line-200) !important;
+    border-radius: 10px !important;
+    background: #ffffff !important;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Phase number */
+.phase-index {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 999px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    color: #1d4ed8 !important;
+    background: #dbeafe !important;
+    border: 1px solid #bfdbfe !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+}
+
+/* Phase body layout */
+.phase-body {
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(160px, 1.4fr) auto auto auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* Phase name */
+.phase-body strong {
+    color: var(--ink-900) !important;
+    font-size: 12.5px !important;
+    font-weight: 900 !important;
+    line-height: 1.2 !important;
+
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Stop / Position / Sequence chips */
+.phase-body span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    min-height: 24px !important;
+    padding: 4px 8px !important;
+    border-radius: 999px !important;
+
+    font-size: 10.5px !important;
+    font-weight: 850 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+
+    color: var(--ink-700) !important;
+    background: #f1f5f9 !important;
+    border: 1px solid var(--line-200) !important;
+}
+
+/* Highlight Stop Yes */
+.phase-body span:nth-of-type(1) {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    border-color: #fecaca !important;
+}
+
+/* Position */
+.phase-body span:nth-of-type(2) {
+    background: #f8fafc !important;
+    color: #334155 !important;
+}
+
+/* Sequence */
+.phase-body span:nth-of-type(3) {
+    background: #ede9fe !important;
+    color: #5b21b6 !important;
+    border-color: #ddd6fe !important;
+}
+
+/* Hover polish */
+.phase-card:hover {
+    border-color: #c4b5fd !important;
+    box-shadow: 0 10px 22px rgba(111, 45, 168, 0.08) !important;
+    transform: translateY(-1px);
+}
+
+/* Laptop fallback */
+@media (max-width: 1366px) {
+    .phase-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .phase-body {
+        grid-template-columns: minmax(170px, 1fr) auto auto auto !important;
+    }
+}
+
+/* Small screen fallback */
+@media (max-width: 760px) {
+    .phase-card {
+        grid-template-columns: 36px 1fr !important;
+        align-items: start !important;
+    }
+
+    .phase-body {
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
+    }
+
+    .phase-body span {
+        justify-content: flex-start !important;
+    }
+}

@@ -363,10 +363,85 @@ class UserSessionManager:
         attempted_user_agent=None,
         attempted_forwarded_for=None,
         attempted_request_host=None,
-        login_source="WEB_LOGIN_BLOCKED_ACTIVE_SESSION"
+        login_source="WEB_LOGIN_BLOCKED_ACTIVE_SESSION",
+        dedupe_seconds=60
     ):
+        """Create or update an active-user login-attempt alert.
+
+        Plant-safe behavior: repeated retries from the same workstation should
+        not flood the active user's dashboard. If the same username/session/IP
+        already has an unread alert in the last dedupe window, update that row
+        and increment attempt_count instead of inserting another card.
+        """
         conn = get_connection()
         cursor = conn.cursor()
+
+        # Ensure new de-duplication columns exist even if an old DB skipped the
+        # upgrade script. SQLite accepts these ALTER attempts only when missing,
+        # so guard with PRAGMA.
+        cursor.execute("PRAGMA table_info(user_login_attempt_alerts)")
+        columns = {row[1] for row in cursor.fetchall()}
+        if "attempt_count" not in columns:
+            cursor.execute("ALTER TABLE user_login_attempt_alerts ADD COLUMN attempt_count INTEGER DEFAULT 1")
+        if "last_attempted_at" not in columns:
+            cursor.execute("ALTER TABLE user_login_attempt_alerts ADD COLUMN last_attempted_at DATETIME")
+            cursor.execute(
+                """
+                UPDATE user_login_attempt_alerts
+                SET last_attempted_at = COALESCE(last_attempted_at, attempted_at)
+                WHERE last_attempted_at IS NULL
+                """
+            )
+
+        active_session_id = active_session.get("id") if active_session else None
+
+        cursor.execute(
+            """
+            SELECT id
+            FROM user_login_attempt_alerts
+            WHERE username = ?
+              AND COALESCE(active_session_id, 0) = COALESCE(?, 0)
+              AND COALESCE(attempted_client_ip, '') = COALESCE(?, '')
+              AND COALESCE(attempted_workstation_name, '') = COALESCE(?, '')
+              AND status = 'UNREAD'
+              AND datetime(COALESCE(last_attempted_at, attempted_at)) >= datetime('now', ?)
+            ORDER BY COALESCE(last_attempted_at, attempted_at) DESC, id DESC
+            LIMIT 1
+            """,
+            (
+                username,
+                active_session_id,
+                attempted_client_ip,
+                attempted_workstation_name,
+                f"-{int(dedupe_seconds or 60)} seconds",
+            )
+        )
+        existing = cursor.fetchone()
+
+        if existing:
+            alert_id = existing["id"] if hasattr(existing, "keys") else existing[0]
+            cursor.execute(
+                """
+                UPDATE user_login_attempt_alerts
+                SET last_attempted_at = CURRENT_TIMESTAMP,
+                    attempted_user_agent = ?,
+                    attempted_forwarded_for = ?,
+                    attempted_request_host = ?,
+                    login_source = ?,
+                    attempt_count = COALESCE(attempt_count, 1) + 1
+                WHERE id = ?
+                """,
+                (
+                    attempted_user_agent,
+                    attempted_forwarded_for,
+                    attempted_request_host,
+                    login_source,
+                    alert_id,
+                )
+            )
+            conn.commit()
+            conn.close()
+            return alert_id
 
         cursor.execute(
             """
@@ -383,14 +458,16 @@ class UserSessionManager:
                 active_workstation_name,
                 active_login_time,
                 login_source,
-                status
+                status,
+                attempt_count,
+                last_attempted_at
             )
             VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'UNREAD')
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'UNREAD', 1, CURRENT_TIMESTAMP)
             """,
             (
                 username,
-                active_session.get("id") if active_session else None,
+                active_session_id,
                 attempted_client_ip,
                 attempted_workstation_name,
                 attempted_user_agent,
@@ -422,6 +499,8 @@ class UserSessionManager:
                 username,
                 active_session_id,
                 attempted_at,
+                COALESCE(last_attempted_at, attempted_at) AS last_attempted_at,
+                COALESCE(attempt_count, 1) AS attempt_count,
                 attempted_client_ip,
                 attempted_workstation_name,
                 attempted_user_agent,

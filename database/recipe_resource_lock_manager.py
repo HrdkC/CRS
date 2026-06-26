@@ -271,6 +271,106 @@ class RecipeResourceLockManager:
         conn.close()
         return count
 
+
+    @staticmethod
+    def release_current_user_resource(
+        resource_type,
+        resource_id,
+        username=None,
+        session_id=None,
+        reason="USER_RELEASED_LOCK"
+    ):
+        """Release only the current user's active lock for a resource.
+
+        This is used by edit Cancel / Back and browser-close cleanup so one
+        user cannot accidentally release another user's active production lock.
+        """
+        if not resource_type or resource_id is None:
+            return 0
+
+        where_parts = [
+            "resource_type = ?",
+            "resource_id = ?",
+            "status = 'ACTIVE'"
+        ]
+        params = [resource_type, int(resource_id)]
+
+        user_session_parts = []
+        if session_id:
+            user_session_parts.append("session_id = ?")
+            params.append(int(session_id))
+        if username:
+            user_session_parts.append("LOWER(locked_by) = LOWER(?)")
+            params.append(username)
+
+        if user_session_parts:
+            where_parts.append("(" + " OR ".join(user_session_parts) + ")")
+        else:
+            return 0
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            f"""
+            UPDATE recipe_resource_locks
+            SET status = 'RELEASED',
+                released_at = CURRENT_TIMESTAMP,
+                release_reason = ?
+            WHERE {' AND '.join(where_parts)}
+            """,
+            [reason] + params
+        )
+        count = cursor.rowcount
+        conn.commit()
+        conn.close()
+        return count
+
+    @staticmethod
+    def get_current_user_active_lock(
+        resource_type,
+        resource_id,
+        username=None,
+        session_id=None
+    ):
+        """Return the active lock for this user/session on a resource."""
+        RecipeResourceLockManager.ensure_table()
+        RecipeResourceLockManager.cleanup_expired_locks()
+
+        if not username and not session_id:
+            return None
+
+        where_parts = [
+            "resource_type = ?",
+            "resource_id = ?",
+            "status = 'ACTIVE'",
+            "(expires_at IS NULL OR datetime(expires_at) > datetime('now'))"
+        ]
+        params = [resource_type, int(resource_id)]
+        owner_parts = []
+        if session_id:
+            owner_parts.append("session_id = ?")
+            params.append(int(session_id))
+        if username:
+            owner_parts.append("LOWER(locked_by) = LOWER(?)")
+            params.append(username)
+        where_parts.append("(" + " OR ".join(owner_parts) + ")")
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            f"""
+            SELECT *
+            FROM recipe_resource_locks
+            WHERE {' AND '.join(where_parts)}
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+            """,
+            params
+        )
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
+
     @staticmethod
     def get_lock(lock_id):
         conn = get_connection()
