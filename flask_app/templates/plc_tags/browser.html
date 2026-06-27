@@ -6,837 +6,745 @@ PLC Tag Browser
 
 {% block content %}
 
-<h2>
-
-    PLC Tag Browser
-
-</h2>
-
-<p>
-
-    Machine ID :
-    <b>{{ machine_id }}</b>
-
-    &nbsp;&nbsp;
-
-    Stage ID :
-    <b>{{ stage_id }}</b>
-
-</p>
-
-<form
-    method="GET"
-    class="plc-online-action-form"
->
-
-    <input
-        type="hidden"
-        name="online_search"
-        value="1"
-    >
-
-    {% if purpose_to_assign %}
-
-    <input
-        type="hidden"
-        name="purpose"
-        value="{{ purpose_to_assign }}"
-    >
-
-    {% endif %}
-
-    <input
-
-        type="text"
-
-        name="search"
-
-        value="{{ search_text }}"
-
-        placeholder="Search PLC Tag"
-
-    >
-
-    <button
-        type="submit"
-        data-plc-online-action="1"
-        data-loading-message="PLC connection in progress. Searching online PLC tag database. Please wait."
-    >
-
-        Search Online PLC
-
-    </button>
-
-    &nbsp;&nbsp;
-
-    <label>
-
-        <input
-            type="checkbox"
-            name="bool_only"
-            value="1"
-            {% if bool_only == "1" %}
-            checked
-            {% endif %}
-        >
-
-        BOOL Only
-
-    </label>
-
-</form>
-
-<div
-    class="plc-action-message"
-    style="
-        display:none;
-        margin-top:12px;
-        padding:12px;
-        border:1px solid #7e57c2;
-        background:#f3ecff;
-        color:#3d176f;
-        font-weight:bold;
-    "
->
-</div>
-
-<br>
-
-<p>
-
-    Active PLC :
-
-    <b>
-
-        {% if active_plc %}
-
-            {{ active_plc.plc_name }}
-            -
-            {{ active_plc.ip_address }}
-
-        {% else %}
-
-            Not Configured
-
-        {% endif %}
-
-    </b>
-
-</p>
-
-<br>
-
-{% if purpose_to_assign %}
-
-<p>
-
-    Selecting PLC tag for purpose :
-
-    <b>
-
-        {{ purpose_to_assign }}
-
-    </b>
-
-</p>
-
-<br>
-
-{% if online_result %}
-
-<div class="workbench-card">
-
-    <h3>
-
-        Online PLC Available Tags
-
-    </h3>
-
-    <br>
-
-    {% if online_result.connected %}
-
-    <p
-        style="
-            padding:12px;
-            border:1px solid #2e7d32;
-            background:#e8f5e9;
-            color:#1b5e20;
-            font-weight:bold;
-        "
-    >
-
-        PLC connection successful. Online tag search completed.
-
-    </p>
-
-    {% elif online_result.errors %}
-
-    <p
-        style="
-            padding:12px;
-            border:1px solid #c62828;
-            background:#ffebee;
-            color:#b71c1c;
-            font-weight:bold;
-        "
-    >
-
-        PLC connection/search failed. Check PLC network and active PLC configuration.
-
-    </p>
-
-    {% endif %}
-
-    <br>
-
-    <table class="professional-table registry-table">
-
-        <tr>
-
-            <td>PLC</td>
-
-            <td>
-
-                {% if online_result.plc %}
-
-                    {{ online_result.plc.plc_name }}
-                    -
-                    {{ online_result.plc.ip_address }}
-
-                {% else %}
-
-                    -
-
+<style>
+    .plc-browser-v2 {
+        max-width: 1540px;
+        margin: 0 auto;
+        padding: 16px 18px 28px;
+    }
+
+    .plc-browser-v2 .plc-hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 18px;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+    }
+
+    .plc-browser-v2 .section-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #ccfbf1;
+        color: #0f766e;
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .plc-browser-v2 h1 {
+        margin: 8px 0 4px;
+        color: #0f172a;
+        font-size: 24px;
+        line-height: 1.1;
+        font-weight: 950;
+    }
+
+    .plc-browser-v2 .muted-line {
+        margin: 0;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .plc-browser-v2 .action-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .plc-browser-v2 .search-card,
+    .plc-browser-v2 .result-card,
+    .plc-browser-v2 .manual-card,
+    .plc-browser-v2 .saved-card {
+        margin-top: 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        background: #ffffff;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+        overflow: hidden;
+    }
+
+    .plc-browser-v2 .search-card {
+        padding: 14px;
+    }
+
+    .plc-browser-v2 .search-grid {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) auto auto auto auto;
+        gap: 10px;
+        align-items: end;
+    }
+
+    .plc-browser-v2 label span,
+    .plc-browser-v2 .field-title {
+        display: block;
+        margin-bottom: 6px;
+        color: #334155;
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .035em;
+    }
+
+    .plc-browser-v2 input[type="text"],
+    .plc-browser-v2 input[type="number"],
+    .plc-browser-v2 select {
+        width: 100%;
+        min-height: 38px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 8px 10px;
+        color: #0f172a;
+        background: #ffffff;
+        font-weight: 750;
+        outline: none;
+    }
+
+    .plc-browser-v2 input[type="text"]:focus,
+    .plc-browser-v2 input[type="number"]:focus,
+    .plc-browser-v2 select:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, .12);
+    }
+
+    .plc-browser-v2 .check-pill {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 11px;
+        border: 1px solid #dbe3ef;
+        border-radius: 999px;
+        background: #f8fafc;
+        color: #1e293b;
+        font-size: 12px;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .plc-browser-v2 .check-pill input {
+        width: 17px;
+        height: 17px;
+        accent-color: #6d28d9;
+    }
+
+    .plc-browser-v2 .hint-strip {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: #1e3a8a;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .plc-browser-v2 .card-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    .plc-browser-v2 .card-heading strong {
+        color: #0f172a;
+        font-size: 14px;
+        font-weight: 950;
+    }
+
+    .plc-browser-v2 .card-heading p {
+        margin: 3px 0 0;
+        color: #64748b;
+        font-size: 11.5px;
+        font-weight: 750;
+    }
+
+    .plc-browser-v2 .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 950;
+        white-space: nowrap;
+    }
+
+    .plc-browser-v2 .status-success {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .plc-browser-v2 .status-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .plc-browser-v2 .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        padding: 12px 14px 0;
+    }
+
+    .plc-browser-v2 .metric-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #ffffff;
+        padding: 10px;
+    }
+
+    .plc-browser-v2 .metric-card span {
+        display: block;
+        color: #64748b;
+        font-size: 10.5px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .035em;
+    }
+
+    .plc-browser-v2 .metric-card b {
+        display: block;
+        margin-top: 5px;
+        color: #0f172a;
+        font-size: 18px;
+        font-weight: 950;
+    }
+
+    .plc-browser-v2 .notice {
+        margin: 12px 14px 0;
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .plc-browser-v2 .notice ul {
+        margin: 6px 0 0 18px;
+        padding: 0;
+    }
+
+    .plc-browser-v2 .notice-info {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        color: #075985;
+    }
+
+    .plc-browser-v2 .notice-warning {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+    }
+
+    .plc-browser-v2 .notice-danger {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+
+    .plc-browser-v2 .table-scroll {
+        margin: 12px 14px 14px;
+        max-height: 460px;
+        overflow: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #ffffff;
+    }
+
+    .plc-browser-v2 table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .plc-browser-v2 thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #1e293b;
+        color: #ffffff;
+        padding: 10px 11px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 950;
+        text-transform: uppercase;
+        letter-spacing: .025em;
+        white-space: nowrap;
+    }
+
+    .plc-browser-v2 tbody td {
+        padding: 10px 11px;
+        border-bottom: 1px solid #eef2f7;
+        color: #0f172a;
+        font-size: 12px;
+        font-weight: 750;
+        vertical-align: middle;
+    }
+
+    .plc-browser-v2 tbody tr:hover td {
+        background: #faf5ff;
+    }
+
+    .plc-browser-v2 .tag-name-cell {
+        max-width: 560px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 950;
+    }
+
+    .plc-browser-v2 .mini-badge {
+        display: inline-flex;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+        font-size: 10.5px;
+        font-weight: 950;
+        white-space: nowrap;
+    }
+
+    .plc-browser-v2 .mini-badge.array {
+        background: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+    .plc-browser-v2 .mini-badge.scalar {
+        background: #f8fafc;
+        color: #64748b;
+    }
+
+    .plc-browser-v2 .row-actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        flex-wrap: wrap;
+    }
+
+    .plc-browser-v2 .inline-form {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .plc-browser-v2 .row-btn,
+    .plc-browser-v2 .row-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 30px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: none;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 950;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .plc-browser-v2 .row-btn.primary,
+    .plc-browser-v2 .row-link.primary {
+        background: #2563eb;
+        color: #ffffff;
+    }
+
+    .plc-browser-v2 .row-btn.warning,
+    .plc-browser-v2 .row-link.warning {
+        background: #d97706;
+        color: #ffffff;
+    }
+
+    .plc-browser-v2 .row-btn.success,
+    .plc-browser-v2 .row-link.success {
+        background: #16a34a;
+        color: #ffffff;
+    }
+
+    .plc-browser-v2 details summary {
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 950;
+        color: #0f172a;
+        padding: 13px 14px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .plc-browser-v2 .manual-body {
+        padding: 14px;
+    }
+
+    .plc-browser-v2 .manual-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+        gap: 10px;
+    }
+
+    .plc-browser-v2 .manual-grid.second {
+        grid-template-columns: 1fr 2fr;
+        margin-top: 10px;
+    }
+
+    .plc-browser-v2 .empty-state {
+        margin: 12px 14px 14px;
+        padding: 18px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 10px;
+        color: #64748b;
+        background: #f8fafc;
+        text-align: center;
+        font-weight: 800;
+    }
+
+    @media (max-width: 1100px) {
+        .plc-browser-v2 .plc-hero,
+        .plc-browser-v2 .card-heading {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .plc-browser-v2 .action-row {
+            justify-content: flex-start;
+        }
+
+        .plc-browser-v2 .search-grid,
+        .plc-browser-v2 .manual-grid,
+        .plc-browser-v2 .manual-grid.second,
+        .plc-browser-v2 .metric-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<section class="plc-browser-v2">
+
+    <div class="plc-hero">
+        <div>
+            <span class="section-kicker">PLC Tag Browser</span>
+            <h1>PLC Tag Browser</h1>
+            <p class="muted-line">
+                Machine ID: <b>{{ machine_id }}</b>
+                <span>|</span>
+                Stage ID: <b>{{ stage_id }}</b>
+                {% if active_plc %}
+                <span>|</span>
+                Active PLC: <b>{{ active_plc.plc_name }} - {{ active_plc.ip_address }}</b>
                 {% endif %}
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Connection</td>
-
-            <td>
-
-                {% if online_result.connected %}
-
-                    CONNECTED
-
-                {% else %}
-
-                    NOT CONNECTED
-
-                {% endif %}
-
-            </td>
-
-        </tr>
-
-        <tr>
-
-            <td>Total Controller Tags</td>
-
-            <td>{{ online_result.total_controller_tags }}</td>
-
-        </tr>
-
-        <tr>
-
-            <td>Matched Tags</td>
-
-            <td>{{ online_result.matched_count }}</td>
-
-        </tr>
-
-        <tr>
-
-            <td>Displayed Tags</td>
-
-            <td>{{ online_result.returned_count }}</td>
-
-        </tr>
-
-    </table>
-
-    {% if online_result.errors %}
-
-    <br>
-
-    <h3>
-
-        Online Search Issues
-
-    </h3>
-
-    <ul>
-
-        {% for error in online_result.errors %}
-
-        <li>
-
-            {{ error }}
-
-        </li>
-
-        {% endfor %}
-
-    </ul>
-
-    {% endif %}
-
-    {% if online_result.warnings %}
-
-    <br>
-
-    <h3>
-
-        Notes
-
-    </h3>
-
-    <ul>
-
-        {% for warning in online_result.warnings %}
-
-        <li>
-
-            {{ warning }}
-
-        </li>
-
-        {% endfor %}
-
-    </ul>
-
-    {% endif %}
-
-    {% if online_result.tags %}
-
-    <br>
-
-    <div class="professional-table-wrap registry-table-wrap">
-
-    <table class="professional-table registry-table">
-
-        <tr>
-
-            <th>PLC Tag Name</th>
-
-            <th>Data Type</th>
-
-            <th>Array</th>
-
-            <th>Dimensions</th>
-
-            <th>Size</th>
-
-            <th>Action</th>
-
-        </tr>
-
-        {% for online_tag in online_result.tags %}
-
-        <tr>
-
-            <td>{{ online_tag.tag_name }}</td>
-
-            <td>{{ online_tag.tag_type }}</td>
-
-            <td>
-
-                {% if online_tag.is_array %}
-
-                    YES
-
-                {% else %}
-
-                    NO
-
-                {% endif %}
-
-            </td>
-
-            <td>{{ online_tag.dimensions }}</td>
-
-            <td>
-
-                {% if online_tag.array_size %}
-
-                    {{ online_tag.array_size }}
-
-                {% else %}
-
-                    -
-
-                {% endif %}
-
-            </td>
-
-            <td>
-
-                <form
-                    method="POST"
-                    action="/plc-tags/select-online/{{ machine_id }}/{{ stage_id }}"
-                    style="box-shadow:none;border:none;padding:0;margin:0;background:transparent;"
-                >
-
-                    <input
-                        type="hidden"
-                        name="tag_purpose"
-                        value="{{ purpose_to_assign }}"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="search_text"
-                        value="{{ search_text }}"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="bool_only"
-                        value="{{ bool_only }}"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="tag_name"
-                        value="{{ online_tag.tag_name }}"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="tag_type"
-                        value="{{ online_tag.tag_type }}"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="is_array"
-                        value="{{ online_tag.is_array }}"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="array_size"
-                        value="{% if online_tag.array_size %}{{ online_tag.array_size }}{% endif %}"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="array_start_index"
-                        value="{% if online_tag.array_start_index is not none %}{{ online_tag.array_start_index }}{% endif %}"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="array_end_index"
-                        value="{% if online_tag.array_end_index is not none %}{{ online_tag.array_end_index }}{% endif %}"
-                    >
-
-                    <button type="submit" class="row-action primary">
-
-                        Select
-
-                    </button>
-
-                </form>
-
-            </td>
-
-        </tr>
-
-        {% endfor %}
-
-    </table>
-
+            </p>
+        </div>
+        <div class="action-row">
+            <a href="/plc-array-import/{{ machine_id }}/{{ stage_id }}" class="crs-btn crs-btn-primary">1D Array Import</a>
+            <a href="/plc-tags/{{ machine_id }}/{{ stage_id }}?purpose=RECIPE_DATA&online_search=1&search=Recipe&array_only=1&bool_only=0" class="crs-btn crs-btn-soft">Recipe Array Search</a>
+            <a href="/plc-tags/{{ machine_id }}/{{ stage_id }}?online_search=1&search=&array_only=0&bool_only=0" class="crs-btn crs-btn-soft">Diagnostic Browse All</a>
+        </div>
     </div>
 
-    {% endif %}
-
-</div>
-
-<br>
-
-{% endif %}
-
-<div class="workbench-card">
-
-    <h3>
-
-        Manual Add Fallback
-
-    </h3>
-
-    <br>
-
-    <form
-        method="POST"
-        action="/plc-tags/create/{{ machine_id }}/{{ stage_id }}"
-    >
-
-        <input
-            type="hidden"
-            name="tag_purpose"
-            value="{{ purpose_to_assign }}"
-        >
-
-        <label>
-
-            Tag Name
-
-        </label>
-
-        <input
-            type="text"
-            name="tag_name"
-            value="{{ default_tag_name }}"
-            required
-        >
-
-        <label>
-
-            Data Type
-
-        </label>
-
-        <select name="tag_type">
-
-            <option
-                value="BOOL"
-                {% if purpose_to_assign not in ["RECIPE_DATA", "RECIPE_CODE"] %}
-                selected
-                {% endif %}
-            >
-                BOOL
-            </option>
-
-            <option
-                value="REAL"
-                {% if purpose_to_assign == "RECIPE_DATA" %}
-                selected
-                {% endif %}
-            >
-                REAL
-            </option>
-
-            <option
-                value="STRING"
-                {% if purpose_to_assign == "RECIPE_CODE" %}
-                selected
-                {% endif %}
-            >
-                STRING
-            </option>
-
-        </select>
-
-        <label>
-
-            Array
-
-        </label>
-
-        <select name="is_array">
-
-            <option
-                value="0"
-                {% if purpose_to_assign != "RECIPE_DATA" %}
-                selected
-                {% endif %}
-            >
-                NO
-            </option>
-
-            <option
-                value="1"
-                {% if purpose_to_assign == "RECIPE_DATA" %}
-                selected
-                {% endif %}
-            >
-                YES
-            </option>
-
-        </select>
-
-        <label>
-
-            Array Size
-
-        </label>
-
-        <input
-            type="number"
-            name="array_size"
-            value="{% if purpose_to_assign == 'RECIPE_DATA' %}500{% endif %}"
-        >
-
-        <label>
-
-            Start Index
-
-        </label>
-
-        <input
-            type="number"
-            name="array_start_index"
-            value="{% if purpose_to_assign == 'RECIPE_DATA' %}0{% endif %}"
-        >
-
-        <label>
-
-            End Index
-
-        </label>
-
-        <input
-            type="number"
-            name="array_end_index"
-            value="{% if purpose_to_assign == 'RECIPE_DATA' %}499{% endif %}"
-        >
-
-        <label>
-
-            Description
-
-        </label>
-
-        <input
-            type="text"
-            name="description"
-            value="{{ purpose_to_assign }}"
-        >
-
-        <button type="submit" class="crs-btn crs-btn-primary">
-
-            Add Tag
-
-        </button>
-
-    </form>
-
-</div>
-
-<br>
-
-{% endif %}
-
-<p>
-
-    Total Tags :
-
-    <b>
-
-        {{ tags|length }}
-
-    </b>
-
-</p>
-
-<div class="professional-table-wrap registry-table-wrap">
-
-<table class="professional-table registry-table">
-
-    <tr>
-
-        <th>Tag Name</th>
-
-        <th>Data Type</th>
-
-        <th>Purpose</th>
-
-        <th>Array</th>
-
-        <th>Start</th>
-
-        <th>End</th>
-
-        <th>Size</th>
-
-        <th>Action</th>
-
-    </tr>
-
-    {% for tag in tags %}
-
-    <tr>
-
-        <td>
-
-            {{ tag.tag_name }}
-
-        </td>
-
-        <td>
-
-            {{ tag.tag_type }}
-
-        </td>
-
-        <td>
-
-            {% if tag.tag_purpose %}
-
-                {{ tag.tag_purpose }}
-
-            {% else %}
-
-                -
-
-            {% endif %}
-
-        </td>
-
-        <td>
-
-            {% if tag.is_array %}
-
-                YES
-
-            {% else %}
-
-                NO
-
-            {% endif %}
-
-        </td>
-
-        <td>
-
-            {{ tag.array_start_index }}
-
-        </td>
-
-        <td>
-
-            {{ tag.array_end_index }}
-
-        </td>
-
-        <td>
-
-            {{ tag.array_size }}
-
-        </td>
-
-        <td>
-
-            {% if tag.is_array %}
-
-                <a href="/plc-tags/array/{{ tag.id }}" class="row-action primary">
-
-                    Browse
-
-                </a>
-
-            {% else %}
-
-                -
-
-            {% endif %}
+    <div class="search-card">
+        <form method="GET" class="plc-online-action-form">
+            <input type="hidden" name="online_search" value="1">
 
             {% if purpose_to_assign %}
-
-                <br>
-
-                <form
-                    method="POST"
-                    action="/plc-tags/set-purpose/{{ tag.id }}"
-                    style="box-shadow:none;border:none;padding:0;margin:0;background:transparent;"
-                >
-
-                    <input
-                        type="hidden"
-                        name="tag_purpose"
-                        value="{{ purpose_to_assign }}"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="return_url"
-                        value="/plc-tags/{{ machine_id }}/{{ stage_id }}?purpose={{ purpose_to_assign }}&search={{ search_text }}&bool_only={{ bool_only }}"
-                    >
-
-                    <button type="submit" class="row-action primary">
-
-                        Select
-
-                    </button>
-
-                </form>
-
+            <input type="hidden" name="purpose" value="{{ purpose_to_assign }}">
             {% endif %}
 
-        </td>
+            <div class="search-grid">
+                <label>
+                    <span>Search PLC Tag</span>
+                    <input type="text" name="search" value="{{ search_text }}" placeholder="Example: Recipe, CRS, Data, P15">
+                </label>
 
-    </tr>
+                <label class="check-pill" title="Use this to find REAL/DINT recipe array tags.">
+                    <input type="checkbox" name="array_only" value="1" {% if array_only == "1" %}checked{% endif %}>
+                    Array Only
+                </label>
 
-    {% endfor %}
+                <label class="check-pill" title="BOOL-only is for interlocks/status bits, not recipe arrays.">
+                    <input type="checkbox" name="bool_only" value="1" {% if bool_only == "1" %}checked{% endif %}>
+                    BOOL Only
+                </label>
 
-</table>
+                <button
+                    type="submit"
+                    class="crs-btn crs-btn-primary"
+                    data-plc-online-action="1"
+                    data-loading-message="PLC connection in progress. Searching online PLC tag database. Please wait."
+                >
+                    Search Online PLC
+                </button>
 
-</div>
+                <a href="/plc-tags/{{ machine_id }}/{{ stage_id }}" class="crs-btn crs-btn-soft">Clear</a>
+            </div>
+        </form>
 
-<script>
+        <div class="plc-action-message" style="display:none; margin-top:12px; padding:12px; border:1px solid #7e57c2; background:#f3ecff; color:#3d176f; font-weight:bold;"></div>
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+        <div class="hint-strip">
+            For recipe import, use <b>Array Only</b> with <b>BOOL Only unchecked</b>. Use Diagnostic Browse All only for troubleshooting large tag lists.
+        </div>
 
-        var forms = document.querySelectorAll(
-            ".plc-online-action-form"
-        );
+        {% if purpose_to_assign %}
+        <div class="notice notice-warning">
+            Selecting PLC tag for purpose: <b>{{ purpose_to_assign }}</b>
+        </div>
+        {% endif %}
+    </div>
 
-        forms.forEach(
-            function (form) {
+    {% if online_result %}
+    <div class="result-card">
+        <div class="card-heading">
+            <div>
+                <strong>Online PLC Available Tags</strong>
+                <p>{% if online_result.browse_source %}Source: {{ online_result.browse_source }}{% else %}Online browse result{% endif %}</p>
+            </div>
 
-                form.addEventListener(
-                    "submit",
-                    function (event) {
+            {% if online_result.connected %}
+            <span class="status-badge status-success">ONLINE</span>
+            {% else %}
+            <span class="status-badge status-danger">OFFLINE / ERROR</span>
+            {% endif %}
+        </div>
 
-                        var submitter = event.submitter;
+        <div class="metric-grid">
+            <div class="metric-card"><span>Controller Tags</span><b>{{ online_result.total_controller_tags }}</b></div>
+            <div class="metric-card"><span>Matched</span><b>{{ online_result.matched_count }}</b></div>
+            <div class="metric-card"><span>Returned</span><b>{{ online_result.returned_count }}</b></div>
+            <div class="metric-card"><span>Limit</span><b>{{ online_result.limit }}</b></div>
+        </div>
 
-                        if (
-                            !submitter
-                            ||
-                            submitter.dataset.plcOnlineAction !== "1"
-                        ) {
+        {% if online_result.errors %}
+        <div class="notice notice-danger">
+            <b>PLC online tag search failed.</b>
+            <ul>{% for error in online_result.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
 
-                            return;
+        {% if online_result.diagnostics %}
+        <div class="notice notice-info">
+            <b>Diagnostic Details</b>
+            <ul>{% for diagnostic in online_result.diagnostics %}<li>{{ diagnostic }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
 
-                        }
+        {% if online_result.warnings %}
+        <div class="notice notice-warning">
+            <ul>{% for warning in online_result.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
 
-                        var message = form.parentElement.querySelector(
-                            ".plc-action-message"
-                        );
+        {% if online_result.tags %}
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="min-width: 360px;">PLC Tag Name</th>
+                        <th>Data Type</th>
+                        <th>Array</th>
+                        <th>Dimensions</th>
+                        <th>Size</th>
+                        <th style="min-width: 230px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for online_tag in online_result.tags %}
+                    <tr>
+                        <td><div class="tag-name-cell" title="{{ online_tag.tag_name }}">{{ online_tag.tag_name }}</div></td>
+                        <td><span class="mini-badge">{{ online_tag.tag_type }}</span></td>
+                        <td>
+                            {% if online_tag.is_array %}
+                            <span class="mini-badge array">YES</span>
+                            {% else %}
+                            <span class="mini-badge scalar">NO</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ online_tag.dimensions }}</td>
+                        <td>{% if online_tag.array_size %}{{ online_tag.array_size }}{% else %}-{% endif %}</td>
+                        <td>
+                            <div class="row-actions">
+                                <form method="POST" action="/plc-tags/select-online/{{ machine_id }}/{{ stage_id }}" class="inline-form">
+                                    <input type="hidden" name="tag_purpose" value="{{ purpose_to_assign }}">
+                                    <input type="hidden" name="search_text" value="{{ search_text }}">
+                                    <input type="hidden" name="bool_only" value="{{ bool_only }}">
+                                    <input type="hidden" name="array_only" value="{{ array_only }}">
+                                    <input type="hidden" name="tag_name" value="{{ online_tag.tag_name }}">
+                                    <input type="hidden" name="tag_type" value="{{ online_tag.tag_type }}">
+                                    <input type="hidden" name="is_array" value="{{ online_tag.is_array }}">
+                                    <input type="hidden" name="array_size" value="{% if online_tag.array_size %}{{ online_tag.array_size }}{% endif %}">
+                                    <input type="hidden" name="array_start_index" value="{% if online_tag.array_start_index is not none %}{{ online_tag.array_start_index }}{% endif %}">
+                                    <input type="hidden" name="array_end_index" value="{% if online_tag.array_end_index is not none %}{{ online_tag.array_end_index }}{% endif %}">
+                                    <button type="submit" class="row-btn primary">Add / Select</button>
+                                </form>
 
-                        if (message) {
+                                {% if online_tag.is_array %}
+                                <form method="GET" action="/plc-array-import/{{ machine_id }}/{{ stage_id }}" class="inline-form">
+                                    <input type="hidden" name="tag_name" value="{{ online_tag.tag_name }}">
+                                    <input type="hidden" name="start_index" value="{% if online_tag.array_start_index is not none %}{{ online_tag.array_start_index }}{% else %}0{% endif %}">
+                                    <input type="hidden" name="end_index" value="{% if online_tag.array_end_index is not none %}{{ online_tag.array_end_index }}{% else %}119{% endif %}">
+                                    <input type="hidden" name="datatype" value="{{ online_tag.tag_type }}">
+                                    <button type="submit" class="row-btn warning">Use For 1D Import</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            No online PLC tags returned. Click <b>Diagnostic Browse All</b>, or use <b>Manual Add Fallback</b> if you know the exact recipe array tag name.
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
 
-                            message.textContent = (
-                                submitter.dataset.loadingMessage
-                                ||
-                                "PLC connection in progress. Please wait."
-                            );
+    <details class="manual-card">
+        <summary>Manual Add Fallback</summary>
 
-                            message.style.display = "block";
+        <div class="manual-body">
+            <form method="POST" action="/plc-tags/create/{{ machine_id }}/{{ stage_id }}">
+                <input type="hidden" name="tag_purpose" value="{{ purpose_to_assign }}">
 
-                        }
+                <div class="manual-grid">
+                    <label>
+                        <span>Tag Name</span>
+                        <input type="text" name="tag_name" value="{{ default_tag_name }}" required>
+                    </label>
 
-                        submitter.disabled = true;
+                    <label>
+                        <span>Data Type</span>
+                        <select name="tag_type">
+                            <option value="BOOL" {% if purpose_to_assign not in ["RECIPE_DATA", "RECIPE_CODE"] %}selected{% endif %}>BOOL</option>
+                            <option value="REAL" {% if purpose_to_assign == "RECIPE_DATA" %}selected{% endif %}>REAL</option>
+                            <option value="DINT">DINT</option>
+                            <option value="STRING" {% if purpose_to_assign == "RECIPE_CODE" %}selected{% endif %}>STRING</option>
+                        </select>
+                    </label>
 
-                        submitter.textContent = "Please Wait...";
+                    <label>
+                        <span>Array</span>
+                        <select name="is_array">
+                            <option value="0" {% if purpose_to_assign != "RECIPE_DATA" %}selected{% endif %}>NO</option>
+                            <option value="1" {% if purpose_to_assign == "RECIPE_DATA" %}selected{% endif %}>YES</option>
+                        </select>
+                    </label>
 
-                    }
-                );
+                    <label>
+                        <span>Start Index</span>
+                        <input type="number" name="array_start_index" value="{% if purpose_to_assign == 'RECIPE_DATA' %}0{% endif %}">
+                    </label>
 
-            }
-        );
+                    <label>
+                        <span>End Index</span>
+                        <input type="number" name="array_end_index" value="{% if purpose_to_assign == 'RECIPE_DATA' %}499{% endif %}">
+                    </label>
+                </div>
 
-    }
-);
+                <div class="manual-grid second">
+                    <label>
+                        <span>Array Size</span>
+                        <input type="number" name="array_size" value="{% if purpose_to_assign == 'RECIPE_DATA' %}500{% endif %}">
+                    </label>
 
-</script>
+                    <label>
+                        <span>Description</span>
+                        <input type="text" name="description" value="{{ purpose_to_assign }}">
+                    </label>
+                </div>
+
+                <div style="margin-top: 12px;">
+                    <button type="submit" class="crs-btn crs-btn-primary">Add Tag</button>
+                </div>
+            </form>
+        </div>
+    </details>
+
+    <div class="saved-card">
+        <div class="card-heading">
+            <div>
+                <strong>Saved PLC Tags</strong>
+                <p>Total saved tags: {{ tags|length }}</p>
+            </div>
+        </div>
+
+        <div class="table-scroll" style="max-height: 360px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="min-width: 360px;">Tag Name</th>
+                        <th>Data Type</th>
+                        <th>Purpose</th>
+                        <th>Array</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Size</th>
+                        <th style="min-width: 260px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for tag in tags %}
+                    <tr>
+                        <td><div class="tag-name-cell" title="{{ tag.tag_name }}">{{ tag.tag_name }}</div></td>
+                        <td><span class="mini-badge">{{ tag.tag_type }}</span></td>
+                        <td>{% if tag.tag_purpose %}{{ tag.tag_purpose }}{% else %}-{% endif %}</td>
+                        <td>{% if tag.is_array %}<span class="mini-badge array">YES</span>{% else %}<span class="mini-badge scalar">NO</span>{% endif %}</td>
+                        <td>{{ tag.array_start_index }}</td>
+                        <td>{{ tag.array_end_index }}</td>
+                        <td>{{ tag.array_size }}</td>
+                        <td>
+                            <div class="row-actions">
+                                {% if tag.is_array %}
+                                <a href="/plc-tags/array/{{ tag.id }}" class="row-link primary">Browse Indexes</a>
+                                <a href="/plc-array-import/tag/{{ tag.id }}" class="row-link warning">Use For 1D Import</a>
+                                {% else %}
+                                <span class="mini-badge scalar">Scalar</span>
+                                {% endif %}
+
+                                {% if purpose_to_assign %}
+                                <form method="POST" action="/plc-tags/set-purpose/{{ tag.id }}" class="inline-form">
+                                    <input type="hidden" name="tag_purpose" value="{{ purpose_to_assign }}">
+                                    <input type="hidden" name="return_url" value="/plc-tags/{{ machine_id }}/{{ stage_id }}?purpose={{ purpose_to_assign }}">
+                                    <button type="submit" class="row-btn success">Set {{ purpose_to_assign }}</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">No saved PLC tags found for this machine/stage.</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
 
 {% endblock %}

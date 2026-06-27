@@ -71,6 +71,11 @@ def register_plc_tag_routes(app):
             ""
         ).strip()
 
+        array_only = request.args.get(
+            "array_only",
+            ""
+        ).strip()
+
         online_search = request.args.get(
             "online_search",
             ""
@@ -106,6 +111,13 @@ def register_plc_tag_routes(app):
 
         )
 
+        if array_only == "1":
+            tags = [
+                tag
+                for tag in tags
+                if int(tag.get("is_array") or 0) == 1
+            ]
+
         active_plc = (
             PLCOnlineTagBrowserManager
             .get_active_plc(
@@ -131,10 +143,13 @@ def register_plc_tag_routes(app):
 
                     search_text=search_text,
 
-                    bool_only=bool_only == "1"
+                    bool_only=bool_only == "1",
+
+                    array_only=array_only == "1"
 
                 )
             )
+
 
         return render_template(
 
@@ -156,6 +171,8 @@ def register_plc_tag_routes(app):
             ),
 
             bool_only=bool_only,
+
+            array_only=array_only,
 
             online_search=online_search,
 

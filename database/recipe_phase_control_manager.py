@@ -8,9 +8,17 @@ class RecipePhaseControlManager:
     @staticmethod
     def create_default_phase_rows(
 
-        recipe_id
+        recipe_id,
+
+        *args,
+
+        **kwargs
 
     ):
+
+        # recipe_code/machine_id/stage_id may be supplied by newer callers.
+        # They are accepted for backward compatibility. Existing first-stage
+        # default creation still works exactly as before.
 
         conn = get_connection()
 

@@ -135,6 +135,14 @@ PLC Registry
                                 >
                                     Verify
                                 </a>
+                                {% if role_can("engineering_config") %}
+                                <a
+                                    href="/plc-array-import/plc/{{ plc.id }}"
+                                    class="row-action buffer"
+                                >
+                                    1D Array Import
+                                </a>
+                                {% endif %}
                                 {% if plc.active == 1 %}
                                 <a
                                     href="/plcs/disable/{{ plc.id }}"

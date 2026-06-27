@@ -44,6 +44,36 @@ def _engineering_config_allowed():
     )
 
 
+def _plc_expected_sync_allowed():
+    return (
+        session.get("logged_in")
+        and
+        session.get("role") in ("ADMIN", "ENGINEERING")
+    )
+
+
+def _request_metadata():
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    client_ip = (
+        forwarded_for.split(",")[0].strip()
+        if forwarded_for
+        else request.remote_addr
+    )
+
+    return {
+        "forwarded_for": forwarded_for,
+        "client_ip": client_ip,
+        "request_host": request.host,
+        "user_agent": request.headers.get("User-Agent"),
+        "workstation_name": (
+            request.headers.get("X-Workstation-Name")
+            or request.headers.get("X-Client-Workstation")
+            or request.headers.get("X-Forwarded-Host")
+            or request.host
+        ),
+    }
+
+
 def register_plc_routes(app):
 
     @app.route("/plcs")
@@ -399,9 +429,70 @@ def register_plc_routes(app):
 
             plc=plc,
 
-            result=result
+            result=result,
+
+            sync_expected_allowed=_plc_expected_sync_allowed()
 
         )
+
+    @app.route(
+        "/plcs/verify/<int:plc_id>/sync-expected",
+        methods=["POST"]
+    )
+    def sync_expected_plc_identity(plc_id):
+
+        if not _plc_expected_sync_allowed():
+
+            flash(
+                "Only ADMIN or ENGINEERING can sync expected PLC details.",
+                "error"
+            )
+
+            return redirect(f"/plcs/verify/{plc_id}")
+
+        reason = (
+            request.form.get("reason")
+            or ""
+        ).strip()
+
+        if not reason:
+
+            flash(
+                "Reason is required before updating expected PLC details.",
+                "warning"
+            )
+
+            return redirect(f"/plcs/verify/{plc_id}")
+
+        try:
+
+            meta = _request_metadata()
+
+            PLCVerificationManager.sync_expected_from_actual(
+                plc_id=plc_id,
+                username=session.get("username", "SYSTEM"),
+                role=session.get("role", "SYSTEM"),
+                reason=reason,
+                workstation_name=meta["workstation_name"],
+                client_ip=meta["client_ip"],
+                user_agent=meta["user_agent"],
+                forwarded_for=meta["forwarded_for"],
+                request_host=meta["request_host"],
+            )
+
+            flash(
+                "Expected PLC details updated from latest online PLC verification. Audit recorded.",
+                "success"
+            )
+
+        except Exception as exc:
+
+            flash(
+                f"Could not sync expected PLC details: {exc}",
+                "error"
+            )
+
+        return redirect(f"/plcs/verify/{plc_id}")
         
     @app.route("/plcs/disable/<int:plc_id>")
     def disable_plc(

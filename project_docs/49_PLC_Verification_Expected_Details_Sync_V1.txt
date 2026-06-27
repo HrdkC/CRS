@@ -1,0 +1,40 @@
+# 49 - PLC Verification Expected Details Sync V1
+
+## Objective
+
+When PLC verification reads actual online PLC details that differ from CRS expected details, ADMIN/ENGINEERING users need a controlled way to update the expected PLC identity directly from the verification screen.
+
+## Implemented behavior
+
+A new form is available on the PLC Verification page:
+
+- Sync Expected Details From Online PLC
+- Reason required
+- ADMIN/ENGINEERING only
+- Audit recorded
+
+## Fields updated
+
+The following expected fields in `plc_registry` are updated from latest actual online values:
+
+- `processor_name` from `actual_processor_name`
+- `firmware_revision` from `actual_firmware_revision`
+- `program_revision` from `actual_program_name`
+
+The actual serial number is included in the audit payload for traceability. No expected serial-number column is added by this patch.
+
+## Audit action
+
+`PLC_EXPECTED_IDENTITY_UPDATED_FROM_ONLINE`
+
+Audit includes old expected values, new expected values, latest actual online values, reason, user, role, and request metadata.
+
+## Safety rule
+
+This button must be used only after confirming that the online PLC is the correct physical PLC for the machine/stage. It should not be used to hide a wrong PLC connection.
+
+## Files changed
+
+- `database/plc_verification_manager.py`
+- `flask_app/routes/plc_routes.py`
+- `flask_app/templates/plcs/verify_plc.html`
