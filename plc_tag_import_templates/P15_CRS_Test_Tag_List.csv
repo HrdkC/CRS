@@ -1,0 +1,19 @@
+tag_name,tag_type,is_array,array_size,array_start_index,array_end_index,tag_purpose,initial_value,description
+CRS_Recipe_Data,REAL,1,150,0,149,RECIPE_DATA,REAL[150] all 0.0,CRS source recipe buffer. CRS writes/restores selected DB recipe here before PLC download.
+CRS_Test_Recipe_Data,REAL,1,150,0,149,TEST_RECIPE_DATA,REAL[150] all 0.0,PLC destination/source test recipe buffer. Download writes here; Upload reads here.
+CRS_Recipe_Code,STRING,0,,,,RECIPE_CODE,blank string,Selected CRS recipe code for operator/PLC visibility.
+CRS_Download_Enable,BOOL,0,,,,DOWNLOAD_ENABLE,0 / FALSE,PLC/maintenance permissive. Must be TRUE before CRS Download To PLC.
+CRS_Test_Machine_In_Manual,BOOL,0,,,,MACHINE_IN_MANUAL,0 / FALSE,Temporary CRS manual-mode permissive for test only. Set TRUE only in safe manual/test condition.
+CRS_Download_Request,BOOL,0,,,,DOWNLOAD_REQUEST,0 / FALSE,CRS sets this TRUE during Download To PLC handshake.
+CRS_Download_Complete,BOOL,0,,,,DOWNLOAD_COMPLETE,0 / FALSE,PLC/test handshake complete bit. CRS waits for this during Download To PLC.
+CRS_Download_Ack,BOOL,0,,,,DOWNLOAD_ACK,0 / FALSE,Optional CRS acknowledgement bit after download handshake.
+CRS_Download_Busy,BOOL,0,,,,DOWNLOAD_BUSY,0 / FALSE,Optional PLC/test busy bit for download handshake diagnostics.
+CRS_Download_Error,BOOL,0,,,,DOWNLOAD_ERROR,0 / FALSE,Optional PLC/test error bit for download handshake diagnostics.
+CRS_Download_Result,DINT,0,,,,DOWNLOAD_RESULT,0,Optional numeric result code. 1 can be used for test success.
+CRS_Download_OS,BOOL,0,,,,DOWNLOAD_OS,0 / FALSE,Optional one-shot/storage bit if PLC ladder is added later.
+CRS_Last_Download_Time,STRING,0,,,,LAST_DOWNLOAD_TIME,blank string,Optional last download timestamp string written by CRS/PLC test logic.
+CRS_Last_Download_User,STRING,0,,,,LAST_DOWNLOAD_USER,blank string,Optional last download username string written by CRS/PLC test logic.
+CRS_Test_Recipe_No,DINT,0,,,,TEST_RECIPE_NO,0,"Optional simple test recipe number tag, matching existing P15 FS test setup."
+CRS_Test_Length,REAL,0,,,,TEST_LENGTH,0.0,"Optional simple test length tag, matching existing P15 FS test setup."
+CRS_Test_Width,REAL,0,,,,TEST_WIDTH,0.0,"Optional simple test width tag, matching existing P15 FS test setup."
+CRS_Test_Speed,REAL,0,,,,TEST_SPEED,0.0,"Optional simple test speed tag, matching existing P15 FS test setup."

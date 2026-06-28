@@ -1,0 +1,81 @@
+P15 CRS Test PLC Tags V1
+========================
+
+Purpose
+-------
+Before using online PLC Tag Browser -> Recipe / 1D Array Import testing, P15 FS/SS PLC must have standard CRS controller-scope test tags.
+
+Approved route/display standard remains:
+- URL: P15/FS and P15/SS
+- Display: P15 - FS First Stage and P15 - SS Second Stage
+- Internal DB IDs remain machine_id/stage_id.
+
+Important Limitation
+--------------------
+CRS and pycomm3 cannot create new ControlLogix controller tags inside the PLC project. Studio 5000 / Logix Designer must create/import actual PLC tags first. CRS scripts can only:
+1. register tag names/purposes in CRS database,
+2. verify online tag reads,
+3. write safe test default values to existing tags,
+4. run a PC-side handshake simulator for isolated testing.
+
+Files Added
+-----------
+- database/plc_crs_test_tag_definitions.py
+- scripts/register_p15_crs_test_tags.py
+- scripts/verify_p15_crs_test_tags_online.py
+- scripts/write_p15_crs_test_defaults.py
+- scripts/p15_crs_test_handshake_simulator.py
+- plc_tag_import_templates/P15_CRS_Test_Tag_List.csv
+- plc_tag_import_templates/P15_CRS_Test_Tags_Controller_Scope.L5X
+- plc_tag_import_templates/P15_CRS_Test_Tags_README.md
+
+Required PLC Tags
+-----------------
+Required for CRS buffer operations:
+- CRS_Recipe_Data : REAL[150] : RECIPE_DATA
+- CRS_Test_Recipe_Data : REAL[150] : TEST_RECIPE_DATA
+- CRS_Recipe_Code : STRING : RECIPE_CODE
+- CRS_Download_Enable : BOOL : DOWNLOAD_ENABLE
+- CRS_Test_Machine_In_Manual : BOOL : MACHINE_IN_MANUAL
+- CRS_Download_Request : BOOL : DOWNLOAD_REQUEST
+- CRS_Download_Complete : BOOL : DOWNLOAD_COMPLETE
+
+Optional/diagnostic tags matching current P15 FS test setup:
+- CRS_Download_Ack : BOOL : DOWNLOAD_ACK
+- CRS_Download_Busy : BOOL : DOWNLOAD_BUSY
+- CRS_Download_Error : BOOL : DOWNLOAD_ERROR
+- CRS_Download_Result : DINT : DOWNLOAD_RESULT
+- CRS_Download_OS : BOOL : DOWNLOAD_OS
+- CRS_Last_Download_Time : STRING : LAST_DOWNLOAD_TIME
+- CRS_Last_Download_User : STRING : LAST_DOWNLOAD_USER
+- CRS_Test_Recipe_No : DINT : TEST_RECIPE_NO
+- CRS_Test_Length : REAL : TEST_LENGTH
+- CRS_Test_Width : REAL : TEST_WIDTH
+- CRS_Test_Speed : REAL : TEST_SPEED
+
+How To Use For P15 Second Stage
+-------------------------------
+1. In Studio 5000, open P15 SS PLC project.
+2. Add/import PLC tags from plc_tag_import_templates/P15_CRS_Test_Tags_Controller_Scope.L5X, or create manually from P15_CRS_Test_Tag_List.csv.
+3. Download/accept online edits per plant procedure.
+4. From CRS project folder with venv active:
+
+   python scripts/register_p15_crs_test_tags.py --stage SS
+   python scripts/verify_p15_crs_test_tags_online.py --stage SS
+   python scripts/write_p15_crs_test_defaults.py --stage SS --confirm YES
+
+5. Browse tags:
+
+   /plc-tags/P15/SS?online_search=1&search=CRS_&array_only=0&bool_only=0
+
+6. For Recipe Restore and Upload/Save tests, actual tags are enough.
+7. For Download To PLC test without PLC ladder handshake, either manually turn CRS_Download_Complete TRUE when CRS_Download_Request becomes TRUE, or run isolated test simulator:
+
+   python scripts/p15_crs_test_handshake_simulator.py --stage SS --confirm YES
+
+Safety Notes
+------------
+- Use only in safe manual/test condition.
+- Do not use simulator on a live production machine.
+- The simulator is PC-side testing only. Production must use PLC-controlled handshake logic.
+- Set CRS_Test_Machine_In_Manual and CRS_Download_Enable TRUE only after machine safety/maintenance conditions are confirmed.

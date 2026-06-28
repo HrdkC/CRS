@@ -19,7 +19,7 @@ Copy Recipe
             </p>
         </div>
         <div class="workbench-actions">
-            <a href="/recipes/{{ recipe.machine_id }}/{{ recipe.stage_id }}" class="crs-btn crs-btn-soft">
+            <a href="{{ machine_stage_url('/recipes', context=recipe) }}" class="crs-btn crs-btn-soft">
                 Back To Recipes
             </a>
         </div>
@@ -42,7 +42,7 @@ Copy Recipe
             </label>
             <div class="form-action-row">
                 <button type="submit" class="crs-btn crs-btn-primary">Create Copy</button>
-                <a href="/recipes/{{ recipe.machine_id }}/{{ recipe.stage_id }}" class="crs-btn crs-btn-soft">Cancel</a>
+                <a href="{{ machine_stage_url('/recipes', context=recipe) }}" class="crs-btn crs-btn-soft">Cancel</a>
             </div>
         </form>
     </div>

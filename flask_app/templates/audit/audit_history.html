@@ -142,8 +142,13 @@ Audit History
     <div class="workbench-card data-workbench audit-record-card-pro">
         <div class="panel-heading table-heading audit-table-heading-pro">
             <div>
-                <span>Audit Records</span>
-                <p>Click column headers to sort. Long text is clipped for readability; hover to see full details.</p>
+                <span>
+                    Audit Records
+                    <span
+                        class="info-hint"
+                        title="Click column headers to sort. Hover clipped cells to view full audit details."
+                    >?</span>
+                </span>
             </div>
             <div class="table-tools-pro">
                 <span>{{ history|length }} / {{ total_count }} records</span>
@@ -171,8 +176,8 @@ Audit History
                         <td class="audit-time-cell" title="{{ row.timestamp_ist }}">{{ row.timestamp_ist }}</td>
                         <td class="audit-user-cell" title="{{ row.username or '-' }}"><strong>{{ row.username or '-' }}</strong></td>
                         <td><span class="status-badge status-neutral">{{ row.role or '-' }}</span></td>
-                        <td title="{{ row.action or '-' }}"><span class="status-badge status-info">{{ row.action or '-' }}</span></td>
-                        <td class="audit-clip-cell" title="{% if row.recipe_code %}{{ row.recipe_code }}{% if row.recipe_version %} V{{ row.recipe_version }}{% endif %}{% else %}{{ row.record_id or '-' }}{% endif %}">
+                        <td class="audit-action-cell" title="{{ row.action or '-' }}"><span class="status-badge status-info audit-action-badge">{{ row.action or '-' }}</span></td>
+                        <td class="audit-record-cell" title="{% if row.recipe_code %}{{ row.recipe_code }}{% if row.recipe_version %} V{{ row.recipe_version }}{% endif %}{% else %}{{ row.record_id or '-' }}{% endif %}">
                             {% if row.recipe_code %}
                             <strong>{{ row.recipe_code }}</strong>
                             {% if row.recipe_version %}<span class="muted-inline">V{{ row.recipe_version }}</span>{% endif %}

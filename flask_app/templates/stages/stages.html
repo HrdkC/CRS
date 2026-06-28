@@ -103,7 +103,7 @@ Stage Registry
                             <strong>{{ stage.machine_code }}</strong>
                         </td>
                         <td>
-                            {{ stage.stage_type }}
+                            {{ stage_url_code(stage.stage_type) }} {{ stage_display_name(stage.stage_type) }}
                         </td>
                         <td>{{ stage.description }}</td>
                         <td>
@@ -116,7 +116,7 @@ Stage Registry
                         <td>
                             <div class="row-actions">
                                 <a
-                                    href="/recipes/{{ stage.machine_id }}/{{ stage.id }}"
+                                    href="{{ machine_stage_url('/recipes', context=stage) }}"
                                     class="row-action open"
                                 >
                                     Open Recipes

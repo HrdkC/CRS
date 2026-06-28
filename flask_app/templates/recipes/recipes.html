@@ -21,7 +21,15 @@ Recipes
             </h1>
 
             <p>
-                Stage recipe records, lifecycle status, and current production version visibility.
+                {% if has_stage_selection %}
+                {{ machine_stage_title }} recipe records, lifecycle status, and current production visibility.
+                {% else %}
+                Select machine and stage.
+                <span
+                    class="info-hint"
+                    title="Select a TBM and stage, then click Show Recipes. Example path: /recipes/P15/SS for P15 Second Stage."
+                >?</span>
+                {% endif %}
             </p>
 
         </div>
@@ -35,25 +43,106 @@ Recipes
                 Import / Export
             </a>
 
-            {% if machine_id is defined and stage_id is defined %}
-            <a
-                href="/recipes/create/{{ machine_id }}/{{ stage_id }}"
-                class="crs-btn crs-btn-primary"
-            >
-                Create Recipe
-            </a>
+            {% if has_stage_selection %}
+                <a href="{{ create_url }}" class="crs-btn crs-btn-primary">
+                    Create Recipe
+                </a>
+
+                {% if parameter_master_ready is defined and not parameter_master_ready %}
+                    {% if plc_tag_browser_url is defined %}
+                    <a href="{{ plc_tag_browser_url }}" class="crs-btn crs-btn-soft">
+                        PLC Tag Browser
+                    </a>
+                    {% endif %}
+                    {% if plc_array_import_url is defined %}
+                    <a href="{{ plc_array_import_url }}" class="crs-btn crs-btn-soft">
+                        1D Array Import
+                    </a>
+                    {% endif %}
+                {% endif %}
             {% endif %}
 
         </div>
 
     </div>
 
+    <div class="workbench-card recipe-stage-selector-card">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>
+                    Machine / Stage Selection
+                    <span
+                        class="info-hint"
+                        title="Recipe records are filtered by machine and stage so First Stage and Second Stage data stay separate."
+                    >?</span>
+                </span>
+            </div>
+            {% if has_stage_selection %}
+            <span class="status-badge status-info">{{ machine_stage_title }}</span>
+            {% endif %}
+        </div>
+
+        <div class="recipe-stage-selector-grid">
+            <div>
+                <label for="recipeMachineSelect">Machine</label>
+                <select id="recipeMachineSelect">
+                    <option value="">Select Machine</option>
+                    {% for machine in machine_stage_machine_options %}
+                    <option
+                        value="{{ machine.machine_id }}"
+                        {% if selected_machine_id is defined and selected_machine_id == machine.machine_id %}selected{% endif %}
+                    >
+                        {{ machine.machine_code }}{% if machine.machine_description %} - {{ machine.machine_description }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="recipeStageSelect">Stage</label>
+                <select id="recipeStageSelect">
+                    <option value="">Select Stage</option>
+                    {% for target in machine_stage_targets %}
+                    <option
+                        value="{{ target.recipe_list_url }}"
+                        data-machine-id="{{ target.machine_id }}"
+                        {% if selected_stage_id is defined and selected_stage_id == target.stage_id %}selected{% endif %}
+                    >
+                        {{ target.stage_url_code }} - {{ target.stage_display_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="recipe-stage-selector-action">
+                <button type="button" id="recipeOpenStageBtn" class="crs-btn crs-btn-primary">
+                    Show Recipes
+                </button>
+            </div>
+        </div>
+
+        {% if machine_stage_targets %}
+        <div class="recipe-stage-shortcuts">
+            {% for target in machine_stage_targets %}
+            <a
+                href="{{ target.recipe_list_url }}"
+                class="tag-chip recipe-stage-shortcut {% if selected_stage_id is defined and selected_stage_id == target.stage_id %}active{% endif %}"
+            >
+                {{ target.machine_stage_display }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if has_stage_selection %}
+
     <div class="metric-grid">
 
         <div class="metric-card">
             <span class="metric-label">Recipes</span>
             <strong>{{ recipes|length }}</strong>
-            <small>Total records in this view</small>
+            <small>Total records for {{ machine_stage_title }}</small>
         </div>
 
         <div class="metric-card">
@@ -76,11 +165,20 @@ Recipes
 
     </div>
 
+    {% if parameter_master_ready is defined and not parameter_master_ready %}
+    <div class="workbench-card" style="border-left: 5px solid #f59e0b; padding: 14px 16px; margin-bottom: 14px;">
+        <strong>Parameter master not configured for this stage.</strong>
+        <p class="muted-text" style="margin: 6px 0 0;">
+            Use PLC Tag Browser or 1D Array Import before creating a recipe for this machine/stage.
+        </p>
+    </div>
+    {% endif %}
+
     <div class="workbench-card data-workbench">
 
         <div class="panel-heading table-heading">
             <div>
-                <span>Recipe Records</span>
+                <span>Recipe Records - {{ machine_stage_title }}</span>
                 <p>Open current production versions for editing, buffer operations, and audit history.</p>
             </div>
         </div>
@@ -187,7 +285,7 @@ Recipes
 
                     <tr>
                         <td colspan="6" class="empty-state">
-                            No recipes configured for this view.
+                            No recipes configured for {{ machine_stage_title }}.
                         </td>
                     </tr>
 
@@ -201,6 +299,67 @@ Recipes
 
     </div>
 
+    {% else %}
+
+    <div class="empty-state compact-empty-state">
+        Select machine and stage to view recipes.
+        <span
+            class="info-hint"
+            title="Example: select P15 and SS - Second Stage. The browser opens /recipes/P15/SS."
+        >?</span>
+    </div>
+
+    {% endif %}
+
 </section>
+
+<script>
+(function () {
+    const machineSelect = document.getElementById("recipeMachineSelect");
+    const stageSelect = document.getElementById("recipeStageSelect");
+    const openBtn = document.getElementById("recipeOpenStageBtn");
+
+    if (!machineSelect || !stageSelect || !openBtn) {
+        return;
+    }
+
+    function filterStages() {
+        const selectedMachineId = machineSelect.value;
+        let firstVisibleValue = "";
+
+        Array.from(stageSelect.options).forEach(function (option) {
+            if (!option.value) {
+                option.hidden = false;
+                return;
+            }
+
+            const isVisible = !selectedMachineId || option.dataset.machineId === selectedMachineId;
+            option.hidden = !isVisible;
+
+            if (isVisible && !firstVisibleValue) {
+                firstVisibleValue = option.value;
+            }
+        });
+
+        const selectedStageOption = stageSelect.options[stageSelect.selectedIndex];
+        if (selectedStageOption && selectedStageOption.hidden) {
+            stageSelect.value = firstVisibleValue;
+        }
+    }
+
+    machineSelect.addEventListener("change", filterStages);
+
+    openBtn.addEventListener("click", function () {
+        const targetUrl = stageSelect.value;
+        if (!machineSelect.value || !targetUrl) {
+            alert("Please select machine and stage first.");
+            return;
+        }
+        window.location.href = targetUrl;
+    });
+
+    filterStages();
+})();
+</script>
 
 {% endblock %}

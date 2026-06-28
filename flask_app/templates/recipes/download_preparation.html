@@ -548,7 +548,7 @@ body.operation-running * {
                 </a>
 
                 <a
-                    href="/recipes/{{ recipe.machine_id }}/{{ recipe.stage_id }}"
+                    href="{{ machine_stage_url('/recipes', context=recipe) }}"
                     class="crs-btn crs-btn-soft"
                 >
                     Recipe List
@@ -1048,57 +1048,63 @@ body.operation-running * {
 
     </div>
 
-    <div class="buffer-panel">
+    <div class="buffer-panel machine-stage-tag-panel">
 
-        <div class="buffer-hero">
-
+        <div class="panel-heading table-heading">
             <div>
-                <h3>Operation Flow</h3>
-                <br>
-                <div class="flow-map">
-                    <div class="flow-row">
-                        <div class="flow-node">Database Recipe</div>
-                        <div class="flow-arrow">-></div>
-                        <div class="flow-node">CRS_Recipe_Data</div>
-                    </div>
-                    <div class="flow-row">
-                        <div class="flow-node">CRS_Recipe_Data</div>
-                        <div class="flow-arrow">-></div>
-                        <div class="flow-node">Database Recipe</div>
-                    </div>
-                    <div class="flow-row">
-                        <div class="flow-node">CRS_Recipe_Data</div>
-                        <div class="flow-arrow">-></div>
-                        <div class="flow-node">CRS_Test_Recipe_Data + Request/Complete Handshake</div>
-                    </div>
-                    <div class="flow-row">
-                        <div class="flow-node">CRS_Test_Recipe_Data</div>
-                        <div class="flow-arrow">-></div>
-                        <div class="flow-node">CRS_Recipe_Data</div>
-                    </div>
-                </div>
+                <span>
+                    Machine / Stage PLC Tags
+                    <span
+                        class="info-hint"
+                        title="These tags are configured for the selected machine/stage, not for a single recipe. They are used by Recipe Restore, Recipe Save, Download To PLC, and Upload From PLC."
+                    >?</span>
+                </span>
             </div>
+            {% if operation_context.status == "READY" %}
+            <span class="status-badge status-success">Tag Ready</span>
+            {% else %}
+            <span class="status-badge status-warning">Check Tags</span>
+            {% endif %}
+        </div>
 
-            <div>
-                <h3>Configured Tags</h3>
-                <br>
-                <div class="tag-grid">
+        {% set array_purposes = ["RECIPE_DATA", "TEST_RECIPE_DATA"] %}
+        {% set interlock_purposes = ["MACHINE_IN_MANUAL", "DOWNLOAD_ENABLE"] %}
+        {% set handshake_purposes = ["DOWNLOAD_REQUEST", "DOWNLOAD_COMPLETE", "DOWNLOAD_ACK", "DOWNLOAD_BUSY", "DOWNLOAD_ERROR", "DOWNLOAD_RESULT", "DOWNLOAD_OS"] %}
+        {% set metadata_purposes = ["RECIPE_CODE", "LAST_DOWNLOAD_TIME", "LAST_DOWNLOAD_USER"] %}
 
-                    {% for purpose, tag in operation_context.tags.items() %}
-                    <div class="tag-chip">
+        <div class="tag-purpose-groups">
+
+            {% for group_title, purpose_list in [
+                ("Recipe Arrays", array_purposes),
+                ("Interlocks", interlock_purposes),
+                ("Handshake", handshake_purposes),
+                ("Metadata", metadata_purposes)
+            ] %}
+            <div class="tag-purpose-group">
+                <h3>{{ group_title }}</h3>
+                <div class="tag-grid compact-tag-grid">
+                    {% for purpose in purpose_list %}
+                    {% set tag = operation_context.tags.get(purpose) %}
+                    <div class="tag-chip {% if not tag %}tag-chip-missing{% endif %}">
                         <div class="tag-purpose">{{ purpose }}</div>
                         <div class="tag-name">
                             {% if tag %}
                                 {{ tag.tag_name }}
+                                {% if tag.tag_type %}
+                                <span class="muted-inline">{{ tag.tag_type }}</span>
+                                {% endif %}
+                                {% if tag.is_array %}
+                                <span class="muted-inline">[{{ tag.array_size or "-" }}]</span>
+                                {% endif %}
                             {% else %}
                                 Not configured
                             {% endif %}
                         </div>
                     </div>
                     {% endfor %}
-
                 </div>
             </div>
+            {% endfor %}
 
         </div>
 

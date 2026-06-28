@@ -438,6 +438,112 @@ class ParameterDefinitionManager:
         conn.close()
 
     @staticmethod
+    def update_parameter_details(
+
+        parameter_id,
+
+        parameter_name,
+
+        plc_array_index,
+
+        unit,
+
+        min_value,
+
+        max_value,
+
+        default_value
+
+    ):
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT
+                parameter_name,
+                plc_array_index,
+                unit,
+                min_value,
+                max_value,
+                default_value
+            FROM parameter_definitions
+            WHERE id = ?
+            """,
+            (
+                parameter_id,
+            )
+        )
+
+        old_row = cursor.fetchone()
+
+        if not old_row:
+
+            conn.close()
+
+            return None
+
+        cursor.execute(
+            """
+            UPDATE parameter_definitions
+
+            SET
+
+                parameter_name = ?,
+
+                plc_array_index = ?,
+
+                unit = ?,
+
+                min_value = ?,
+
+                max_value = ?,
+
+                default_value = ?,
+
+                updated_at = CURRENT_TIMESTAMP
+
+            WHERE id = ?
+            """,
+            (
+                parameter_name.strip(),
+
+                plc_array_index,
+
+                unit.strip(),
+
+                min_value,
+
+                max_value,
+
+                default_value,
+
+                parameter_id
+            )
+        )
+
+        conn.commit()
+
+        conn.close()
+
+        return {
+
+            "old": dict(old_row),
+
+            "new": {
+                "parameter_name": parameter_name.strip(),
+                "plc_array_index": plc_array_index,
+                "unit": unit.strip(),
+                "min_value": min_value,
+                "max_value": max_value,
+                "default_value": default_value
+            }
+
+        }
+
+    @staticmethod
     def disable_parameter(
 
         parameter_id

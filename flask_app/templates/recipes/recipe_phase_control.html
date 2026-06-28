@@ -102,133 +102,132 @@ Recipe Phase Control
 
         <div class="panel-heading table-heading">
             <div>
-                <span>Phase Control Rows</span>
-                <p>
-                    Select the allowed phase sequence, stop option, and
-                    position option for this machine stage.
-                </p>
+                <span>
+                    Phase Control Rows
+                    <span
+                        class="info-hint"
+                        title="Only phase options configured for this recipe machine/stage and phase group are available."
+                    >?</span>
+                </span>
             </div>
 
-            {% if can_edit_phase_control %}
-            <span class="status-badge status-success">Editable</span>
-            {% else %}
-            <span class="status-badge status-neutral">Read Only</span>
-            {% endif %}
+            <div class="compact-actions">
+                {% if can_edit_phase_control and not edit_mode %}
+                <a
+                    href="/recipes/{{ recipe.id }}/phase-control?mode=edit"
+                    class="crs-btn crs-btn-primary"
+                >
+                    Edit Phase Control
+                </a>
+                {% elif edit_mode %}
+                <span class="status-badge status-success">Edit Mode</span>
+                {% else %}
+                <span class="status-badge status-neutral">Read Only</span>
+                {% endif %}
+            </div>
         </div>
 
         <form method="POST">
 
-            <div class="professional-table-wrap registry-table-wrap">
+            {% if phase_groups %}
+            <div class="phase-control-board">
 
-                <table class="professional-table registry-table">
+                {% for group in phase_groups %}
+                <section class="phase-control-column">
+                    <div class="phase-control-column-header">
+                        <strong>{{ group.name }}</strong>
+                        {% if edit_mode %}
+                        <span class="status-badge status-info">{{ recipe.stage_type }}</span>
+                        {% endif %}
+                    </div>
 
-                    <thead>
-                        <tr>
-                            <th>Line</th>
-                            <th>Phase Description</th>
-                            <th>Stop</th>
-                            <th>Position</th>
-                        </tr>
-                    </thead>
+                    {% if edit_mode %}
+                    <div class="phase-control-row-header">
+                        <span>Line</span>
+                        <span>Phase</span>
+                        <span>Stop</span>
+                        <span>Position</span>
+                    </div>
+                    {% endif %}
 
-                    <tbody>
-                        {% for row in phase_rows %}
-                        <tr>
-                            <td>
-                                <span class="tag-pill">{{ row.line_no }}</span>
-                            </td>
-                            <td>
-                                <select
-                                    name="phase_control_id_{{ row.id }}"
-                                    {% if not can_edit_phase_control %}
-                                    disabled
-                                    {% endif %}
-                                >
-                                    {% for phase in phase_controls %}
-                                    <option
-                                        value="{{ phase.id }}"
-                                        {% if row.phase_control_id == phase.id %}
-                                        selected
-                                        {% endif %}
-                                    >
-                                        {{ phase.phase_control_name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <select
-                                    name="stop_option_{{ row.id }}"
-                                    {% if not can_edit_phase_control %}
-                                    disabled
-                                    {% endif %}
-                                >
-                                    <option
-                                        value="No"
-                                        {% if row.stop_option == "No" %}
-                                        selected
-                                        {% endif %}
-                                    >
-                                        No
-                                    </option>
-                                    <option
-                                        value="Yes"
-                                        {% if row.stop_option == "Yes" %}
-                                        selected
-                                        {% endif %}
-                                    >
-                                        Yes
-                                    </option>
-                                </select>
-                            </td>
-                            <td>
-                                <select
-                                    name="position_option_{{ row.id }}"
-                                    {% if not can_edit_phase_control %}
-                                    disabled
-                                    {% endif %}
-                                >
-                                    <option
-                                        value="No"
-                                        {% if row.position_option == "No" %}
-                                        selected
-                                        {% endif %}
-                                    >
-                                        No
-                                    </option>
-                                    <option
-                                        value="Yes"
-                                        {% if row.position_option == "Yes" %}
-                                        selected
-                                        {% endif %}
-                                    >
-                                        Yes
-                                    </option>
-                                </select>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="empty-state">
-                                No phase-control rows configured for this recipe.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+                    {% for row in group.rows %}
+                    {% set is_empty_phase = (row.phase_control_name or "")|upper == "EMPTY PHASE" %}
+                    {% if edit_mode %}
+                    <div class="phase-control-slot phase-control-slot-edit {% if is_empty_phase %}phase-control-slot-empty{% endif %}">
+                        <span class="tag-pill">{{ row.line_no }}</span>
+                        <select
+                            name="phase_control_id_{{ row.id }}"
+                            {% if not can_edit_phase_control %}
+                            disabled
+                            {% endif %}
+                        >
+                            {% for phase in group.options %}
+                            <option
+                                value="{{ phase.id }}"
+                                {% if row.phase_control_id == phase.id %}
+                                selected
+                                {% endif %}
+                            >
+                                {{ phase.phase_control_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
 
-                </table>
+                        <select
+                            name="stop_option_{{ row.id }}"
+                            {% if not can_edit_phase_control %}
+                            disabled
+                            {% endif %}
+                        >
+                            <option value="No" {% if row.stop_option == "No" %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if row.stop_option == "Yes" %}selected{% endif %}>Yes</option>
+                        </select>
+
+                        <select
+                            name="position_option_{{ row.id }}"
+                            {% if not can_edit_phase_control %}
+                            disabled
+                            {% endif %}
+                        >
+                            <option value="No" {% if row.position_option == "No" %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if row.position_option == "Yes" %}selected{% endif %}>Yes</option>
+                        </select>
+                    </div>
+                    {% else %}
+                    <div class="phase-control-display-cell {% if is_empty_phase %}phase-control-display-empty{% endif %}">
+                        <span class="phase-display-line">{{ row.line_no }}</span>
+                        <strong>{{ row.phase_control_name }}</strong>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </section>
+                {% endfor %}
 
             </div>
+            {% else %}
+            <div class="empty-state">
+                No phase-control rows configured for this recipe.
+            </div>
+            {% endif %}
 
             <div class="form-action-row">
 
-                {% if can_edit_phase_control %}
+                {% if edit_mode %}
                 <button
                     type="submit"
                     class="crs-btn crs-btn-primary"
                 >
                     Save Phase Control
                 </button>
+                {% endif %}
+
+                {% if edit_mode %}
+                <a
+                    href="/recipes/{{ recipe.id }}/phase-control"
+                    class="crs-btn crs-btn-soft"
+                >
+                    View Mode
+                </a>
                 {% endif %}
 
                 <a

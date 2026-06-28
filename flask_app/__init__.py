@@ -66,13 +66,26 @@ def create_app():
         except Exception:
             session_timeout_minutes = 30
 
+        from flask_app.stage_url_helper import (
+            stage_url_code,
+            stage_display_name,
+            machine_stage_display,
+            machine_stage_path,
+            machine_stage_url,
+        )
+
         return {
             "role_can": can,
             "current_role_label": current_role_label,
             "is_admin": is_admin,
             "session_timeout_minutes": session_timeout_minutes,
             "session_timeout_seconds": session_timeout_minutes * 60,
-            "current_epoch": int(time.time())
+            "current_epoch": int(time.time()),
+            "stage_url_code": stage_url_code,
+            "stage_display_name": stage_display_name,
+            "machine_stage_display": machine_stage_display,
+            "machine_stage_path": machine_stage_path,
+            "machine_stage_url": machine_stage_url,
         }
 
     return app

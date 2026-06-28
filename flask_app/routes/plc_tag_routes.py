@@ -27,6 +27,12 @@ from flask_app.security.role_guard import (
     role_can
 )
 
+from flask_app.stage_url_helper import (
+    get_machine_stage_context_by_code,
+    get_machine_stage_context_by_id,
+    machine_stage_url,
+)
+
 
 def _engineering_config_allowed():
     return (
@@ -39,7 +45,204 @@ def _engineering_config_allowed():
     )
 
 
+def _render_plc_tag_browser(machine_id, stage_id, context=None):
+
+    search_text = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    purpose_to_assign = request.args.get(
+        "purpose",
+        ""
+    ).strip().upper()
+
+    bool_only = request.args.get(
+        "bool_only",
+        ""
+    ).strip()
+
+    array_only = request.args.get(
+        "array_only",
+        ""
+    ).strip()
+
+    online_search = request.args.get(
+        "online_search",
+        ""
+    ).strip() == "1"
+
+    if (
+        purpose_to_assign
+        and
+        not search_text
+    ):
+
+        search_text = (
+            PLCTagManager
+            .get_search_hint_for_purpose(
+                purpose_to_assign
+            )
+        )
+
+    tags = (
+
+        PLCTagManager
+        .search_tags(
+
+            machine_id=machine_id,
+
+            stage_id=stage_id,
+
+            search_text=search_text,
+
+            bool_only=bool_only == "1"
+
+        )
+
+    )
+
+    if array_only == "1":
+        tags = [
+            tag
+            for tag in tags
+            if int(tag.get("is_array") or 0) == 1
+        ]
+
+    active_plc = (
+        PLCOnlineTagBrowserManager
+        .get_active_plc(
+
+            machine_id=machine_id,
+
+            stage_id=stage_id
+
+        )
+    )
+
+    online_result = None
+
+    if online_search:
+
+        online_result = (
+            PLCOnlineTagBrowserManager
+            .search_online_tags(
+
+                machine_id=machine_id,
+
+                stage_id=stage_id,
+
+                search_text=search_text,
+
+                bool_only=bool_only == "1",
+
+                array_only=array_only == "1"
+
+            )
+        )
+
+    if context is None:
+        context = get_machine_stage_context_by_id(
+            machine_id,
+            stage_id,
+            include_inactive=True
+        )
+
+    return render_template(
+
+        "plc_tags/browser.html",
+
+        machine_id=machine_id,
+
+        stage_id=stage_id,
+
+        context=context,
+
+        machine_code=context.get("machine_code") if context else None,
+
+        stage_type=context.get("stage_type") if context else None,
+
+        stage_url_code=context.get("stage_url_code") if context else None,
+
+        machine_stage_title=context.get("machine_stage_display") if context else None,
+
+        plc_tag_browser_url=machine_stage_url("/plc-tags", context=context),
+
+        plc_tag_create_url=machine_stage_url("/plc-tags/create", context=context),
+
+        plc_tag_select_online_url=machine_stage_url("/plc-tags/select-online", context=context),
+
+        plc_array_import_url=machine_stage_url("/plc-array-import", context=context),
+
+        search_text=search_text,
+
+        purpose_to_assign=purpose_to_assign,
+
+        default_tag_name=(
+            PLCTagManager
+            .get_default_tag_name_for_purpose(
+                purpose_to_assign
+            )
+        ),
+
+        bool_only=bool_only,
+
+        array_only=array_only,
+
+        online_search=online_search,
+
+        active_plc=active_plc,
+
+        online_result=online_result,
+
+        tags=tags
+
+    )
+
+
 def register_plc_tag_routes(app):
+
+    @app.route(
+        "/plc-tags/<machine_code>/<stage_code>"
+    )
+    def plc_tag_browser_named(
+
+        machine_code,
+
+        stage_code
+
+    ):
+
+        if not _engineering_config_allowed():
+
+            return redirect("/")
+
+        context = get_machine_stage_context_by_code(
+            machine_code,
+            stage_code
+        )
+
+        if not context:
+            flash(
+                "Machine/stage not found. Use friendly route like /plc-tags/P15/FS or /plc-tags/P15/SS.",
+                "error"
+            )
+            return redirect("/machines")
+
+        canonical_url = machine_stage_url(
+            "/plc-tags",
+            context=context,
+            query=request.args
+        )
+        current_path = f"/plc-tags/{machine_code}/{stage_code}"
+        if current_path != canonical_url.split("?")[0]:
+            return redirect(canonical_url)
+
+        return _render_plc_tag_browser(
+            context["machine_id"],
+            context["stage_id"],
+            context=context
+        )
 
     @app.route(
         "/plc-tags/<int:machine_id>/<int:stage_id>"
@@ -56,132 +259,25 @@ def register_plc_tag_routes(app):
 
             return redirect("/")
 
-        search_text = request.args.get(
-            "search",
-            ""
-        ).strip()
-
-        purpose_to_assign = request.args.get(
-            "purpose",
-            ""
-        ).strip().upper()
-
-        bool_only = request.args.get(
-            "bool_only",
-            ""
-        ).strip()
-
-        array_only = request.args.get(
-            "array_only",
-            ""
-        ).strip()
-
-        online_search = request.args.get(
-            "online_search",
-            ""
-        ).strip() == "1"
-
-        if (
-            purpose_to_assign
-            and
-            not search_text
-        ):
-
-            search_text = (
-                PLCTagManager
-                .get_search_hint_for_purpose(
-                    purpose_to_assign
-                )
-            )
-
-        tags = (
-
-            PLCTagManager
-            .search_tags(
-
-                machine_id=machine_id,
-
-                stage_id=stage_id,
-
-                search_text=search_text,
-
-                bool_only=bool_only == "1"
-
-            )
-
+        context = get_machine_stage_context_by_id(
+            machine_id,
+            stage_id,
+            include_inactive=True
         )
 
-        if array_only == "1":
-            tags = [
-                tag
-                for tag in tags
-                if int(tag.get("is_array") or 0) == 1
-            ]
-
-        active_plc = (
-            PLCOnlineTagBrowserManager
-            .get_active_plc(
-
-                machine_id=machine_id,
-
-                stage_id=stage_id
-
-            )
-        )
-
-        online_result = None
-
-        if online_search:
-
-            online_result = (
-                PLCOnlineTagBrowserManager
-                .search_online_tags(
-
-                    machine_id=machine_id,
-
-                    stage_id=stage_id,
-
-                    search_text=search_text,
-
-                    bool_only=bool_only == "1",
-
-                    array_only=array_only == "1"
-
+        if context:
+            return redirect(
+                machine_stage_url(
+                    "/plc-tags",
+                    context=context,
+                    query=request.args
                 )
             )
 
-
-        return render_template(
-
-            "plc_tags/browser.html",
-
-            machine_id=machine_id,
-
-            stage_id=stage_id,
-
-            search_text=search_text,
-
-            purpose_to_assign=purpose_to_assign,
-
-            default_tag_name=(
-                PLCTagManager
-                .get_default_tag_name_for_purpose(
-                    purpose_to_assign
-                )
-            ),
-
-            bool_only=bool_only,
-
-            array_only=array_only,
-
-            online_search=online_search,
-
-            active_plc=active_plc,
-
-            online_result=online_result,
-
-            tags=tags
-
+        return _render_plc_tag_browser(
+            machine_id,
+            stage_id,
+            context=context
         )
 
     @app.route(
@@ -288,7 +384,7 @@ def register_plc_tag_routes(app):
             return redirect(
                 request.referrer
                 or
-                f"/plc-tags/{machine_id}/{stage_id}"
+                machine_stage_url("/plc-tags", machine_id=machine_id, stage_id=stage_id)
             )
 
         try:
@@ -383,7 +479,7 @@ def register_plc_tag_routes(app):
         return redirect(
             request.referrer
             or
-            f"/plc-tags/{machine_id}/{stage_id}"
+            machine_stage_url("/plc-tags", machine_id=machine_id, stage_id=stage_id)
         )
 
     @app.route(
@@ -422,7 +518,7 @@ def register_plc_tag_routes(app):
             return redirect(
                 request.referrer
                 or
-                f"/plc-tags/{machine_id}/{stage_id}"
+                machine_stage_url("/plc-tags", machine_id=machine_id, stage_id=stage_id)
             )
 
         try:
@@ -521,7 +617,8 @@ def register_plc_tag_routes(app):
             )
 
         redirect_url = (
-            f"/plc-tags/{machine_id}/{stage_id}?"
+            machine_stage_url("/plc-tags", machine_id=machine_id, stage_id=stage_id)
+            + "?"
             + urlencode(
                 {
                     "purpose": tag_purpose,
@@ -539,6 +636,64 @@ def register_plc_tag_routes(app):
 
         return redirect(
             redirect_url
+        )
+
+    @app.route(
+        "/plc-tags/create/<machine_code>/<stage_code>",
+        methods=["POST"]
+    )
+    def plc_tag_create_named(
+
+        machine_code,
+
+        stage_code
+
+    ):
+
+        context = get_machine_stage_context_by_code(
+            machine_code,
+            stage_code
+        )
+
+        if not context:
+            flash(
+                "Machine/stage not found. Use friendly route like /plc-tags/create/P15/FS or /plc-tags/create/P15/SS.",
+                "error"
+            )
+            return redirect("/machines")
+
+        return plc_tag_create(
+            context["machine_id"],
+            context["stage_id"]
+        )
+
+    @app.route(
+        "/plc-tags/select-online/<machine_code>/<stage_code>",
+        methods=["POST"]
+    )
+    def plc_tag_select_online_named(
+
+        machine_code,
+
+        stage_code
+
+    ):
+
+        context = get_machine_stage_context_by_code(
+            machine_code,
+            stage_code
+        )
+
+        if not context:
+            flash(
+                "Machine/stage not found. Use friendly route like /plc-tags/select-online/P15/FS or /plc-tags/select-online/P15/SS.",
+                "error"
+            )
+            return redirect("/machines")
+
+        return plc_tag_select_online(
+            context["machine_id"],
+            context["stage_id"]
         )
 
     @app.route(

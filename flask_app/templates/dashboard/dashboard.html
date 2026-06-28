@@ -12,7 +12,13 @@ Apollo CRS Dashboard
         <div class="workbench-title">
             <span class="section-kicker">Plant Overview</span>
             <h1>CRS Dashboard</h1>
-            <p>Apollo Tyres Ltd. | PCR Limda Plant | Centralized Recipe System</p>
+            <p>
+                Apollo Tyres Ltd. | PCR Limda Plant | Centralized Recipe System
+                <span
+                    class="info-hint"
+                    title="Machine-first CRS flow: machine/stage selection, recipe validation, PLC buffer operation, and full audit traceability."
+                >?</span>
+            </p>
         </div>
 
         {% if role_can("engineering_config") %}
@@ -119,51 +125,6 @@ Apollo CRS Dashboard
                 </span>
             </a>
             {% endfor %}
-        </div>
-    </div>
-
-    <div class="insight-layout">
-        <div class="workbench-card">
-            <div class="panel-heading">
-                <span>Standard Workflow</span>
-                <span class="status-badge status-info">Machine First</span>
-            </div>
-            <div class="flow-map dashboard-flow">
-                {% if role_can("engineering_config") %}
-                <div class="flow-row">
-                    <div class="flow-node">TBM Family</div>
-                    <div class="flow-arrow">-></div>
-                    <div class="flow-node">Machine</div>
-                </div>
-                <div class="flow-row">
-                    <div class="flow-node">Machine Stage</div>
-                    <div class="flow-arrow">-></div>
-                    <div class="flow-node">PLC Registry</div>
-                </div>
-                {% endif %}
-                <div class="flow-row">
-                    <div class="flow-node">Template Parameters</div>
-                    <div class="flow-arrow">-></div>
-                    <div class="flow-node">Recipe</div>
-                </div>
-                <div class="flow-row">
-                    <div class="flow-node">Validation</div>
-                    <div class="flow-arrow">-></div>
-                    <div class="flow-node">PLC Buffer Operation</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="workbench-card compact-summary">
-            <div class="panel-heading">
-                <span>Operating Principles</span>
-            </div>
-            <div class="summary-list">
-                <div><span>Database</span><strong>Master</strong></div>
-                <div><span>Download</span><strong>No Partial</strong></div>
-                <div><span>Audit</span><strong>Required</strong></div>
-                <div><span>Time</span><strong>IST Display</strong></div>
-            </div>
         </div>
     </div>
 

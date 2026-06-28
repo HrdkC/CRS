@@ -102,6 +102,8 @@ class RecipeParameterValueManager:
 
                 rpv.is_modified,
 
+                rpv.parameter_definition_id,
+
                 pd.tag_index,
 
                 pd.plc_array_index,
@@ -608,4 +610,3 @@ class RecipeParameterValueManager:
             "change_source": change_source
 
         }
-

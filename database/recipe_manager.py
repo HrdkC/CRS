@@ -35,6 +35,22 @@ class RecipeManager:
 
         cursor.execute(
             """
+            SELECT COUNT(*) AS total
+            FROM parameter_definitions
+            WHERE machine_id = ? AND stage_id = ? AND COALESCE(used, 1) = 1
+            """,
+            (machine_id, stage_id)
+        )
+        parameter_count = cursor.fetchone()["total"]
+        if parameter_count <= 0:
+            conn.close()
+            raise ValueError(
+                "Parameter master is not configured for this machine/stage. "
+                "Build/import parameter definitions before creating recipe."
+            )
+
+        cursor.execute(
+            """
             INSERT INTO recipes
             (
 
@@ -85,7 +101,11 @@ class RecipeManager:
 
             recipe_id=recipe_id,
 
-            recipe_code=recipe_code.upper()
+            recipe_code=recipe_code.upper(),
+
+            machine_id=machine_id,
+
+            stage_id=stage_id
 
         )
 
@@ -214,14 +234,29 @@ class RecipeManager:
         ]
 
     @staticmethod
-    def list_recipes():
+    def list_recipes(machine_id=None, stage_id=None):
 
         conn = get_connection()
 
         cursor = conn.cursor()
 
+        where_clauses = []
+        params = []
+
+        if machine_id is not None:
+            where_clauses.append("r.machine_id = ?")
+            params.append(machine_id)
+
+        if stage_id is not None:
+            where_clauses.append("r.stage_id = ?")
+            params.append(stage_id)
+
+        where_sql = ""
+        if where_clauses:
+            where_sql = " WHERE " + " AND ".join(where_clauses)
+
         cursor.execute(
-            """
+            f"""
             SELECT
 
                 r.*,
@@ -316,10 +351,13 @@ class RecipeManager:
 
                 ON r.stage_id = s.id
 
+            {where_sql}
+
             ORDER BY
                 r.recipe_code,
                 r.version DESC
-            """
+            """,
+            params
         )
 
         rows = cursor.fetchall()
@@ -331,6 +369,7 @@ class RecipeManager:
             for row in rows
         ]
         
+
     @staticmethod
     def copy_recipe(
 

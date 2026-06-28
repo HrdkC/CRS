@@ -25,6 +25,14 @@ from database.recipe_parameter_audit_manager import (
     RecipeParameterAuditManager
 )
 
+from database.parameter_definition_manager import (
+    ParameterDefinitionManager
+)
+
+from database.audit_manager import (
+    AuditManager
+)
+
 from database.recipe_version_manager import (
     RecipeVersionManager
 )
@@ -437,6 +445,73 @@ def _build_recipe_editor_metrics(
     return metrics
 
 
+def _build_phase_groups_for_display(phase_rows):
+
+    phase_groups = []
+
+    phase_group_map = {}
+
+    for row in phase_rows:
+
+        group_code = (
+            row.get("phase_group_code")
+            or
+            "MAIN"
+        )
+
+        if group_code not in phase_group_map:
+
+            phase_group_map[group_code] = {
+                "code": group_code,
+                "name": (
+                    row.get("phase_group_name")
+                    or
+                    "Phase Control"
+                ),
+                "rows": []
+            }
+
+            phase_groups.append(
+                phase_group_map[group_code]
+            )
+
+        phase_group_map[group_code]["rows"].append(row)
+
+    return phase_groups
+
+
+def _optional_float(value):
+
+    value = str(
+        value
+        if value is not None
+        else
+        ""
+    ).strip()
+
+    if value == "":
+
+        return None
+
+    return float(value)
+
+
+def _optional_int(value):
+
+    value = str(
+        value
+        if value is not None
+        else
+        ""
+    ).strip()
+
+    if value == "":
+
+        return None
+
+    return int(value)
+
+
 def _is_current_released_recipe(
 
     recipe
@@ -718,6 +793,10 @@ def register_recipe_editor_routes(app):
             )
         )
 
+        phase_groups = _build_phase_groups_for_display(
+            phase_control
+        )
+
         production_revision_source = (
             RecipeVersionManager
             .get_previous_released_version(
@@ -818,6 +897,8 @@ def register_recipe_editor_routes(app):
             
             phase_control=phase_control,
 
+            phase_groups=phase_groups,
+
             production_revision_source=production_revision_source,
 
             download_eligibility=download_eligibility,
@@ -858,6 +939,516 @@ def register_recipe_editor_routes(app):
 
             next_url=next_url,
 
+        )
+
+    @app.route(
+        "/recipe-editor/<int:recipe_id>/parameters/bulk-edit",
+        methods=["GET", "POST"]
+    )
+    def bulk_edit_recipe_parameters(
+
+        recipe_id
+
+    ):
+
+        if not session.get(
+            "username"
+        ):
+
+            return redirect("/")
+
+        recipe = (
+            RecipeManager
+            .get_recipe_by_id(
+                recipe_id
+            )
+        )
+
+        if not recipe:
+
+            flash(
+                "Recipe not found.",
+                "error"
+            )
+
+            return redirect("/recipes")
+
+        user_role = session.get(
+            "role"
+        )
+
+        can_edit_values = (
+            recipe["status"] != "RELEASED"
+            or
+            _is_current_released_recipe(
+                recipe
+            )
+        )
+
+        can_edit_values = (
+            can_edit_values
+            and
+            role_can(
+                user_role,
+                "recipe_edit"
+            )
+        )
+
+        can_edit_details = role_can(
+            user_role,
+            "engineering_config"
+        )
+
+        if (
+            recipe["status"] == "RELEASED"
+            and
+            not _is_current_released_recipe(
+                recipe
+            )
+        ):
+
+            flash(
+                (
+                    "Historical released recipe cannot be edited. "
+                    "Open the current production version."
+                ),
+                "error"
+            )
+
+            return redirect(
+                f"/recipe-editor/{recipe_id}"
+            )
+
+        if not can_edit_values:
+
+            return _deny(
+                (
+                    "Your role can view and download recipes, "
+                    "but cannot edit recipe values."
+                ),
+                f"/recipe-editor/{recipe_id}"
+            )
+
+        active_operation_lock = _active_recipe_operation_lock(recipe_id)
+
+        if active_operation_lock:
+
+            flash(
+                "Recipe edit is blocked because "
+                + _format_lock_owner(active_operation_lock)
+                + " is still running. Wait until it reaches 100% success/failure.",
+                "warning"
+            )
+
+            return redirect(
+                f"/recipe-editor/{recipe_id}"
+            )
+
+        rows = (
+            RecipeParameterValueManager
+            .get_recipe_values(
+                recipe_id
+            )
+        )
+
+        search_text = request.args.get(
+            "search",
+            ""
+        )
+
+        if search_text:
+
+            rows = [
+                row
+                for row in rows
+                if (
+                    search_text.upper()
+                    in
+                    str(row.get("parameter_name") or "").upper()
+                    or
+                    search_text
+                    in
+                    str(row.get("tag_index") or "")
+                    or
+                    search_text
+                    in
+                    str(row.get("plc_array_index") or "")
+                )
+            ]
+
+        if request.method == "POST":
+
+            all_rows = (
+                RecipeParameterValueManager
+                .get_recipe_values(
+                    recipe_id
+                )
+            )
+
+            row_by_value_id = {
+                str(row["id"]): row
+                for row in all_rows
+            }
+
+            selected_ids = request.form.getlist(
+                "selected_value_id"
+            )
+
+            change_reason = (
+                request.form.get(
+                    "change_reason"
+                )
+                or
+                ""
+            ).strip()
+
+            if not change_reason:
+
+                flash(
+                    "Enter a change reason before saving selected parameters.",
+                    "error"
+                )
+
+                return redirect(
+                    f"/recipe-editor/{recipe_id}/parameters/bulk-edit"
+                )
+
+            if not selected_ids:
+
+                flash(
+                    "Select at least one parameter row to save.",
+                    "error"
+                )
+
+                return redirect(
+                    f"/recipe-editor/{recipe_id}/parameters/bulk-edit"
+                )
+
+            validation_errors = []
+
+            parsed_changes = {}
+
+            final_names = {}
+
+            final_plc_indexes = {}
+
+            for row in all_rows:
+
+                row_id = str(row["id"])
+
+                selected = row_id in selected_ids
+
+                try:
+
+                    value = float(
+                        request.form.get(
+                            f"parameter_value_{row_id}",
+                            row["parameter_value"]
+                        )
+                    ) if selected else row["parameter_value"]
+
+                    if selected and can_edit_details:
+
+                        parameter_name = (
+                            request.form.get(
+                                f"parameter_name_{row_id}",
+                                row["parameter_name"]
+                            )
+                            or
+                            ""
+                        ).strip()
+
+                        plc_array_index = _optional_int(
+                            request.form.get(
+                                f"plc_array_index_{row_id}",
+                                row.get("plc_array_index")
+                            )
+                        )
+
+                        unit = (
+                            request.form.get(
+                                f"unit_{row_id}",
+                                row.get("unit") or ""
+                            )
+                            or
+                            ""
+                        ).strip()
+
+                        min_value = _optional_float(
+                            request.form.get(
+                                f"min_value_{row_id}",
+                                row.get("min_value")
+                            )
+                        )
+
+                        max_value = _optional_float(
+                            request.form.get(
+                                f"max_value_{row_id}",
+                                row.get("max_value")
+                            )
+                        )
+
+                        default_value = _optional_float(
+                            request.form.get(
+                                f"default_value_{row_id}",
+                                row.get("default_value")
+                            )
+                        )
+
+                    else:
+
+                        parameter_name = row.get("parameter_name") or ""
+                        plc_array_index = row.get("plc_array_index")
+                        unit = row.get("unit") or ""
+                        min_value = row.get("min_value")
+                        max_value = row.get("max_value")
+                        default_value = row.get("default_value")
+
+                    if selected and not parameter_name:
+
+                        validation_errors.append(
+                            f"Tag {row['tag_index']}: parameter name is required."
+                        )
+
+                    if (
+                        min_value is not None
+                        and
+                        max_value is not None
+                        and
+                        float(min_value) > float(max_value)
+                    ):
+
+                        validation_errors.append(
+                            f"Tag {row['tag_index']}: min value cannot be greater than max value."
+                        )
+
+                    if (
+                        min_value is not None
+                        and
+                        float(value) < float(min_value)
+                    ):
+
+                        validation_errors.append(
+                            f"Tag {row['tag_index']}: value below minimum ({value} < {min_value})."
+                        )
+
+                    if (
+                        max_value is not None
+                        and
+                        float(value) > float(max_value)
+                    ):
+
+                        validation_errors.append(
+                            f"Tag {row['tag_index']}: value above maximum ({value} > {max_value})."
+                        )
+
+                    parsed_changes[row_id] = {
+                        "row": row,
+                        "value": value,
+                        "parameter_name": parameter_name,
+                        "plc_array_index": plc_array_index,
+                        "unit": unit,
+                        "min_value": min_value,
+                        "max_value": max_value,
+                        "default_value": default_value
+                    }
+
+                    final_name_key = parameter_name.upper()
+
+                    if final_name_key in final_names:
+
+                        validation_errors.append(
+                            f"Duplicate parameter name: {parameter_name}."
+                        )
+
+                    final_names[final_name_key] = row["id"]
+
+                    if plc_array_index is not None:
+
+                        if plc_array_index in final_plc_indexes:
+
+                            validation_errors.append(
+                                f"Duplicate PLC index: {plc_array_index}."
+                            )
+
+                        final_plc_indexes[plc_array_index] = row["id"]
+
+                except Exception as exc:
+
+                    validation_errors.append(
+                        f"Tag {row.get('tag_index')}: invalid input ({exc})."
+                    )
+
+            unknown_ids = [
+                value_id
+                for value_id in selected_ids
+                if value_id not in row_by_value_id
+            ]
+
+            if unknown_ids:
+
+                validation_errors.append(
+                    "Selected parameter row does not belong to this recipe."
+                )
+
+            if validation_errors:
+
+                flash(
+                    "Bulk save blocked: " + validation_errors[0],
+                    "error"
+                )
+
+                return render_template(
+                    "recipes/bulk_edit_parameters.html",
+                    recipe=recipe,
+                    rows=rows,
+                    selected_ids=set(selected_ids),
+                    validation_errors=validation_errors[:20],
+                    search_text=search_text,
+                    can_edit_details=can_edit_details
+                )
+
+            edit_lock_result = _acquire_recipe_edit_lock(
+                recipe_id
+            )
+
+            if not edit_lock_result.get("acquired"):
+
+                active_lock = edit_lock_result.get("active_lock")
+
+                flash(
+                    "Recipe is currently being edited by "
+                    + _format_lock_owner(active_lock)
+                    + ". Please wait until that user saves/closes or the edit lock expires.",
+                    "warning"
+                )
+
+                return redirect(
+                    f"/recipe-editor/{recipe_id}"
+                )
+
+            edit_lock_id = (
+                edit_lock_result.get("lock")
+                or
+                {}
+            ).get("id")
+
+            changed_count = 0
+
+            detail_changed_count = 0
+
+            try:
+
+                for value_id in selected_ids:
+
+                    parsed = parsed_changes[value_id]
+
+                    row = parsed["row"]
+
+                    if can_edit_details:
+
+                        detail_result = (
+                            ParameterDefinitionManager
+                            .update_parameter_details(
+                                parameter_id=row["parameter_definition_id"],
+                                parameter_name=parsed["parameter_name"],
+                                plc_array_index=parsed["plc_array_index"],
+                                unit=parsed["unit"],
+                                min_value=parsed["min_value"],
+                                max_value=parsed["max_value"],
+                                default_value=parsed["default_value"]
+                            )
+                        )
+
+                        if detail_result:
+
+                            for field_name, old_value in detail_result["old"].items():
+
+                                new_value = detail_result["new"][field_name]
+
+                                if str(old_value) == str(new_value):
+
+                                    continue
+
+                                detail_changed_count += 1
+
+                                AuditManager.log_event(
+                                    username=session.get("username"),
+                                    role=user_role,
+                                    action="RECIPE_PARAMETER_DETAIL_CHANGED",
+                                    change_source="BULK_RECIPE_PARAMETER_EDIT",
+                                    recipe_code=recipe["recipe_code"],
+                                    recipe_version=recipe["version"],
+                                    record_id=row["parameter_definition_id"],
+                                    parameter_name=parsed["parameter_name"],
+                                    old_value=f"{field_name}: {old_value}",
+                                    new_value=f"{field_name}: {new_value}",
+                                    reason=change_reason,
+                                    client_ip=request.remote_addr,
+                                    workstation_name=request.headers.get(
+                                        "X-Forwarded-Host",
+                                        request.host
+                                    )
+                                )
+
+                    change_source = "CURRENT_RELEASED_BULK_EDIT"
+
+                    if not _is_current_released_recipe(
+                        recipe
+                    ):
+
+                        change_source = "DRAFT_RECIPE_BULK_EDIT"
+
+                    value_result = (
+                        RecipeParameterValueManager
+                        .update_recipe_value(
+                            value_id=int(value_id),
+                            new_value=parsed["value"],
+                            changed_by=session.get("username"),
+                            change_reason=change_reason,
+                            user_role=user_role,
+                            change_source=change_source,
+                            client_ip=request.remote_addr,
+                            workstation_name=request.headers.get(
+                                "X-Forwarded-Host",
+                                request.host
+                            )
+                        )
+                    )
+
+                    if value_result.get("changed"):
+
+                        changed_count += 1
+
+                flash(
+                    (
+                        f"Bulk parameter save completed: {changed_count} value change(s), "
+                        f"{detail_changed_count} detail field change(s)."
+                    ),
+                    "success"
+                )
+
+            finally:
+
+                if edit_lock_id:
+
+                    RecipeResourceLockManager.release_lock(
+                        edit_lock_id,
+                        reason="PARAMETER_BULK_EDIT_COMPLETED"
+                    )
+
+            return redirect(
+                f"/recipe-editor/{recipe_id}"
+            )
+
+        return render_template(
+            "recipes/bulk_edit_parameters.html",
+            recipe=recipe,
+            rows=rows,
+            selected_ids=set(),
+            validation_errors=[],
+            search_text=search_text,
+            can_edit_details=can_edit_details
         )
 
     @app.route(

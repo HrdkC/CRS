@@ -63,21 +63,21 @@ def _build_dashboard_alerts(role, counts):
             "label": "Current Production",
             "count": counts["current_released_count"],
             "detail": "Released recipes available for PLC buffer operations",
-            "href": "/recipes/5/11",
+            "href": "/recipes/P15/FS",
             "status_class": "status-success"
         },
         "draft": {
             "label": "Draft Recipes",
             "count": counts["draft_count"],
             "detail": "Recipes still under production preparation",
-            "href": "/recipes/5/11",
+            "href": "/recipes/P15/FS",
             "status_class": "status-warning"
         },
         "review": {
             "label": "Pending Review",
             "count": counts["review_count"],
             "detail": "Recipes waiting for Technology/Admin decision",
-            "href": "/recipes/5/11",
+            "href": "/recipes/P15/FS",
             "status_class": "status-info"
         },
         "plc_blocked": {

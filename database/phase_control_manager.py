@@ -134,7 +134,9 @@ class PhaseControlManager:
     @staticmethod
     def get_phase_controls_by_stage(
 
-        stage_type
+        stage_type,
+
+        machine_stage_id=None
 
     ):
 
@@ -142,27 +144,79 @@ class PhaseControlManager:
 
         cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            SELECT *
+        if machine_stage_id:
 
-            FROM phase_control_master
+            cursor.execute(
+                """
+                SELECT *
 
-            WHERE
+                FROM phase_control_master
 
-                active = 1
+                WHERE
 
-                AND
+                    active = 1
 
-                stage_type = ?
+                    AND
 
-            ORDER BY
-                display_order
-            """,
-            (
-                stage_type,
+                    UPPER(stage_type) = UPPER(?)
+
+                    AND
+                    (
+                        machine_stage_id = ?
+
+                        OR
+
+                        machine_stage_id IS NULL
+                    )
+
+                ORDER BY
+                    CASE COALESCE(phase_group_code, 'MAIN')
+                        WHEN 'MAIN' THEN 0
+                        WHEN 'CAP_STRIP_SIDE' THEN 1
+                        WHEN 'BT_SIDE' THEN 2
+                        WHEN 'SHAPING_SIDE' THEN 3
+                        ELSE 99
+                    END,
+                    display_order,
+                    phase_control_name
+                """,
+                (
+                    stage_type,
+                    machine_stage_id
+                )
             )
-        )
+
+        else:
+
+            cursor.execute(
+                """
+                SELECT *
+
+                FROM phase_control_master
+
+                WHERE
+
+                    active = 1
+
+                    AND
+
+                    UPPER(stage_type) = UPPER(?)
+
+                ORDER BY
+                    CASE COALESCE(phase_group_code, 'MAIN')
+                        WHEN 'MAIN' THEN 0
+                        WHEN 'CAP_STRIP_SIDE' THEN 1
+                        WHEN 'BT_SIDE' THEN 2
+                        WHEN 'SHAPING_SIDE' THEN 3
+                        ELSE 99
+                    END,
+                    display_order,
+                    phase_control_name
+                """,
+                (
+                    stage_type,
+                )
+            )
 
         rows = cursor.fetchall()
 

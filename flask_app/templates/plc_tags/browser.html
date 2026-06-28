@@ -445,9 +445,7 @@ PLC Tag Browser
             <span class="section-kicker">PLC Tag Browser</span>
             <h1>PLC Tag Browser</h1>
             <p class="muted-line">
-                Machine ID: <b>{{ machine_id }}</b>
-                <span>|</span>
-                Stage ID: <b>{{ stage_id }}</b>
+                Machine/Stage: <b>{{ machine_stage_title if machine_stage_title else machine_stage_display(context=context) }}</b>
                 {% if active_plc %}
                 <span>|</span>
                 Active PLC: <b>{{ active_plc.plc_name }} - {{ active_plc.ip_address }}</b>
@@ -455,9 +453,9 @@ PLC Tag Browser
             </p>
         </div>
         <div class="action-row">
-            <a href="/plc-array-import/{{ machine_id }}/{{ stage_id }}" class="crs-btn crs-btn-primary">1D Array Import</a>
-            <a href="/plc-tags/{{ machine_id }}/{{ stage_id }}?purpose=RECIPE_DATA&online_search=1&search=Recipe&array_only=1&bool_only=0" class="crs-btn crs-btn-soft">Recipe Array Search</a>
-            <a href="/plc-tags/{{ machine_id }}/{{ stage_id }}?online_search=1&search=&array_only=0&bool_only=0" class="crs-btn crs-btn-soft">Diagnostic Browse All</a>
+            <a href="{{ plc_array_import_url if plc_array_import_url is defined else machine_stage_url('/plc-array-import', machine_id=machine_id, stage_id=stage_id) }}" class="crs-btn crs-btn-primary">1D Array Import</a>
+            <a href="{{ plc_tag_browser_url if plc_tag_browser_url is defined else machine_stage_url('/plc-tags', machine_id=machine_id, stage_id=stage_id) }}?purpose=RECIPE_DATA&online_search=1&search=Recipe&array_only=1&bool_only=0" class="crs-btn crs-btn-soft">Recipe Array Search</a>
+            <a href="{{ plc_tag_browser_url if plc_tag_browser_url is defined else machine_stage_url('/plc-tags', machine_id=machine_id, stage_id=stage_id) }}?online_search=1&search=&array_only=0&bool_only=0" class="crs-btn crs-btn-soft">Diagnostic Browse All</a>
         </div>
     </div>
 
@@ -494,7 +492,7 @@ PLC Tag Browser
                     Search Online PLC
                 </button>
 
-                <a href="/plc-tags/{{ machine_id }}/{{ stage_id }}" class="crs-btn crs-btn-soft">Clear</a>
+                <a href="{{ plc_tag_browser_url if plc_tag_browser_url is defined else machine_stage_url('/plc-tags', machine_id=machine_id, stage_id=stage_id) }}" class="crs-btn crs-btn-soft">Clear</a>
             </div>
         </form>
 
@@ -582,7 +580,7 @@ PLC Tag Browser
                         <td>{% if online_tag.array_size %}{{ online_tag.array_size }}{% else %}-{% endif %}</td>
                         <td>
                             <div class="row-actions">
-                                <form method="POST" action="/plc-tags/select-online/{{ machine_id }}/{{ stage_id }}" class="inline-form">
+                                <form method="POST" action="{{ plc_tag_select_online_url if plc_tag_select_online_url is defined else machine_stage_url('/plc-tags/select-online', machine_id=machine_id, stage_id=stage_id) }}" class="inline-form">
                                     <input type="hidden" name="tag_purpose" value="{{ purpose_to_assign }}">
                                     <input type="hidden" name="search_text" value="{{ search_text }}">
                                     <input type="hidden" name="bool_only" value="{{ bool_only }}">
@@ -597,7 +595,7 @@ PLC Tag Browser
                                 </form>
 
                                 {% if online_tag.is_array %}
-                                <form method="GET" action="/plc-array-import/{{ machine_id }}/{{ stage_id }}" class="inline-form">
+                                <form method="GET" action="{{ plc_array_import_url if plc_array_import_url is defined else machine_stage_url('/plc-array-import', machine_id=machine_id, stage_id=stage_id) }}" class="inline-form">
                                     <input type="hidden" name="tag_name" value="{{ online_tag.tag_name }}">
                                     <input type="hidden" name="start_index" value="{% if online_tag.array_start_index is not none %}{{ online_tag.array_start_index }}{% else %}0{% endif %}">
                                     <input type="hidden" name="end_index" value="{% if online_tag.array_end_index is not none %}{{ online_tag.array_end_index }}{% else %}119{% endif %}">
@@ -624,7 +622,7 @@ PLC Tag Browser
         <summary>Manual Add Fallback</summary>
 
         <div class="manual-body">
-            <form method="POST" action="/plc-tags/create/{{ machine_id }}/{{ stage_id }}">
+            <form method="POST" action="{{ plc_tag_create_url if plc_tag_create_url is defined else machine_stage_url('/plc-tags/create', machine_id=machine_id, stage_id=stage_id) }}">
                 <input type="hidden" name="tag_purpose" value="{{ purpose_to_assign }}">
 
                 <div class="manual-grid">
@@ -726,7 +724,7 @@ PLC Tag Browser
                                 {% if purpose_to_assign %}
                                 <form method="POST" action="/plc-tags/set-purpose/{{ tag.id }}" class="inline-form">
                                     <input type="hidden" name="tag_purpose" value="{{ purpose_to_assign }}">
-                                    <input type="hidden" name="return_url" value="/plc-tags/{{ machine_id }}/{{ stage_id }}?purpose={{ purpose_to_assign }}">
+                                    <input type="hidden" name="return_url" value="{{ plc_tag_browser_url if plc_tag_browser_url is defined else machine_stage_url('/plc-tags', machine_id=machine_id, stage_id=stage_id) }}?purpose={{ purpose_to_assign }}">
                                     <button type="submit" class="row-btn success">Set {{ purpose_to_assign }}</button>
                                 </form>
                                 {% endif %}

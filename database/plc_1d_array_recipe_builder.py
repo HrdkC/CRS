@@ -1,4 +1,4 @@
-from pycomm3 import LogixDriver
+import re
 
 from database.database import get_connection
 from database.audit_manager import AuditManager
@@ -126,40 +126,162 @@ class PLC1DArrayRecipeBuilder:
         return int(row["c"] if row else 0)
 
     @staticmethod
-    def _read_tag_block(plc_conn, tag_name, start_index, count):
+    def _normalize_array_tag_name(tag_name):
+        """Accept CRS_Recipe_Data or CRS_Recipe_Data[0], but return the base array tag."""
+        cleaned = str(tag_name or "").strip()
+        cleaned = re.sub(r"\{\d+\}\s*$", "", cleaned).strip()
+        match = re.match(r"^(.+?)\[(\d+)\]\s*$", cleaned)
+        if match:
+            return match.group(1).strip()
+        return cleaned
+
+    @staticmethod
+    def _reject_known_non_array_tag(tag_name):
+        non_array_tags = {
+            "CRS_RECIPE_CODE": "STRING",
+            "CRS_DOWNLOAD_ENABLE": "BOOL",
+            "CRS_TEST_MACHINE_IN_MANUAL": "BOOL",
+            "CRS_DOWNLOAD_REQUEST": "BOOL",
+            "CRS_DOWNLOAD_COMPLETE": "BOOL",
+            "CRS_DOWNLOAD_ACK": "BOOL",
+            "CRS_DOWNLOAD_BUSY": "BOOL",
+            "CRS_DOWNLOAD_ERROR": "BOOL",
+            "CRS_DOWNLOAD_RESULT": "DINT",
+        }
+        key = str(tag_name or "").strip().upper()
+        datatype = non_array_tags.get(key)
+        if datatype:
+            return (
+                f"{tag_name} is {datatype}, not a 1D recipe array. "
+                "Use CRS_Recipe_Data or CRS_Test_Recipe_Data for PLC array preview/import."
+            )
+        return None
+
+    @staticmethod
+    def _parameter_name_prefix(machine_id, stage_id):
+        context = PLC1DArrayRecipeBuilder.get_machine_stage_context(machine_id, stage_id)
+        if context:
+            machine_code = str(context.get("machine_code") or "PLC").upper()
+            stage_type = str(context.get("stage_type") or "STAGE").upper()
+            if stage_type == "FIRST_STAGE":
+                return f"{machine_code} FS Param"
+            if stage_type == "SECOND_STAGE":
+                return f"{machine_code} SS Param"
+            return f"{machine_code} Param"
+        return "PLC Param"
+
+    @staticmethod
+    def _stage_array_limit(machine_id, stage_id):
+        context = PLC1DArrayRecipeBuilder.get_machine_stage_context(machine_id, stage_id)
+        if not context:
+            return None
+        machine_code = str(context.get("machine_code") or "").upper()
+        stage_type = str(context.get("stage_type") or "").upper()
+        if machine_code == "P15" and stage_type == "SECOND_STAGE":
+            return 150
+        return None
+
+    @staticmethod
+    def _tag_metadata_summary(tag_metadata):
+        if not isinstance(tag_metadata, dict):
+            return "metadata unavailable"
+
+        summary_parts = []
+        for key in ("data_type", "tag_type", "array", "dimensions", "dim", "type"):
+            if key in tag_metadata:
+                summary_parts.append(f"{key}={tag_metadata.get(key)!r}")
+        return ", ".join(summary_parts) if summary_parts else str(tag_metadata)[:250]
+
+    @staticmethod
+    def _find_controller_tag_match(plc_conn, requested_tag_name):
         """
-        pycomm3 supports array reads like TAG[0]{10} on Logix controllers.
-        This method tries block read first, then falls back to per-index reads.
+        Return (resolved_tag_name, metadata, similar_tags).
+        Uses the online controller tag list when pycomm3 tag initialization is enabled.
         """
+        tags = getattr(plc_conn, "tags", {}) or {}
+        if requested_tag_name in tags:
+            return requested_tag_name, tags.get(requested_tag_name), []
+
+        requested_upper = requested_tag_name.upper()
+        for online_name, metadata in tags.items():
+            if str(online_name).upper() == requested_upper:
+                return online_name, metadata, []
+
+        requested_tokens = [token for token in requested_upper.split("_") if token]
+        similar = []
+        for online_name in tags.keys():
+            online_upper = str(online_name).upper()
+            if online_upper.startswith("CRS_") or all(token in online_upper for token in requested_tokens[:2]):
+                similar.append(str(online_name))
+            if len(similar) >= 12:
+                break
+        return None, None, similar
+
+    @staticmethod
+    def _read_single_expression(plc_conn, expression):
+        response = plc_conn.read(expression)
+        error = getattr(response, "error", None)
+        if error:
+            raise RuntimeError(str(error))
+        return getattr(response, "value", None)
+
+    @staticmethod
+    def _read_tag_block(plc_conn, tag_name, start_index, count, diagnostics=None):
+        """
+        Robust Logix array read.
+
+        Some PLC/pycomm3 combinations accept TAG[0]{150}; some are more reliable
+        with TAG{150} for a zero-based full array read. This method tries both
+        patterns and then falls back to per-index reads.
+        """
+        diagnostics = diagnostics if isinstance(diagnostics, list) else []
         tag_name = tag_name.strip()
-        block_syntax = f"{tag_name}[{start_index}]{{{count}}}"
-        try:
-            response = plc_conn.read(block_syntax)
-            if getattr(response, "error", None):
-                raise RuntimeError(str(response.error))
-            value = getattr(response, "value", None)
-            if isinstance(value, (list, tuple)):
-                return list(value), None
-            if count == 1:
-                return [value], None
-            raise RuntimeError(f"Block read returned non-list value: {value!r}")
-        except Exception as block_ex:
-            values = []
-            errors = []
-            for index in range(start_index, start_index + count):
-                try:
-                    response = plc_conn.read(f"{tag_name}[{index}]")
-                    if getattr(response, "error", None):
-                        errors.append(f"{tag_name}[{index}]: {response.error}")
-                        values.append(None)
-                    else:
-                        values.append(getattr(response, "value", None))
-                except Exception as ex:
-                    errors.append(f"{tag_name}[{index}]: {ex}")
-                    values.append(None)
-            if errors and all(value is None for value in values):
-                return values, f"Block read failed: {block_ex}; per-index read failed: {errors[:5]}"
-            return values, None if not errors else f"Some indexes failed: {errors[:5]}"
+
+        attempts = []
+        if start_index == 0:
+            attempts.append(f"{tag_name}{{{count}}}")
+        attempts.append(f"{tag_name}[{start_index}]{{{count}}}")
+
+        block_errors = []
+        for expression in attempts:
+            try:
+                value = PLC1DArrayRecipeBuilder._read_single_expression(plc_conn, expression)
+                if isinstance(value, (list, tuple)):
+                    values = list(value)
+                    if len(values) >= count:
+                        diagnostics.append(f"PLC array read used expression: {expression}")
+                        return values[:count], None
+                    raise RuntimeError(f"Returned {len(values)} value(s), expected {count}.")
+                if count == 1:
+                    diagnostics.append(f"PLC single-value read used expression: {expression}")
+                    return [value], None
+                raise RuntimeError(f"Returned non-list value: {value!r}")
+            except Exception as ex:
+                block_errors.append(f"{expression}: {ex}")
+
+        values = []
+        index_errors = []
+        for index in range(start_index, start_index + count):
+            expression = f"{tag_name}[{index}]"
+            try:
+                value = PLC1DArrayRecipeBuilder._read_single_expression(plc_conn, expression)
+                values.append(value)
+            except Exception as ex:
+                index_errors.append(f"{expression}: {ex}")
+                values.append(None)
+
+        if index_errors and all(value is None for value in values):
+            return values, (
+                f"Block read failed: {block_errors[:3]}; "
+                f"per-index read failed: {index_errors[:5]}"
+            )
+
+        if index_errors:
+            diagnostics.append("PLC array read used per-index fallback.")
+            return values, f"Some indexes failed: {index_errors[:5]}"
+
+        diagnostics.append("PLC array read used per-index fallback.")
+        return values, None
 
     @staticmethod
     def read_array_values(machine_id, stage_id, tag_name, start_index, end_index):
@@ -173,10 +295,19 @@ class PLC1DArrayRecipeBuilder:
             "values": [],
             "errors": [],
             "warnings": [],
+            "diagnostics": [],
         }
 
         if not tag_name or not str(tag_name).strip():
             result["errors"].append("PLC array tag name is required.")
+            return result
+
+        tag_name = PLC1DArrayRecipeBuilder._normalize_array_tag_name(tag_name)
+        result["tag_name"] = tag_name
+
+        non_array_error = PLC1DArrayRecipeBuilder._reject_known_non_array_tag(tag_name)
+        if non_array_error:
+            result["errors"].append(non_array_error)
             return result
 
         try:
@@ -195,6 +326,13 @@ class PLC1DArrayRecipeBuilder:
             result["errors"].append("For safety, V1 allows maximum 1000 array elements per import.")
             return result
 
+        stage_limit = PLC1DArrayRecipeBuilder._stage_array_limit(machine_id, stage_id)
+        if stage_limit and (start_index >= stage_limit or end_index >= stage_limit):
+            result["errors"].append(
+                f"Selected stage recipe array limit is REAL[{stage_limit}], so valid indexes are 0 to {stage_limit - 1}."
+            )
+            return result
+
         plc = PLC1DArrayRecipeBuilder.get_active_plc(machine_id, stage_id)
         result["plc"] = plc
         result["count"] = count
@@ -204,22 +342,69 @@ class PLC1DArrayRecipeBuilder:
             return result
 
         try:
-            with LogixDriver(plc["ip_address"], init_tags=False, init_program_tags=False, timeout=7) as plc_conn:
+            try:
+                from pycomm3 import LogixDriver
+            except Exception as import_ex:
+                result["errors"].append(f"pycomm3 is not installed or not available: {import_ex}")
+                return result
+
+            with LogixDriver(plc["ip_address"], init_tags=True, init_program_tags=False, timeout=10) as plc_conn:
+                result["diagnostics"].append(
+                    f"Connected to active PLC {plc.get('plc_name')} at {plc.get('ip_address')}."
+                )
+
+                resolved_tag_name, tag_metadata, similar_tags = PLC1DArrayRecipeBuilder._find_controller_tag_match(
+                    plc_conn,
+                    tag_name,
+                )
+                if not resolved_tag_name:
+                    message = (
+                        f"{tag_name} was not found in the online controller tag list for active PLC "
+                        f"{plc.get('plc_name')} ({plc.get('ip_address')})."
+                    )
+                    if similar_tags:
+                        message += f" Similar CRS tags found online: {', '.join(similar_tags)}."
+                    else:
+                        message += " No CRS_ controller tags were found in the online browse list."
+                    result["errors"].append(message)
+                    return result
+
+                if resolved_tag_name != tag_name:
+                    result["warnings"].append(
+                        f"Using online tag name {resolved_tag_name} instead of entered name {tag_name}."
+                    )
+                    tag_name = resolved_tag_name
+                    result["tag_name"] = resolved_tag_name
+
+                result["diagnostics"].append(
+                    f"Online controller tag found: {resolved_tag_name} ({PLC1DArrayRecipeBuilder._tag_metadata_summary(tag_metadata)})."
+                )
+
                 values, warning = PLC1DArrayRecipeBuilder._read_tag_block(
                     plc_conn=plc_conn,
                     tag_name=tag_name,
                     start_index=start_index,
                     count=count,
+                    diagnostics=result["diagnostics"],
                 )
             if warning:
+                if values and all(value is None for value in values):
+                    result["errors"].append(
+                        "PLC array read failed for all selected indexes. "
+                        f"The tag was found in the active PLC online tag list, but read failed. "
+                        f"Check External Access is not None, the tag is a controller-scope REAL array, "
+                        f"and the selected indexes exist. Detail: {warning}"
+                    )
+                    return result
                 result["warnings"].append(warning)
             rows = []
+            parameter_prefix = PLC1DArrayRecipeBuilder._parameter_name_prefix(machine_id, stage_id)
             for offset, value in enumerate(values):
                 index = start_index + offset
                 rows.append({
                     "index": index,
                     "value": value,
-                    "parameter_name": f"P15 SS Param {index:03d}",
+                    "parameter_name": f"{parameter_prefix} {index:03d}",
                 })
             result["values"] = rows
             result["ok"] = True
@@ -370,17 +555,21 @@ class PLC1DArrayRecipeBuilder:
             return result
 
         existing_params = PLC1DArrayRecipeBuilder.count_parameter_definitions(machine_id, stage_id)
-        if existing_params > 0:
-            result["errors"].append(
-                f"Parameter master already exists for machine_id={machine_id}, stage_id={stage_id}. "
-                "V1 refuses to overwrite existing parameter definitions."
-            )
-            result["ok"] = False
-            return result
-
         if dry_run:
             result["parameter_count"] = len(result["values"])
             result["warnings"].append("Dry run only. No DB rows were created.")
+            if existing_params > 0:
+                result["warnings"].append(
+                    "Parameter master already exists for this machine/stage. Preview is allowed, but Build will not overwrite it."
+                )
+            return result
+
+        if existing_params > 0:
+            result["errors"].append(
+                f"Parameter master already exists for machine_id={machine_id}, stage_id={stage_id}. "
+                "Build is blocked because CRS will not overwrite existing parameter definitions."
+            )
+            result["ok"] = False
             return result
 
         conn = get_connection()
@@ -414,7 +603,7 @@ class PLC1DArrayRecipeBuilder:
             for row in result["values"]:
                 idx = int(row["index"])
                 value = PLC1DArrayRecipeBuilder._safe_float(row["value"], 0.0)
-                parameter_name = f"P15 SS Param {idx:03d}"
+                parameter_name = f"{PLC1DArrayRecipeBuilder._parameter_name_prefix(machine_id, stage_id)} {idx:03d}"
 
                 cur.execute(
                     """
