@@ -88,7 +88,7 @@ Bulk Parameter Edit
 
     </form>
 
-    <form method="POST" class="workbench-card data-workbench">
+    <form method="POST" class="workbench-card data-workbench" id="bulk-parameter-edit-form">
 
         <div class="panel-heading table-heading">
 
@@ -97,11 +97,11 @@ Bulk Parameter Edit
                     Editable Parameter Rows
                     <span
                         class="info-hint"
-                        title="Tick rows to save. Unticked rows are ignored. Value changes are recipe-level; name/index/unit/limit/default changes update the machine-stage parameter definition and are audit logged."
+                        title="Edit any row and it will be auto-selected before save. PLC Index is locked because it is fixed PLC mapping data."
                     >?</span>
                 </span>
                 <p>
-                    {{ rows|length }} row(s) shown. Select rows before saving.
+                    {{ rows|length }} row(s) shown. Edited rows are auto-selected. PLC Index is locked and cannot be changed here.
                 </p>
             </div>
 
@@ -123,6 +123,7 @@ Bulk Parameter Edit
                     name="change_reason"
                     required
                     placeholder="Required for audit trail"
+                    value="{{ change_reason or '' }}"
                 >
             </label>
         </div>
@@ -154,6 +155,12 @@ Bulk Parameter Edit
 
                 <tbody>
                     {% for row in rows %}
+                    {% set display_value = row.form_parameter_value if row.form_parameter_value is defined else row.parameter_value %}
+                    {% set display_name = row.form_parameter_name if row.form_parameter_name is defined else row.parameter_name %}
+                    {% set display_unit = row.form_unit if row.form_unit is defined else row.unit %}
+                    {% set display_min = row.form_min_value if row.form_min_value is defined else (row.min_value if row.min_value is not none else '') %}
+                    {% set display_max = row.form_max_value if row.form_max_value is defined else (row.max_value if row.max_value is not none else '') %}
+                    {% set display_default = row.form_default_value if row.form_default_value is defined else (row.default_value if row.default_value is not none else '') %}
                     {% set row_below =
                         row.min_value is not none
                         and row.parameter_value < row.min_value
@@ -182,68 +189,73 @@ Bulk Parameter Edit
                             <span class="tag-pill">{{ row.tag_index }}</span>
                         </td>
                         <td>
-                            <input
-                                class="compact-cell-input"
-                                type="number"
-                                name="plc_array_index_{{ row.id }}"
-                                value="{{ row.plc_array_index if row.plc_array_index is not none else '' }}"
-                                {% if not can_edit_details %}disabled{% endif %}
+                            <span
+                                class="locked-cell-display"
+                                title="PLC Index is fixed PLC mapping data and is not editable in Bulk Edit."
                             >
+                                {{ row.plc_array_index if row.plc_array_index is not none else '' }}
+                            </span>
                         </td>
                         <td>
                             <input
-                                class="wide-cell-input"
+                                class="wide-cell-input bulk-edit-track"
                                 type="text"
                                 name="parameter_name_{{ row.id }}"
-                                value="{{ row.parameter_name }}"
+                                value="{{ display_name }}"
+                                data-original-value="{{ row.parameter_name if row.parameter_name is not none else '' }}"
                                 {% if not can_edit_details %}disabled{% endif %}
                             >
                         </td>
                         <td>
                             <input
-                                class="compact-cell-input value-input"
+                                class="compact-cell-input value-input bulk-edit-track"
                                 type="number"
                                 step="any"
                                 name="parameter_value_{{ row.id }}"
-                                value="{{ row.parameter_value }}"
+                                value="{{ display_value }}"
+                                data-original-value="{{ row.parameter_value if row.parameter_value is not none else '' }}"
                             >
                         </td>
                         <td>
                             <input
-                                class="compact-cell-input"
+                                class="compact-cell-input bulk-edit-track"
                                 type="text"
                                 name="unit_{{ row.id }}"
-                                value="{{ row.unit }}"
+                                value="{{ display_unit }}"
+                                data-original-value="{{ row.unit if row.unit is not none else '' }}"
                                 {% if not can_edit_details %}disabled{% endif %}
                             >
                         </td>
                         <td>
                             <input
-                                class="compact-cell-input"
+                                class="compact-cell-input bulk-edit-track"
                                 type="number"
                                 step="any"
                                 name="min_value_{{ row.id }}"
-                                value="{{ row.min_value if row.min_value is not none else '' }}"
+                                value="{{ display_min }}"
+                                data-original-value="{{ row.min_value if row.min_value is not none else '' }}"
                                 {% if not can_edit_details %}disabled{% endif %}
                             >
                         </td>
                         <td>
                             <input
-                                class="compact-cell-input"
+                                class="compact-cell-input bulk-edit-track"
                                 type="number"
                                 step="any"
                                 name="max_value_{{ row.id }}"
-                                value="{{ row.max_value if row.max_value is not none else '' }}"
+                                value="{{ display_max }}"
+                                data-original-value="{{ row.max_value if row.max_value is not none else '' }}"
                                 {% if not can_edit_details %}disabled{% endif %}
                             >
                         </td>
                         <td>
                             <input
-                                class="compact-cell-input"
+                                class="compact-cell-input bulk-edit-track"
                                 type="number"
                                 step="any"
                                 name="default_value_{{ row.id }}"
-                                value="{{ row.default_value if row.default_value is not none else '' }}"
+                                value="{{ display_default }}"
+                                data-original-value="{{ row.default_value if row.default_value is not none else '' }}"
                                 {% if not can_edit_details %}disabled{% endif %}
                             >
                         </td>
@@ -295,14 +307,62 @@ Bulk Parameter Edit
 </section>
 
 <script>
-const selectAllParameters = document.getElementById("select-all-parameters");
-if (selectAllParameters) {
-    selectAllParameters.addEventListener("change", function () {
-        document.querySelectorAll(".bulk-row-selector").forEach(function (checkbox) {
-            checkbox.checked = selectAllParameters.checked;
+(function () {
+    const form = document.getElementById("bulk-parameter-edit-form");
+    const selectAllParameters = document.getElementById("select-all-parameters");
+
+    function normalize(value) {
+        return (value === null || value === undefined) ? "" : String(value).trim();
+    }
+
+    function getRowSelector(input) {
+        const row = input.closest("tr");
+        return row ? row.querySelector(".bulk-row-selector") : null;
+    }
+
+    function markRowSelected(input) {
+        const selector = getRowSelector(input);
+        if (!selector) {
+            return;
+        }
+        selector.checked = true;
+        const row = selector.closest("tr");
+        if (row) {
+            row.classList.add("bulk-row-dirty");
+        }
+    }
+
+    function selectChangedRows() {
+        document.querySelectorAll(".bulk-edit-track").forEach(function (input) {
+            if (normalize(input.value) !== normalize(input.dataset.originalValue)) {
+                markRowSelected(input);
+            }
+        });
+    }
+
+    if (selectAllParameters) {
+        selectAllParameters.addEventListener("change", function () {
+            document.querySelectorAll(".bulk-row-selector").forEach(function (checkbox) {
+                checkbox.checked = selectAllParameters.checked;
+            });
+        });
+    }
+
+    document.querySelectorAll(".bulk-edit-track").forEach(function (input) {
+        input.addEventListener("input", function () {
+            markRowSelected(input);
+        });
+        input.addEventListener("change", function () {
+            markRowSelected(input);
         });
     });
-}
+
+    if (form) {
+        form.addEventListener("submit", function () {
+            selectChangedRows();
+        });
+    }
+})();
 </script>
 
 {% endblock %}

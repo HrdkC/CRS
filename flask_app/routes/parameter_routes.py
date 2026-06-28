@@ -204,7 +204,66 @@ def register_parameter_routes(app):
 
             return redirect("/")
 
+        context = get_machine_stage_context_by_id(
+            machine_id,
+            stage_id,
+            include_inactive=True
+        )
+
+        if not context:
+            flash("Machine/stage not found.", "error")
+            return redirect("/machines")
+
+        back_url = machine_stage_url(
+            "/parameters",
+            context=context
+        )
+
         if request.method == "POST":
+
+            try:
+                tag_index = int(
+                    request.form.get("tag_index", "").strip()
+                )
+                plc_array_index = int(
+                    request.form.get("plc_array_index", "").strip()
+                )
+                min_value = float(
+                    request.form.get("min_value", "").strip()
+                )
+                max_value = float(
+                    request.form.get("max_value", "").strip()
+                )
+                default_value = float(
+                    request.form.get("default_value", "").strip()
+                )
+            except ValueError:
+                flash(
+                    "Tag index, PLC array index, min, max, and default value must be valid numbers.",
+                    "error"
+                )
+                return render_template(
+                    "parameters/add_parameter.html",
+                    machine_id=machine_id,
+                    stage_id=stage_id,
+                    context=context,
+                    back_url=back_url,
+                    form_data=request.form
+                )
+
+            if max_value < min_value:
+                flash(
+                    "Max value cannot be lower than min value.",
+                    "error"
+                )
+                return render_template(
+                    "parameters/add_parameter.html",
+                    machine_id=machine_id,
+                    stage_id=stage_id,
+                    context=context,
+                    back_url=back_url,
+                    form_data=request.form
+                )
 
             ParameterDefinitionManager.create_parameter(
 
@@ -212,33 +271,27 @@ def register_parameter_routes(app):
 
                 stage_id=stage_id,
 
-                tag_index=int(
-                    request.form["tag_index"]
-                ),
+                tag_index=tag_index,
 
-                plc_array_index=int(
-                    request.form["plc_array_index"]
-                ),
+                plc_array_index=plc_array_index,
 
-                parameter_name=request.form[
-                    "parameter_name"
-                ],
+                parameter_name=(
+                    request.form.get("parameter_name")
+                    or
+                    ""
+                ).strip(),
 
-                unit=request.form[
-                    "unit"
-                ],
+                unit=(
+                    request.form.get("unit")
+                    or
+                    ""
+                ).strip(),
 
-                min_value=float(
-                    request.form["min_value"]
-                ),
+                min_value=min_value,
 
-                max_value=float(
-                    request.form["max_value"]
-                ),
+                max_value=max_value,
 
-                default_value=float(
-                    request.form["default_value"]
-                ),
+                default_value=default_value,
 
                 created_by=session.get(
                     "username"
@@ -252,7 +305,7 @@ def register_parameter_routes(app):
 
             return redirect(
 
-                machine_stage_url("/parameters", machine_id=machine_id, stage_id=stage_id)
+                back_url
 
             )
 
@@ -264,9 +317,9 @@ def register_parameter_routes(app):
 
             stage_id=stage_id,
 
-            context=get_machine_stage_context_by_id(machine_id, stage_id, include_inactive=True),
+            context=context,
 
-            back_url=machine_stage_url("/parameters", machine_id=machine_id, stage_id=stage_id)
+            back_url=back_url
 
         )
 
@@ -295,37 +348,89 @@ def register_parameter_routes(app):
 
         )
 
+        if not parameter:
+            flash("Parameter definition not found.", "error")
+            return redirect("/recipes")
+
+        context = get_machine_stage_context_by_id(
+            parameter["machine_id"],
+            parameter["stage_id"],
+            include_inactive=True
+        )
+
+        back_url = machine_stage_url(
+            "/parameters",
+            machine_id=parameter["machine_id"],
+            stage_id=parameter["stage_id"]
+        )
+
         if request.method == "POST":
+
+            try:
+                min_value = float(
+                    request.form.get("min_value", "").strip()
+                )
+                max_value = float(
+                    request.form.get("max_value", "").strip()
+                )
+                default_value = float(
+                    request.form.get("default_value", "").strip()
+                )
+            except ValueError:
+                flash(
+                    "Min, max, and default value must be valid numbers.",
+                    "error"
+                )
+                return render_template(
+                    "parameters/edit_parameter.html",
+                    parameter=parameter,
+                    context=context,
+                    back_url=back_url,
+                    form_data=request.form
+                )
+
+            if max_value < min_value:
+                flash(
+                    "Max value cannot be lower than min value.",
+                    "error"
+                )
+                return render_template(
+                    "parameters/edit_parameter.html",
+                    parameter=parameter,
+                    context=context,
+                    back_url=back_url,
+                    form_data=request.form
+                )
 
             ParameterDefinitionManager.update_parameter(
 
                 parameter_id=parameter_id,
 
-                parameter_name=request.form[
-                    "parameter_name"
-                ],
+                parameter_name=(
+                    request.form.get("parameter_name")
+                    or
+                    ""
+                ).strip(),
 
-                unit=request.form[
-                    "unit"
-                ],
+                unit=(
+                    request.form.get("unit")
+                    or
+                    ""
+                ).strip(),
 
-                min_value=float(
-                    request.form["min_value"]
-                ),
+                min_value=min_value,
 
-                max_value=float(
-                    request.form["max_value"]
-                ),
+                max_value=max_value,
 
-                default_value=float(
-                    request.form["default_value"]
-                )
+                default_value=default_value
 
             )
 
+            flash("Parameter updated.", "success")
+
             return redirect(
 
-                machine_stage_url("/parameters", machine_id=parameter["machine_id"], stage_id=parameter["stage_id"])
+                back_url
 
             )
 
@@ -333,7 +438,11 @@ def register_parameter_routes(app):
 
             "parameters/edit_parameter.html",
 
-            parameter=parameter
+            parameter=parameter,
+
+            context=context,
+
+            back_url=back_url
 
         )
 

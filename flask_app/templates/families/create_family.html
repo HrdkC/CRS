@@ -6,68 +6,76 @@ Create TBM Family
 
 {% block content %}
 
-<div class="page-header">
+<section class="recipe-workbench">
 
-    <h1>
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Master Registry</span>
+            <h1>Create TBM Family</h1>
+            <p>Family records help group machines for cloning reference and comparison.</p>
+        </div>
 
-        Create TBM Family
+        <div class="workbench-actions">
+            <a href="/families" class="crs-btn crs-btn-soft">Back To Families</a>
+        </div>
+    </div>
 
-    </h1>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Scope</span>
+            <strong class="metric-text">Family</strong>
+            <small>Master data grouping</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Next Step</span>
+            <strong class="metric-text">Machine</strong>
+            <small>Create machines from GUI</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Stages</span>
+            <strong class="metric-text">Auto</strong>
+            <small>FS and SS are machine-owned</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Audit</span>
+            <strong class="metric-text">Tracked</strong>
+            <small>Created by logged-in user</small>
+        </div>
+    </div>
 
-    <p>
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Family Details</span>
+            <span class="status-badge status-info">New Family</span>
+        </div>
 
-        Add a new TBM Family to the Centralized Recipe System
+        <form method="POST" class="parameter-edit-form">
+            <label>
+                <span>Family Name</span>
+                <input
+                    type="text"
+                    name="family_name"
+                    required
+                    placeholder="Example: CATL_14_20"
+                >
+            </label>
 
-    </p>
+            <label>
+                <span>Description</span>
+                <textarea
+                    name="description"
+                    rows="4"
+                    placeholder="Example: CATL make 14 inch to 20 inch PCR TBM"
+                ></textarea>
+            </label>
 
-</div>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Create Family</button>
+                <a href="/families" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
 
-<div class="form-card">
-
-    <form method="POST">
-
-        <label>
-
-            Family Name
-
-        </label>
-
-        <input
-            type="text"
-            name="family_name"
-            required
-        >
-
-        <label>
-
-            Description
-
-        </label>
-
-        <textarea
-            name="description"
-            rows="5"
-        ></textarea>
-
-        <br>
-
-        <button type="submit">
-
-            Create Family
-
-        </button>
-
-        <a
-            href="/families"
-            class="btn-secondary"
-        >
-
-            Cancel
-
-        </a>
-
-    </form>
-
-</div>
+</section>
 
 {% endblock %}

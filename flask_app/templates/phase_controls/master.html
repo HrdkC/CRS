@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}
+Phase Control Master
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Engineering Master</span>
+            <h1>Phase Control Master</h1>
+            <p>Maintain machine/stage phase groups and selectable phase names from the browser.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/stages" class="crs-btn crs-btn-soft">Stage Registry</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Machine Stages</span>
+            <strong>{{ targets|length }}</strong>
+            <small>Available active setup scopes</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Ownership</span>
+            <strong class="metric-text">Machine + Stage</strong>
+            <small>No global phase leakage</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Second Stage</span>
+            <strong class="metric-text">3 Groups</strong>
+            <small>Cap Strip, B&T, Shaping</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">First Stage</span>
+            <strong class="metric-text">Application</strong>
+            <small>Application-side selection</small>
+        </div>
+    </div>
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Machine / Stage Phase Masters</span>
+                <p>Open a stage to add or review the phase groups and dropdown phase names used by recipes.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Machine</th>
+                        <th>Stage</th>
+                        <th>Phase Groups</th>
+                        <th>Phase Options</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for target in targets %}
+                    <tr>
+                        <td><strong>{{ target.machine_code }}</strong></td>
+                        <td>{{ target.stage_url_code }} {{ target.stage_display_name }}</td>
+                        <td><span class="tag-pill">{{ target.phase_group_count }}</span></td>
+                        <td><span class="tag-pill">{{ target.phase_count }}</span></td>
+                        <td>
+                            {% if target.phase_group_count and target.phase_count %}
+                            <span class="status-badge status-success">Ready</span>
+                            {% else %}
+                            <span class="status-badge status-warning">Setup Required</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <a href="{{ target.phase_master_url }}" class="row-action primary">Open Master</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-state">No active machine stages available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

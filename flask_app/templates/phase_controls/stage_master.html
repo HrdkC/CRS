@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}
+Phase Master - {{ context.machine_stage_display }}
+{% endblock %}
+
+{% block content %}
+
+{% set stage_upper = (context.stage_type or "")|upper %}
+{% set is_second_stage = stage_upper in ["SECOND_STAGE", "SECONDSTAGE", "SS"] %}
+
+<section class="recipe-workbench phase-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Phase Control Master</span>
+            <h1>{{ context.machine_stage_display }}</h1>
+            <p>Stage-scoped phase groups and dropdown phase names used by recipe phase control.</p>
+        </div>
+
+        <div class="workbench-actions">
+            <form method="POST" class="inline-form">
+                <input type="hidden" name="action" value="initialize_defaults">
+                <button
+                    type="submit"
+                    class="crs-btn crs-btn-soft"
+                    title="Creates standard groups and default phase names if missing. Existing rows are kept."
+                >
+                    Initialize Defaults
+                </button>
+            </form>
+            <a href="{{ back_url }}" class="crs-btn crs-btn-soft">Back To Phase Masters</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Machine</span>
+            <strong>{{ context.machine_code }}</strong>
+            <small>Master ownership</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Stage</span>
+            <strong>{{ context.stage_url_code }} {{ context.stage_display_name }}</strong>
+            <small>Only this stage can use these phases</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Groups</span>
+            <strong>{{ groups|length }}</strong>
+            <small>Phase-control columns</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Phase Options</span>
+            <strong>{{ options|length }}</strong>
+            <small>Dropdown choices</small>
+        </div>
+    </div>
+
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Configured Phase Options</span>
+            <span class="status-badge status-info">{{ "Second Stage" if is_second_stage else "First Stage" }}</span>
+        </div>
+
+        {% if grouped_options %}
+        <div class="phase-control-board {% if is_second_stage %}phase-board-ss{% else %}phase-board-fs{% endif %}">
+            {% for item in grouped_options %}
+            <section class="phase-control-column">
+                <div class="phase-control-column-header">
+                    {{ item.group.phase_group_name }}
+                    <span class="status-badge status-info">{{ item.options|length }}</span>
+                </div>
+                {% for option in item.options %}
+                <div class="phase-control-display-cell {% if option.active != 1 %}phase-control-display-empty{% endif %}">
+                    <span class="phase-control-line-no">{{ option.display_order }}</span>
+                    <strong>{{ option.phase_control_name }}</strong>
+                </div>
+                {% else %}
+                <div class="phase-control-display-cell phase-control-display-empty">
+                    <span class="phase-control-line-no">0</span>
+                    <strong>No phase names configured</strong>
+                </div>
+                {% endfor %}
+            </section>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state-card">
+            <div>
+                <strong>No phase groups configured for this stage.</strong>
+                <p class="muted-text">Use Initialize Defaults or create a group manually below.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="phase-master-grid">
+        <div class="workbench-card edit-parameter-panel">
+            <div class="panel-heading">
+                <span>Add Phase Group</span>
+                <span class="status-badge status-info">Group</span>
+            </div>
+
+            <form method="POST" class="parameter-edit-form">
+                <input type="hidden" name="action" value="create_group">
+                <div class="form-grid two-column-form-grid">
+                    <label>
+                        <span>Group Code</span>
+                        <input type="text" name="phase_group_code" placeholder="Example: CAP_STRIP_SIDE">
+                    </label>
+                    <label>
+                        <span>Display Order</span>
+                        <input type="number" name="display_order" value="{{ groups|length + 1 }}">
+                    </label>
+                    <label class="form-span-2">
+                        <span>Group Name</span>
+                        <input type="text" name="phase_group_name" required placeholder="Example: Cap Strip Side">
+                    </label>
+                    <label class="form-span-2">
+                        <span>Description</span>
+                        <input type="text" name="description" placeholder="Optional engineering note">
+                    </label>
+                </div>
+                <div class="form-action-row">
+                    <button type="submit" class="crs-btn crs-btn-primary">Add Group</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="workbench-card edit-parameter-panel">
+            <div class="panel-heading">
+                <span>Add Phase Option</span>
+                <span class="status-badge status-info">Dropdown</span>
+            </div>
+
+            <form method="POST" class="parameter-edit-form">
+                <input type="hidden" name="action" value="create_phase">
+                <div class="form-grid two-column-form-grid">
+                    <label>
+                        <span>Phase Group</span>
+                        <select name="phase_group_code" required>
+                            {% for group in groups %}
+                            {% if group.active == 1 %}
+                            <option value="{{ group.phase_group_code }}">{{ group.phase_group_name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        <span>Display Order</span>
+                        <input type="number" name="display_order" value="{{ options|length + 1 }}">
+                    </label>
+                    <label class="form-span-2">
+                        <span>Phase Name</span>
+                        <input type="text" name="phase_control_name" required placeholder="Example: Apply Belt 1">
+                    </label>
+                    <label class="form-span-2">
+                        <span>Description</span>
+                        <input type="text" name="description" placeholder="Optional display or engineering note">
+                    </label>
+                </div>
+                <div class="form-action-row">
+                    <button type="submit" class="crs-btn crs-btn-primary">Add Phase Option</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

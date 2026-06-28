@@ -29,7 +29,15 @@ Create Recipe
         </div>
         <div class="metric-card">
             <span class="metric-label">Stage</span>
-            <strong>{{ stage_url_code(stage_type) ~ " " ~ stage_display_name(stage_type) if stage_type is defined else "-" }}</strong>
+            <strong>
+                {% if stage_url_code is defined and stage_display_name is defined %}
+                    {{ stage_url_code }} {{ stage_display_name }}
+                {% elif context is defined and context.stage_url_code is defined %}
+                    {{ context.stage_url_code }} {{ context.stage_display_name }}
+                {% else %}
+                    -
+                {% endif %}
+            </strong>
             <small>Recipe stage</small>
         </div>
         <div class="metric-card">

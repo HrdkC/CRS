@@ -8,6 +8,9 @@ Recipe Phase Control
 
 <section class="recipe-workbench">
 
+    {% set stage_upper = (recipe.stage_type or "")|upper|replace(" ", "_") %}
+    {% set is_second_stage_phase = (stage_upper in ["SECOND_STAGE", "SECONDSTAGE", "SS"]) or (phase_groups|length >= 3) %}
+
     <div class="workbench-hero">
 
         <div class="workbench-title">
@@ -130,7 +133,7 @@ Recipe Phase Control
         <form method="POST">
 
             {% if phase_groups %}
-            <div class="phase-control-board">
+            <div class="phase-control-board {% if is_second_stage_phase %}phase-board-ss{% else %}phase-board-fs{% endif %}">
 
                 {% for group in phase_groups %}
                 <section class="phase-control-column">
@@ -142,18 +145,20 @@ Recipe Phase Control
                     </div>
 
                     {% if edit_mode %}
-                    <div class="phase-control-row-header">
+                    <div class="phase-control-row-header {% if is_second_stage_phase %}phase-control-row-header-ss{% endif %}">
                         <span>Line</span>
-                        <span>Phase</span>
+                        <span>Phase Control</span>
+                        {% if not is_second_stage_phase %}
                         <span>Stop</span>
                         <span>Position</span>
+                        {% endif %}
                     </div>
                     {% endif %}
 
                     {% for row in group.rows %}
                     {% set is_empty_phase = (row.phase_control_name or "")|upper == "EMPTY PHASE" %}
                     {% if edit_mode %}
-                    <div class="phase-control-slot phase-control-slot-edit {% if is_empty_phase %}phase-control-slot-empty{% endif %}">
+                    <div class="phase-control-slot phase-control-slot-edit {% if is_second_stage_phase %}phase-control-slot-edit-ss{% endif %} {% if is_empty_phase %}phase-control-slot-empty{% endif %}">
                         <span class="tag-pill">{{ row.line_no }}</span>
                         <select
                             name="phase_control_id_{{ row.id }}"
@@ -173,6 +178,10 @@ Recipe Phase Control
                             {% endfor %}
                         </select>
 
+                        {% if is_second_stage_phase %}
+                        <input type="hidden" name="stop_option_{{ row.id }}" value="{{ row.stop_option or 'No' }}">
+                        <input type="hidden" name="position_option_{{ row.id }}" value="{{ row.position_option or 'No' }}">
+                        {% else %}
                         <select
                             name="stop_option_{{ row.id }}"
                             {% if not can_edit_phase_control %}
@@ -192,6 +201,7 @@ Recipe Phase Control
                             <option value="No" {% if row.position_option == "No" %}selected{% endif %}>No</option>
                             <option value="Yes" {% if row.position_option == "Yes" %}selected{% endif %}>Yes</option>
                         </select>
+                        {% endif %}
                     </div>
                     {% else %}
                     <div class="phase-control-display-cell {% if is_empty_phase %}phase-control-display-empty{% endif %}">

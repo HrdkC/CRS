@@ -43,6 +43,20 @@ class RecipeExcelImportExportManager:
         "Parameter Definition ID",
     ]
 
+    LEGACY_PARAMETER_HEADERS = [
+        "Name",
+        "Unit",
+        "Class",
+        "Old Value",
+        "Value",
+        "Max. Value",
+        "Min. Value",
+        "Default Value",
+        "Tag Index",
+        "Memo",
+        "Status",
+    ]
+
     PHASE_HEADERS = [
         "Line No",
         "Phase Control Name",
@@ -215,7 +229,10 @@ class RecipeExcelImportExportManager:
     @staticmethod
     def _write_phase_control(wb, phase_rows):
         ws = wb.create_sheet(RecipeExcelImportExportManager.PHASE_SHEET)
-        ws.append(RecipeExcelImportExportManager.PHASE_HEADERS)
+        ws.append(RecipeExcelImportExportManager.PHASE_HEADERS + [
+            "Phase Group Code",
+            "Phase Group Name",
+        ])
         for row in phase_rows:
             ws.append([
                 row.get("line_no"),
@@ -226,6 +243,8 @@ class RecipeExcelImportExportManager:
                 row.get("sequence_no"),
                 row.get("description"),
                 row.get("stage_type"),
+                row.get("phase_group_code") or "MAIN",
+                row.get("phase_group_name") or "Phase Control",
             ])
         RecipeExcelImportExportManager._apply_sheet_style(ws, freeze="A2")
         for col in ["A", "C", "F"]:
@@ -398,31 +417,13 @@ class RecipeExcelImportExportManager:
         )
         parameters = [dict(r) for r in cur.fetchall()]
 
-        cur.execute(
-            """
-            SELECT id, phase_control_name, description, stage_type
-            FROM phase_control_master
-            WHERE active = 1 AND stage_type = ? AND phase_control_name = 'Empty Phase'
-            LIMIT 1
-            """,
-            (target["stage_type"],),
+        phase_rows = RecipeExcelImportExportManager._default_phase_rows_for_target(
+            cur,
+            target["stage_type"]
         )
-        empty = cur.fetchone()
-        empty_id = empty["id"] if empty else None
-        empty_name = empty["phase_control_name"] if empty else "Empty Phase"
-        empty_desc = empty["description"] if empty else ""
-        phase_rows = []
-        for line_no in range(1, 13):
-            phase_rows.append({
-                "line_no": line_no,
-                "phase_control_id": empty_id,
-                "phase_control_name": empty_name,
-                "stop_option": "No",
-                "position_option": "No",
-                "sequence_no": line_no,
-                "description": empty_desc,
-                "stage_type": target["stage_type"],
-            })
+        for phase_row in phase_rows:
+            phase_row["stage_type"] = target["stage_type"]
+            phase_row.setdefault("description", "")
         conn.close()
         return target, parameters, phase_rows
 
@@ -535,9 +536,368 @@ class RecipeExcelImportExportManager:
             if all(value is None for value in row):
                 continue
             item = {h: row[header_index[h]] if header_index[h] < len(row) else None for h in expected_headers}
+            for header in headers:
+                if header and header not in item:
+                    item[header] = row[header_index[header]] if header_index[header] < len(row) else None
             item["__excel_row__"] = excel_row_no
             rows.append(item)
         return rows
+
+    @staticmethod
+    def _normalize_excel_heading(value):
+        return re.sub(r"[^a-z0-9]+", "", str(value or "").strip().lower())
+
+    @staticmethod
+    def _is_numeric_like(value):
+        if value in (None, ""):
+            return False
+        try:
+            float(value)
+            return True
+        except Exception:
+            return False
+
+    @staticmethod
+    def _legacy_used_flag(value):
+        if value in (None, ""):
+            return 1
+        text = str(value).strip().upper()
+        if text in {"N", "NO", "0", "FALSE", "NOT USED", "UNUSED"}:
+            return 0
+        return 1
+
+    @staticmethod
+    def _legacy_metadata(wb):
+        metadata = {
+            "recipe_code": "",
+            "recipe_name": "",
+        }
+        for ws in wb.worksheets:
+            max_row = min(ws.max_row or 1, 10)
+            for row in ws.iter_rows(min_row=1, max_row=max_row, values_only=True):
+                row_values = list(row or [])
+                for idx, cell_value in enumerate(row_values):
+                    label = str(cell_value or "").strip().rstrip(":").lower()
+                    next_value = row_values[idx + 1] if idx + 1 < len(row_values) else None
+                    if label == "recipe name" and next_value not in (None, ""):
+                        metadata["recipe_name"] = str(next_value).strip()
+                    if label == "product code" and next_value not in (None, ""):
+                        metadata["recipe_code"] = str(next_value).strip().upper()
+        if not metadata["recipe_code"] and metadata["recipe_name"]:
+            metadata["recipe_code"] = RecipeExcelImportExportManager._safe_file_part(
+                metadata["recipe_name"]
+            ).upper()
+        if not metadata["recipe_name"] and metadata["recipe_code"]:
+            metadata["recipe_name"] = metadata["recipe_code"]
+        return metadata
+
+    @staticmethod
+    def _legacy_header_map(row_values):
+        aliases = {
+            "name": "Parameter Name",
+            "parametername": "Parameter Name",
+            "unit": "Unit",
+            "class": "Parameter Class",
+            "parameterclass": "Parameter Class",
+            "oldvalue": "Old Value",
+            "value": "Parameter Value",
+            "maxvalue": "Max Value",
+            "maximumvalue": "Max Value",
+            "minvalue": "Min Value",
+            "minimumvalue": "Min Value",
+            "defaultvalue": "Default Value",
+            "tagindex": "Tag Index",
+            "tag": "Tag Index",
+            "memo": "English Memo",
+            "englishmemo": "English Memo",
+            "status": "Used",
+            "used": "Used",
+        }
+        header_map = {}
+        for idx, value in enumerate(row_values):
+            key = RecipeExcelImportExportManager._normalize_excel_heading(value)
+            canonical = aliases.get(key)
+            if canonical:
+                header_map[canonical] = idx
+        required = {"Parameter Name", "Parameter Value", "Tag Index"}
+        return header_map if required.issubset(set(header_map)) else None
+
+    @staticmethod
+    def _read_legacy_parameter_rows(wb):
+        """Read the tyre-machine recipe Excel format used by existing plant files.
+
+        Supported layout example:
+        Recipe Name / Product Code in top rows, then columns:
+        Name, Unit, Class, Old Value, Value, Max. Value, Min. Value,
+        Default Value, Tag Index, Memo, Status.
+        """
+        for ws in wb.worksheets:
+            header_map = None
+            header_row_no = None
+            max_scan_row = min(ws.max_row or 1, 25)
+            for row_no in range(1, max_scan_row + 1):
+                values = [cell.value for cell in ws[row_no]]
+                possible_map = RecipeExcelImportExportManager._legacy_header_map(values)
+                if possible_map:
+                    header_map = possible_map
+                    header_row_no = row_no
+                    break
+
+            if header_map:
+                rows = []
+                for excel_row_no, row in enumerate(ws.iter_rows(min_row=header_row_no + 1, values_only=True), start=header_row_no + 1):
+                    if all(value is None for value in row):
+                        continue
+                    tag_idx_pos = header_map.get("Tag Index")
+                    value_pos = header_map.get("Parameter Value")
+                    if tag_idx_pos is None or tag_idx_pos >= len(row):
+                        continue
+                    if not RecipeExcelImportExportManager._is_numeric_like(row[tag_idx_pos]):
+                        continue
+                    if value_pos is None or value_pos >= len(row):
+                        continue
+                    item = {
+                        "Tag Index": row[header_map["Tag Index"]],
+                        "PLC Array Index": row[header_map["Tag Index"]],
+                        "Parameter Name": row[header_map["Parameter Name"]] if header_map.get("Parameter Name") is not None else "",
+                        "Parameter Class": row[header_map["Parameter Class"]] if header_map.get("Parameter Class") is not None and header_map["Parameter Class"] < len(row) else "",
+                        "Unit": row[header_map["Unit"]] if header_map.get("Unit") is not None and header_map["Unit"] < len(row) else "",
+                        "Data Type": "REAL",
+                        "Min Value": row[header_map["Min Value"]] if header_map.get("Min Value") is not None and header_map["Min Value"] < len(row) else None,
+                        "Max Value": row[header_map["Max Value"]] if header_map.get("Max Value") is not None and header_map["Max Value"] < len(row) else None,
+                        "Default Value": row[header_map["Default Value"]] if header_map.get("Default Value") is not None and header_map["Default Value"] < len(row) else None,
+                        "Parameter Value": row[header_map["Parameter Value"]],
+                        "Is Modified": 1,
+                        "English Memo": row[header_map["English Memo"]] if header_map.get("English Memo") is not None and header_map["English Memo"] < len(row) else "",
+                        "Used": RecipeExcelImportExportManager._legacy_used_flag(row[header_map["Used"]] if header_map.get("Used") is not None and header_map["Used"] < len(row) else 1),
+                        "Parameter Definition ID": None,
+                        "__excel_row__": excel_row_no,
+                    }
+                    if item["Used"]:
+                        rows.append(item)
+                if rows:
+                    return rows
+
+        # Fallback for headerless copied data sheets with fixed plant columns A:K.
+        for ws in wb.worksheets:
+            rows = []
+            for excel_row_no, row in enumerate(ws.iter_rows(values_only=True), start=1):
+                if not row or len(row) < 9:
+                    continue
+                if not RecipeExcelImportExportManager._is_numeric_like(row[8]):
+                    continue
+                if not RecipeExcelImportExportManager._is_numeric_like(row[4]):
+                    continue
+                item = {
+                    "Tag Index": row[8],
+                    "PLC Array Index": row[8],
+                    "Parameter Name": row[0],
+                    "Parameter Class": row[2] if len(row) > 2 else "",
+                    "Unit": row[1] if len(row) > 1 else "",
+                    "Data Type": "REAL",
+                    "Min Value": row[6] if len(row) > 6 else None,
+                    "Max Value": row[5] if len(row) > 5 else None,
+                    "Default Value": row[7] if len(row) > 7 else None,
+                    "Parameter Value": row[4],
+                    "Is Modified": 1,
+                    "English Memo": row[9] if len(row) > 9 else "",
+                    "Used": RecipeExcelImportExportManager._legacy_used_flag(row[10] if len(row) > 10 else 1),
+                    "Parameter Definition ID": None,
+                    "__excel_row__": excel_row_no,
+                }
+                if item["Used"]:
+                    rows.append(item)
+            if rows:
+                return rows
+        return []
+
+    @staticmethod
+    def _default_parameter_value(definition):
+        value = definition.get("default_value")
+        if value in (None, ""):
+            return 0.0
+        try:
+            return float(value)
+        except Exception:
+            return 0.0
+
+    @staticmethod
+    def _optional_excel_float(value, fallback=None):
+        if value in (None, ""):
+            return fallback
+        try:
+            return float(value)
+        except Exception:
+            return fallback
+
+    @staticmethod
+    def _optional_excel_int(value, fallback=1):
+        if value in (None, ""):
+            return fallback
+        try:
+            return int(float(value))
+        except Exception:
+            return fallback
+
+    @staticmethod
+    def _update_parameter_master_non_plc_details(cur, item):
+        """Update safe non-PLC parameter definition fields from Excel.
+
+        PLC mapping fields are intentionally excluded:
+        - tag_index
+        - plc_array_index
+        - parameter definition id
+        """
+        detail = item.get("excel_detail") or {}
+        if not detail:
+            return 0
+
+        definition = item["definition"]
+        parameter_id = int(definition["id"])
+
+        new_values = {
+            "parameter_name": str(detail.get("Parameter Name") or definition.get("parameter_name") or "").strip(),
+            "parameter_class": str(detail.get("Parameter Class") or definition.get("parameter_class") or "").strip(),
+            "unit": str(detail.get("Unit") or definition.get("unit") or "").strip(),
+            "datatype": str(detail.get("Data Type") or definition.get("datatype") or "REAL").strip().upper(),
+            "min_value": RecipeExcelImportExportManager._optional_excel_float(detail.get("Min Value"), definition.get("min_value")),
+            "max_value": RecipeExcelImportExportManager._optional_excel_float(detail.get("Max Value"), definition.get("max_value")),
+            "default_value": RecipeExcelImportExportManager._optional_excel_float(detail.get("Default Value"), definition.get("default_value")),
+            "english_memo": str(detail.get("English Memo") or definition.get("english_memo") or "").strip(),
+            "used": RecipeExcelImportExportManager._optional_excel_int(detail.get("Used"), definition.get("used") or 1),
+        }
+
+        if not new_values["parameter_name"]:
+            new_values["parameter_name"] = str(definition.get("parameter_name") or f"Tag {definition.get('tag_index')}").strip()
+
+        changed = 0
+        for field, new_value in new_values.items():
+            old_value = definition.get(field)
+            if str(old_value if old_value is not None else "") != str(new_value if new_value is not None else ""):
+                changed += 1
+
+        if not changed:
+            return 0
+
+        cur.execute(
+            """
+            UPDATE parameter_definitions
+            SET
+                parameter_name = ?,
+                parameter_class = ?,
+                unit = ?,
+                datatype = ?,
+                min_value = ?,
+                max_value = ?,
+                default_value = ?,
+                english_memo = ?,
+                used = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            """,
+            (
+                new_values["parameter_name"],
+                new_values["parameter_class"],
+                new_values["unit"],
+                new_values["datatype"],
+                new_values["min_value"],
+                new_values["max_value"],
+                new_values["default_value"],
+                new_values["english_memo"],
+                new_values["used"],
+                parameter_id,
+            ),
+        )
+        return 1
+
+    @staticmethod
+    def _append_missing_parameter_defaults(definitions, seen_defs, parsed_parameters, warnings):
+        missing_defs = [r for r in definitions if r["id"] not in seen_defs]
+        for definition in missing_defs:
+            parsed_parameters.append({
+                "definition": definition,
+                "value": RecipeExcelImportExportManager._default_parameter_value(definition),
+            })
+        if missing_defs:
+            warnings.append(
+                f"{len(missing_defs)} parameter row(s) were not present in Excel. CRS inserted master default values for those missing rows so PLC index mapping remains complete."
+            )
+        return missing_defs
+
+    @staticmethod
+    def _default_phase_rows_for_target(cur, stage_type):
+        if str(stage_type or "").upper() == "SECOND_STAGE":
+            group_specs = [
+                ("CAP_STRIP_SIDE", "Cap Strip Side"),
+                ("BT_SIDE", "B&T Side"),
+                ("SHAPING_SIDE", "Shaping Side"),
+            ]
+            phase_rows = []
+            for group_code, group_name in group_specs:
+                cur.execute(
+                    """
+                    SELECT id, phase_control_name
+                    FROM phase_control_master
+                    WHERE active = 1 AND stage_type = ? AND phase_group_code = ? AND phase_control_name = 'Empty Phase'
+                    ORDER BY display_order, id
+                    LIMIT 1
+                    """,
+                    (stage_type, group_code),
+                )
+                empty = cur.fetchone()
+                if not empty:
+                    cur.execute(
+                        """
+                        SELECT id, phase_control_name
+                        FROM phase_control_master
+                        WHERE active = 1 AND stage_type = ? AND phase_group_code = ?
+                        ORDER BY display_order DESC, id DESC
+                        LIMIT 1
+                        """,
+                        (stage_type, group_code),
+                    )
+                    empty = cur.fetchone()
+                phase_id = int(empty["id"]) if empty else None
+                phase_name = empty["phase_control_name"] if empty else "Empty Phase"
+                for line_no in range(1, 7):
+                    phase_rows.append({
+                        "line_no": line_no,
+                        "phase_control_id": phase_id,
+                        "phase_control_name": phase_name,
+                        "stop_option": "No",
+                        "position_option": "No",
+                        "sequence_no": line_no,
+                        "phase_group_code": group_code,
+                        "phase_group_name": group_name,
+                    })
+            return phase_rows
+
+        cur.execute(
+            """
+            SELECT id, phase_control_name
+            FROM phase_control_master
+            WHERE active = 1 AND stage_type = ? AND phase_control_name = 'Empty Phase'
+            ORDER BY display_order, id
+            LIMIT 1
+            """,
+            (stage_type,),
+        )
+        empty = cur.fetchone()
+        phase_id = int(empty["id"]) if empty else None
+        phase_name = empty["phase_control_name"] if empty else "Empty Phase"
+        return [
+            {
+                "line_no": line_no,
+                "phase_control_id": phase_id,
+                "phase_control_name": phase_name,
+                "stop_option": "No",
+                "position_option": "No",
+                "sequence_no": line_no,
+                "phase_group_code": "MAIN",
+                "phase_group_name": "Phase Control",
+            }
+            for line_no in range(1, 13)
+        ]
 
     @staticmethod
     def _to_int(value, label, errors, row_no=None, required=True):
@@ -564,9 +924,16 @@ class RecipeExcelImportExportManager:
             return None
 
     @staticmethod
-    def preview_import(file_path):
+    def preview_import(file_path, machine_id=None, stage_id=None, recipe_code_override=None, recipe_name_override=None):
         errors = []
         warnings = []
+        legacy_format = False
+
+        requested_machine_id = machine_id
+        requested_stage_id = stage_id
+        recipe_code_override = str(recipe_code_override or "").strip().upper()
+        recipe_name_override = str(recipe_name_override or "").strip()
+
         try:
             wb = load_workbook(file_path, data_only=True)
         except Exception as exc:
@@ -578,24 +945,107 @@ class RecipeExcelImportExportManager:
             if template_type != RecipeExcelImportExportManager.TEMPLATE_TYPE:
                 errors.append("Invalid template type. Download a fresh CRS recipe template/export workbook.")
 
-            recipe_code = str(RecipeExcelImportExportManager._info_value(info, "Recipe Code / GT Code", "GT Code", default="") or "").strip().upper()
-            recipe_name = str(RecipeExcelImportExportManager._info_value(info, "Recipe Name", default="") or "").strip()
-            version = RecipeExcelImportExportManager._to_int(RecipeExcelImportExportManager._info_value(info, "Version", default=1), "Version", errors)
-            machine_id = RecipeExcelImportExportManager._to_int(RecipeExcelImportExportManager._info_value(info, "Machine ID"), "Machine ID", errors)
-            stage_id = RecipeExcelImportExportManager._to_int(RecipeExcelImportExportManager._info_value(info, "Stage ID"), "Stage ID", errors)
-            is_test_only = RecipeExcelImportExportManager._to_int(RecipeExcelImportExportManager._info_value(info, "Is Test Only", default=0), "Is Test Only", errors, required=False) or 0
+            sheet_recipe_code = str(RecipeExcelImportExportManager._info_value(info, "Recipe Code / GT Code", "GT Code", default="") or "").strip().upper()
+            sheet_recipe_name = str(RecipeExcelImportExportManager._info_value(info, "Recipe Name", default="") or "").strip()
+            recipe_code = recipe_code_override or sheet_recipe_code
+            recipe_name = recipe_name_override or sheet_recipe_name
+
+            version = RecipeExcelImportExportManager._to_int(
+                RecipeExcelImportExportManager._info_value(info, "Version", default=1),
+                "Version",
+                errors
+            )
+
+            sheet_machine_id = RecipeExcelImportExportManager._to_int(
+                RecipeExcelImportExportManager._info_value(info, "Machine ID"),
+                "Machine ID",
+                errors,
+                required=False
+            )
+            sheet_stage_id = RecipeExcelImportExportManager._to_int(
+                RecipeExcelImportExportManager._info_value(info, "Stage ID"),
+                "Stage ID",
+                errors,
+                required=False
+            )
+
+            form_machine_id = RecipeExcelImportExportManager._to_int(
+                requested_machine_id,
+                "Target Machine ID",
+                errors,
+                required=False
+            )
+            form_stage_id = RecipeExcelImportExportManager._to_int(
+                requested_stage_id,
+                "Target Stage ID",
+                errors,
+                required=False
+            )
+
+            # Operator-selected target from the web page has priority.
+            # This allows blank CRS templates and legacy Excel files to import
+            # without depending on hidden Recipe_Info IDs inside the workbook.
+            machine_id = form_machine_id or sheet_machine_id
+            stage_id = form_stage_id or sheet_stage_id
+
+            is_test_only = RecipeExcelImportExportManager._to_int(
+                RecipeExcelImportExportManager._info_value(info, "Is Test Only", default=0),
+                "Is Test Only",
+                errors,
+                required=False
+            ) or 0
 
             if not recipe_code:
-                errors.append("Recipe Code / GT Code is required in Recipe_Info sheet.")
+                errors.append("Recipe Code / GT Code is required. Enter it on the Import page or in Recipe_Info sheet.")
             if not recipe_name:
-                errors.append("Recipe Name is required in Recipe_Info sheet.")
+                errors.append("Recipe Name is required. Enter it on the Import page or in Recipe_Info sheet.")
+            if machine_id is None or stage_id is None:
+                errors.append("Target Machine / Stage is required. Select it on the Import page or keep Machine ID and Stage ID in Recipe_Info sheet.")
             if version is not None and version < 1:
                 errors.append("Version must be 1 or higher.")
 
             parameter_rows = RecipeExcelImportExportManager._sheet_rows(wb, RecipeExcelImportExportManager.PARAMETERS_SHEET, RecipeExcelImportExportManager.PARAMETER_HEADERS)
             phase_rows = RecipeExcelImportExportManager._sheet_rows(wb, RecipeExcelImportExportManager.PHASE_SHEET, RecipeExcelImportExportManager.PHASE_HEADERS)
         except Exception as exc:
-            return {"ok": False, "errors": [str(exc)], "warnings": [], "summary": {}}
+            legacy_rows = RecipeExcelImportExportManager._read_legacy_parameter_rows(wb)
+            if not legacy_rows:
+                return {"ok": False, "errors": [str(exc)], "warnings": [], "summary": {}}
+            legacy_format = True
+            errors = []
+            warnings.append("Legacy plant Excel format detected. CRS will import recipe values by Tag Index only; PLC index/master mapping will not be edited.")
+            metadata = RecipeExcelImportExportManager._legacy_metadata(wb)
+            recipe_code = str(
+                recipe_code_override
+                or metadata.get("recipe_code")
+                or RecipeExcelImportExportManager._safe_file_part(os.path.splitext(os.path.basename(file_path))[0])
+            ).strip().upper()
+            recipe_name = str(
+                recipe_name_override
+                or metadata.get("recipe_name")
+                or recipe_code
+            ).strip()
+            version = 1
+            machine_id = RecipeExcelImportExportManager._to_int(
+                requested_machine_id,
+                "Target Machine ID",
+                errors,
+                required=False
+            )
+            stage_id = RecipeExcelImportExportManager._to_int(
+                requested_stage_id,
+                "Target Stage ID",
+                errors,
+                required=False
+            )
+            if machine_id is None or stage_id is None:
+                errors.append("Target Machine / Stage is required for legacy plant Excel import.")
+            if not recipe_code:
+                errors.append("Recipe Code / GT Code is required for legacy plant Excel import.")
+            if not recipe_name:
+                errors.append("Recipe Name is required for legacy plant Excel import.")
+            is_test_only = 0
+            parameter_rows = legacy_rows
+            phase_rows = []
 
         if not errors:
             conn = get_connection()
@@ -644,9 +1094,21 @@ class RecipeExcelImportExportManager:
                 row_no = row["__excel_row__"]
                 def_id = RecipeExcelImportExportManager._to_int(row.get("Parameter Definition ID"), "Parameter Definition ID", errors, row_no, required=False)
                 tag_index = RecipeExcelImportExportManager._to_int(row.get("Tag Index"), "Tag Index", errors, row_no)
-                definition = by_id.get(def_id) if def_id else by_tag.get(tag_index)
+                definition_by_id = by_id.get(def_id) if def_id else None
+                definition_by_tag = by_tag.get(tag_index) if tag_index is not None else None
+                if (
+                    definition_by_id
+                    and definition_by_tag
+                    and int(definition_by_id.get("id")) != int(definition_by_tag.get("id"))
+                ):
+                    warnings.append(
+                        f"Row {row_no}: stale Parameter Definition ID {def_id} does not match Tag Index {tag_index}. Tag Index mapping was used."
+                    )
+                    definition = definition_by_tag
+                else:
+                    definition = definition_by_id or definition_by_tag
                 if not definition:
-                    errors.append(f"Parameter definition not found for row {row_no}.")
+                    errors.append(f"Parameter definition not found for Tag Index {tag_index} at row {row_no}.")
                     continue
                 if definition["id"] in seen_defs:
                     errors.append(f"Duplicate parameter definition {definition['id']} at row {row_no}.")
@@ -654,7 +1116,7 @@ class RecipeExcelImportExportManager:
                 seen_defs.add(definition["id"])
                 excel_name = str(row.get("Parameter Name") or "").strip()
                 if excel_name and excel_name != definition["parameter_name"]:
-                    warnings.append(f"Row {row_no}: parameter name differs from master. Master name will be used: {definition['parameter_name']}.")
+                    warnings.append(f"Row {row_no}: parameter name differs from current master. Excel name will update non-PLC parameter details during confirm import.")
                 value = RecipeExcelImportExportManager._to_float(row.get("Parameter Value"), f"Parameter Value for {definition['parameter_name']}", errors, row_no)
                 if value is not None:
                     min_v = definition.get("min_value")
@@ -663,11 +1125,14 @@ class RecipeExcelImportExportManager:
                         errors.append(f"Row {row_no}: {definition['parameter_name']} value {value} is below minimum {min_v}.")
                     if max_v is not None and value > float(max_v):
                         errors.append(f"Row {row_no}: {definition['parameter_name']} value {value} is above maximum {max_v}.")
-                parsed_parameters.append({"definition": definition, "value": value})
+                parsed_parameters.append({"definition": definition, "value": value, "excel_detail": row})
 
-            missing_defs = [r for r in definitions if r["id"] not in seen_defs]
-            if missing_defs:
-                errors.append(f"Missing {len(missing_defs)} required parameter row(s). Download a fresh template for this machine/stage.")
+            RecipeExcelImportExportManager._append_missing_parameter_defaults(
+                definitions,
+                seen_defs,
+                parsed_parameters,
+                warnings
+            )
 
             cur.execute(
                 """
@@ -680,43 +1145,68 @@ class RecipeExcelImportExportManager:
             phase_by_id = {int(r["id"]): r for r in phase_master}
             phase_by_name = {str(r["phase_control_name"]).strip().upper(): r for r in phase_master}
 
-            parsed_phase = []
-            seen_lines = set()
-            for row in phase_rows:
-                row_no = row["__excel_row__"]
-                line_no = RecipeExcelImportExportManager._to_int(row.get("Line No"), "Phase Line No", errors, row_no)
-                if line_no is None:
-                    continue
-                if line_no < 1 or line_no > 12:
-                    errors.append(f"Phase line number must be between 1 and 12 at row {row_no}.")
-                    continue
-                if line_no in seen_lines:
-                    errors.append(f"Duplicate phase line number {line_no} at row {row_no}.")
-                    continue
-                seen_lines.add(line_no)
-                phase_id = RecipeExcelImportExportManager._to_int(row.get("Phase Control ID"), "Phase Control ID", errors, row_no, required=False)
-                phase_name = str(row.get("Phase Control Name") or "").strip()
-                phase = phase_by_id.get(phase_id) if phase_id else phase_by_name.get(phase_name.upper())
-                if not phase:
-                    errors.append(f"Phase control not found for line {line_no} at row {row_no}.")
-                    continue
-                stop_option = str(row.get("Stop Option") or "No").strip().title()
-                position_option = str(row.get("Position Option") or "No").strip().title()
-                if stop_option not in {"Yes", "No"}:
-                    errors.append(f"Stop Option must be Yes/No at row {row_no}.")
-                if position_option not in {"Yes", "No"}:
-                    errors.append(f"Position Option must be Yes/No at row {row_no}.")
-                sequence_no = RecipeExcelImportExportManager._to_int(row.get("Sequence No"), "Sequence No", errors, row_no, required=False) or line_no
-                parsed_phase.append({
-                    "line_no": line_no,
-                    "phase_control_id": int(phase["id"]),
-                    "phase_control_name": phase["phase_control_name"],
-                    "stop_option": stop_option,
-                    "position_option": position_option,
-                    "sequence_no": sequence_no,
-                })
-            if len(seen_lines) != 12:
-                errors.append(f"Phase_Control must contain 12 unique line numbers. Found {len(seen_lines)}.")
+            if legacy_format:
+                parsed_phase = RecipeExcelImportExportManager._default_phase_rows_for_target(
+                    cur,
+                    target.get("stage_type")
+                )
+                warnings.append(
+                    "Legacy plant Excel does not contain CRS phase-control sheet. CRS inserted default phase-control rows for the selected stage."
+                )
+            elif str(target.get("stage_type") or "").upper() == "SECOND_STAGE" and len(phase_rows) != 18:
+                parsed_phase = RecipeExcelImportExportManager._default_phase_rows_for_target(
+                    cur,
+                    target.get("stage_type")
+                )
+                warnings.append(
+                    "Second Stage import uses the CRS 18-line grouped phase-control structure. Old 12-line Phase_Control sheet was replaced with default grouped rows."
+                )
+            else:
+                parsed_phase = []
+                seen_line_keys = set()
+                for row in phase_rows:
+                    row_no = row["__excel_row__"]
+                    line_no = RecipeExcelImportExportManager._to_int(row.get("Line No"), "Phase Line No", errors, row_no)
+                    if line_no is None:
+                        continue
+                    group_code = str(row.get("Phase Group Code") or row.get("Stage Type") or "MAIN").strip().upper()
+                    if group_code in {"FIRST_STAGE", "SECOND_STAGE"}:
+                        group_code = "MAIN"
+                    group_name = str(row.get("Phase Group Name") or "Phase Control").strip()
+                    line_key = (group_code, line_no)
+                    if line_no < 1 or line_no > 12:
+                        errors.append(f"Phase line number must be between 1 and 12 at row {row_no}.")
+                        continue
+                    if line_key in seen_line_keys:
+                        errors.append(f"Duplicate phase line number {line_no} for {group_code} at row {row_no}.")
+                        continue
+                    seen_line_keys.add(line_key)
+                    phase_id = RecipeExcelImportExportManager._to_int(row.get("Phase Control ID"), "Phase Control ID", errors, row_no, required=False)
+                    phase_name = str(row.get("Phase Control Name") or "").strip()
+                    phase = phase_by_id.get(phase_id) if phase_id else phase_by_name.get(phase_name.upper())
+                    if not phase:
+                        errors.append(f"Phase control not found for line {line_no} at row {row_no}.")
+                        continue
+                    stop_option = str(row.get("Stop Option") or "No").strip().title()
+                    position_option = str(row.get("Position Option") or "No").strip().title()
+                    if stop_option not in {"Yes", "No"}:
+                        errors.append(f"Stop Option must be Yes/No at row {row_no}.")
+                    if position_option not in {"Yes", "No"}:
+                        errors.append(f"Position Option must be Yes/No at row {row_no}.")
+                    sequence_no = RecipeExcelImportExportManager._to_int(row.get("Sequence No"), "Sequence No", errors, row_no, required=False) or line_no
+                    parsed_phase.append({
+                        "line_no": line_no,
+                        "phase_control_id": int(phase["id"]),
+                        "phase_control_name": phase["phase_control_name"],
+                        "stop_option": stop_option,
+                        "position_option": position_option,
+                        "sequence_no": sequence_no,
+                        "phase_group_code": group_code,
+                        "phase_group_name": group_name,
+                    })
+                expected_lines = 18 if str(target.get("stage_type") or "").upper() == "SECOND_STAGE" else 12
+                if len(seen_line_keys) != expected_lines:
+                    errors.append(f"Phase_Control must contain {expected_lines} unique line entries. Found {len(seen_line_keys)}.")
             conn.close()
         else:
             target = {"machine_code": "-", "stage_type": "-"}
@@ -734,6 +1224,7 @@ class RecipeExcelImportExportManager:
             "is_test_only": is_test_only if 'is_test_only' in locals() else 0,
             "parameter_count": len(parsed_parameters) if 'parsed_parameters' in locals() else 0,
             "phase_count": len(parsed_phase) if 'parsed_phase' in locals() else 0,
+            "import_format": "LEGACY_PLANT_EXCEL" if 'legacy_format' in locals() and legacy_format else "CRS_TEMPLATE",
         }
         return {
             "ok": not errors,
@@ -747,9 +1238,15 @@ class RecipeExcelImportExportManager:
         }
 
     @staticmethod
-    def import_pending_file(token, imported_by, user_role, reason=None, request_obj=None):
+    def import_pending_file(token, imported_by, user_role, reason=None, request_obj=None, machine_id=None, stage_id=None, recipe_code_override=None, recipe_name_override=None):
         file_path = RecipeExcelImportExportManager.pending_path(token)
-        preview = RecipeExcelImportExportManager.preview_import(file_path)
+        preview = RecipeExcelImportExportManager.preview_import(
+            file_path,
+            machine_id=machine_id,
+            stage_id=stage_id,
+            recipe_code_override=recipe_code_override,
+            recipe_name_override=recipe_name_override
+        )
         if not preview["ok"]:
             return False, None, preview
 
@@ -775,6 +1272,12 @@ class RecipeExcelImportExportManager:
                 (machine_id, stage_id, recipe_code, summary["recipe_name"], version, imported_by, is_test_only),
             )
             recipe_id = cur.lastrowid
+            master_detail_update_count = 0
+            for item in parameters:
+                master_detail_update_count += RecipeExcelImportExportManager._update_parameter_master_non_plc_details(
+                    cur,
+                    item
+                )
             for item in parameters:
                 definition = item["definition"]
                 cur.execute(
@@ -789,10 +1292,19 @@ class RecipeExcelImportExportManager:
                 cur.execute(
                     """
                     INSERT INTO recipe_phase_control
-                    (recipe_id, line_no, phase_control_id, stop_option, position_option, sequence_no)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    (recipe_id, line_no, phase_control_id, stop_option, position_option, sequence_no, phase_group_code, phase_group_name)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (recipe_id, row["line_no"], row["phase_control_id"], row["stop_option"], row["position_option"], row["sequence_no"]),
+                    (
+                        recipe_id,
+                        row["line_no"],
+                        row["phase_control_id"],
+                        row["stop_option"],
+                        row["position_option"],
+                        row["sequence_no"],
+                        row.get("phase_group_code") or "MAIN",
+                        row.get("phase_group_name") or "Phase Control",
+                    ),
                 )
             conn.commit()
         except Exception as exc:
@@ -822,7 +1334,7 @@ class RecipeExcelImportExportManager:
             recipe_version=version,
             record_id=recipe_id,
             old_value=os.path.basename(file_path),
-            new_value=f"parameters={len(parameters)}; phase_rows={len(phase_rows)}; status=DRAFT",
+            new_value=f"parameters={len(parameters)}; phase_rows={len(phase_rows)}; master_detail_updates={locals().get('master_detail_update_count', 0)}; status=DRAFT",
             reason=reason or "Recipe imported from Excel template",
             **ctx,
         )

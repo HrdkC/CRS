@@ -19,7 +19,7 @@
 
     <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='css/main.css') }}"
+        href="{{ url_for('static', filename='css/main.css') }}?v=phase-standard-20260628"
     >
 
 </head>
@@ -110,9 +110,11 @@
                 <li class="dropdown menu-item">
                     <a href="#">Engineering ▼</a>
                     <div class="dropdown-menu">
+                        <a href="/configuration">Configuration Center</a>
                         <a href="/families">TBM Families</a>
                         <a href="/machines">Machines</a>
                         <a href="/stages">Stages</a>
+                        <a href="/phase-controls">Phase Control Master</a>
                         <a href="/engineering-units">Engineering Units</a>
                     </div>
                 </li>
@@ -123,6 +125,7 @@
                     <a href="#">PLC & Tags ▼</a>
                     <div class="dropdown-menu">
                         <a href="/plcs">PLC Registry</a>
+                        <a href="/configuration">Machine / Stage Readiness</a>
                         <a href="/recipes">Parameter / Tag Setup</a>
                     </div>
                 </li>

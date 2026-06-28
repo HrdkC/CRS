@@ -17,6 +17,8 @@ from flask_app.routes.plc_array_import_routes import register_plc_array_import_r
 from flask_app.routes.recipe_editor_routes import register_recipe_editor_routes
 from flask_app.routes.stage_routes import register_stage_routes
 from flask_app.routes.help_routes import register_help_routes
+from flask_app.routes.phase_control_routes import register_phase_control_routes
+from flask_app.routes.configuration_routes import register_configuration_routes
 
 
 app = create_app()
@@ -36,6 +38,8 @@ register_plc_array_import_routes(app)
 register_parameter_routes(app)
 register_recipe_editor_routes(app)
 register_help_routes(app)
+register_phase_control_routes(app)
+register_configuration_routes(app)
 
 
 if __name__ == "__main__":

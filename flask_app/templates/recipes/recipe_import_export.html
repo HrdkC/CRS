@@ -33,7 +33,7 @@ Recipe Import / Export
         <div class="metric-card">
             <span class="metric-label">Validation</span>
             <strong class="metric-text">Strict</strong>
-            <small>Min/max, tag mapping, 12 phase rows checked</small>
+            <small>Min/max, tag mapping, stage phase rows checked</small>
         </div>
         <div class="metric-card">
             <span class="metric-label">Audit</span>
@@ -54,7 +54,7 @@ Recipe Import / Export
             </div>
 
             <form method="GET" action="/recipes/import-template-excel" class="template-download-form">
-                <label>
+                <label class="import-field">
                     <span>Machine / Stage</span>
                     <select name="target" required onchange="if(this.value){const p=this.value.split('|'); this.form.machine_id.value=p[0]; this.form.stage_id.value=p[1];}">
                         <option value="">Select target</option>
@@ -67,7 +67,7 @@ Recipe Import / Export
                 </label>
                 <input type="hidden" name="machine_id">
                 <input type="hidden" name="stage_id">
-                <button type="submit" class="crs-btn crs-btn-primary">Download Template</button>
+                <button type="submit" class="crs-btn crs-btn-primary import-form-button">Download Template</button>
             </form>
         </div>
 
@@ -80,12 +80,64 @@ Recipe Import / Export
                 <span class="status-badge status-warning">Preview First</span>
             </div>
 
-            <form method="POST" action="/recipes/import-preview" enctype="multipart/form-data" class="template-upload-form">
-                <label>
+            <form
+                method="POST"
+                action="/recipes/import-preview"
+                enctype="multipart/form-data"
+                class="template-upload-form"
+                onsubmit="const s=this.querySelector('select[name=target]'); if(s && s.value){const p=s.value.split('|'); this.machine_id.value=p[0]; this.stage_id.value=p[1];}"
+            >
+                <label class="import-field import-field-full">
                     <span>Recipe Excel File</span>
                     <input type="file" name="recipe_file" accept=".xlsx" required>
                 </label>
-                <button type="submit" class="crs-btn crs-btn-primary">Preview Import</button>
+
+                <div class="import-form-two-column">
+
+                <label class="import-field">
+                    <span>New Recipe Code / GT Code</span>
+                    <input
+                        type="text"
+                        name="recipe_code"
+                        placeholder="Example: GT_P15_SS_IMPORT_TEST_001"
+                        required
+                    >
+                    <small>This is used if Recipe_Info is blank and also prevents accidental duplicate imports.</small>
+                </label>
+
+                <label class="import-field">
+                    <span>New Recipe Name</span>
+                    <input
+                        type="text"
+                        name="recipe_name"
+                        placeholder="Example: P15 Second Stage Import Test 001"
+                        required
+                    >
+                </label>
+
+                </div>
+
+                <label class="import-field import-field-full">
+                    <span>Target Machine / Stage</span>
+                    <select
+                        name="target"
+                        required
+                        onchange="if(this.value){const p=this.value.split('|'); this.form.machine_id.value=p[0]; this.form.stage_id.value=p[1];}"
+                    >
+                        <option value="">Select target for import</option>
+                        {% for target in targets %}
+                        <option value="{{ target.machine_id }}|{{ target.stage_id }}">
+                            {{ target.machine_code }} / {{ target.stage_type }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small>Target selection has priority over hidden Machine ID / Stage ID inside Excel.</small>
+                </label>
+
+                <input type="hidden" name="machine_id">
+                <input type="hidden" name="stage_id">
+
+                <button type="submit" class="crs-btn crs-btn-primary import-form-button">Preview Import</button>
             </form>
         </div>
 
@@ -110,7 +162,7 @@ Recipe Import / Export
             </div>
             <div>
                 <strong>Phase_Control</strong>
-                <span>12 lines required. Phase name/ID, Stop, Position and Sequence are checked.</span>
+                <span>First Stage uses 12 lines. Second Stage uses 18 grouped lines. Phase name/ID and sequence are checked.</span>
             </div>
             <div>
                 <strong>Safety</strong>
@@ -142,7 +194,7 @@ Recipe Import / Export
             <div class="metric-card">
                 <span class="metric-label">Target</span>
                 <strong class="metric-text">{{ preview.summary.machine_code }}</strong>
-                <small>{{ preview.summary.stage_type }}</small>
+                <small>{{ preview.summary.stage_type }}{% if preview.summary.import_format %} | {{ preview.summary.import_format }}{% endif %}</small>
             </div>
             <div class="metric-card">
                 <span class="metric-label">Parameters</span>
@@ -152,7 +204,7 @@ Recipe Import / Export
             <div class="metric-card">
                 <span class="metric-label">Phase Lines</span>
                 <strong>{{ preview.summary.phase_count }}</strong>
-                <small>Expected 12</small>
+                <small>Expected {{ 18 if preview.summary.stage_type == 'SECOND_STAGE' else 12 }}</small>
             </div>
         </div>
 
@@ -181,6 +233,10 @@ Recipe Import / Export
         {% if preview.ok %}
         <form method="POST" action="/recipes/import-confirm" class="import-confirm-form" data-confirm="This will save the uploaded recipe as DRAFT in CRS database. Continue?">
             <input type="hidden" name="token" value="{{ token }}">
+            <input type="hidden" name="machine_id" value="{{ preview.summary.machine_id }}">
+            <input type="hidden" name="stage_id" value="{{ preview.summary.stage_id }}">
+            <input type="hidden" name="recipe_code" value="{{ preview.summary.recipe_code }}">
+            <input type="hidden" name="recipe_name" value="{{ preview.summary.recipe_name }}">
             <label>
                 <span>Import Reason / Remarks</span>
                 <input type="text" name="reason" placeholder="Example: New GT recipe imported from approved template" required>

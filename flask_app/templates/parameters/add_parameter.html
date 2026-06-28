@@ -1,104 +1,141 @@
 {% extends "base.html" %}
 
+{% block title %}
+Add Parameter
+{% endblock %}
+
 {% block content %}
 
-<h2>
+{% set machine_stage_title = context.machine_stage_display if context is defined and context else "Machine Stage" %}
+{% set stage_text = context.stage_url_code ~ " " ~ context.stage_display_name if context is defined and context else "-" %}
 
-Add Recipe Parameter
+<section class="recipe-workbench">
 
-</h2>
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Parameter Master</span>
+            <h1>Add Parameter</h1>
+            <p>{{ machine_stage_title }}</p>
+        </div>
 
-<form method="POST">
+        <div class="workbench-actions">
+            <a href="{{ back_url }}" class="crs-btn crs-btn-soft">Back To Parameter Master</a>
+        </div>
+    </div>
 
-    <p>
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Machine / Stage</span>
+            <strong>{{ machine_stage_title }}</strong>
+            <small>Template ownership scope</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Stage</span>
+            <strong>{{ stage_text }}</strong>
+            <small>First/second stage specific</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">PLC Mapping</span>
+            <strong class="metric-text">Required</strong>
+            <small>Tag index and array index</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Validation</span>
+            <strong class="metric-text">Min/Max</strong>
+            <small>Checked before recipe download</small>
+        </div>
+    </div>
 
-        Tag Index
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Parameter Details</span>
+            <span class="status-badge status-info">New Row</span>
+        </div>
 
-        <input
-            type="number"
-            name="tag_index"
-            required
-        >
+        <form method="POST" class="parameter-edit-form">
+            <div class="form-grid two-column-form-grid">
+                <label>
+                    <span>Tag Index</span>
+                    <input
+                        type="number"
+                        name="tag_index"
+                        required
+                        value="{{ form_data.get('tag_index') if form_data is defined else '' }}"
+                    >
+                </label>
 
-    </p>
+                <label>
+                    <span>PLC Array Index</span>
+                    <input
+                        type="number"
+                        name="plc_array_index"
+                        required
+                        value="{{ form_data.get('plc_array_index') if form_data is defined else '' }}"
+                    >
+                </label>
 
-    <p>
+                <label class="form-span-2">
+                    <span>Parameter Name</span>
+                    <input
+                        type="text"
+                        name="parameter_name"
+                        required
+                        value="{{ form_data.get('parameter_name') if form_data is defined else '' }}"
+                        placeholder="Example: Sidewall Material Length"
+                    >
+                </label>
 
-        PLC Array Index
+                <label>
+                    <span>Unit</span>
+                    <input
+                        type="text"
+                        name="unit"
+                        value="{{ form_data.get('unit') if form_data is defined else '' }}"
+                        placeholder="MM / DEG / SEC"
+                    >
+                </label>
 
-        <input
-            type="number"
-            name="plc_array_index"
-            required
-        >
+                <label>
+                    <span>Default Value</span>
+                    <input
+                        type="number"
+                        step="any"
+                        name="default_value"
+                        required
+                        value="{{ form_data.get('default_value') if form_data is defined else '0' }}"
+                    >
+                </label>
 
-    </p>
+                <label>
+                    <span>Min Value</span>
+                    <input
+                        type="number"
+                        step="any"
+                        name="min_value"
+                        required
+                        value="{{ form_data.get('min_value') if form_data is defined else '0' }}"
+                    >
+                </label>
 
-    <p>
+                <label>
+                    <span>Max Value</span>
+                    <input
+                        type="number"
+                        step="any"
+                        name="max_value"
+                        required
+                        value="{{ form_data.get('max_value') if form_data is defined else '999999' }}"
+                    >
+                </label>
+            </div>
 
-        Parameter Name
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Save Parameter</button>
+                <a href="{{ back_url }}" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
 
-        <input
-            type="text"
-            name="parameter_name"
-            required
-        >
-
-    </p>
-
-    <p>
-
-        Unit
-
-        <input
-            type="text"
-            name="unit"
-        >
-
-    </p>
-
-    <p>
-
-        Min Value
-
-        <input
-            type="number"
-            step="any"
-            name="min_value"
-        >
-
-    </p>
-
-    <p>
-
-        Max Value
-
-        <input
-            type="number"
-            step="any"
-            name="max_value"
-        >
-
-    </p>
-
-    <p>
-
-        Default Value
-
-        <input
-            type="number"
-            step="any"
-            name="default_value"
-        >
-
-    </p>
-
-    <button type="submit">
-
-        Save Parameter
-
-    </button>
-
-</form>
+</section>
 
 {% endblock %}

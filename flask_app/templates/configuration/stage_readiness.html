@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}
+Configuration Readiness
+{% endblock %}
+
+{% block content %}
+
+{% set context = report.context %}
+
+<div class="recipe-workbench configuration-workbench">
+
+    <section class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Configuration Readiness</span>
+            <h1>{{ context.machine_stage_display }}</h1>
+            <p>GUI setup status for templates, phase controls, PLC tags, and recipe readiness.</p>
+        </div>
+        <div class="workbench-actions">
+            <a class="crs-btn crs-btn-soft" href="{{ back_url }}">All Stages</a>
+            <a class="crs-btn crs-btn-soft" href="{{ report.recipes_url }}">Recipes</a>
+            <a class="crs-btn crs-btn-primary" href="{{ report.create_recipe_url }}">Create Recipe</a>
+        </div>
+    </section>
+
+    <section class="metric-grid configuration-metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong class="metric-text">{{ report.status }}</strong>
+            <small>Overall setup condition</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Score</span>
+            <strong>{{ report.score }}%</strong>
+            <small>{{ report.ready_count }} of {{ report.total_count }} checks OK</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Blocked</span>
+            <strong>{{ report.blocking_count }}</strong>
+            <small>Must be fixed before stable operation</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Warnings</span>
+            <strong>{{ report.warning_count }}</strong>
+            <small>Recommended before plant use</small>
+        </div>
+    </section>
+
+    <section class="workbench-card configuration-action-card">
+        <div class="configuration-action-grid">
+            <a class="configuration-action" href="{{ report.parameters_url }}" title="View, add, edit, enable, or disable stage parameter definitions.">
+                <span>Parameter Template</span>
+                <strong>Open</strong>
+            </a>
+            <a class="configuration-action" href="{{ report.plc_array_import_url }}" title="Build parameter master and draft recipe from a PLC 1D REAL array.">
+                <span>1D Array Import</span>
+                <strong>Open</strong>
+            </a>
+            <a class="configuration-action" href="{{ report.phase_master_url }}" title="Maintain allowed phase groups and phase names for this stage.">
+                <span>Phase Master</span>
+                <strong>Open</strong>
+            </a>
+            <a class="configuration-action" href="{{ report.plc_tags_url }}" title="Browse online/offline PLC tags and assign CRS tag purposes.">
+                <span>PLC Tags</span>
+                <strong>Open</strong>
+            </a>
+            <a class="configuration-action" href="/plcs/create" title="Register PLC metadata and IP address for this machine/stage.">
+                <span>PLC Registry</span>
+                <strong>Open</strong>
+            </a>
+            <a class="configuration-action" href="/recipes/import-export" title="Download or import CRS Excel templates.">
+                <span>Recipe Excel</span>
+                <strong>Open</strong>
+            </a>
+        </div>
+    </section>
+
+    <section class="configuration-section-grid">
+        {% for section in report.sections %}
+        <article class="workbench-card readiness-section readiness-section-{{ section.severity }}">
+            <div class="table-heading">
+                <div>
+                    <strong>{{ section.title }}</strong>
+                    <p>{{ section.summary }}</p>
+                </div>
+                <span class="status-badge status-{{ section.severity }}">
+                    {% if section.severity == "ok" %}OK{% elif section.severity == "warning" %}WARNING{% else %}BLOCKED{% endif %}
+                </span>
+            </div>
+
+            <div class="readiness-check-list">
+                {% for item in section["items"] %}
+                <div class="readiness-check readiness-check-{{ item.status }}">
+                    <div class="readiness-check-status">
+                        <span class="status-dot status-dot-{{ item.status }}"></span>
+                        <strong>{{ item.status|upper }}</strong>
+                    </div>
+                    <div class="readiness-check-body">
+                        <strong>{{ item.label }}</strong>
+                        <span title="{{ item.detail }}">{{ item.detail }}</span>
+                    </div>
+                    {% if item.action_url %}
+                    <a class="crs-btn crs-btn-soft" href="{{ item.action_url }}" title="Open PLC Tag Browser filtered for this required purpose.">Map Tag</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+
+</div>
+
+{% endblock %}

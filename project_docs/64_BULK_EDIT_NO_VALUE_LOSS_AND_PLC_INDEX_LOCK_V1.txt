@@ -1,0 +1,27 @@
+CRS V6.8.1 - Bulk Edit No Value Loss + PLC Index Lock
+
+Purpose:
+- Fix Bulk Edit Parameters behavior where typed values were lost when Save was pressed without ticking a row.
+- Prevent PLC index edits from the bulk recipe parameter screen to avoid duplicate/unsafe PLC mappings.
+- Re-include Excel import handling from V6.8 so legacy P15 Second Stage imports remain supported.
+
+Changes:
+1. Bulk Edit Parameters template
+   - Editing any parameter input now auto-selects that row.
+   - On Save, changed rows are selected again before submit.
+   - If no row is selected and no row is changed, browser blocks submit and keeps values on screen.
+   - PLC Index field is readonly, unnamed, and not submitted.
+
+2. Bulk Edit route
+   - If POST arrives without selected rows, server detects changed rows from submitted form values.
+   - On missing reason / no selected row / validation error / active edit lock, page is re-rendered with posted values preserved.
+   - Backend ignores PLC index edits; PLC index remains fixed master mapping data.
+
+3. Import route/manager/template
+   - Legacy Import.xlsx style import support retained.
+   - Mapping remains by tag index; PLC index is not edited from recipe import.
+
+Important after apply:
+- Stop Flask completely.
+- Remove __pycache__ folders or run: python scripts/clear_crs_pycache.py
+- Start Flask again.

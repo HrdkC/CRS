@@ -1044,25 +1044,28 @@ def register_recipe_editor_routes(app):
                 f"/recipe-editor/{recipe_id}"
             )
 
-        rows = (
-            RecipeParameterValueManager
-            .get_recipe_values(
-                recipe_id
+        search_text = (
+            request.args.get(
+                "search",
+                ""
             )
-        )
-
-        search_text = request.args.get(
-            "search",
+            or
             ""
-        )
+        ).strip()
 
-        if search_text:
+        def _filter_bulk_rows(source_rows):
 
-            rows = [
+            if not search_text:
+
+                return list(source_rows)
+
+            search_upper = search_text.upper()
+
+            return [
                 row
-                for row in rows
+                for row in source_rows
                 if (
-                    search_text.upper()
+                    search_upper
                     in
                     str(row.get("parameter_name") or "").upper()
                     or
@@ -1076,23 +1079,198 @@ def register_recipe_editor_routes(app):
                 )
             ]
 
-        if request.method == "POST":
+        def _clone_row(row):
 
-            all_rows = (
-                RecipeParameterValueManager
-                .get_recipe_values(
-                    recipe_id
+            if hasattr(row, "copy"):
+
+                return row.copy()
+
+            return dict(row)
+
+        def _posted_or_existing(form, field_name, existing_value):
+
+            if field_name in form:
+
+                return form.get(field_name)
+
+            if existing_value is None:
+
+                return ""
+
+            return str(existing_value)
+
+        def _rows_with_posted_values(display_rows, form):
+
+            hydrated_rows = []
+
+            for row in display_rows:
+
+                row_copy = _clone_row(row)
+
+                row_id = str(row_copy["id"])
+
+                row_copy["form_parameter_value"] = _posted_or_existing(
+                    form,
+                    f"parameter_value_{row_id}",
+                    row_copy.get("parameter_value")
                 )
+
+                row_copy["form_parameter_name"] = _posted_or_existing(
+                    form,
+                    f"parameter_name_{row_id}",
+                    row_copy.get("parameter_name")
+                )
+
+                row_copy["form_unit"] = _posted_or_existing(
+                    form,
+                    f"unit_{row_id}",
+                    row_copy.get("unit")
+                )
+
+                row_copy["form_min_value"] = _posted_or_existing(
+                    form,
+                    f"min_value_{row_id}",
+                    row_copy.get("min_value")
+                )
+
+                row_copy["form_max_value"] = _posted_or_existing(
+                    form,
+                    f"max_value_{row_id}",
+                    row_copy.get("max_value")
+                )
+
+                row_copy["form_default_value"] = _posted_or_existing(
+                    form,
+                    f"default_value_{row_id}",
+                    row_copy.get("default_value")
+                )
+
+                hydrated_rows.append(row_copy)
+
+            return hydrated_rows
+
+        def _norm(value):
+
+            if value is None:
+
+                return ""
+
+            return str(value).strip()
+
+        def _row_has_posted_change(row, form):
+
+            row_id = str(row["id"])
+
+            compare_fields = [
+                (
+                    f"parameter_value_{row_id}",
+                    row.get("parameter_value")
+                )
+            ]
+
+            if can_edit_details:
+
+                compare_fields.extend([
+                    (
+                        f"parameter_name_{row_id}",
+                        row.get("parameter_name")
+                    ),
+                    (
+                        f"unit_{row_id}",
+                        row.get("unit")
+                    ),
+                    (
+                        f"min_value_{row_id}",
+                        row.get("min_value")
+                    ),
+                    (
+                        f"max_value_{row_id}",
+                        row.get("max_value")
+                    ),
+                    (
+                        f"default_value_{row_id}",
+                        row.get("default_value")
+                    )
+                ])
+
+            for field_name, old_value in compare_fields:
+
+                if field_name not in form:
+
+                    continue
+
+                if _norm(form.get(field_name)) != _norm(old_value):
+
+                    return True
+
+            return False
+
+        def _render_bulk_edit(
+            display_rows,
+            selected_ids=None,
+            validation_errors=None,
+            change_reason=""
+        ):
+
+            return render_template(
+                "recipes/bulk_edit_parameters.html",
+                recipe=recipe,
+                rows=display_rows,
+                selected_ids=set(str(value_id) for value_id in (selected_ids or [])),
+                validation_errors=validation_errors or [],
+                search_text=search_text,
+                can_edit_details=can_edit_details,
+                change_reason=change_reason or ""
             )
+
+        all_rows = (
+            RecipeParameterValueManager
+            .get_recipe_values(
+                recipe_id
+            )
+        )
+
+        rows = _filter_bulk_rows(all_rows)
+
+        if request.method == "POST":
 
             row_by_value_id = {
                 str(row["id"]): row
                 for row in all_rows
             }
 
-            selected_ids = request.form.getlist(
-                "selected_value_id"
+            posted_rows = _rows_with_posted_values(
+                rows,
+                request.form
             )
+
+            selected_ids = set(
+                request.form.getlist(
+                    "selected_value_id"
+                )
+            )
+
+            changed_ids = {
+                str(row["id"])
+                for row in all_rows
+                if _row_has_posted_change(
+                    row,
+                    request.form
+                )
+            }
+
+            # Browser-side JavaScript also auto-selects changed rows, but this
+            # backend rule is the safety net. If the user forgets to tick a row,
+            # changed rows are still saved and typed values are not lost.
+            selected_ids.update(
+                changed_ids
+            )
+
+            selected_ids = {
+                value_id
+                for value_id in selected_ids
+                if value_id in row_by_value_id
+            }
 
             change_reason = (
                 request.form.get(
@@ -1102,26 +1280,43 @@ def register_recipe_editor_routes(app):
                 ""
             ).strip()
 
-            if not change_reason:
-
-                flash(
-                    "Enter a change reason before saving selected parameters.",
-                    "error"
-                )
-
-                return redirect(
-                    f"/recipe-editor/{recipe_id}/parameters/bulk-edit"
-                )
-
             if not selected_ids:
 
+                validation_errors = [
+                    (
+                        "No changed or selected parameter row was found. "
+                        "Edit a row or tick one row before saving. Typed values have been kept on this page."
+                    )
+                ]
+
                 flash(
-                    "Select at least one parameter row to save.",
+                    "Select or edit at least one parameter row to save. Typed values were kept.",
                     "error"
                 )
 
-                return redirect(
-                    f"/recipe-editor/{recipe_id}/parameters/bulk-edit"
+                return _render_bulk_edit(
+                    posted_rows,
+                    selected_ids=selected_ids,
+                    validation_errors=validation_errors,
+                    change_reason=change_reason
+                )
+
+            if not change_reason:
+
+                validation_errors = [
+                    "Enter a change reason before saving selected parameters. Typed values have been kept on this page."
+                ]
+
+                flash(
+                    "Enter a change reason before saving selected parameters. Typed values were kept.",
+                    "error"
+                )
+
+                return _render_bulk_edit(
+                    posted_rows,
+                    selected_ids=selected_ids,
+                    validation_errors=validation_errors,
+                    change_reason=change_reason
                 )
 
             validation_errors = []
@@ -1129,8 +1324,6 @@ def register_recipe_editor_routes(app):
             parsed_changes = {}
 
             final_names = {}
-
-            final_plc_indexes = {}
 
             for row in all_rows:
 
@@ -1140,30 +1333,28 @@ def register_recipe_editor_routes(app):
 
                 try:
 
-                    value = float(
-                        request.form.get(
-                            f"parameter_value_{row_id}",
-                            row["parameter_value"]
+                    value = (
+                        float(
+                            request.form.get(
+                                f"parameter_value_{row_id}",
+                                row["parameter_value"]
+                            )
                         )
-                    ) if selected else row["parameter_value"]
+                        if selected
+                        else
+                        row["parameter_value"]
+                    )
 
                     if selected and can_edit_details:
 
                         parameter_name = (
                             request.form.get(
                                 f"parameter_name_{row_id}",
-                                row["parameter_name"]
+                                row.get("parameter_name") or ""
                             )
                             or
                             ""
                         ).strip()
-
-                        plc_array_index = _optional_int(
-                            request.form.get(
-                                f"plc_array_index_{row_id}",
-                                row.get("plc_array_index")
-                            )
-                        )
 
                         unit = (
                             request.form.get(
@@ -1198,13 +1389,16 @@ def register_recipe_editor_routes(app):
                     else:
 
                         parameter_name = row.get("parameter_name") or ""
-                        plc_array_index = row.get("plc_array_index")
                         unit = row.get("unit") or ""
                         min_value = row.get("min_value")
                         max_value = row.get("max_value")
                         default_value = row.get("default_value")
 
-                    if selected and not parameter_name:
+                    # PLC index is master mapping data. It is intentionally not
+                    # editable from Bulk Edit and is never read from the form.
+                    plc_array_index = row.get("plc_array_index")
+
+                    if selected and can_edit_details and not parameter_name:
 
                         validation_errors.append(
                             f"Tag {row['tag_index']}: parameter name is required."
@@ -1253,25 +1447,17 @@ def register_recipe_editor_routes(app):
                         "default_value": default_value
                     }
 
-                    final_name_key = parameter_name.upper()
+                    if parameter_name:
 
-                    if final_name_key in final_names:
+                        final_name_key = parameter_name.upper()
 
-                        validation_errors.append(
-                            f"Duplicate parameter name: {parameter_name}."
-                        )
-
-                    final_names[final_name_key] = row["id"]
-
-                    if plc_array_index is not None:
-
-                        if plc_array_index in final_plc_indexes:
+                        if final_name_key in final_names:
 
                             validation_errors.append(
-                                f"Duplicate PLC index: {plc_array_index}."
+                                f"Duplicate parameter name: {parameter_name}."
                             )
 
-                        final_plc_indexes[plc_array_index] = row["id"]
+                        final_names[final_name_key] = row["id"]
 
                 except Exception as exc:
 
@@ -1281,7 +1467,9 @@ def register_recipe_editor_routes(app):
 
             unknown_ids = [
                 value_id
-                for value_id in selected_ids
+                for value_id in request.form.getlist(
+                    "selected_value_id"
+                )
                 if value_id not in row_by_value_id
             ]
 
@@ -1298,14 +1486,11 @@ def register_recipe_editor_routes(app):
                     "error"
                 )
 
-                return render_template(
-                    "recipes/bulk_edit_parameters.html",
-                    recipe=recipe,
-                    rows=rows,
-                    selected_ids=set(selected_ids),
+                return _render_bulk_edit(
+                    posted_rows,
+                    selected_ids=selected_ids,
                     validation_errors=validation_errors[:20],
-                    search_text=search_text,
-                    can_edit_details=can_edit_details
+                    change_reason=change_reason
                 )
 
             edit_lock_result = _acquire_recipe_edit_lock(
@@ -1323,8 +1508,13 @@ def register_recipe_editor_routes(app):
                     "warning"
                 )
 
-                return redirect(
-                    f"/recipe-editor/{recipe_id}"
+                return _render_bulk_edit(
+                    posted_rows,
+                    selected_ids=selected_ids,
+                    validation_errors=[
+                        "Recipe edit lock is active. Typed values have been kept on this page."
+                    ],
+                    change_reason=change_reason
                 )
 
             edit_lock_id = (
@@ -1352,7 +1542,7 @@ def register_recipe_editor_routes(app):
                             .update_parameter_details(
                                 parameter_id=row["parameter_definition_id"],
                                 parameter_name=parsed["parameter_name"],
-                                plc_array_index=parsed["plc_array_index"],
+                                plc_array_index=row.get("plc_array_index"),
                                 unit=parsed["unit"],
                                 min_value=parsed["min_value"],
                                 max_value=parsed["max_value"],
@@ -1363,6 +1553,10 @@ def register_recipe_editor_routes(app):
                         if detail_result:
 
                             for field_name, old_value in detail_result["old"].items():
+
+                                if field_name == "plc_array_index":
+
+                                    continue
 
                                 new_value = detail_result["new"][field_name]
 
@@ -1423,7 +1617,7 @@ def register_recipe_editor_routes(app):
                 flash(
                     (
                         f"Bulk parameter save completed: {changed_count} value change(s), "
-                        f"{detail_changed_count} detail field change(s)."
+                        f"{detail_changed_count} detail field change(s). PLC index mapping was not changed."
                     ),
                     "success"
                 )
@@ -1441,14 +1635,11 @@ def register_recipe_editor_routes(app):
                 f"/recipe-editor/{recipe_id}"
             )
 
-        return render_template(
-            "recipes/bulk_edit_parameters.html",
-            recipe=recipe,
-            rows=rows,
+        return _render_bulk_edit(
+            rows,
             selected_ids=set(),
             validation_errors=[],
-            search_text=search_text,
-            can_edit_details=can_edit_details
+            change_reason=""
         )
 
     @app.route(
@@ -1939,6 +2130,17 @@ def register_recipe_editor_routes(app):
                 recipe_id
             )
         )
+
+        if not recipe:
+
+            flash(
+                "Recipe not found.",
+                "error"
+            )
+
+            return redirect(
+                "/recipes"
+            )
 
         if (
             recipe

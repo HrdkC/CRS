@@ -32,6 +32,17 @@ Create Machine
             <span class="status-badge status-info">Auto Stages</span>
         </div>
 
+        {% if not families %}
+        <div class="empty-state-card">
+            <div>
+                <strong>TBM family is required before creating a machine.</strong>
+                <p class="muted-text">
+                    Create a family first. After machine creation, CRS will automatically create First Stage and Second Stage records.
+                </p>
+            </div>
+            <a href="/families/create" class="crs-btn crs-btn-primary">Create Family</a>
+        </div>
+        {% else %}
         <form method="POST" class="parameter-edit-form">
             <label>
                 <span>Machine Code</span>
@@ -54,6 +65,7 @@ Create Machine
                 <a href="/machines" class="crs-btn crs-btn-soft">Cancel</a>
             </div>
         </form>
+        {% endif %}
     </div>
 
 </section>

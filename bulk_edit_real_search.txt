@@ -1,0 +1,6 @@
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:945: "/recipe-editor/<int:recipe_id>/parameters/bulk-edit",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1216: "recipes/bulk_edit_parameters.html",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:83: href="/recipe-editor/{{ recipe.id }}/parameters/bulk-edit"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:193: class="locked-cell-display"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:293: Save Selected Parameters
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\editor.html:663: href="/recipe-editor/{{ recipe.id }}/parameters/bulk-edit"

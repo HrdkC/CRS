@@ -1,0 +1,14 @@
+Priority 11 user/session/schema/archive upgrade completed.
+/recipes/<recipe_code>/parameters -> recipe_parameters
+/recipes/<recipe_code>/parameters/<parameter_name>/edit -> edit_parameter_value
+/recipes/<recipe_code>/parameters/<parameter_name>/metadata -> edit_parameter_metadata
+/recipes/<recipe_code>/parameters/<parameter_name>/history -> parameter_history
+/parameters/create-from-array/<int:tag_id>/<int:array_index> -> create_parameter_from_array
+/parameters/<machine_code>/<stage_code> -> parameters_named
+/parameters/<int:machine_id>/<int:stage_id> -> parameters
+/parameters/add/<machine_code>/<stage_code> -> add_parameter_named
+/parameters/add/<int:machine_id>/<int:stage_id> -> add_parameter
+/parameters/edit/<int:parameter_id> -> edit_parameter
+/parameters/disable/<int:parameter_id> -> disable_parameter
+/parameters/enable/<int:parameter_id> -> enable_parameter
+/recipe-editor/<int:recipe_id>/parameters/bulk-edit -> bulk_edit_recipe_parameters

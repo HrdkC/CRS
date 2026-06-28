@@ -869,7 +869,9 @@ Recipe Editor
 
         </div>
 
-        <div class="phase-control-board">
+        {% set editor_stage_upper = (recipe.stage_type or "")|upper|replace(" ", "_") %}
+        {% set editor_is_second_stage_phase = (editor_stage_upper in ["SECOND_STAGE", "SECONDSTAGE", "SS"]) or (phase_groups|length >= 3) %}
+        <div class="phase-control-board {% if editor_is_second_stage_phase %}phase-board-ss{% else %}phase-board-fs{% endif %}">
 
             {% for group in phase_groups %}
             <section class="phase-control-column">

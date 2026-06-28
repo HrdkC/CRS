@@ -43,7 +43,15 @@ Recipe Parameters
         </div>
         <div class="metric-card">
             <span class="metric-label">Stage</span>
-            <strong>{{ stage_url_code(stage_type) if stage_type is defined else stage_id }} {{ stage_display_name(stage_type) if stage_type is defined else "" }}</strong>
+            <strong>
+                {% if stage_url_code is defined and stage_display_name is defined %}
+                    {{ stage_url_code }} {{ stage_display_name }}
+                {% elif context is defined and context.stage_url_code is defined %}
+                    {{ context.stage_url_code }} {{ context.stage_display_name }}
+                {% else %}
+                    {{ stage_id if stage_id is defined else "-" }}
+                {% endif %}
+            </strong>
             <small>Stage-specific definition set</small>
         </div>
         <div class="metric-card">
