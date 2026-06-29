@@ -162,10 +162,10 @@ class RecipeExcelImportExportManager:
         rows = [
             ["CRS Recipe Excel Template", "Purpose"],
             ["Template Type", RecipeExcelImportExportManager.TEMPLATE_TYPE],
-            ["Editable fields", "Recipe_Info: Recipe Code / GT Code, Recipe Name, Version, Is Test Only. Parameters: Parameter Value only. Phase_Control: Phase Control Name/ID, Stop Option, Position Option, Sequence No."],
+            ["Editable fields", "Recipe_Info: Recipe Code / GT Code, Recipe Name, Version, Is Test Only. Parameters: Parameter Value and safe non-PLC details (name/unit/min/max/default/memo/used) when enabled. Phase_Control is exported for reference/manual setup but is not imported."],
             ["Safety rule", "Imported recipes are saved as DRAFT. They must be reviewed/released before production use."],
-            ["Do not change", "Machine ID, Stage ID, Tag Index, PLC Array Index, Parameter Definition ID, master min/max/unit/datatype columns unless Engineering is intentionally changing master data outside this import flow."],
-            ["Validation", "All used parameters for selected machine/stage must be present. Values must be numeric and within min/max where limits are configured. Phase lines must be 1 to 12."],
+            ["Do not change", "Tag Index, PLC Array Index, and Parameter Definition ID are protected PLC mapping fields. Phase_Control rows are reference only during import."],
+            ["Validation", "All used parameters for selected machine/stage must be present. Values must be numeric and within min/max where limits are configured. Phase rows are defaulted during import and must be selected manually before PLC download."],
         ]
         for row in rows:
             ws.append(row)
@@ -924,10 +924,159 @@ class RecipeExcelImportExportManager:
             return None
 
     @staticmethod
-    def preview_import(file_path, machine_id=None, stage_id=None, recipe_code_override=None, recipe_name_override=None):
+    def _truthy(value):
+        return str(value or "").strip().lower() in {"1", "true", "yes", "on", "checked"}
+
+    @staticmethod
+    def _normalize_import_mode(value):
+        value = str(value or "create_new").strip().lower()
+        if value in {"update", "update_existing", "existing", "update_recipe"}:
+            return "update_existing"
+        return "create_new"
+
+    @staticmethod
+    def get_import_recipe_options(machine_id=None, stage_id=None):
+        """Return recipes that can be selected for existing-recipe Excel update.
+
+        Historical released recipes are still returned with status text for
+        visibility, but preview/confirm blocks updates to HISTORY_RELEASED.
+        """
+        conn = get_connection()
+        cur = conn.cursor()
+        conditions = []
+        params = []
+        if machine_id:
+            conditions.append("r.machine_id = ?")
+            params.append(machine_id)
+        if stage_id:
+            conditions.append("r.stage_id = ?")
+            params.append(stage_id)
+        where_clause = "WHERE " + " AND ".join(conditions) if conditions else ""
+        cur.execute(
+            f"""
+            SELECT
+                r.id,
+                r.machine_id,
+                r.stage_id,
+                r.recipe_code,
+                r.recipe_name,
+                r.version,
+                r.status,
+                COALESCE(r.is_test_only, 0) AS is_test_only,
+                m.machine_code,
+                s.stage_type,
+                CASE
+                    WHEN r.status = 'RELEASED'
+                         AND r.version = (
+                             SELECT MAX(x.version)
+                             FROM recipes x
+                             WHERE x.machine_id = r.machine_id
+                               AND x.stage_id = r.stage_id
+                               AND UPPER(x.recipe_code) = UPPER(r.recipe_code)
+                               AND x.status = 'RELEASED'
+                         ) THEN 'CURRENT_RELEASED'
+                    WHEN r.status = 'RELEASED' THEN 'HISTORY_RELEASED'
+                    ELSE COALESCE(r.status, '')
+                END AS version_usage_status
+            FROM recipes r
+            LEFT JOIN tbm_machines m ON m.id = r.machine_id
+            LEFT JOIN machine_stages s ON s.id = r.stage_id
+            {where_clause}
+            ORDER BY m.machine_code, s.stage_type, r.recipe_code, r.version DESC, r.id DESC
+            """,
+            tuple(params),
+        )
+        rows = [dict(r) for r in cur.fetchall()]
+        conn.close()
+        return rows
+
+    @staticmethod
+    def _get_recipe_update_target(cur, recipe_id):
+        if not recipe_id:
+            return None
+        cur.execute(
+            """
+            SELECT
+                r.*,
+                m.machine_code,
+                s.stage_type,
+                CASE
+                    WHEN r.status = 'RELEASED'
+                         AND r.version = (
+                             SELECT MAX(x.version)
+                             FROM recipes x
+                             WHERE x.machine_id = r.machine_id
+                               AND x.stage_id = r.stage_id
+                               AND UPPER(x.recipe_code) = UPPER(r.recipe_code)
+                               AND x.status = 'RELEASED'
+                         ) THEN 'CURRENT_RELEASED'
+                    WHEN r.status = 'RELEASED' THEN 'HISTORY_RELEASED'
+                    ELSE COALESCE(r.status, '')
+                END AS version_usage_status
+            FROM recipes r
+            LEFT JOIN tbm_machines m ON m.id = r.machine_id
+            LEFT JOIN machine_stages s ON s.id = r.stage_id
+            WHERE r.id = ?
+            """,
+            (recipe_id,),
+        )
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+    @staticmethod
+    def _build_effective_limits(definition, row, update_master_details):
+        if update_master_details:
+            min_v = RecipeExcelImportExportManager._optional_excel_float(
+                row.get("Min Value"),
+                definition.get("min_value"),
+            )
+            max_v = RecipeExcelImportExportManager._optional_excel_float(
+                row.get("Max Value"),
+                definition.get("max_value"),
+            )
+        else:
+            min_v = definition.get("min_value")
+            max_v = definition.get("max_value")
+        return min_v, max_v
+
+    @staticmethod
+    def _current_value_map(cur, recipe_id):
+        cur.execute(
+            """
+            SELECT
+                rpv.id AS value_id,
+                rpv.parameter_definition_id,
+                rpv.parameter_value
+            FROM recipe_parameter_values rpv
+            WHERE rpv.recipe_id = ?
+            """,
+            (recipe_id,),
+        )
+        return {int(r["parameter_definition_id"]): dict(r) for r in cur.fetchall()}
+
+    @staticmethod
+    def _values_different(old_value, new_value):
+        try:
+            return float(old_value) != float(new_value)
+        except Exception:
+            return str(old_value if old_value is not None else "") != str(new_value if new_value is not None else "")
+
+    @staticmethod
+    def preview_import(
+        file_path,
+        machine_id=None,
+        stage_id=None,
+        recipe_code_override=None,
+        recipe_name_override=None,
+        import_mode="create_new",
+        existing_recipe_id=None,
+        update_master_details=True,
+    ):
         errors = []
         warnings = []
         legacy_format = False
+        import_mode = RecipeExcelImportExportManager._normalize_import_mode(import_mode)
+        update_master_details = RecipeExcelImportExportManager._truthy(update_master_details)
 
         requested_machine_id = machine_id
         requested_stage_id = stage_id
@@ -939,6 +1088,8 @@ class RecipeExcelImportExportManager:
         except Exception as exc:
             return {"ok": False, "errors": [f"Unable to read Excel workbook: {exc}"], "warnings": [], "summary": {}}
 
+        phase_rows = []
+        phase_sheet_row_count = 0
         try:
             info = RecipeExcelImportExportManager._read_info_sheet(wb)
             template_type = RecipeExcelImportExportManager._info_value(info, "Template Type")
@@ -982,9 +1133,6 @@ class RecipeExcelImportExportManager:
                 required=False
             )
 
-            # Operator-selected target from the web page has priority.
-            # This allows blank CRS templates and legacy Excel files to import
-            # without depending on hidden Recipe_Info IDs inside the workbook.
             machine_id = form_machine_id or sheet_machine_id
             stage_id = form_stage_id or sheet_stage_id
 
@@ -995,17 +1143,26 @@ class RecipeExcelImportExportManager:
                 required=False
             ) or 0
 
-            if not recipe_code:
-                errors.append("Recipe Code / GT Code is required. Enter it on the Import page or in Recipe_Info sheet.")
-            if not recipe_name:
-                errors.append("Recipe Name is required. Enter it on the Import page or in Recipe_Info sheet.")
-            if machine_id is None or stage_id is None:
-                errors.append("Target Machine / Stage is required. Select it on the Import page or keep Machine ID and Stage ID in Recipe_Info sheet.")
-            if version is not None and version < 1:
-                errors.append("Version must be 1 or higher.")
+            parameter_rows = RecipeExcelImportExportManager._sheet_rows(
+                wb,
+                RecipeExcelImportExportManager.PARAMETERS_SHEET,
+                RecipeExcelImportExportManager.PARAMETER_HEADERS,
+            )
 
-            parameter_rows = RecipeExcelImportExportManager._sheet_rows(wb, RecipeExcelImportExportManager.PARAMETERS_SHEET, RecipeExcelImportExportManager.PARAMETER_HEADERS)
-            phase_rows = RecipeExcelImportExportManager._sheet_rows(wb, RecipeExcelImportExportManager.PHASE_SHEET, RecipeExcelImportExportManager.PHASE_HEADERS)
+            if RecipeExcelImportExportManager.PHASE_SHEET in wb.sheetnames:
+                try:
+                    phase_rows = RecipeExcelImportExportManager._sheet_rows(
+                        wb,
+                        RecipeExcelImportExportManager.PHASE_SHEET,
+                        RecipeExcelImportExportManager.PHASE_HEADERS,
+                    )
+                    phase_sheet_row_count = len(phase_rows)
+                except Exception as phase_exc:
+                    warnings.append(
+                        "Phase_Control sheet was found but was not imported. "
+                        "Recipe import is parameter-only; select phase controls manually after import. "
+                        f"Technical detail: {phase_exc}"
+                    )
         except Exception as exc:
             legacy_rows = RecipeExcelImportExportManager._read_legacy_parameter_rows(wb)
             if not legacy_rows:
@@ -1037,181 +1194,236 @@ class RecipeExcelImportExportManager:
                 errors,
                 required=False
             )
-            if machine_id is None or stage_id is None:
-                errors.append("Target Machine / Stage is required for legacy plant Excel import.")
-            if not recipe_code:
-                errors.append("Recipe Code / GT Code is required for legacy plant Excel import.")
-            if not recipe_name:
-                errors.append("Recipe Name is required for legacy plant Excel import.")
             is_test_only = 0
             parameter_rows = legacy_rows
             phase_rows = []
+            phase_sheet_row_count = 0
 
-        if not errors:
-            conn = get_connection()
-            cur = conn.cursor()
-            cur.execute(
-                """
-                SELECT m.machine_code, s.stage_type
-                FROM tbm_machines m
-                INNER JOIN machine_stages s ON s.machine_id = m.id
-                WHERE m.id = ? AND s.id = ?
-                """,
-                (machine_id, stage_id),
-            )
-            target = cur.fetchone()
-            if not target:
-                errors.append("Machine ID / Stage ID combination does not exist.")
-                target = {"machine_code": "-", "stage_type": "-"}
-            else:
-                target = dict(target)
+        conn = get_connection()
+        cur = conn.cursor()
+        target = {"machine_code": "-", "stage_type": "-"}
+        parsed_parameters = []
+        parsed_phase = []
+        update_target = None
+        changed_value_count = 0
+        unchanged_value_count = 0
+        missing_existing_value_count = 0
+        master_detail_change_count = 0
 
-            cur.execute(
-                """
-                SELECT id FROM recipes
-                WHERE machine_id = ? AND stage_id = ? AND UPPER(recipe_code) = UPPER(?) AND version = ?
-                """,
-                (machine_id, stage_id, recipe_code, version),
-            )
-            if cur.fetchone():
-                errors.append(f"Recipe {recipe_code} V{version} already exists for selected machine/stage. Use a new GT code or version.")
-
-            cur.execute(
-                """
-                SELECT * FROM parameter_definitions
-                WHERE machine_id = ? AND stage_id = ? AND COALESCE(used, 1) = 1
-                ORDER BY tag_index
-                """,
-                (machine_id, stage_id),
-            )
-            definitions = [dict(r) for r in cur.fetchall()]
-            by_id = {int(r["id"]): r for r in definitions}
-            by_tag = {int(r["tag_index"]): r for r in definitions}
-
-            seen_defs = set()
-            parsed_parameters = []
-            for row in parameter_rows:
-                row_no = row["__excel_row__"]
-                def_id = RecipeExcelImportExportManager._to_int(row.get("Parameter Definition ID"), "Parameter Definition ID", errors, row_no, required=False)
-                tag_index = RecipeExcelImportExportManager._to_int(row.get("Tag Index"), "Tag Index", errors, row_no)
-                definition_by_id = by_id.get(def_id) if def_id else None
-                definition_by_tag = by_tag.get(tag_index) if tag_index is not None else None
-                if (
-                    definition_by_id
-                    and definition_by_tag
-                    and int(definition_by_id.get("id")) != int(definition_by_tag.get("id"))
-                ):
-                    warnings.append(
-                        f"Row {row_no}: stale Parameter Definition ID {def_id} does not match Tag Index {tag_index}. Tag Index mapping was used."
-                    )
-                    definition = definition_by_tag
+        try:
+            if import_mode == "update_existing":
+                existing_recipe_id_int = RecipeExcelImportExportManager._to_int(
+                    existing_recipe_id,
+                    "Existing Recipe",
+                    errors,
+                    required=True,
+                )
+                if existing_recipe_id_int is not None:
+                    update_target = RecipeExcelImportExportManager._get_recipe_update_target(cur, existing_recipe_id_int)
+                if not update_target:
+                    errors.append("Existing recipe to update was not found.")
+                elif str(update_target.get("version_usage_status") or "").upper() == "HISTORY_RELEASED":
+                    errors.append("Historical released recipe versions are locked and cannot be updated by Excel import.")
                 else:
-                    definition = definition_by_id or definition_by_tag
-                if not definition:
-                    errors.append(f"Parameter definition not found for Tag Index {tag_index} at row {row_no}.")
-                    continue
-                if definition["id"] in seen_defs:
-                    errors.append(f"Duplicate parameter definition {definition['id']} at row {row_no}.")
-                    continue
-                seen_defs.add(definition["id"])
-                excel_name = str(row.get("Parameter Name") or "").strip()
-                if excel_name and excel_name != definition["parameter_name"]:
-                    warnings.append(f"Row {row_no}: parameter name differs from current master. Excel name will update non-PLC parameter details during confirm import.")
-                value = RecipeExcelImportExportManager._to_float(row.get("Parameter Value"), f"Parameter Value for {definition['parameter_name']}", errors, row_no)
-                if value is not None:
-                    min_v = definition.get("min_value")
-                    max_v = definition.get("max_value")
-                    if min_v is not None and value < float(min_v):
-                        errors.append(f"Row {row_no}: {definition['parameter_name']} value {value} is below minimum {min_v}.")
-                    if max_v is not None and value > float(max_v):
-                        errors.append(f"Row {row_no}: {definition['parameter_name']} value {value} is above maximum {max_v}.")
-                parsed_parameters.append({"definition": definition, "value": value, "excel_detail": row})
-
-            RecipeExcelImportExportManager._append_missing_parameter_defaults(
-                definitions,
-                seen_defs,
-                parsed_parameters,
-                warnings
-            )
-
-            cur.execute(
-                """
-                SELECT * FROM phase_control_master
-                WHERE active = 1 AND stage_type = ?
-                """,
-                (target.get("stage_type"),),
-            )
-            phase_master = [dict(r) for r in cur.fetchall()]
-            phase_by_id = {int(r["id"]): r for r in phase_master}
-            phase_by_name = {str(r["phase_control_name"]).strip().upper(): r for r in phase_master}
-
-            if legacy_format:
-                parsed_phase = RecipeExcelImportExportManager._default_phase_rows_for_target(
-                    cur,
-                    target.get("stage_type")
-                )
-                warnings.append(
-                    "Legacy plant Excel does not contain CRS phase-control sheet. CRS inserted default phase-control rows for the selected stage."
-                )
-            elif str(target.get("stage_type") or "").upper() == "SECOND_STAGE" and len(phase_rows) != 18:
-                parsed_phase = RecipeExcelImportExportManager._default_phase_rows_for_target(
-                    cur,
-                    target.get("stage_type")
-                )
-                warnings.append(
-                    "Second Stage import uses the CRS 18-line grouped phase-control structure. Old 12-line Phase_Control sheet was replaced with default grouped rows."
-                )
+                    machine_id = int(update_target["machine_id"])
+                    stage_id = int(update_target["stage_id"])
+                    recipe_code = update_target["recipe_code"]
+                    recipe_name = update_target["recipe_name"]
+                    version = int(update_target["version"])
+                    is_test_only = int(update_target.get("is_test_only") or 0)
+                    target = {
+                        "machine_code": update_target.get("machine_code") or "-",
+                        "stage_type": update_target.get("stage_type") or "-",
+                    }
             else:
-                parsed_phase = []
-                seen_line_keys = set()
-                for row in phase_rows:
+                if not recipe_code:
+                    errors.append("Recipe Code / GT Code is required. Enter it on the Import page or in Recipe_Info sheet.")
+                if not recipe_name:
+                    errors.append("Recipe Name is required. Enter it on the Import page or in Recipe_Info sheet.")
+                if machine_id is None or stage_id is None:
+                    errors.append("Target Machine / Stage is required. Select it on the Import page or keep Machine ID and Stage ID in Recipe_Info sheet.")
+                if version is not None and version < 1:
+                    errors.append("Version must be 1 or higher.")
+
+            if not errors:
+                cur.execute(
+                    """
+                    SELECT m.machine_code, s.stage_type
+                    FROM tbm_machines m
+                    INNER JOIN machine_stages s ON s.machine_id = m.id
+                    WHERE m.id = ? AND s.id = ?
+                    """,
+                    (machine_id, stage_id),
+                )
+                target_row = cur.fetchone()
+                if not target_row:
+                    errors.append("Machine ID / Stage ID combination does not exist.")
+                    target = {"machine_code": "-", "stage_type": "-"}
+                else:
+                    target = dict(target_row)
+
+            if not errors and import_mode == "create_new":
+                cur.execute(
+                    """
+                    SELECT id FROM recipes
+                    WHERE machine_id = ? AND stage_id = ? AND UPPER(recipe_code) = UPPER(?) AND version = ?
+                    """,
+                    (machine_id, stage_id, recipe_code, version),
+                )
+                if cur.fetchone():
+                    errors.append(f"Recipe {recipe_code} V{version} already exists for selected machine/stage. Use Update Existing Recipe Parameters mode or use a new GT code/version.")
+
+            if not errors:
+                cur.execute(
+                    """
+                    SELECT * FROM parameter_definitions
+                    WHERE machine_id = ? AND stage_id = ? AND COALESCE(used, 1) = 1
+                    ORDER BY tag_index
+                    """,
+                    (machine_id, stage_id),
+                )
+                definitions = [dict(r) for r in cur.fetchall()]
+                by_id = {int(r["id"]): r for r in definitions}
+                by_tag = {int(r["tag_index"]): r for r in definitions}
+                current_values = RecipeExcelImportExportManager._current_value_map(cur, int(update_target["id"])) if update_target else {}
+
+                seen_defs = set()
+                for row in parameter_rows:
                     row_no = row["__excel_row__"]
-                    line_no = RecipeExcelImportExportManager._to_int(row.get("Line No"), "Phase Line No", errors, row_no)
-                    if line_no is None:
+                    def_id = RecipeExcelImportExportManager._to_int(row.get("Parameter Definition ID"), "Parameter Definition ID", errors, row_no, required=False)
+                    tag_index = RecipeExcelImportExportManager._to_int(row.get("Tag Index"), "Tag Index", errors, row_no)
+                    definition_by_id = by_id.get(def_id) if def_id else None
+                    definition_by_tag = by_tag.get(tag_index) if tag_index is not None else None
+                    if (
+                        definition_by_id
+                        and definition_by_tag
+                        and int(definition_by_id.get("id")) != int(definition_by_tag.get("id"))
+                    ):
+                        warnings.append(
+                            f"Row {row_no}: stale Parameter Definition ID {def_id} does not match Tag Index {tag_index}. Tag Index mapping was used."
+                        )
+                        definition = definition_by_tag
+                    else:
+                        definition = definition_by_id or definition_by_tag
+                    if not definition:
+                        errors.append(f"Parameter definition not found for Tag Index {tag_index} at row {row_no}.")
                         continue
-                    group_code = str(row.get("Phase Group Code") or row.get("Stage Type") or "MAIN").strip().upper()
-                    if group_code in {"FIRST_STAGE", "SECOND_STAGE"}:
-                        group_code = "MAIN"
-                    group_name = str(row.get("Phase Group Name") or "Phase Control").strip()
-                    line_key = (group_code, line_no)
-                    if line_no < 1 or line_no > 12:
-                        errors.append(f"Phase line number must be between 1 and 12 at row {row_no}.")
+                    if definition["id"] in seen_defs:
+                        errors.append(f"Duplicate parameter definition {definition['id']} at row {row_no}.")
                         continue
-                    if line_key in seen_line_keys:
-                        errors.append(f"Duplicate phase line number {line_no} for {group_code} at row {row_no}.")
-                        continue
-                    seen_line_keys.add(line_key)
-                    phase_id = RecipeExcelImportExportManager._to_int(row.get("Phase Control ID"), "Phase Control ID", errors, row_no, required=False)
-                    phase_name = str(row.get("Phase Control Name") or "").strip()
-                    phase = phase_by_id.get(phase_id) if phase_id else phase_by_name.get(phase_name.upper())
-                    if not phase:
-                        errors.append(f"Phase control not found for line {line_no} at row {row_no}.")
-                        continue
-                    stop_option = str(row.get("Stop Option") or "No").strip().title()
-                    position_option = str(row.get("Position Option") or "No").strip().title()
-                    if stop_option not in {"Yes", "No"}:
-                        errors.append(f"Stop Option must be Yes/No at row {row_no}.")
-                    if position_option not in {"Yes", "No"}:
-                        errors.append(f"Position Option must be Yes/No at row {row_no}.")
-                    sequence_no = RecipeExcelImportExportManager._to_int(row.get("Sequence No"), "Sequence No", errors, row_no, required=False) or line_no
-                    parsed_phase.append({
-                        "line_no": line_no,
-                        "phase_control_id": int(phase["id"]),
-                        "phase_control_name": phase["phase_control_name"],
-                        "stop_option": stop_option,
-                        "position_option": position_option,
-                        "sequence_no": sequence_no,
-                        "phase_group_code": group_code,
-                        "phase_group_name": group_name,
+                    seen_defs.add(definition["id"])
+
+                    excel_name = str(row.get("Parameter Name") or "").strip()
+                    if excel_name and excel_name != definition["parameter_name"]:
+                        if update_master_details:
+                            warnings.append(
+                                f"Row {row_no}: parameter name differs from current master. CRS will update safe non-PLC parameter details during confirm import."
+                            )
+                        else:
+                            warnings.append(
+                                f"Row {row_no}: parameter name differs from current master. Master details update is OFF, so CRS will keep the current master name."
+                            )
+
+                    effective_min_v, effective_max_v = RecipeExcelImportExportManager._build_effective_limits(
+                        definition,
+                        row,
+                        update_master_details,
+                    )
+
+                    value_label = excel_name or definition["parameter_name"]
+                    value = RecipeExcelImportExportManager._to_float(
+                        row.get("Parameter Value"),
+                        f"Parameter Value for {value_label}",
+                        errors,
+                        row_no,
+                    )
+                    if value is not None:
+                        if effective_min_v is not None and value < float(effective_min_v):
+                            errors.append(f"Row {row_no}: {value_label} value {value} is below minimum {effective_min_v}.")
+                        if effective_max_v is not None and value > float(effective_max_v):
+                            errors.append(f"Row {row_no}: {value_label} value {value} is above maximum {effective_max_v}.")
+
+                    existing_value = current_values.get(int(definition["id"])) if update_target else None
+                    if update_target:
+                        if existing_value:
+                            if RecipeExcelImportExportManager._values_different(existing_value.get("parameter_value"), value):
+                                changed_value_count += 1
+                            else:
+                                unchanged_value_count += 1
+                        else:
+                            missing_existing_value_count += 1
+                            changed_value_count += 1
+
+                    # Estimate safe master-detail changes for preview.
+                    if update_master_details:
+                        detail_item = {"definition": definition, "excel_detail": row}
+                        detail = detail_item["excel_detail"]
+                        new_values = {
+                            "parameter_name": str(detail.get("Parameter Name") or definition.get("parameter_name") or "").strip(),
+                            "parameter_class": str(detail.get("Parameter Class") or definition.get("parameter_class") or "").strip(),
+                            "unit": str(detail.get("Unit") or definition.get("unit") or "").strip(),
+                            "datatype": str(detail.get("Data Type") or definition.get("datatype") or "REAL").strip().upper(),
+                            "min_value": RecipeExcelImportExportManager._optional_excel_float(detail.get("Min Value"), definition.get("min_value")),
+                            "max_value": RecipeExcelImportExportManager._optional_excel_float(detail.get("Max Value"), definition.get("max_value")),
+                            "default_value": RecipeExcelImportExportManager._optional_excel_float(detail.get("Default Value"), definition.get("default_value")),
+                            "english_memo": str(detail.get("English Memo") or definition.get("english_memo") or "").strip(),
+                            "used": RecipeExcelImportExportManager._optional_excel_int(detail.get("Used"), definition.get("used") or 1),
+                        }
+                        if not new_values["parameter_name"]:
+                            new_values["parameter_name"] = str(definition.get("parameter_name") or f"Tag {definition.get('tag_index')}").strip()
+                        for field, new_value in new_values.items():
+                            old_value = definition.get(field)
+                            if str(old_value if old_value is not None else "") != str(new_value if new_value is not None else ""):
+                                master_detail_change_count += 1
+                                break
+
+                    parsed_parameters.append({
+                        "definition": definition,
+                        "value": value,
+                        "excel_detail": row,
                     })
-                expected_lines = 18 if str(target.get("stage_type") or "").upper() == "SECOND_STAGE" else 12
-                if len(seen_line_keys) != expected_lines:
-                    errors.append(f"Phase_Control must contain {expected_lines} unique line entries. Found {len(seen_line_keys)}.")
+
+                if import_mode == "create_new":
+                    RecipeExcelImportExportManager._append_missing_parameter_defaults(
+                        definitions,
+                        seen_defs,
+                        parsed_parameters,
+                        warnings
+                    )
+                else:
+                    missing_count = max(0, len(definitions) - len(seen_defs))
+                    if missing_count:
+                        warnings.append(
+                            f"Existing-recipe update mode: {missing_count} parameter row(s) were not present in Excel and will be left unchanged."
+                        )
+                    if missing_existing_value_count:
+                        warnings.append(
+                            f"{missing_existing_value_count} Excel row(s) do not currently have recipe value records; CRS will insert those value records during confirm update."
+                        )
+
+                parsed_phase = RecipeExcelImportExportManager._default_phase_rows_for_target(
+                    cur,
+                    target.get("stage_type")
+                ) if import_mode == "create_new" else []
+
+                if import_mode == "create_new":
+                    if phase_sheet_row_count:
+                        warnings.append(
+                            f"Phase_Control sheet has {phase_sheet_row_count} row(s), but recipe import is parameter-only. "
+                            "CRS ignored Excel phase text/IDs and inserted default Empty Phase rows. "
+                            "Select the correct phase controls manually before PLC download."
+                        )
+                    else:
+                        warnings.append(
+                            "No phase-control rows were imported. CRS inserted default Empty Phase rows. "
+                            "Select the correct phase controls manually before PLC download."
+                        )
+                else:
+                    warnings.append(
+                        "Existing-recipe update mode is parameter-only. Phase_Control sheet is ignored and existing phase selections are not changed."
+                    )
+        finally:
             conn.close()
-        else:
-            target = {"machine_code": "-", "stage_type": "-"}
-            parsed_parameters = []
-            parsed_phase = []
 
         summary = {
             "recipe_code": recipe_code if 'recipe_code' in locals() else "",
@@ -1224,7 +1436,16 @@ class RecipeExcelImportExportManager:
             "is_test_only": is_test_only if 'is_test_only' in locals() else 0,
             "parameter_count": len(parsed_parameters) if 'parsed_parameters' in locals() else 0,
             "phase_count": len(parsed_phase) if 'parsed_phase' in locals() else 0,
+            "phase_import_mode": "IGNORED_KEEP_EXISTING_PHASES" if import_mode == "update_existing" else "DEFAULT_EMPTY_PHASE_ROWS_MANUAL_SELECTION",
             "import_format": "LEGACY_PLANT_EXCEL" if 'legacy_format' in locals() and legacy_format else "CRS_TEMPLATE",
+            "import_mode": import_mode,
+            "mode_label": "Update Existing Recipe Parameters" if import_mode == "update_existing" else "Create New Draft Recipe",
+            "existing_recipe_id": int(update_target["id"]) if update_target else "",
+            "existing_recipe_status": update_target.get("version_usage_status") if update_target else "",
+            "changed_value_count": changed_value_count,
+            "unchanged_value_count": unchanged_value_count,
+            "master_detail_change_count": master_detail_change_count,
+            "update_master_details": 1 if update_master_details else 0,
         }
         return {
             "ok": not errors,
@@ -1238,14 +1459,32 @@ class RecipeExcelImportExportManager:
         }
 
     @staticmethod
-    def import_pending_file(token, imported_by, user_role, reason=None, request_obj=None, machine_id=None, stage_id=None, recipe_code_override=None, recipe_name_override=None):
+    def import_pending_file(
+        token,
+        imported_by,
+        user_role,
+        reason=None,
+        request_obj=None,
+        machine_id=None,
+        stage_id=None,
+        recipe_code_override=None,
+        recipe_name_override=None,
+        import_mode="create_new",
+        existing_recipe_id=None,
+        update_master_details=True,
+    ):
         file_path = RecipeExcelImportExportManager.pending_path(token)
+        import_mode = RecipeExcelImportExportManager._normalize_import_mode(import_mode)
+        update_master_details = RecipeExcelImportExportManager._truthy(update_master_details)
         preview = RecipeExcelImportExportManager.preview_import(
             file_path,
             machine_id=machine_id,
             stage_id=stage_id,
             recipe_code_override=recipe_code_override,
-            recipe_name_override=recipe_name_override
+            recipe_name_override=recipe_name_override,
+            import_mode=import_mode,
+            existing_recipe_id=existing_recipe_id,
+            update_master_details=update_master_details,
         )
         if not preview["ok"]:
             return False, None, preview
@@ -1258,6 +1497,127 @@ class RecipeExcelImportExportManager:
         machine_id = int(summary["machine_id"])
         stage_id = int(summary["stage_id"])
         is_test_only = int(summary.get("is_test_only") or 0)
+        ctx = RecipeExcelImportExportManager._get_request_context(request_obj)
+
+        if import_mode == "update_existing":
+            recipe_id = int(summary.get("existing_recipe_id") or existing_recipe_id)
+            conn = get_connection()
+            cur = conn.cursor()
+            try:
+                cur.execute("BEGIN")
+                recipe = RecipeExcelImportExportManager._get_recipe_update_target(cur, recipe_id)
+                if not recipe:
+                    raise ValueError("Existing recipe was not found.")
+                if str(recipe.get("version_usage_status") or "").upper() == "HISTORY_RELEASED":
+                    raise ValueError("Historical released recipe versions are locked and cannot be updated by Excel import.")
+
+                master_detail_update_count = 0
+                if update_master_details:
+                    for item in parameters:
+                        master_detail_update_count += RecipeExcelImportExportManager._update_parameter_master_non_plc_details(cur, item)
+
+                current_values = RecipeExcelImportExportManager._current_value_map(cur, recipe_id)
+                changed_count = 0
+                inserted_count = 0
+                unchanged_count = 0
+                audit_rows = []
+
+                for item in parameters:
+                    definition = item["definition"]
+                    definition_id = int(definition["id"])
+                    new_value = item["value"]
+                    existing_value = current_values.get(definition_id)
+                    if existing_value:
+                        value_id = int(existing_value["value_id"])
+                        old_value = existing_value.get("parameter_value")
+                        if RecipeExcelImportExportManager._values_different(old_value, new_value):
+                            cur.execute(
+                                """
+                                UPDATE recipe_parameter_values
+                                SET parameter_value = ?, is_modified = 1, updated_at = CURRENT_TIMESTAMP
+                                WHERE id = ?
+                                """,
+                                (new_value, value_id),
+                            )
+                            changed_count += 1
+                            audit_rows.append((value_id, definition, old_value, new_value))
+                        else:
+                            unchanged_count += 1
+                    else:
+                        cur.execute(
+                            """
+                            INSERT INTO recipe_parameter_values
+                            (recipe_id, parameter_definition_id, parameter_value, is_modified)
+                            VALUES (?, ?, ?, 1)
+                            """,
+                            (recipe_id, definition_id, new_value),
+                        )
+                        value_id = cur.lastrowid
+                        inserted_count += 1
+                        audit_rows.append((value_id, definition, None, new_value))
+
+                conn.commit()
+            except Exception as exc:
+                conn.rollback()
+                conn.close()
+                preview["errors"] = [f"Database update failed: {exc}"]
+                preview["ok"] = False
+                return False, None, preview
+            conn.close()
+
+            # Parameter value audit is written after the main transaction so the
+            # update remains simple and compatible with existing audit schema.
+            from database.recipe_parameter_audit_manager import RecipeParameterAuditManager
+            change_source = "CURRENT_RELEASED_EDIT" if str(summary.get("existing_recipe_status") or "").upper() == "CURRENT_RELEASED" else "EXCEL_EXISTING_RECIPE_UPDATE"
+            for value_id, definition, old_value, new_value in audit_rows:
+                try:
+                    RecipeParameterAuditManager.log_change(
+                        recipe_id=recipe_id,
+                        recipe_parameter_value_id=value_id,
+                        parameter_definition_id=definition["id"],
+                        old_value=old_value,
+                        new_value=new_value,
+                        changed_by=imported_by,
+                        recipe_code=recipe_code,
+                        recipe_version=version,
+                        parameter_name=definition.get("parameter_name"),
+                        tag_index=definition.get("tag_index"),
+                        change_source=change_source,
+                        change_reason=reason or "Existing recipe parameter update from Excel import",
+                        user_role=user_role,
+                        client_ip=ctx.get("client_ip"),
+                        workstation_name=ctx.get("workstation_name"),
+                    )
+                except Exception:
+                    pass
+
+            AuditManager.log_event(
+                username=imported_by,
+                role=user_role,
+                action="RECIPE_UPDATED_EXCEL",
+                change_source="WEB_RECIPE_IMPORT_EXPORT",
+                recipe_code=recipe_code,
+                recipe_version=version,
+                record_id=recipe_id,
+                old_value=os.path.basename(file_path),
+                new_value=(
+                    f"mode=update_existing; changed_values={changed_count}; inserted_values={inserted_count}; "
+                    f"unchanged_values={unchanged_count}; master_detail_updates={master_detail_update_count}; phase_control=ignored"
+                ),
+                reason=reason or "Existing recipe parameter update from Excel import",
+                **ctx,
+            )
+
+            try:
+                os.remove(file_path)
+            except OSError:
+                pass
+
+            preview["summary"]["changed_value_count"] = changed_count
+            preview["summary"]["inserted_value_count"] = inserted_count
+            preview["summary"]["unchanged_value_count"] = unchanged_count
+            preview["summary"]["master_detail_update_count"] = master_detail_update_count
+            return True, recipe_id, preview
 
         conn = get_connection()
         cur = conn.cursor()
@@ -1273,11 +1633,9 @@ class RecipeExcelImportExportManager:
             )
             recipe_id = cur.lastrowid
             master_detail_update_count = 0
-            for item in parameters:
-                master_detail_update_count += RecipeExcelImportExportManager._update_parameter_master_non_plc_details(
-                    cur,
-                    item
-                )
+            if update_master_details:
+                for item in parameters:
+                    master_detail_update_count += RecipeExcelImportExportManager._update_parameter_master_non_plc_details(cur, item)
             for item in parameters:
                 definition = item["definition"]
                 cur.execute(
@@ -1324,7 +1682,6 @@ class RecipeExcelImportExportManager:
             remarks=reason or "Recipe imported from Excel template",
         )
 
-        ctx = RecipeExcelImportExportManager._get_request_context(request_obj)
         AuditManager.log_event(
             username=imported_by,
             role=user_role,
@@ -1334,7 +1691,7 @@ class RecipeExcelImportExportManager:
             recipe_version=version,
             record_id=recipe_id,
             old_value=os.path.basename(file_path),
-            new_value=f"parameters={len(parameters)}; phase_rows={len(phase_rows)}; master_detail_updates={locals().get('master_detail_update_count', 0)}; status=DRAFT",
+            new_value=f"mode=create_new; parameters={len(parameters)}; phase_rows={len(phase_rows)}; master_detail_updates={locals().get('master_detail_update_count', 0)}; status=DRAFT",
             reason=reason or "Recipe imported from Excel template",
             **ctx,
         )

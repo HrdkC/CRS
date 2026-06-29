@@ -290,7 +290,9 @@ class ParameterDefinitionManager:
 
         stage_id,
 
-        search_text=""
+        search_text="",
+
+        parameter_scope="active"
 
     ):
 
@@ -298,8 +300,18 @@ class ParameterDefinitionManager:
 
         cursor = conn.cursor()
 
+        scope_condition = "AND COALESCE(used, 1) = 1"
+
+        if parameter_scope == "inactive":
+
+            scope_condition = "AND COALESCE(used, 1) = 0"
+
+        elif parameter_scope == "all":
+
+            scope_condition = ""
+
         cursor.execute(
-            """
+            f"""
             SELECT *
 
             FROM parameter_definitions
@@ -310,7 +322,7 @@ class ParameterDefinitionManager:
 
                 AND stage_id = ?
 
-                AND used = 1
+                {scope_condition}
 
                 AND
                 (
@@ -342,6 +354,68 @@ class ParameterDefinitionManager:
             dict(row)
             for row in rows
         ]
+
+    @staticmethod
+    def get_usage_counts(
+
+        machine_id,
+
+        stage_id
+
+    ):
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT
+                SUM(
+                    CASE
+                        WHEN COALESCE(used, 1) = 1
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS active_count,
+                SUM(
+                    CASE
+                        WHEN COALESCE(used, 1) = 0
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS inactive_count,
+                COUNT(*) AS total_count
+
+            FROM parameter_definitions
+
+            WHERE
+                machine_id = ?
+                AND stage_id = ?
+            """,
+            (
+                machine_id,
+                stage_id
+            )
+        )
+
+        row = cursor.fetchone()
+
+        conn.close()
+
+        if not row:
+
+            return {
+                "active_count": 0,
+                "inactive_count": 0,
+                "total_count": 0
+            }
+
+        return {
+            "active_count": row["active_count"] or 0,
+            "inactive_count": row["inactive_count"] or 0,
+            "total_count": row["total_count"] or 0
+        }
 
     @staticmethod
     def get_parameter_by_id(
@@ -452,7 +526,9 @@ class ParameterDefinitionManager:
 
         max_value,
 
-        default_value
+        default_value,
+
+        used=None
 
     ):
 
@@ -463,12 +539,15 @@ class ParameterDefinitionManager:
         cursor.execute(
             """
             SELECT
+                machine_id,
+                stage_id,
                 parameter_name,
                 plc_array_index,
                 unit,
                 min_value,
                 max_value,
-                default_value
+                default_value,
+                COALESCE(used, 1) AS used
             FROM parameter_definitions
             WHERE id = ?
             """,
@@ -484,6 +563,19 @@ class ParameterDefinitionManager:
             conn.close()
 
             return None
+
+        old_used = int(
+            old_row["used"]
+            if old_row["used"] is not None
+            else
+            1
+        )
+
+        new_used = old_used
+
+        if used is not None:
+
+            new_used = 1 if int(used) == 1 else 0
 
         cursor.execute(
             """
@@ -503,6 +595,8 @@ class ParameterDefinitionManager:
 
                 default_value = ?,
 
+                used = ?,
+
                 updated_at = CURRENT_TIMESTAMP
 
             WHERE id = ?
@@ -520,6 +614,8 @@ class ParameterDefinitionManager:
 
                 default_value,
 
+                new_used,
+
                 parameter_id
             )
         )
@@ -528,9 +624,13 @@ class ParameterDefinitionManager:
 
         conn.close()
 
-        return {
+        old_detail = dict(old_row)
+        old_detail.pop("machine_id", None)
+        old_detail.pop("stage_id", None)
 
-            "old": dict(old_row),
+        result = {
+
+            "old": old_detail,
 
             "new": {
                 "parameter_name": parameter_name.strip(),
@@ -538,10 +638,26 @@ class ParameterDefinitionManager:
                 "unit": unit.strip(),
                 "min_value": min_value,
                 "max_value": max_value,
-                "default_value": default_value
+                "default_value": default_value,
+                "used": new_used
             }
 
         }
+
+        if old_used == 0 and new_used == 1:
+
+            from database.recipe_parameter_value_manager import (
+                RecipeParameterValueManager
+            )
+
+            RecipeParameterValueManager.create_missing_values(
+                machine_id=old_row["machine_id"],
+                stage_id=old_row["stage_id"],
+                parameter_definition_id=parameter_id,
+                default_value=default_value
+            )
+
+        return result
 
     @staticmethod
     def disable_parameter(
@@ -588,6 +704,22 @@ class ParameterDefinitionManager:
 
         cursor.execute(
             """
+            SELECT
+                machine_id,
+                stage_id,
+                default_value
+            FROM parameter_definitions
+            WHERE id = ?
+            """,
+            (
+                parameter_id,
+            )
+        )
+
+        parameter = cursor.fetchone()
+
+        cursor.execute(
+            """
             UPDATE parameter_definitions
 
             SET
@@ -606,3 +738,16 @@ class ParameterDefinitionManager:
         conn.commit()
 
         conn.close()
+
+        if parameter:
+
+            from database.recipe_parameter_value_manager import (
+                RecipeParameterValueManager
+            )
+
+            RecipeParameterValueManager.create_missing_values(
+                machine_id=parameter["machine_id"],
+                stage_id=parameter["stage_id"],
+                parameter_definition_id=parameter_id,
+                default_value=parameter["default_value"]
+            )

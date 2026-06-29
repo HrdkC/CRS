@@ -10,6 +10,10 @@ from database.parameter_definition_manager import (
     ParameterDefinitionManager
 )
 
+from database.audit_manager import (
+    AuditManager
+)
+
 
 from flask_app.security.role_guard import (
     role_can
@@ -47,6 +51,19 @@ def _render_parameters_page(context):
         ""
     )
 
+    parameter_scope = request.args.get(
+        "parameter_scope",
+        "active"
+    )
+
+    if parameter_scope not in [
+        "active",
+        "inactive",
+        "all"
+    ]:
+
+        parameter_scope = "active"
+
     parameters = (
 
         ParameterDefinitionManager
@@ -56,10 +73,20 @@ def _render_parameters_page(context):
 
             stage_id=stage_id,
 
-            search_text=search_text
+            search_text=search_text,
+
+            parameter_scope=parameter_scope
 
         )
 
+    )
+
+    usage_counts = (
+        ParameterDefinitionManager
+        .get_usage_counts(
+            machine_id,
+            stage_id
+        )
     )
 
     return render_template(
@@ -84,7 +111,15 @@ def _render_parameters_page(context):
 
         add_parameter_url=machine_stage_url("/parameters/add", context=context),
 
-        search_text=search_text
+        search_text=search_text,
+
+        parameter_scope=parameter_scope,
+
+        active_parameter_count=usage_counts["active_count"],
+
+        inactive_parameter_count=usage_counts["inactive_count"],
+
+        total_parameter_count=usage_counts["total_count"]
 
     )
 
@@ -470,10 +505,38 @@ def register_parameter_routes(app):
 
         )
 
+        if not parameter:
+
+            flash("Parameter definition not found.", "error")
+            return redirect("/configuration")
+
         ParameterDefinitionManager.disable_parameter(
 
             parameter_id
 
+        )
+
+        AuditManager.log_event(
+            username=session.get("username"),
+            role=session.get("role"),
+            action="PARAMETER_MARKED_NOT_USED",
+            change_source="PARAMETER_TEMPLATE",
+            record_id=parameter_id,
+            parameter_name=parameter.get("parameter_name"),
+            old_value="used=1",
+            new_value="used=0",
+            reason=(
+                "Parameter removed from active module template. "
+                "Existing stored values are retained for history."
+            ),
+            user_agent=request.headers.get("User-Agent", ""),
+            forwarded_for=request.headers.get("X-Forwarded-For"),
+            request_host=request.host
+        )
+
+        flash(
+            "Parameter marked Not Used. Existing recipe values were retained and normal download validation will ignore this parameter.",
+            "success"
         )
 
         return redirect(
@@ -510,10 +573,38 @@ def register_parameter_routes(app):
 
         )
 
+        if not parameter:
+
+            flash("Parameter definition not found.", "error")
+            return redirect("/configuration")
+
         ParameterDefinitionManager.enable_parameter(
 
             parameter_id
 
+        )
+
+        AuditManager.log_event(
+            username=session.get("username"),
+            role=session.get("role"),
+            action="PARAMETER_MARKED_USED",
+            change_source="PARAMETER_TEMPLATE",
+            record_id=parameter_id,
+            parameter_name=parameter.get("parameter_name"),
+            old_value="used=0",
+            new_value="used=1",
+            reason=(
+                "Parameter restored to active module template. "
+                "Missing values were backfilled to existing recipes."
+            ),
+            user_agent=request.headers.get("User-Agent", ""),
+            forwarded_for=request.headers.get("X-Forwarded-For"),
+            request_host=request.host
+        )
+
+        flash(
+            "Parameter restored as Used. Missing values were backfilled to existing recipes for this machine/stage.",
+            "success"
         )
 
         return redirect(

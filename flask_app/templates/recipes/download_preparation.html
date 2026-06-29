@@ -205,6 +205,100 @@ Recipe PLC Buffer Operations
     overflow-wrap: anywhere;
 }
 
+.live-status-panel {
+    display: grid;
+    gap: 12px;
+}
+
+.live-status-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.live-status-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.live-status-group {
+    border: 1px solid #e5e0ec;
+    border-radius: 9px;
+    background: #fbfafc;
+    padding: 10px;
+}
+
+.live-status-group h3 {
+    margin: 0 0 8px;
+    color: #162033;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.live-status-grid {
+    display: grid;
+    gap: 7px;
+}
+
+.live-status-item {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr) 90px;
+    gap: 8px;
+    align-items: center;
+    border: 1px solid #e9e3f0;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 8px 9px;
+}
+
+.live-status-item-ok {
+    border-left: 4px solid #16824f;
+}
+
+.live-status-item-bad,
+.live-status-item-missing {
+    border-left: 4px solid #c62828;
+}
+
+.live-status-value {
+    display: inline-flex;
+    justify-content: center;
+    min-width: 58px;
+    border-radius: 999px;
+    padding: 4px 8px;
+    background: #eef2f7;
+    color: #253044;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.live-status-item-ok .live-status-value {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+.live-status-item-bad .live-status-value,
+.live-status-item-missing .live-status-value {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.live-status-body strong {
+    display: block;
+    color: #162033;
+    font-size: 13px;
+    line-height: 1.15;
+}
+
+.live-status-body small {
+    display: block;
+    color: #625a70;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
 .tag-purpose {
     color: #625a70;
     font-size: 12px;
@@ -519,6 +613,9 @@ body.operation-running * {
 
 <div class="buffer-shell">
 
+    {% set crs_buffer_tag = operation_context.tags.get("RECIPE_DATA") %}
+    {% set plc_destination_tag = operation_context.tags.get("TEST_RECIPE_DATA") %}
+
     <div class="page-header">
 
         <div class="buffer-header-row">
@@ -529,10 +626,10 @@ body.operation-running * {
 
                 <p>
                     Database is master. CRS buffer is
-                    <strong>CRS_Recipe_Data</strong>.
-                    PLC destination buffer is
-                    <strong>CRS_Test_Recipe_Data</strong> with request/complete handshake.
-                    Upload From PLC copies PLC destination values back to CRS buffer;
+                    <strong>{{ crs_buffer_tag.tag_name if crs_buffer_tag else 'CRS_Recipe_Data' }}</strong>.
+                    PLC destination / running recipe tag is
+                    <strong>{{ plc_destination_tag.tag_name if plc_destination_tag else 'CRS_Test_Recipe_Data / Running_Recipe_Data' }}</strong>
+                    with request/complete handshake. Upload From PLC copies PLC destination values back to CRS buffer;
                     Recipe Save commits them to database with parameter audit.
                 </p>
 
@@ -770,6 +867,70 @@ body.operation-running * {
 
         {% endif %}
 
+    </div>
+
+    <div class="buffer-panel live-status-panel">
+        <div class="live-status-header">
+            <div>
+                <h3>Live PLC Interlock / Handshake Status</h3>
+                <div class="step-message">
+                    Green means healthy / good to go. Red means not healthy or needs checking. Values are read from the selected PLC when this page loads.
+                </div>
+            </div>
+            {% if live_tag_status.status == "READY" %}
+            <span class="status-pill status-ready">LIVE HEALTHY</span>
+            {% elif live_tag_status.status == "BLOCKED" %}
+            <span class="status-pill status-blocked">CHECK REQUIRED</span>
+            {% else %}
+            <span class="status-pill status-neutral">NOT CHECKED</span>
+            {% endif %}
+        </div>
+
+        <div class="step-message">{{ live_tag_status.summary }}</div>
+
+        {% if live_tag_status.groups %}
+        <div class="live-status-groups">
+            {% for group in live_tag_status.groups %}
+            <div class="live-status-group">
+                <h3>{{ group.title }}</h3>
+                <div class="live-status-grid">
+                    {% for item in group.items %}
+                    <div class="live-status-item live-status-item-{{ item.status }}">
+                        <div class="live-status-value">
+                            {% if item.value is not none %}
+                                {{ item.value }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                        <div class="live-status-body">
+                            <strong>{{ item.label }}</strong>
+                            <small>
+                                {{ item.tag.tag_name if item.tag else 'Not mapped' }}
+                                | {{ item.message }}
+                            </small>
+                        </div>
+                        <span class="status-pill {% if item.status == 'ok' %}status-ready{% elif item.status == 'bad' or item.status == 'missing' %}status-blocked{% else %}status-neutral{% endif %}">
+                            {{ item.status_text }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if live_tag_status.issues %}
+        <details class="compact-details">
+            <summary>Live Status Issues</summary>
+            <ul class="issue-list">
+                {% for issue in live_tag_status.issues[:8] %}
+                <li>{{ issue }}</li>
+                {% endfor %}
+            </ul>
+        </details>
+        {% endif %}
     </div>
 
     <div class="buffer-panel live-progress" id="liveProgress">

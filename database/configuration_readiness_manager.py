@@ -2,6 +2,9 @@ from database.database import get_connection
 from database.plc_download_tag_readiness_manager import (
     PLCDownloadTagReadinessManager,
 )
+from database.stage_plc_tag_requirement_manager import (
+    StagePLCTagRequirementManager,
+)
 
 
 class ConfigurationReadinessManager:
@@ -11,14 +14,14 @@ class ConfigurationReadinessManager:
             "label": "CRS recipe buffer",
             "expected_type": "REAL",
             "array_required": True,
-            "minimum_array_size": 500,
+            "minimum_array_size": None,
         },
         {
             "purpose": "TEST_RECIPE_DATA",
             "label": "PLC destination buffer",
             "expected_type": "REAL",
             "array_required": True,
-            "minimum_array_size": 500,
+            "minimum_array_size": None,
         },
         {
             "purpose": "RECIPE_CODE",
@@ -184,9 +187,26 @@ class ConfigurationReadinessManager:
         if not context:
             return None
 
+        tag_requirements = (
+            StagePLCTagRequirementManager
+            .get_stage_requirements(
+                context["machine_id"],
+                context["stage_id"],
+                active_only=False,
+            )
+        )
+
         report = {
             "context": context,
             "sections": [],
+            "tag_requirements": tag_requirements,
+            "saved_plc_tags": ConfigurationReadinessManager.get_saved_plc_tags(
+                context["machine_id"],
+                context["stage_id"],
+            ),
+            "tag_purpose_options": ConfigurationReadinessManager.get_tag_purpose_options(
+                tag_requirements
+            ),
             "blocking_count": 0,
             "warning_count": 0,
             "ready_count": 0,
@@ -203,6 +223,52 @@ class ConfigurationReadinessManager:
         ConfigurationReadinessManager._finalize_report(report)
 
         return report
+
+    @staticmethod
+    def get_saved_plc_tags(machine_id, stage_id):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT *
+            FROM plc_tags
+            WHERE
+                machine_id = ?
+                AND stage_id = ?
+            ORDER BY
+                CASE WHEN COALESCE(tag_purpose, '') = '' THEN 1 ELSE 0 END,
+                tag_purpose,
+                tag_name
+            """,
+            (machine_id, stage_id),
+        )
+        rows = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return rows
+
+    @staticmethod
+    def get_tag_purpose_options(tag_requirements=None):
+        standard_purposes = [
+            "RECIPE_DATA",
+            "TEST_RECIPE_DATA",
+            "RECIPE_CODE",
+            "DOWNLOAD_ENABLE",
+            "MACHINE_IN_MANUAL",
+            "DOWNLOAD_REQUEST",
+            "DOWNLOAD_COMPLETE",
+            "DOWNLOAD_ACK",
+            "DOWNLOAD_BUSY",
+            "DOWNLOAD_ERROR",
+            "DOWNLOAD_RESULT",
+            "DOWNLOAD_OS",
+            "LAST_DOWNLOAD_TIME",
+            "LAST_DOWNLOAD_USER",
+        ]
+        for row in tag_requirements or []:
+            purpose = (row.get("purpose") or "").strip().upper()
+            if purpose and purpose not in standard_purposes:
+                standard_purposes.append(purpose)
+        return standard_purposes
 
     @staticmethod
     def get_all_reports():
@@ -529,24 +595,44 @@ class ConfigurationReadinessManager:
 
     @staticmethod
     def _add_required_tag_section(report):
+        context = report["context"]
+        required_tags = (
+            StagePLCTagRequirementManager
+            .get_stage_requirements(
+                context["machine_id"],
+                context["stage_id"],
+                requirement_level=StagePLCTagRequirementManager.LEVEL_REQUIRED,
+                active_only=True,
+            )
+        )
         section = ConfigurationReadinessManager._build_tag_section(
             report,
             key="required_tags",
             title="Required PLC Tags",
-            summary="Tags needed for restore, save, upload, download, and safety gates.",
-            required_tags=ConfigurationReadinessManager.REQUIRED_TAGS,
+            summary="Tags needed for restore, save, upload, download, and safety gates. Rules are editable per machine/stage.",
+            required_tags=required_tags,
             missing_status="blocked",
         )
         ConfigurationReadinessManager._append_section(report, section)
 
     @staticmethod
     def _add_recommended_tag_section(report):
+        context = report["context"]
+        recommended_tags = (
+            StagePLCTagRequirementManager
+            .get_stage_requirements(
+                context["machine_id"],
+                context["stage_id"],
+                requirement_level=StagePLCTagRequirementManager.LEVEL_RECOMMENDED,
+                active_only=True,
+            )
+        )
         section = ConfigurationReadinessManager._build_tag_section(
             report,
             key="recommended_tags",
             title="Recommended PLC Tags",
-            summary="Handshake and history tags recommended before plant deployment.",
-            required_tags=ConfigurationReadinessManager.RECOMMENDED_TAGS,
+            summary="Handshake and history tags recommended before plant deployment. Rules are editable per machine/stage.",
+            required_tags=recommended_tags,
             missing_status="warning",
         )
         ConfigurationReadinessManager._append_section(report, section)
@@ -571,9 +657,13 @@ class ConfigurationReadinessManager:
             item = {
                 "purpose": required["purpose"],
                 "label": required["label"],
-                "expected_type": required["expected_type"],
-                "array_required": required["array_required"],
-                "minimum_array_size": required["minimum_array_size"],
+                "expected_type": required.get("expected_type"),
+                "array_required": bool(required.get("array_required")),
+                "minimum_array_size": required.get("minimum_array_size"),
+                "array_start_index": required.get("array_start_index"),
+                "array_end_index": required.get("array_end_index"),
+                "default_tag_name": required.get("default_tag_name"),
+                "search_hint": required.get("search_hint"),
                 "configured": tag is not None,
                 "ready": True,
                 "tag": tag,

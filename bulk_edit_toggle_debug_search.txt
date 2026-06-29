@@ -1,0 +1,281 @@
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_preparation_manager.py:296: used_indexes = set()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_preparation_manager.py:348: if plc_index in used_indexes:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_preparation_manager.py:354: used_indexes.add(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_preparation_manager.py:437: min(used_indexes)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_preparation_manager.py:438: if used_indexes
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_preparation_manager.py:443: max(used_indexes)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_preparation_manager.py:444: if used_indexes
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:561: def _legacy_used_flag(value):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:672: "Used": RecipeExcelImportExportManager._legacy_used_flag(row[header_map["Used"]] if header_map.get("Used") is not None and header_map["Used"] < len(row) else 1),
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:704: "Used": RecipeExcelImportExportManager._legacy_used_flag(row[10] if len(row) > 10 else 1),
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\plc_tag_routes.py:1032: used_indexes = set()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\plc_tag_routes.py:1038: used_indexes.add(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\plc_tag_routes.py:1058: if index not in used_indexes:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:991: "/recipe-editor/<int:recipe_id>/parameters/bulk-edit",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:994: def bulk_edit_recipe_parameters(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1196: if form.get(f"used_{row_id}") == "1"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1199: if f"used_present_{row_id}" in form
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1252: if f"used_present_{row_id}" in form:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1254: posted_used = 1 if form.get(f"used_{row_id}") == "1" else 0
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1272: def _render_bulk_edit(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1280: "recipes/bulk_edit_parameters.html",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1362: return _render_bulk_edit(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1380: return _render_bulk_edit(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1456: if request.form.get(f"used_{row_id}") == "1"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1563: return _render_bulk_edit(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1585: return _render_bulk_edit(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1663: change_source = "CURRENT_RELEASED_BULK_EDIT"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1669: change_source = "DRAFT_RECIPE_BULK_EDIT"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1706: reason="PARAMETER_BULK_EDIT_COMPLETED"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_editor_routes.py:1713: return _render_bulk_edit(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\static\css\main.css:622: .bulk-edit-reason-row {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\static\css\main.css:627: .bulk-edit-reason-row label {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\static\css\main.css:633: .bulk-edit-reason-row span {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\static\js\main.js:105: dropdown.classList.toggle("dropdown-open");
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:83: href="/recipe-editor/{{ recipe.id }}/parameters/bulk-edit"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:97: Editable Parameter Rows
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:118: <div class="bulk-edit-reason-row">
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:140: id="select-all-parameters"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:182: class="bulk-row-selector"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:204: name="used_present_{{ row.id }}"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:214: class="bulk-active-toggle"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:215: name="used_{{ row.id }}"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:233: class="wide-cell-input bulk-edit-track"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:243: class="compact-cell-input value-input bulk-edit-track"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:253: class="compact-cell-input bulk-edit-track"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:263: class="compact-cell-input bulk-edit-track"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:274: class="compact-cell-input bulk-edit-track"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:285: class="compact-cell-input bulk-edit-track"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:327: Save Selected Parameters
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:346: const selectAllParameters = document.getElementById("select-all-parameters");
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:354: return row ? row.querySelector(".bulk-row-selector") : null;
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:370: document.querySelectorAll(".bulk-edit-track").forEach(function (input) {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:375: document.querySelectorAll(".bulk-active-toggle").forEach(function (input) {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:386: document.querySelectorAll(".bulk-row-selector").forEach(function (checkbox) {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:392: document.querySelectorAll(".bulk-edit-track").forEach(function (input) {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\bulk_edit_parameters.html:401: document.querySelectorAll(".bulk-active-toggle").forEach(function (input) {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\editor.html:698: href="/recipe-editor/{{ recipe.id }}/parameters/bulk-edit"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\routes\plc_tag_routes.py:371: used_indexes = set()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\routes\plc_tag_routes.py:377: used_indexes.add(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\routes\plc_tag_routes.py:397: if index not in used_indexes:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\routes\plc_tag_routes.py:371: used_indexes = set()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\routes\plc_tag_routes.py:377: used_indexes.add(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\routes\plc_tag_routes.py:397: if index not in used_indexes:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\routes\plc_tag_routes.py:371: used_indexes = set()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\routes\plc_tag_routes.py:377: used_indexes.add(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\routes\plc_tag_routes.py:397: if index not in used_indexes:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\routes\plc_tag_routes.py:371: used_indexes = set()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\routes\plc_tag_routes.py:377: used_indexes.add(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\routes\plc_tag_routes.py:397: if index not in used_indexes:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\routes\plc_tag_routes.py:371: used_indexes = set()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\routes\plc_tag_routes.py:377: used_indexes.add(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\routes\plc_tag_routes.py:397: if index not in used_indexes:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\routes\plc_tag_routes.py:371: used_indexes = set()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\routes\plc_tag_routes.py:377: used_indexes.add(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\routes\plc_tag_routes.py:397: if index not in used_indexes:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\_pytest\python.py:1550: used_scopes = [
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\_pytest\python.py:1556: return min(used_scopes, default=Scope.Function)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\_pytest\runner.py:160: used_fixtures = sorted(getattr(item, "fixturenames", []))
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\_pytest\runner.py:161: if used_fixtures:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\_pytest\runner.py:162: tw.write(f" (fixtures used: {', '.join(used_fixtures)})")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:664: "tzname", "tzoffset", "ampm","any_unused_tokens"]
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1393: used_idxs = list()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1414: used_idxs.append(ii)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1422: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1436: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1444: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1469: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1473: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1477: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1484: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1487: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1492: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1496: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1513: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1518: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1521: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1524: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1529: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1532: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1539: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1543: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1554: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1557: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1565: used_idxs.append(i)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1577: unused_idxs = set(range(len_l)).difference(used_idxs)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\parser\_parser.py:1578: res.any_unused_tokens = not {l[n] for n in unused_idxs}.issubset({",",":"})
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\dateutil\tz\tz.py:1086: if res is None or res.any_unused_tokens:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\greenlet\tests\test_leaks.py:133: used = greenlet._greenlet.get_clocks_used_doing_optional_cleanup()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\greenlet\tests\test_leaks.py:137: used2 = greenlet._greenlet.get_clocks_used_doing_optional_cleanup()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\greenlet\tests\test_leaks.py:242: and greenlet._greenlet.get_clocks_used_doing_optional_cleanup() is not None:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\greenlet\tests\test_leaks.py:264: if greenlet._greenlet.get_clocks_used_doing_optional_cleanup() is not None:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\greenlet\__init__.py:60: from ._greenlet import get_clocks_used_doing_optional_cleanup # pylint:disable=unused-import
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\numpy\_core\_add_newdocs.py:3592: Toggle between low-endian and big-endian data representation by
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\numpy\lib\tests\test_io.py:1007: def test_unused_converter(self):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\numpy\lib\tests\test_io.py:1646: def test_unused_converter(self):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\openpyxl\worksheet\header_footer.py:63: * &B   Toggles bold
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\openpyxl\worksheet\header_footer.py:65: * &E   Toggles double-underline
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\openpyxl\worksheet\header_footer.py:67: * &I   Toggles italic
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\openpyxl\worksheet\header_footer.py:69: * &S   Toggles strikethrough
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\openpyxl\worksheet\header_footer.py:72: * &U   Toggles underline
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\openpyxl\worksheet\header_footer.py:73: * &X   Toggles superscript
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\openpyxl\worksheet\header_footer.py:74: * &Y   Toggles subscript
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:307: remove_unused_categories
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:816: remove_unused_categories : Remove categories which are not used.
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:1128: remove_unused_categories : Remove categories which are not used.
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:1233: remove_unused_categories : Remove categories which are not used.
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:1299: remove_unused_categories : Remove categories which are not used.
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:1371: remove_unused_categories : Remove categories which are not used.
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:1439: remove_unused_categories : Remove categories which are not used.
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:1472: def remove_unused_categories(self) -> Self:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:1506: >>> c.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:2858: "remove_unused_categories",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\arrays\categorical.py:2936: >>> s1.cat.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\computation\expressions.py:287: def _store_test_result(used_numexpr: bool) -> None:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\computation\expressions.py:288: if used_numexpr:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\computation\expressions.py:289: _TEST_RESULT.append(used_numexpr)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\groupby\categorical.py:47: #  return c.remove_unused_categories(), c
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\base.py:3581: return left_diff.remove_unused_levels().set_names(result_name)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\base.py:4643: multi_join_idx = multi_join_idx.remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\category.py:69: "remove_unused_categories",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\category.py:120: remove_unused_categories
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\multi.py:242: remove_unused_levels
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\multi.py:966: MultiIndex.remove_unused_levels : Create new MultiIndex from current that
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\multi.py:1989: MultiIndex.remove_unused_levels : Create new MultiIndex from current that
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\multi.py:2312: def remove_unused_levels(self) -> MultiIndex:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\multi.py:2321: The `remove_unused_levels` method is useful in cases where you have a
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\multi.py:2356: >>> mi2 = mi[2:].remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\multi.py:2796: MultiIndex.remove_unused_levels : Create new MultiIndex from current that
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\multi.py:4327: return result.remove_unused_levels().set_names(result_names)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\multi.py:4442: subset = value[mask].remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexes\multi.py:4444: subset = value.remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\reshape\reshape.py:127: self.index = index.remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\frame.py:3111: consider using :meth:`Categorical.remove_unused_categories` on the
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\core\indexing.py:109: MultiIndex.remove_unused_levels : New MultiIndex with no unused levels.
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\io\excel\_base.py:629: rows_used_so_far = 0
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\io\excel\_base.py:630: while rows_used_so_far < rows_to_use:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\io\excel\_base.py:632: rows_used_so_far += 1
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\io\formats\csvs.py:201: data_index = data_index.remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\plotting\_matplotlib\misc.py:264: used_legends: set[str] = set()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\plotting\_matplotlib\misc.py:279: if label not in used_legends:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\plotting\_matplotlib\misc.py:280: used_legends.add(label)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\plotting\_matplotlib\misc.py:373: used_legends: set[str] = set()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\plotting\_matplotlib\misc.py:408: if label not in used_legends:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\plotting\_matplotlib\misc.py:409: used_legends.add(label)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\arrays\categorical\test_api.py:347: def test_remove_unused_categories(self):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\arrays\categorical\test_api.py:354: res = c.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\arrays\categorical\test_api.py:360: res = c.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\arrays\categorical\test_api.py:368: out = cat.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\arrays\categorical\test_api.py:379: out = cat.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\frame\indexing\test_getitem.py:27: def test_getitem_unused_level_raises(self):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\frame\test_stack_unstack.py:724: def test_unstack_unused_levels(self):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\frame\test_stack_unstack.py:755: def test_unstack_unused_levels_mixed_with_nan(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\frame\test_stack_unstack.py:773: def test_unstack_unused_level(self, cols):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\generic\test_finalize.py:610: operator.methodcaller("remove_unused_categories"),
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\groupby\test_categorical.py:1828: def test_groupby_categorical_indices_unused_categories():
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexes\categorical\test_reindex.py:27: def test_reindex_list_non_unique_unused_category(self):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexes\categorical\test_reindex.py:33: def test_reindex_categorical_non_unique_unused_category(self):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexes\multi\test_sorting.py:223: result = df2.index.remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexes\multi\test_sorting.py:227: result2 = result.remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexes\multi\test_sorting.py:235: def test_remove_unused_levels_large(first_type, second_type):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexes\multi\test_sorting.py:254: result = df.index.remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexes\multi\test_sorting.py:267: def test_remove_unused_nan(level0, level1):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexes\multi\test_sorting.py:271: result = mi.remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexes\multi\test_sorting.py:283: def test_remove_unused_levels_with_nan():
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexes\multi\test_sorting.py:287: idx = idx.remove_unused_levels()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexing\test_categorical.py:303: def test_loc_getitem_listlike_unused_category(self, df2):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexing\test_categorical.py:309: def test_loc_getitem_label_unused_category(self, df2):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexing\test_categorical.py:319: def test_loc_setitem_expansion_label_unused_category(self, df2):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexing\test_categorical.py:374: def test_loc_listlike_dtypes_unused_category(self):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\indexing\test_categorical.py:397: def test_loc_getitem_listlike_unused_category_raises_keyerror(self):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\io\pytables\test_categorical.py:110: df3["s"] = df3["s"].cat.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\io\xml\test_to_xml.py:697: def test_unused_namespaces(parser, geom_df):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\io\test_stata.py:1202: new_cats = cat.remove_unused_categories().categories
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\io\test_stata.py:1331: cat = ser._values.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\plotting\test_backend.py:16: setattr(db, "plot", lambda *args, **kwargs: "used_dummy")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\plotting\test_backend.py:50: assert df.plot(backend="pandas_dummy_backend") == "used_dummy"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\accessors\test_cat_accessor.py:28: lambda x: x.cat.remove_unused_categories(),
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\accessors\test_cat_accessor.py:53: ser = ser.cat.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\accessors\test_cat_accessor.py:89: # and the methods '.set_categories()' 'drop_unused_categories()' to the
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\accessors\test_cat_accessor.py:121: ser = ser.cat.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\methods\test_astype.py:572: ).cat.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\methods\test_drop_duplicates.py:84: def cat_series_unused_category(self, dtype, ordered):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\methods\test_drop_duplicates.py:96: def test_drop_duplicates_categorical_non_bool(self, cat_series_unused_category):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\methods\test_drop_duplicates.py:97: tc1 = cat_series_unused_category
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\methods\test_drop_duplicates.py:113: self, cat_series_unused_category
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\methods\test_drop_duplicates.py:115: tc1 = cat_series_unused_category
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\methods\test_drop_duplicates.py:131: self, cat_series_unused_category
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\methods\test_drop_duplicates.py:133: tc1 = cat_series_unused_category
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\methods\test_replace.py:400: expected = expected.cat.remove_unused_categories()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\series\test_api.py:61: "remove_unused_categories",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\window\test_cython_aggregations.py:92: def test_rolling_aggregation_with_unused_elements(rolling_aggregation):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\test_expressions.py:184: used_numexpr = expr.get_test_result()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pandas\tests\test_expressions.py:185: assert used_numexpr, "Did not use numexpr as expected."
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_internal\utils\subprocess.py:108: used_level = logging.INFO
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_internal\utils\subprocess.py:113: used_level = VERBOSE
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_internal\utils\subprocess.py:116: showing_subprocess = subprocess_logger.getEffectiveLevel() <= used_level
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\requests\models.py:848: reused_chunks = iter_slices(self._content, chunk_size)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\requests\models.py:852: chunks = reused_chunks if self._content_consumed else stream_chunks
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_emoji_codes.py:644: "confused_face": "😕",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_emoji_codes.py:2313: "unamused_face": "😒",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:160: "toggle": {"interval": 250, "frames": "⊶⊷"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:161: "toggle2": {"interval": 80, "frames": "▫▪"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:162: "toggle3": {"interval": 120, "frames": "□■"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:163: "toggle4": {"interval": 100, "frames": "■□▪▫"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:164: "toggle5": {"interval": 100, "frames": "▮▯"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:165: "toggle6": {"interval": 300, "frames": "ဝ၀"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:166: "toggle7": {"interval": 80, "frames": "⦾⦿"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:167: "toggle8": {"interval": 100, "frames": "◍◌"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:168: "toggle9": {"interval": 100, "frames": "◉◎"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:169: "toggle10": {"interval": 100, "frames": "㊂㊀㊁"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:170: "toggle11": {"interval": 50, "frames": "⧇⧆"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:171: "toggle12": {"interval": 120, "frames": "☗☖"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\_spinners.py:172: "toggle13": {"interval": 80, "frames": "=*-"},
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\rich\text.py:529: >>> text.on(click="view.toggle('world')")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\urllib3\util\request.py:26: from compression import zstd as _unused_module_zstd  # noqa: F401
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\urllib3\util\request.py:28: from backports import zstd as _unused_module_zstd  # noqa: F401
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\urllib3\response.py:166: self._obj.unconsumed_tail or self._obj.unused_data
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\urllib3\response.py:252: data = self._obj.unused_data + data
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\urllib3\response.py:265: and self._obj.unused_data
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\urllib3\response.py:268: unused_data = self._obj.unused_data
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\urllib3\response.py:272: unused_data,
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pip\_vendor\urllib3\response.py:285: self._obj.unused_data
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\formatters\html.py:138: <td class="linenos" title="click to toggle"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\_mysql_builtins.py:257: 'is_used_lock',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\_openedge_builtins.py:2379: 'TOGGLE-BOX',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\_scilab_builtins.py:453: 'datatipToggle',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\_vim_builtins.py:1538: ('pastetoggle','pastetoggle'),
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\configs.py:532: "credentialsttl", "none", "disable", "offline_toggle", "diskd",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\css.py:143: 'tint', 'toggle', 'translate', 'translate3d', 'translateX', 'translateY',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\factor.py:135: 'toggle', 'with-global', 'with-scope', 'with-variable', 'with-variables'),
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\lisp.py:2120: 'w32-shell-execute', 'w32-short-file-name', 'w32-toggle-lock-key',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\lisp.py:2870: 'toggle', 'tracev', 'try', 'unless', 'use', 'var-',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\lisp.py:2889: 'buffer/bit-toggle', 'buffer/blit', 'buffer/clear',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\matlab.py:2512: "uitogglebutton",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\matlab.py:2513: "uitoggletool",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\perl.py:360: 'throws-like','timezone','tmpdir','to','today','todo','toggle','to-posix',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\phix.py:146: 'IupTimer', 'IupToggle', 'IupTreeAddNodes', 'IupTreeView', 'IupUpdate',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\theorem.py:221: 'display_drafts', 'find_consts', 'find_theorems', 'find_unused_assms',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pygments\lexers\theorem.py:237: 'try', 'try0', 'typ', 'unused_thms', 'value', 'values', 'welcome',
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pymysql\constants\ER.py:75: BLOB_USED_AS_KEY = 1073
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\pymysql\constants\ER.py:444: CANT_UPDATE_USED_TABLE_IN_SF_OR_TRG = 1442
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:193: used_set = set(used)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:200: if sym not in used_set:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:201: used_set.add(sym)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:17: addToggleFrameTraceback(frames);
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:18: addToggleTraceTypesOnClick(document.querySelectorAll("h2.traceback"));
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:23: function addToggleFrameTraceback(frames) {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:26: frame.getElementsByTagName("pre")[0].parentElement.classList.toggle("expanded");
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:97: slideToggle(consoleNode);
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:112: slideToggle(consoleElement);
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:191: function slideToggle(target) {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:192: target.classList.toggle("active");
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:196: * toggle traceback types on click.
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:198: function addToggleTraceTypesOnClick(elements) {
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:201: document.querySelector("div.traceback").classList.toggle("hidden");
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:202: document.querySelector("div.plain").classList.toggle("hidden");
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:205: document.querySelector("div.plain").classList.toggle("hidden");
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:249: expansionButton.setAttribute("class", "toggle");
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\debugger.js:295: expansionButton.classList.toggle("open");
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\style.css:76: a.toggle { text-decoration: none; background-repeat: no-repeat;
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\venv\Lib\site-packages\werkzeug\debug\shared\style.css:79: a.toggle:hover { background-color: #444; }

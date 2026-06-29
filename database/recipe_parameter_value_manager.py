@@ -82,7 +82,9 @@ class RecipeParameterValueManager:
     @staticmethod
     def get_recipe_values(
 
-        recipe_id
+        recipe_id,
+
+        include_inactive=False
 
     ):
 
@@ -116,7 +118,9 @@ class RecipeParameterValueManager:
 
                 pd.max_value,
 
-                pd.default_value
+                pd.default_value,
+
+                COALESCE(pd.used, 1) AS used
 
             FROM
             recipe_parameter_values rpv
@@ -131,11 +135,18 @@ class RecipeParameterValueManager:
 
                 rpv.recipe_id = ?
 
+                AND (
+                    ? = 1
+                    OR
+                    COALESCE(pd.used, 1) = 1
+                )
+
             ORDER BY
                 pd.tag_index
             """,
             (
                 recipe_id,
+                1 if include_inactive else 0
             )
         )
 

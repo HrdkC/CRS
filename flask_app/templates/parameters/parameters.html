@@ -33,8 +33,13 @@ Recipe Parameters
     <div class="metric-grid">
         <div class="metric-card">
             <span class="metric-label">Parameters</span>
-            <strong>{{ parameters|length }}</strong>
-            <small>Visible after current filter</small>
+            <strong>{{ active_parameter_count if active_parameter_count is defined else parameters|length }}</strong>
+            <small>
+                Used
+                {% if inactive_parameter_count is defined and inactive_parameter_count %}
+                    | {{ inactive_parameter_count }} not used
+                {% endif %}
+            </small>
         </div>
         <div class="metric-card">
             <span class="metric-label">Machine</span>
@@ -71,6 +76,35 @@ Recipe Parameters
                 placeholder="Parameter name or tag index"
             >
         </label>
+        <label>
+            <span>Scope</span>
+            <select name="parameter_scope">
+                <option
+                    value="active"
+                    {% if parameter_scope == "active" %}
+                    selected
+                    {% endif %}
+                >
+                    Used Parameters
+                </option>
+                <option
+                    value="inactive"
+                    {% if parameter_scope == "inactive" %}
+                    selected
+                    {% endif %}
+                >
+                    Not Used
+                </option>
+                <option
+                    value="all"
+                    {% if parameter_scope == "all" %}
+                    selected
+                    {% endif %}
+                >
+                    All Template Rows
+                </option>
+            </select>
+        </label>
         <button class="crs-btn crs-btn-primary" type="submit">Search</button>
         <a
             class="crs-btn crs-btn-soft"
@@ -99,12 +133,14 @@ Recipe Parameters
                         <th>Min</th>
                         <th>Max</th>
                         <th>Default</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for parameter in parameters %}
-                    <tr>
+                    {% set parameter_used = parameter.used if parameter.used is not none else 1 %}
+                    <tr class="{% if parameter_used|int != 1 %}row-inactive{% endif %}">
                         <td><span class="tag-pill">{{ parameter.tag_index }}</span></td>
                         <td>
                             {% if parameter.plc_array_index is not none %}
@@ -119,21 +155,42 @@ Recipe Parameters
                         <td>{{ parameter.max_value }}</td>
                         <td>{{ parameter.default_value }}</td>
                         <td>
+                            {% if parameter_used|int == 1 %}
+                            <span class="status-badge status-success">Used</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">Not Used</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             <div class="row-actions">
                                 {% if role_can("engineering_config") %}
                                 <a href="/parameters/edit/{{ parameter.id }}" class="row-action primary">
                                     Edit
                                 </a>
-                                <a href="/parameters/disable/{{ parameter.id }}" class="row-action danger">
-                                    Disable
+                                {% if parameter_used|int == 1 %}
+                                <a
+                                    href="/parameters/disable/{{ parameter.id }}"
+                                    class="row-action danger"
+                                    title="Mark this parameter Not Used for this machine/stage template. Existing recipe values remain stored."
+                                >
+                                    Not Used
                                 </a>
+                                {% else %}
+                                <a
+                                    href="/parameters/enable/{{ parameter.id }}"
+                                    class="row-action success"
+                                    title="Restore this parameter to active use and backfill missing values to existing recipes."
+                                >
+                                    Use
+                                </a>
+                                {% endif %}
                                 {% endif %}
                             </div>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="empty-state">No parameters found.</td>
+                        <td colspan="9" class="empty-state">No parameters found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

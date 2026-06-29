@@ -53,6 +53,26 @@ SECOND_STAGE_DEFAULT_PHASES = {
 
 FIRST_STAGE_DEFAULT_PHASES = {
     "APPLICATION_SIDE": [
+        "IL With Toproll",
+        "IL Without Toproll",
+        "Ply 1 With Toproll",
+        "Ply 1 Without Toproll",
+        "Ply 2 With Toproll",
+        "Ply 2 Without Toproll",
+        "Ply 3 With Toproll",
+        "Ply 3 Without Toproll",
+        "Sidewall With Stitcher",
+        "Sidewall Without Stitcher",
+        "RRD With Contour Stitcher",
+        "RRD With Contour & Disk Stitcher",
+        "RRD With Disk Stitcher",
+        "Insert Beads",
+        "Set Beads",
+        "Turnup Ring",
+        "Contour Stitcher",
+        "Material 1 Manual",
+        "Disk Stitcher",
+        "Material 2 Manual",
         "Empty Phase",
     ],
 }

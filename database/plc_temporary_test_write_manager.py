@@ -153,6 +153,14 @@ class PLCTemporaryTestWriteManager:
             PLCDownloadPreparationManager.PAYLOAD_SIZE
         )
 
+        if not payload_size:
+
+            result["errors"].append(
+                "Recipe data array size is not configured for this machine/stage."
+            )
+
+            return result
+
         recipe_array = (
             PLCTemporaryTestWriteManager
             .build_recipe_array(
@@ -297,7 +305,7 @@ class PLCTemporaryTestWriteManager:
                 if readback_payload is None:
 
                     result["errors"].append(
-                        "PLC test buffer readback did not return 500 values."
+                        f"PLC test buffer readback did not return {payload_size} values."
                     )
 
                     return result
@@ -461,6 +469,19 @@ class PLCTemporaryTestWriteManager:
 
         }
 
+        payload_size = (
+            PLCDownloadPreparationManager
+            .get_payload_size_for_recipe(recipe)
+        )
+
+        if not payload_size:
+
+            result["errors"].append(
+                "Recipe data array size is not configured for this machine/stage."
+            )
+
+            return result
+
         test_data = (
             PLCTagManager
             .get_tag_by_purpose(
@@ -512,10 +533,10 @@ class PLCTemporaryTestWriteManager:
             0
         )
 
-        if array_size < PLCDownloadPreparationManager.PAYLOAD_SIZE:
+        if array_size < payload_size:
 
             result["errors"].append(
-                "TEST_RECIPE_DATA array size must be at least 500."
+                f"TEST_RECIPE_DATA array size must be at least {payload_size}."
             )
 
         result["tags"][

@@ -138,6 +138,16 @@ class PLCDownloadManager:
                 PLCDownloadPreparationManager.PAYLOAD_SIZE
             )
 
+            if not payload_size:
+
+                return (
+
+                    False,
+
+                    "Recipe data array size is not configured for this machine/stage."
+
+                )
+
             if not PLCDownloadManager.LIVE_WRITE_ENABLED:
 
                 return (

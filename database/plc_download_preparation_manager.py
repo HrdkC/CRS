@@ -21,6 +21,9 @@ from database.recipe_phase_control_manager import (
 from database.plc_download_tag_readiness_manager import (
     PLCDownloadTagReadinessManager
 )
+from database.stage_plc_tag_requirement_manager import (
+    StagePLCTagRequirementManager
+)
 
 from database.database import (
     get_connection
@@ -33,7 +36,20 @@ from pycomm3 import (
 
 class PLCDownloadPreparationManager:
 
-    PAYLOAD_SIZE = 500
+    PAYLOAD_SIZE = None
+
+    @staticmethod
+    def get_payload_size_for_recipe(recipe):
+        if not recipe:
+            return PLCDownloadPreparationManager.PAYLOAD_SIZE
+        return (
+            StagePLCTagRequirementManager
+            .get_payload_size(
+                machine_id=recipe["machine_id"],
+                stage_id=recipe["stage_id"],
+                default=None,
+            )
+        )
 
     @staticmethod
     def get_available_plcs(
@@ -155,6 +171,11 @@ class PLCDownloadPreparationManager:
 
         result["recipe"] = recipe
 
+        payload_size = (
+            PLCDownloadPreparationManager
+            .get_payload_size_for_recipe(recipe)
+        )
+
         parameter_validation = (
             RecipeValidationManager
             .validate_recipe(
@@ -234,7 +255,7 @@ class PLCDownloadPreparationManager:
 
                 tag_readiness=tag_readiness,
 
-                payload_size=PLCDownloadPreparationManager.PAYLOAD_SIZE
+                payload_size=payload_size
 
             )
         )
@@ -315,7 +336,7 @@ class PLCDownloadPreparationManager:
             if (
                 plc_index < 0
                 or
-                plc_index >= PLCDownloadPreparationManager.PAYLOAD_SIZE
+                plc_index >= payload_size
             ):
 
                 out_of_range_indexes.append(
@@ -401,7 +422,7 @@ class PLCDownloadPreparationManager:
         result["payload_summary"] = {
 
             "payload_size":
-            PLCDownloadPreparationManager.PAYLOAD_SIZE,
+            payload_size,
 
             "total_parameters":
             len(values),
@@ -504,6 +525,11 @@ class PLCDownloadPreparationManager:
 
         result["recipe"] = recipe
 
+        payload_size = (
+            PLCDownloadPreparationManager
+            .get_payload_size_for_recipe(recipe)
+        )
+
         plc = (
             PLCDownloadPreparationManager
             .get_plc_for_recipe(
@@ -528,7 +554,7 @@ class PLCDownloadPreparationManager:
 
                 recipe_id=recipe_id,
 
-                payload_size=PLCDownloadPreparationManager.PAYLOAD_SIZE
+                payload_size=payload_size
 
             )
         )

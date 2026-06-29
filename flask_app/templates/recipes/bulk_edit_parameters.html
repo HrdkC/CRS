@@ -6,6 +6,134 @@ Bulk Parameter Edit
 
 {% block content %}
 
+<style>
+/* CRS V6.17: Bulk Edit no-jump toggles, visible-row bulk actions, and sortable table. */
+.bulk-edit-control-bar {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.85fr) minmax(420px, 1.15fr);
+    gap: 12px;
+    align-items: start;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line-100);
+    background: #fbfcfe;
+}
+.bulk-filter-chips,
+.bulk-mass-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.bulk-control-title {
+    width: 100%;
+    color: var(--ink-600);
+    font-size: 10.5px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.bulk-chip-button,
+.bulk-action-button,
+.bulk-sort-button {
+    border: 1px solid var(--line-200) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+.bulk-chip-button,
+.bulk-action-button {
+    min-height: 30px !important;
+    padding: 6px 11px !important;
+    border-radius: 999px !important;
+    color: var(--ink-700) !important;
+    background: #f1f5f9 !important;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+}
+.bulk-chip-button.active,
+.bulk-chip-button:hover,
+.bulk-action-button:hover {
+    color: #fff !important;
+    background: var(--apollo-violet) !important;
+    border-color: var(--apollo-violet) !important;
+}
+.bulk-action-button.warning-action:hover {
+    background: #d97706 !important;
+    border-color: #d97706 !important;
+}
+.bulk-action-button.success-action:hover {
+    background: #15803d !important;
+    border-color: #15803d !important;
+}
+.bulk-action-button.neutral-action:hover {
+    background: #475569 !important;
+    border-color: #475569 !important;
+}
+.bulk-control-help {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--ink-500);
+    font-size: 11px;
+    font-weight: 750;
+}
+.bulk-sort-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+    min-height: 22px !important;
+    padding: 0 !important;
+    color: #fff !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    font-size: 11.5px !important;
+    font-weight: 950 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+.bulk-sort-button::after {
+    content: "↕";
+    color: rgba(255,255,255,0.72);
+    font-size: 11px;
+}
+.bulk-sort-button.sort-asc::after { content: "▲"; color: #fef3c7; }
+.bulk-sort-button.sort-desc::after { content: "▼"; color: #fef3c7; }
+.bulk-row-hidden { display: none !important; }
+.bulk-visible-counter {
+    color: var(--apollo-violet-dark);
+    font-weight: 950;
+}
+.parameter-used-switch {
+    position: relative !important;
+    user-select: none;
+}
+.parameter-used-switch input {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 1px !important;
+    height: 1px !important;
+    min-height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+.bulk-parameter-table tbody tr.row-inactive td {
+    background: #f8fafc !important;
+    color: var(--ink-500);
+}
+.bulk-parameter-table tbody tr.bulk-row-dirty td {
+    background: #fbf7ff !important;
+}
+@media (max-width: 980px) {
+    .bulk-edit-control-bar {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
 <section class="recipe-workbench">
 
     <div class="workbench-hero">
@@ -101,7 +229,7 @@ Bulk Parameter Edit
                     >?</span>
                 </span>
                 <p>
-                    {{ rows|length }} row(s) shown. Edited rows are auto-selected. PLC Index is locked and cannot be changed here.
+                    <span id="bulk-visible-counter" class="bulk-visible-counter">{{ rows|length }}</span> of {{ rows|length }} row(s) visible. Edited/toggled rows are auto-selected. PLC Index is locked.
                 </p>
             </div>
 
@@ -113,6 +241,31 @@ Bulk Parameter Edit
                 {% endif %}
             </div>
 
+        </div>
+
+        <div class="bulk-edit-control-bar" aria-label="Bulk edit controls">
+            <div class="bulk-filter-chips">
+                <span class="bulk-control-title">Show Rows</span>
+                <button type="button" class="bulk-chip-button active" data-bulk-filter="all">All</button>
+                <button type="button" class="bulk-chip-button" data-bulk-filter="used">Used</button>
+                <button type="button" class="bulk-chip-button" data-bulk-filter="unused">Not Used</button>
+                <button type="button" class="bulk-chip-button" data-bulk-filter="modified">Modified</button>
+                <button type="button" class="bulk-chip-button" data-bulk-filter="selected">Selected</button>
+            </div>
+            <div class="bulk-mass-actions">
+                <span class="bulk-control-title">Fast Multi-Toggle</span>
+                <button type="button" class="bulk-action-button neutral-action" id="bulk-select-visible">Select Visible</button>
+                <button type="button" class="bulk-action-button neutral-action" id="bulk-clear-visible">Clear Visible</button>
+                {% if can_edit_details %}
+                <button type="button" class="bulk-action-button success-action" id="bulk-mark-selected-used">Mark Selected Used</button>
+                <button type="button" class="bulk-action-button warning-action" id="bulk-mark-selected-unused">Mark Selected Not Used</button>
+                <button type="button" class="bulk-action-button success-action" id="bulk-mark-visible-used">All Visible Used</button>
+                <button type="button" class="bulk-action-button warning-action" id="bulk-mark-visible-unused">All Visible Not Used</button>
+                {% endif %}
+            </div>
+            <p class="bulk-control-help">
+                Sorting works on visible rows only. Toggle changes stay on the same screen and are saved only after you enter reason and click Save Selected Parameters.
+            </p>
         </div>
 
         <div class="bulk-edit-reason-row">
@@ -130,7 +283,7 @@ Bulk Parameter Edit
 
         <div class="professional-table-wrap bulk-parameter-wrap">
 
-            <table class="professional-table bulk-parameter-table">
+            <table class="professional-table bulk-parameter-table" id="bulk-parameter-table">
 
                 <thead>
                     <tr>
@@ -141,15 +294,16 @@ Bulk Parameter Edit
                                 title="Select all visible rows"
                             >
                         </th>
-                        <th>Tag</th>
-                        <th>PLC Index</th>
-                        <th>Parameter Name</th>
-                        <th>Value</th>
-                        <th>Unit</th>
-                        <th>Min</th>
-                        <th>Max</th>
-                        <th>Default</th>
-                        <th>Status</th>
+                        <th><button type="button" class="bulk-sort-button" data-sort-key="tag">Tag</button></th>
+                        <th><button type="button" class="bulk-sort-button" data-sort-key="plc">PLC Index</button></th>
+                        <th><button type="button" class="bulk-sort-button" data-sort-key="used">Used</button></th>
+                        <th><button type="button" class="bulk-sort-button" data-sort-key="name">Parameter Name</button></th>
+                        <th><button type="button" class="bulk-sort-button" data-sort-key="value">Value</button></th>
+                        <th><button type="button" class="bulk-sort-button" data-sort-key="unit">Unit</button></th>
+                        <th><button type="button" class="bulk-sort-button" data-sort-key="min">Min</button></th>
+                        <th><button type="button" class="bulk-sort-button" data-sort-key="max">Max</button></th>
+                        <th><button type="button" class="bulk-sort-button" data-sort-key="default">Default</button></th>
+                        <th><button type="button" class="bulk-sort-button" data-sort-key="status">Status</button></th>
                     </tr>
                 </thead>
 
@@ -161,6 +315,7 @@ Bulk Parameter Edit
                     {% set display_min = row.form_min_value if row.form_min_value is defined else (row.min_value if row.min_value is not none else '') %}
                     {% set display_max = row.form_max_value if row.form_max_value is defined else (row.max_value if row.max_value is not none else '') %}
                     {% set display_default = row.form_default_value if row.form_default_value is defined else (row.default_value if row.default_value is not none else '') %}
+                    {% set display_used = row.form_used if row.form_used is defined else (row.used if row.used is not none else 1) %}
                     {% set row_below =
                         row.min_value is not none
                         and row.parameter_value < row.min_value
@@ -169,10 +324,31 @@ Bulk Parameter Edit
                         row.max_value is not none
                         and row.parameter_value > row.max_value
                     %}
+                    {% if display_used|int != 1 %}
+                        {% set status_key = "inactive" %}
+                    {% elif row_below %}
+                        {% set status_key = "below_min" %}
+                    {% elif row_above %}
+                        {% set status_key = "above_max" %}
+                    {% elif row.is_modified %}
+                        {% set status_key = "modified" %}
+                    {% else %}
+                        {% set status_key = "ok" %}
+                    {% endif %}
                     <tr
-                        {% if row_below or row_above %}
-                        class="row-alert"
-                        {% endif %}
+                        class="{% if row_below or row_above %}row-alert{% endif %} {% if display_used|int != 1 %}row-inactive{% endif %} {% if row.id|string in selected_ids %}bulk-row-dirty{% endif %}"
+                        data-bulk-row="1"
+                        data-tag="{{ row.tag_index if row.tag_index is not none else '' }}"
+                        data-plc="{{ row.plc_array_index if row.plc_array_index is not none else '' }}"
+                        data-used="{{ 1 if display_used|int == 1 else 0 }}"
+                        data-name="{{ display_name|lower }}"
+                        data-value="{{ display_value }}"
+                        data-unit="{{ display_unit|lower }}"
+                        data-min="{{ display_min }}"
+                        data-max="{{ display_max }}"
+                        data-default="{{ display_default }}"
+                        data-status="{{ status_key }}"
+                        data-modified="{{ 1 if row.is_modified else 0 }}"
                     >
                         <td>
                             <input
@@ -198,10 +374,41 @@ Bulk Parameter Edit
                         </td>
                         <td>
                             <input
+                                type="hidden"
+                                name="used_present_{{ row.id }}"
+                                value="1"
+                                {% if not can_edit_details %}disabled{% endif %}
+                            >
+                            <label
+                                class="parameter-used-switch"
+                                title="When unchecked, this parameter remains stored but is excluded from normal recipe display, validation, and PLC download for this machine/stage."
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="bulk-active-toggle"
+                                    name="used_{{ row.id }}"
+                                    value="1"
+                                    data-original-checked="{{ 1 if row.used else 0 }}"
+                                    {% if display_used|int == 1 %}checked{% endif %}
+                                    {% if not can_edit_details %}disabled{% endif %}
+                                >
+                                <span></span>
+                                <strong data-used-label="1">
+                                    {% if display_used|int == 1 %}
+                                    Used
+                                    {% else %}
+                                    Not Used
+                                    {% endif %}
+                                </strong>
+                            </label>
+                        </td>
+                        <td>
+                            <input
                                 class="wide-cell-input bulk-edit-track"
                                 type="text"
                                 name="parameter_name_{{ row.id }}"
                                 value="{{ display_name }}"
+                                data-sort-key="name"
                                 data-original-value="{{ row.parameter_name if row.parameter_name is not none else '' }}"
                                 {% if not can_edit_details %}disabled{% endif %}
                             >
@@ -213,6 +420,7 @@ Bulk Parameter Edit
                                 step="any"
                                 name="parameter_value_{{ row.id }}"
                                 value="{{ display_value }}"
+                                data-sort-key="value"
                                 data-original-value="{{ row.parameter_value if row.parameter_value is not none else '' }}"
                             >
                         </td>
@@ -222,6 +430,7 @@ Bulk Parameter Edit
                                 type="text"
                                 name="unit_{{ row.id }}"
                                 value="{{ display_unit }}"
+                                data-sort-key="unit"
                                 data-original-value="{{ row.unit if row.unit is not none else '' }}"
                                 {% if not can_edit_details %}disabled{% endif %}
                             >
@@ -233,6 +442,7 @@ Bulk Parameter Edit
                                 step="any"
                                 name="min_value_{{ row.id }}"
                                 value="{{ display_min }}"
+                                data-sort-key="min"
                                 data-original-value="{{ row.min_value if row.min_value is not none else '' }}"
                                 {% if not can_edit_details %}disabled{% endif %}
                             >
@@ -244,6 +454,7 @@ Bulk Parameter Edit
                                 step="any"
                                 name="max_value_{{ row.id }}"
                                 value="{{ display_max }}"
+                                data-sort-key="max"
                                 data-original-value="{{ row.max_value if row.max_value is not none else '' }}"
                                 {% if not can_edit_details %}disabled{% endif %}
                             >
@@ -255,12 +466,15 @@ Bulk Parameter Edit
                                 step="any"
                                 name="default_value_{{ row.id }}"
                                 value="{{ display_default }}"
+                                data-sort-key="default"
                                 data-original-value="{{ row.default_value if row.default_value is not none else '' }}"
                                 {% if not can_edit_details %}disabled{% endif %}
                             >
                         </td>
-                        <td>
-                            {% if row_below %}
+                        <td data-status-cell="1">
+                            {% if display_used|int != 1 %}
+                            <span class="status-badge status-neutral">Inactive</span>
+                            {% elif row_below %}
                             <span class="status-badge status-danger">Below Min</span>
                             {% elif row_above %}
                             <span class="status-badge status-danger">Above Max</span>
@@ -273,7 +487,7 @@ Bulk Parameter Edit
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="10" class="empty-state">
+                        <td colspan="11" class="empty-state">
                             No parameter rows found.
                         </td>
                     </tr>
@@ -309,19 +523,40 @@ Bulk Parameter Edit
 <script>
 (function () {
     const form = document.getElementById("bulk-parameter-edit-form");
+    const table = document.getElementById("bulk-parameter-table");
+    const tbody = table ? table.querySelector("tbody") : null;
     const selectAllParameters = document.getElementById("select-all-parameters");
+    const visibleCounter = document.getElementById("bulk-visible-counter");
+    let currentFilter = "all";
+    let currentSortKey = "tag";
+    let currentSortDirection = "asc";
 
     function normalize(value) {
         return (value === null || value === undefined) ? "" : String(value).trim();
     }
 
-    function getRowSelector(input) {
-        const row = input.closest("tr");
+    function getRows() {
+        if (!tbody) {
+            return [];
+        }
+        return Array.prototype.slice.call(tbody.querySelectorAll("tr[data-bulk-row='1']"));
+    }
+
+    function isRowVisible(row) {
+        return row && !row.classList.contains("bulk-row-hidden");
+    }
+
+    function getVisibleRows() {
+        return getRows().filter(isRowVisible);
+    }
+
+    function getRowSelector(inputOrRow) {
+        const row = inputOrRow && inputOrRow.closest ? inputOrRow.closest("tr") : inputOrRow;
         return row ? row.querySelector(".bulk-row-selector") : null;
     }
 
-    function markRowSelected(input) {
-        const selector = getRowSelector(input);
+    function markRowSelected(inputOrRow) {
+        const selector = getRowSelector(inputOrRow);
         if (!selector) {
             return;
         }
@@ -332,36 +567,346 @@ Bulk Parameter Edit
         }
     }
 
+    function preserveWindowScroll(callback) {
+        const scrollX = window.scrollX || window.pageXOffset || 0;
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+        if (typeof callback === "function") {
+            callback();
+        }
+        window.requestAnimationFrame(function () {
+            window.scrollTo(scrollX, scrollY);
+            window.setTimeout(function () {
+                window.scrollTo(scrollX, scrollY);
+            }, 0);
+        });
+    }
+
+    function parseNumber(value) {
+        const n = Number(String(value || "").replace(/,/g, ""));
+        return Number.isFinite(n) ? n : null;
+    }
+
+    function getSortValue(row, key) {
+        const raw = row.dataset[key] || "";
+        if (["tag", "plc", "value", "min", "max", "default", "used", "modified"].includes(key)) {
+            const n = parseNumber(raw);
+            return n === null ? Number.NEGATIVE_INFINITY : n;
+        }
+        return String(raw).toUpperCase();
+    }
+
+    function updateCounter() {
+        const count = getVisibleRows().length;
+        if (visibleCounter) {
+            visibleCounter.textContent = count;
+        }
+        if (selectAllParameters) {
+            const visible = getVisibleRows();
+            const selectedVisible = visible.filter(function (row) {
+                const selector = getRowSelector(row);
+                return selector && selector.checked;
+            });
+            selectAllParameters.checked = visible.length > 0 && selectedVisible.length === visible.length;
+            selectAllParameters.indeterminate = selectedVisible.length > 0 && selectedVisible.length < visible.length;
+        }
+    }
+
+    function updateRowStatusForUsed(row) {
+        const used = row.dataset.used === "1";
+        const statusCell = row.querySelector("[data-status-cell]");
+        if (!statusCell) {
+            return;
+        }
+        if (!used) {
+            statusCell.innerHTML = '<span class="status-badge status-neutral">Inactive</span>';
+            row.dataset.status = "inactive";
+            row.classList.add("row-inactive");
+            return;
+        }
+        row.classList.remove("row-inactive");
+        const originalStatus = row.dataset.modified === "1" ? "modified" : "ok";
+        row.dataset.status = originalStatus;
+        if (originalStatus === "modified") {
+            statusCell.innerHTML = '<span class="status-badge status-warning">Modified</span>';
+        } else {
+            statusCell.innerHTML = '<span class="status-badge status-success">OK</span>';
+        }
+    }
+
+    function updateToggleText(input) {
+        const label = input.closest(".parameter-used-switch");
+        const text = label ? label.querySelector("[data-used-label]") : null;
+        if (text) {
+            text.textContent = input.checked ? "Used" : "Not Used";
+        }
+    }
+
+    function updateRowDataFromInput(input) {
+        const row = input.closest("tr[data-bulk-row='1']");
+        if (!row) {
+            return;
+        }
+        const key = input.dataset.sortKey;
+        if (key) {
+            row.dataset[key] = input.value || "";
+        }
+    }
+
+    function updateRowDataFromToggle(input) {
+        const row = input.closest("tr[data-bulk-row='1']");
+        if (!row) {
+            return;
+        }
+        row.dataset.used = input.checked ? "1" : "0";
+        updateToggleText(input);
+        updateRowStatusForUsed(row);
+    }
+
+    function rowPassesFilter(row, filterName) {
+        const selector = getRowSelector(row);
+        if (filterName === "used") {
+            return row.dataset.used === "1";
+        }
+        if (filterName === "unused") {
+            return row.dataset.used !== "1";
+        }
+        if (filterName === "modified") {
+            return row.dataset.modified === "1" || row.classList.contains("bulk-row-dirty");
+        }
+        if (filterName === "selected") {
+            return !!(selector && selector.checked);
+        }
+        return true;
+    }
+
+    function applyCurrentFilter() {
+        getRows().forEach(function (row) {
+            if (rowPassesFilter(row, currentFilter)) {
+                row.classList.remove("bulk-row-hidden");
+            } else {
+                row.classList.add("bulk-row-hidden");
+            }
+        });
+        updateCounter();
+    }
+
     function selectChangedRows() {
         document.querySelectorAll(".bulk-edit-track").forEach(function (input) {
             if (normalize(input.value) !== normalize(input.dataset.originalValue)) {
                 markRowSelected(input);
             }
         });
+        document.querySelectorAll(".bulk-active-toggle").forEach(function (input) {
+            const original = normalize(input.dataset.originalChecked);
+            const current = input.checked ? "1" : "0";
+            if (current !== original) {
+                markRowSelected(input);
+            }
+        });
+    }
+
+    function sortRows(sortKey) {
+        preserveWindowScroll(function () {
+            if (!tbody) {
+                return;
+            }
+            if (currentSortKey === sortKey) {
+                currentSortDirection = currentSortDirection === "asc" ? "desc" : "asc";
+            } else {
+                currentSortKey = sortKey;
+                currentSortDirection = "asc";
+            }
+            document.querySelectorAll(".bulk-sort-button").forEach(function (button) {
+                button.classList.remove("sort-asc", "sort-desc");
+                if (button.dataset.sortKey === currentSortKey) {
+                    button.classList.add(currentSortDirection === "asc" ? "sort-asc" : "sort-desc");
+                }
+            });
+            const rows = getRows();
+            rows.sort(function (a, b) {
+                const av = getSortValue(a, currentSortKey);
+                const bv = getSortValue(b, currentSortKey);
+                if (av < bv) {
+                    return currentSortDirection === "asc" ? -1 : 1;
+                }
+                if (av > bv) {
+                    return currentSortDirection === "asc" ? 1 : -1;
+                }
+                return 0;
+            });
+            rows.forEach(function (row) {
+                tbody.appendChild(row);
+            });
+            applyCurrentFilter();
+        });
+    }
+
+    function setRowsUsed(rows, used) {
+        preserveWindowScroll(function () {
+            rows.forEach(function (row) {
+                const toggle = row.querySelector(".bulk-active-toggle");
+                if (!toggle || toggle.disabled) {
+                    return;
+                }
+                toggle.checked = !!used;
+                updateRowDataFromToggle(toggle);
+                markRowSelected(row);
+            });
+            applyCurrentFilter();
+        });
+    }
+
+    function getSelectedVisibleRows() {
+        return getVisibleRows().filter(function (row) {
+            const selector = getRowSelector(row);
+            return selector && selector.checked;
+        });
     }
 
     if (selectAllParameters) {
         selectAllParameters.addEventListener("change", function () {
-            document.querySelectorAll(".bulk-row-selector").forEach(function (checkbox) {
-                checkbox.checked = selectAllParameters.checked;
+            preserveWindowScroll(function () {
+                getVisibleRows().forEach(function (row) {
+                    const checkbox = getRowSelector(row);
+                    if (checkbox) {
+                        checkbox.checked = selectAllParameters.checked;
+                    }
+                });
+                updateCounter();
             });
         });
     }
 
     document.querySelectorAll(".bulk-edit-track").forEach(function (input) {
         input.addEventListener("input", function () {
+            updateRowDataFromInput(input);
             markRowSelected(input);
+            applyCurrentFilter();
         });
         input.addEventListener("change", function () {
+            updateRowDataFromInput(input);
             markRowSelected(input);
+            applyCurrentFilter();
         });
     });
+
+    document.querySelectorAll(".bulk-active-toggle").forEach(function (input) {
+        input.addEventListener("mousedown", function () {
+            input.dataset.scrollYBeforeToggle = String(window.scrollY || window.pageYOffset || 0);
+        });
+        input.addEventListener("click", function () {
+            input.dataset.scrollYBeforeToggle = String(window.scrollY || window.pageYOffset || 0);
+        });
+        input.addEventListener("change", function () {
+            const savedScroll = Number(input.dataset.scrollYBeforeToggle || window.scrollY || window.pageYOffset || 0);
+            preserveWindowScroll(function () {
+                updateRowDataFromToggle(input);
+                markRowSelected(input);
+                applyCurrentFilter();
+            });
+            window.requestAnimationFrame(function () {
+                window.scrollTo(0, savedScroll);
+                window.setTimeout(function () {
+                    window.scrollTo(0, savedScroll);
+                }, 0);
+            });
+        });
+    });
+
+    document.querySelectorAll(".bulk-row-selector").forEach(function (checkbox) {
+        checkbox.addEventListener("change", function () {
+            const row = checkbox.closest("tr[data-bulk-row='1']");
+            if (row && checkbox.checked) {
+                row.classList.add("bulk-row-dirty");
+            }
+            applyCurrentFilter();
+        });
+    });
+
+    document.querySelectorAll(".bulk-chip-button[data-bulk-filter]").forEach(function (button) {
+        button.addEventListener("click", function () {
+            preserveWindowScroll(function () {
+                currentFilter = button.dataset.bulkFilter || "all";
+                document.querySelectorAll(".bulk-chip-button[data-bulk-filter]").forEach(function (item) {
+                    item.classList.toggle("active", item === button);
+                });
+                applyCurrentFilter();
+            });
+        });
+    });
+
+    document.querySelectorAll(".bulk-sort-button[data-sort-key]").forEach(function (button) {
+        button.addEventListener("click", function () {
+            sortRows(button.dataset.sortKey);
+        });
+    });
+
+    const selectVisibleButton = document.getElementById("bulk-select-visible");
+    if (selectVisibleButton) {
+        selectVisibleButton.addEventListener("click", function () {
+            preserveWindowScroll(function () {
+                getVisibleRows().forEach(function (row) {
+                    const selector = getRowSelector(row);
+                    if (selector) {
+                        selector.checked = true;
+                        row.classList.add("bulk-row-dirty");
+                    }
+                });
+                updateCounter();
+            });
+        });
+    }
+
+    const clearVisibleButton = document.getElementById("bulk-clear-visible");
+    if (clearVisibleButton) {
+        clearVisibleButton.addEventListener("click", function () {
+            preserveWindowScroll(function () {
+                getVisibleRows().forEach(function (row) {
+                    const selector = getRowSelector(row);
+                    if (selector) {
+                        selector.checked = false;
+                    }
+                });
+                updateCounter();
+            });
+        });
+    }
+
+    const markSelectedUsedButton = document.getElementById("bulk-mark-selected-used");
+    if (markSelectedUsedButton) {
+        markSelectedUsedButton.addEventListener("click", function () {
+            setRowsUsed(getSelectedVisibleRows(), true);
+        });
+    }
+
+    const markSelectedUnusedButton = document.getElementById("bulk-mark-selected-unused");
+    if (markSelectedUnusedButton) {
+        markSelectedUnusedButton.addEventListener("click", function () {
+            setRowsUsed(getSelectedVisibleRows(), false);
+        });
+    }
+
+    const markVisibleUsedButton = document.getElementById("bulk-mark-visible-used");
+    if (markVisibleUsedButton) {
+        markVisibleUsedButton.addEventListener("click", function () {
+            setRowsUsed(getVisibleRows(), true);
+        });
+    }
+
+    const markVisibleUnusedButton = document.getElementById("bulk-mark-visible-unused");
+    if (markVisibleUnusedButton) {
+        markVisibleUnusedButton.addEventListener("click", function () {
+            setRowsUsed(getVisibleRows(), false);
+        });
+    }
 
     if (form) {
         form.addEventListener("submit", function () {
             selectChangedRows();
         });
     }
+
+    applyCurrentFilter();
 })();
 </script>
 

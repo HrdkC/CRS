@@ -128,23 +128,6 @@ def _resolve_machine_stage_by_id(machine_id, stage_id):
     return add_machine_stage_url_fields(dict(row)) if row else None
 
 
-def _machine_stage_from_target(form_source):
-    target = (
-        form_source.get("target")
-        or
-        ""
-    ).strip()
-
-    if "|" not in target:
-        return None, None
-
-    try:
-        machine_id_text, stage_id_text = target.split("|", 1)
-        return int(machine_id_text), int(stage_id_text)
-    except Exception:
-        return None, None
-
-
 def _parameter_definition_count(machine_id, stage_id):
     conn = get_connection()
     cursor = conn.cursor()
@@ -159,42 +142,6 @@ def _parameter_definition_count(machine_id, stage_id):
     row = cursor.fetchone()
     conn.close()
     return int(row["total"] if row else 0)
-
-
-def _current_recipe_record_by_code(recipe_code):
-    """Resolve legacy recipe-code URLs to the current recipe record table."""
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        SELECT
-            r.*
-        FROM recipes r
-        WHERE UPPER(r.recipe_code) = UPPER(?)
-        ORDER BY
-            CASE
-                WHEN r.status = 'RELEASED'
-                    AND r.version = (
-                        SELECT MAX(x.version)
-                        FROM recipes x
-                        WHERE UPPER(x.recipe_code) = UPPER(r.recipe_code)
-                            AND x.machine_id = r.machine_id
-                            AND x.stage_id = r.stage_id
-                            AND x.status = 'RELEASED'
-                    )
-                    THEN 1
-                WHEN r.status = 'DRAFT' THEN 2
-                ELSE 3
-            END,
-            r.version DESC,
-            r.id DESC
-        LIMIT 1
-        """,
-        (recipe_code,)
-    )
-    row = cursor.fetchone()
-    conn.close()
-    return dict(row) if row else None
 
 
 def _machine_stage_targets():
@@ -404,9 +351,12 @@ def register_recipe_routes(app):
 
         targets = RecipeExcelImportExportManager.get_template_targets()
 
+        recipe_options = RecipeExcelImportExportManager.get_import_recipe_options()
+
         return render_template(
             "recipes/recipe_import_export.html",
             targets=targets,
+            recipe_options=recipe_options,
             preview=None,
             token=None
         )
@@ -473,13 +423,6 @@ def register_recipe_routes(app):
         machine_id = request.args.get("machine_id", type=int)
         stage_id = request.args.get("stage_id", type=int)
 
-        target_machine_id, target_stage_id = _machine_stage_from_target(
-            request.args
-        )
-
-        machine_id = machine_id or target_machine_id
-        stage_id = stage_id or target_stage_id
-
         if not machine_id or not stage_id:
             flash("Select machine/stage before downloading import template.", "warning")
             return redirect("/recipes/import-export")
@@ -528,44 +471,38 @@ def register_recipe_routes(app):
         )
 
         try:
-            machine_id = request.form.get("machine_id", type=int)
-            stage_id = request.form.get("stage_id", type=int)
-
-            target_machine_id, target_stage_id = _machine_stage_from_target(
-                request.form
-            )
-
-            machine_id = machine_id or target_machine_id
-            stage_id = stage_id or target_stage_id
-
-            if not machine_id or not stage_id:
-                flash("Select target machine/stage before previewing import.", "warning")
-                return redirect("/recipes/import-export")
-
             token, file_path = RecipeExcelImportExportManager.save_pending_upload(
                 request.files.get("recipe_file")
             )
             preview = RecipeExcelImportExportManager.preview_import(
                 file_path,
-                machine_id=machine_id,
-                stage_id=stage_id,
+                machine_id=request.form.get("machine_id", type=int),
+                stage_id=request.form.get("stage_id", type=int),
                 recipe_code_override=request.form.get("recipe_code"),
-                recipe_name_override=request.form.get("recipe_name")
+                recipe_name_override=request.form.get("recipe_name"),
+                import_mode=request.form.get("import_mode"),
+                existing_recipe_id=request.form.get("existing_recipe_id", type=int),
+                update_master_details=request.form.get("update_master_details")
             )
         except Exception as exc:
             flash(str(exc), "error")
             return redirect("/recipes/import-export")
 
         targets = RecipeExcelImportExportManager.get_template_targets()
+        recipe_options = RecipeExcelImportExportManager.get_import_recipe_options()
 
         if preview.get("ok"):
-            flash("Import preview passed. Confirm to save recipe as DRAFT.", "success")
+            if preview.get("summary", {}).get("import_mode") == "update_existing":
+                flash("Import preview passed. Confirm to update the selected existing recipe parameters.", "success")
+            else:
+                flash("Import preview passed. Confirm to save recipe as DRAFT.", "success")
         else:
             flash("Import preview failed. Correct the Excel file and upload again.", "error")
 
         return render_template(
             "recipes/recipe_import_export.html",
             targets=targets,
+            recipe_options=recipe_options,
             preview=preview,
             token=token
         )
@@ -588,16 +525,11 @@ def register_recipe_routes(app):
         reason = (request.form.get("reason") or "").strip()
         machine_id = request.form.get("machine_id", type=int)
         stage_id = request.form.get("stage_id", type=int)
-
-        target_machine_id, target_stage_id = _machine_stage_from_target(
-            request.form
-        )
-
-        machine_id = machine_id or target_machine_id
-        stage_id = stage_id or target_stage_id
-
         recipe_code_override = request.form.get("recipe_code")
         recipe_name_override = request.form.get("recipe_name")
+        import_mode = request.form.get("import_mode")
+        existing_recipe_id = request.form.get("existing_recipe_id", type=int)
+        update_master_details = request.form.get("update_master_details")
 
         try:
             success, recipe_id, preview = RecipeExcelImportExportManager.import_pending_file(
@@ -609,7 +541,10 @@ def register_recipe_routes(app):
                 machine_id=machine_id,
                 stage_id=stage_id,
                 recipe_code_override=recipe_code_override,
-                recipe_name_override=recipe_name_override
+                recipe_name_override=recipe_name_override,
+                import_mode=import_mode,
+                existing_recipe_id=existing_recipe_id,
+                update_master_details=update_master_details
             )
         except Exception as exc:
             flash(f"Recipe import failed: {exc}", "error")
@@ -618,14 +553,19 @@ def register_recipe_routes(app):
         if not success:
             flash("Recipe import failed validation. Correct the Excel file and upload again.", "error")
             targets = RecipeExcelImportExportManager.get_template_targets()
+            recipe_options = RecipeExcelImportExportManager.get_import_recipe_options()
             return render_template(
                 "recipes/recipe_import_export.html",
                 targets=targets,
+                recipe_options=recipe_options,
                 preview=preview,
                 token=token
             )
 
-        flash("Recipe imported successfully as DRAFT. Review values before release or PLC use.", "success")
+        if (preview.get("summary") or {}).get("import_mode") == "update_existing":
+            flash("Existing recipe parameters updated from Excel with audit. Review values before PLC use.", "success")
+        else:
+            flash("Recipe imported successfully as DRAFT. Review values before release or PLC use.", "success")
         return redirect(f"/recipe-editor/{recipe_id}")
 
     @app.route(
@@ -694,16 +634,6 @@ def register_recipe_routes(app):
 
         if not recipe:
 
-            recipe_record = _current_recipe_record_by_code(
-                recipe_code
-            )
-
-            if recipe_record:
-
-                return redirect(
-                    f"/recipe-editor/{recipe_record['id']}"
-                )
-
             flash(
                 "Recipe not found.",
                 "error"
@@ -737,30 +667,23 @@ def register_recipe_routes(app):
             recipe_code
         )
 
-        recipe_record = _current_recipe_record_by_code(
-            recipe_code
+        source_version = recipe[
+            "current_version"
+        ]
+
+        new_version = RecipeManager.create_recipe_version(
+
+            recipe_code=recipe_code,
+
+            source_version=source_version,
+
+            created_by=session["username"]
+
         )
 
-        if not recipe and not recipe_record:
-
-            flash(
-                "Recipe not found. Select the machine/stage recipe list and open the recipe from there.",
-                "warning"
-            )
-
-            return redirect(
-                "/recipes"
-            )
-
-        if recipe_record:
-
-            return redirect(
-                f"/recipe-editor/create-version/{recipe_record['id']}"
-            )
-
         flash(
-            "This legacy recipe cannot be versioned from the old recipe-code page.",
-            "warning"
+            f"{recipe_code} Version {new_version} Created",
+            "success"
         )
 
         return redirect(

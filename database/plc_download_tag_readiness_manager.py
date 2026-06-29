@@ -5,61 +5,12 @@ from database.recipe_manager import (
 from database.database import (
     get_connection
 )
+from database.stage_plc_tag_requirement_manager import (
+    StagePLCTagRequirementManager
+)
 
 
 class PLCDownloadTagReadinessManager:
-
-    REQUIRED_TAGS = [
-
-        {
-            "purpose": "RECIPE_DATA",
-            "label": "Recipe Data",
-            "expected_type": "REAL",
-            "array_required": True,
-            "minimum_array_size": 500
-        },
-
-        {
-            "purpose": "RECIPE_CODE",
-            "label": "Recipe Code",
-            "expected_type": "STRING",
-            "array_required": False,
-            "minimum_array_size": None
-        },
-
-        {
-            "purpose": "DOWNLOAD_ENABLE",
-            "label": "Download Enable",
-            "expected_type": "BOOL",
-            "array_required": False,
-            "minimum_array_size": None
-        },
-
-        {
-            "purpose": "MACHINE_IN_MANUAL",
-            "label": "Machine In Manual",
-            "expected_type": "BOOL",
-            "array_required": False,
-            "minimum_array_size": None
-        },
-
-        {
-            "purpose": "DOWNLOAD_REQUEST",
-            "label": "Download Request",
-            "expected_type": "BOOL",
-            "array_required": False,
-            "minimum_array_size": None
-        },
-
-        {
-            "purpose": "DOWNLOAD_COMPLETE",
-            "label": "Download Complete",
-            "expected_type": "BOOL",
-            "array_required": False,
-            "minimum_array_size": None
-        }
-
-    ]
 
     @staticmethod
     def check_readiness(
@@ -101,6 +52,40 @@ class PLCDownloadTagReadinessManager:
 
             return result
 
+        required_tags = (
+            StagePLCTagRequirementManager
+            .get_stage_requirements(
+                machine_id=recipe[
+                    "machine_id"
+                ],
+                stage_id=recipe[
+                    "stage_id"
+                ],
+                requirement_level=StagePLCTagRequirementManager.LEVEL_REQUIRED,
+                active_only=True
+            )
+        )
+
+        result["required_tags"] = required_tags
+        result["payload_size"] = (
+            StagePLCTagRequirementManager
+            .get_payload_size(
+                machine_id=recipe["machine_id"],
+                stage_id=recipe["stage_id"],
+                default=None
+            )
+        )
+
+        if not result["payload_size"]:
+
+            result["ready"] = False
+
+            result["status"] = "BLOCKED"
+
+            result["errors"].append(
+                "Recipe data array size is not configured for this machine/stage."
+            )
+
         all_tags = (
             PLCDownloadTagReadinessManager
             .get_tags_for_stage(
@@ -116,7 +101,7 @@ class PLCDownloadTagReadinessManager:
             )
         )
 
-        for required in PLCDownloadTagReadinessManager.REQUIRED_TAGS:
+        for required in required_tags:
 
             tag = (
                 PLCDownloadTagReadinessManager
@@ -135,11 +120,15 @@ class PLCDownloadTagReadinessManager:
 
                 "label": required["label"],
 
-                "expected_type": required["expected_type"],
+                "expected_type": required.get("expected_type"),
 
-                "array_required": required["array_required"],
+                "array_required": bool(required.get("array_required")),
 
-                "minimum_array_size": required["minimum_array_size"],
+                "minimum_array_size": required.get("minimum_array_size"),
+
+                "array_start_index": required.get("array_start_index"),
+
+                "array_end_index": required.get("array_end_index"),
 
                 "configured": tag is not None,
 
@@ -202,7 +191,7 @@ class PLCDownloadTagReadinessManager:
 
         recipe_id,
 
-        payload_size=500
+        payload_size=None
 
     ):
 
@@ -212,6 +201,9 @@ class PLCDownloadTagReadinessManager:
                 recipe_id
             )
         )
+
+        if payload_size is None:
+            payload_size = tag_readiness.get("payload_size")
 
         return (
             PLCDownloadTagReadinessManager
@@ -229,9 +221,12 @@ class PLCDownloadTagReadinessManager:
 
         tag_readiness,
 
-        payload_size=500
+        payload_size=None
 
     ):
+
+        if payload_size is None:
+            payload_size = tag_readiness.get("payload_size")
 
         result = {
 
@@ -274,6 +269,18 @@ class PLCDownloadTagReadinessManager:
 
         }
 
+        if not payload_size:
+
+            result["ready"] = False
+
+            result["status"] = "BLOCKED"
+
+            result["errors"].append(
+                "Write plan cannot be built because recipe data array size is not configured."
+            )
+
+            return result
+
         if not result["ready"]:
 
             return result
@@ -295,7 +302,7 @@ class PLCDownloadTagReadinessManager:
 
         missing_purposes = []
 
-        for required in PLCDownloadTagReadinessManager.REQUIRED_TAGS:
+        for required in tag_readiness.get("required_tags") or []:
 
             purpose = required[
                 "purpose"
@@ -569,7 +576,7 @@ class PLCDownloadTagReadinessManager:
         ).upper()
 
         expected_type = (
-            required["expected_type"]
+            required.get("expected_type")
             or
             ""
         ).upper()
@@ -595,7 +602,7 @@ class PLCDownloadTagReadinessManager:
                 f"Expected type {expected_type}, found {tag_type}."
             )
 
-        if required["array_required"]:
+        if required.get("array_required"):
 
             if tag["is_array"] != 1:
 
@@ -609,11 +616,13 @@ class PLCDownloadTagReadinessManager:
                 0
             )
 
-            if array_size < required["minimum_array_size"]:
+            minimum_array_size = required.get("minimum_array_size") or 0
+
+            if minimum_array_size and array_size < minimum_array_size:
 
                 item["issues"].append(
                     f"Array size must be at least "
-                    f"{required['minimum_array_size']}."
+                    f"{minimum_array_size}."
                 )
 
             if (
@@ -626,17 +635,31 @@ class PLCDownloadTagReadinessManager:
                     "Array start and end indexes are required."
                 )
 
-            elif (
-                tag["array_start_index"] > 0
-                or
-                tag["array_end_index"]
-                < required["minimum_array_size"] - 1
-            ):
+            else:
 
-                item["issues"].append(
-                    "Array must cover indexes 0 to "
-                    f"{required['minimum_array_size'] - 1}."
-                )
+                required_start = required.get("array_start_index")
+                required_end = required.get("array_end_index")
+
+                if required_start is None:
+                    required_start = 0
+
+                if required_end is None and minimum_array_size:
+                    required_end = required_start + minimum_array_size - 1
+
+                if (
+                    required_end is not None
+                    and
+                    (
+                        tag["array_start_index"] > required_start
+                        or
+                        tag["array_end_index"] < required_end
+                    )
+                ):
+
+                    item["issues"].append(
+                        "Array must cover indexes "
+                        f"{required_start} to {required_end}."
+                    )
 
         else:
 
@@ -663,6 +686,10 @@ class PLCDownloadTagReadinessManager:
                 "CRS_RECIPE_DATA"
             ],
 
+            "TEST_RECIPE_DATA": [
+                "CRS_TEST_RECIPE_DATA"
+            ],
+
             "RECIPE_CODE": [
                 "CRS_RECIPE_CODE"
             ],
@@ -684,6 +711,34 @@ class PLCDownloadTagReadinessManager:
 
             "DOWNLOAD_COMPLETE": [
                 "CRS_DOWNLOAD_COMPLETE"
+            ],
+
+            "DOWNLOAD_ACK": [
+                "CRS_DOWNLOAD_ACK"
+            ],
+
+            "DOWNLOAD_BUSY": [
+                "CRS_DOWNLOAD_BUSY"
+            ],
+
+            "DOWNLOAD_ERROR": [
+                "CRS_DOWNLOAD_ERROR"
+            ],
+
+            "DOWNLOAD_RESULT": [
+                "CRS_DOWNLOAD_RESULT"
+            ],
+
+            "DOWNLOAD_OS": [
+                "CRS_DOWNLOAD_OS"
+            ],
+
+            "LAST_DOWNLOAD_TIME": [
+                "CRS_LAST_DOWNLOAD_TIME"
+            ],
+
+            "LAST_DOWNLOAD_USER": [
+                "CRS_LAST_DOWNLOAD_USER"
             ]
 
         }

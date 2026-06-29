@@ -360,7 +360,10 @@ Recipe Editor
             </strong>
 
             <small>
-                Tags {{ summary.min_tag }} to {{ summary.max_tag }}
+                {{ active_parameter_count }} used
+                {% if inactive_parameter_count %}
+                    | {{ inactive_parameter_count }} not used
+                {% endif %}
             </small>
 
         </div>
@@ -548,6 +551,38 @@ Recipe Editor
 
         <label>
             <span>
+                Scope
+            </span>
+            <select name="parameter_scope">
+                <option
+                    value="active"
+                    {% if parameter_scope == "active" %}
+                    selected
+                    {% endif %}
+                >
+                    Used Parameters
+                </option>
+                <option
+                    value="inactive"
+                    {% if parameter_scope == "inactive" %}
+                    selected
+                    {% endif %}
+                >
+                    Not Used
+                </option>
+                <option
+                    value="all"
+                    {% if parameter_scope == "all" %}
+                    selected
+                    {% endif %}
+                >
+                    All Template Rows
+                </option>
+            </select>
+        </label>
+
+        <label>
+            <span>
                 Show
             </span>
             <select name="modified_only">
@@ -695,6 +730,7 @@ Recipe Editor
                     <tr>
                         <th>Tag</th>
                         <th>PLC Index</th>
+                        <th>Used</th>
                         <th>Parameter</th>
                         <th>Value</th>
                         <th>Range</th>
@@ -718,10 +754,10 @@ Recipe Editor
                         and row.parameter_value > row.max_value
                     %}
 
+                    {% set row_used = row.used if row.used is not none else 1 %}
+
                     <tr
-                        {% if row_below or row_above %}
-                        class="row-alert"
-                        {% endif %}
+                        class="{% if row_used|int != 1 %}row-inactive{% elif row_below or row_above %}row-alert{% endif %}"
                     >
 
                         <td>
@@ -737,6 +773,18 @@ Recipe Editor
                             </span>
                             {% else %}
                             <span class="muted-text">-</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row_used|int == 1 %}
+                            <span class="status-badge status-success">
+                                Used
+                            </span>
+                            {% else %}
+                            <span class="status-badge status-neutral">
+                                Not Used
+                            </span>
                             {% endif %}
                         </td>
 
@@ -761,7 +809,11 @@ Recipe Editor
                         </td>
 
                         <td>
-                            {% if row_below %}
+                            {% if row_used|int != 1 %}
+                            <span class="status-badge status-neutral">
+                                Inactive
+                            </span>
+                            {% elif row_below %}
                             <span class="status-badge status-danger">
                                 Below Min
                             </span>

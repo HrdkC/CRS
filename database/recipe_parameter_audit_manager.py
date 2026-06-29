@@ -302,10 +302,19 @@ class RecipeParameterAuditManager:
                 ) AS modified_parameters
 
             FROM
-            recipe_parameter_values
+            recipe_parameter_values rpv
+
+            INNER JOIN
+            parameter_definitions pd
+
+                ON pd.id =
+                rpv.parameter_definition_id
 
             WHERE
-                recipe_id = ?
+                rpv.recipe_id = ?
+
+                AND
+                COALESCE(pd.used, 1) = 1
             """,
             (
                 recipe_id,
@@ -335,6 +344,9 @@ class RecipeParameterAuditManager:
 
             WHERE
                 rpv.recipe_id = ?
+
+                AND
+                COALESCE(pd.used, 1) = 1
             """,
             (
                 recipe_id,

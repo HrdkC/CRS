@@ -17,6 +17,10 @@ from database.plc_download_preparation_manager import (
     PLCDownloadPreparationManager
 )
 
+from database.plc_download_tag_readiness_manager import (
+    PLCDownloadTagReadinessManager
+)
+
 from database.plc_operation_job_manager import (
     PLCOperationJobManager
 )
@@ -44,7 +48,7 @@ from flask_app.security.role_guard import (
 
 class PLCBufferOperationManager:
 
-    PAYLOAD_SIZE = 500
+    PAYLOAD_SIZE = None
 
     SOURCE_PURPOSE = "RECIPE_DATA"
 
@@ -75,6 +79,65 @@ class PLCBufferOperationManager:
     LAST_DOWNLOAD_USER_PURPOSE = "LAST_DOWNLOAD_USER"
 
     DOWNLOAD_HANDSHAKE_TIMEOUT_SECONDS = 20
+
+    LIVE_STATUS_PURPOSES = [
+        {
+            "group": "Interlocks",
+            "purpose": "MACHINE_IN_MANUAL",
+            "label": "Machine Manual Mode",
+            "healthy_when": True,
+            "bad_message": "Machine must be in manual mode before download."
+        },
+        {
+            "group": "Interlocks",
+            "purpose": "DOWNLOAD_ENABLE",
+            "label": "Download Enable",
+            "healthy_when": True,
+            "bad_message": "Download enable must be TRUE before download."
+        },
+        {
+            "group": "Handshake",
+            "purpose": "DOWNLOAD_REQUEST",
+            "label": "Download Request",
+            "healthy_when": False,
+            "bad_message": "Request should normally be FALSE before a new command."
+        },
+        {
+            "group": "Handshake",
+            "purpose": "DOWNLOAD_COMPLETE",
+            "label": "Download Complete",
+            "healthy_when": None,
+            "bad_message": "Complete tag should be readable as BOOL."
+        },
+        {
+            "group": "Handshake",
+            "purpose": "DOWNLOAD_ACK",
+            "label": "Download Ack",
+            "healthy_when": False,
+            "bad_message": "Ack should normally be FALSE before a new command."
+        },
+        {
+            "group": "Handshake",
+            "purpose": "DOWNLOAD_BUSY",
+            "label": "Download Busy",
+            "healthy_when": False,
+            "bad_message": "Busy TRUE means PLC is already processing a command."
+        },
+        {
+            "group": "Handshake",
+            "purpose": "DOWNLOAD_ERROR",
+            "label": "Download Error",
+            "healthy_when": False,
+            "bad_message": "Error TRUE means PLC download logic needs checking."
+        },
+        {
+            "group": "Handshake",
+            "purpose": "DOWNLOAD_RESULT",
+            "label": "Download Result",
+            "healthy_when": None,
+            "bad_message": "Result tag should be readable."
+        },
+    ]
 
     OPERATIONS = {
 
@@ -196,6 +259,24 @@ class PLCBufferOperationManager:
             return result
 
         result["recipe"] = recipe
+        result["payload_size"] = (
+            PLCDownloadPreparationManager
+            .get_payload_size_for_recipe(recipe)
+        )
+
+        if not result["payload_size"]:
+
+            result["errors"].append(
+                "Recipe data array size is not configured for this machine/stage."
+            )
+
+            PLCBufferOperationManager.finish(
+                result,
+                False,
+                "Recipe data array size not configured"
+            )
+
+            return result
 
         plc = (
             PLCDownloadPreparationManager
@@ -479,7 +560,9 @@ class PLCBufferOperationManager:
 
             "status": "NOT_READY",
 
-            "issues": []
+            "issues": [],
+
+            "payload_size": None
 
         }
 
@@ -490,6 +573,11 @@ class PLCBufferOperationManager:
             )
 
             return context
+
+        context["payload_size"] = (
+            PLCDownloadPreparationManager
+            .get_payload_size_for_recipe(recipe)
+        )
 
         available_plcs = (
             PLCDownloadPreparationManager
@@ -544,15 +632,10 @@ class PLCBufferOperationManager:
         ]:
 
             context["tags"][purpose] = (
-                PLCTagManager
-                .get_tag_by_purpose(
-
-                    machine_id=recipe["machine_id"],
-
-                    stage_id=recipe["stage_id"],
-
-                    tag_purpose=purpose
-
+                PLCBufferOperationManager
+                .get_tag_for_purpose(
+                    recipe,
+                    purpose
                 )
             )
 
@@ -566,11 +649,19 @@ class PLCBufferOperationManager:
             )
 
             if not PLCBufferOperationManager.valid_real_array_tag(
-                tag
+                tag,
+                payload_size=context.get("payload_size")
             ):
 
+                expected_array = (
+                    f"REAL[{context.get('payload_size')}]"
+                    if context.get("payload_size")
+                    else
+                    "REAL array with configured stage payload size"
+                )
+
                 context["issues"].append(
-                    f"{purpose} must be configured as REAL[500]."
+                    f"{purpose} must be configured as {expected_array}."
                 )
 
         for purpose in [
@@ -629,22 +720,18 @@ class PLCBufferOperationManager:
         )
 
         recipe_code_tag = (
-            PLCTagManager
-            .get_tag_by_purpose(
-
-                machine_id=recipe["machine_id"],
-
-                stage_id=recipe["stage_id"],
-
-                tag_purpose=PLCBufferOperationManager.RECIPE_CODE_PURPOSE
-
+            PLCBufferOperationManager
+            .get_tag_for_purpose(
+                recipe,
+                PLCBufferOperationManager.RECIPE_CODE_PURPOSE
             )
         )
 
         payload = (
             PLCBufferOperationManager
             .build_database_payload(
-                values
+                values,
+                payload_size=result.get("payload_size")
             )
         )
 
@@ -735,6 +822,10 @@ class PLCBufferOperationManager:
                     label="Read CRS buffer back",
 
                     percent=85
+
+                ,
+
+                    payload_size=result.get("payload_size")
 
                 )
             )
@@ -849,6 +940,10 @@ class PLCBufferOperationManager:
 
                     percent=45
 
+                ,
+
+                    payload_size=result.get("payload_size")
+
                 )
             )
 
@@ -880,7 +975,9 @@ class PLCBufferOperationManager:
 
                 change_source="CRS_BUFFER_SAVE_TO_RECIPE",
 
-                change_reason="Recipe Save from CRS_Recipe_Data buffer"
+                change_reason="Recipe Save from CRS_Recipe_Data buffer",
+
+                payload_size=result.get("payload_size")
 
             )
         )
@@ -903,7 +1000,8 @@ class PLCBufferOperationManager:
             PLCBufferOperationManager
             .compare_recipe_values_to_payload(
                 recipe_values=fresh_values,
-                payload=source_payload
+                payload=source_payload,
+                payload_size=result.get("payload_size")
             )
         )
 
@@ -997,7 +1095,8 @@ class PLCBufferOperationManager:
         database_payload = (
             PLCBufferOperationManager
             .build_database_payload(
-                values
+                values,
+                payload_size=result.get("payload_size")
             )
         )
 
@@ -1101,6 +1200,10 @@ class PLCBufferOperationManager:
 
                     percent=48
 
+                ,
+
+                    payload_size=result.get("payload_size")
+
                 )
             )
 
@@ -1202,6 +1305,10 @@ class PLCBufferOperationManager:
                     label="Read PLC destination back",
 
                     percent=95
+
+                ,
+
+                    payload_size=result.get("payload_size")
 
                 )
             )
@@ -1341,6 +1448,10 @@ class PLCBufferOperationManager:
 
                     percent=45
 
+                ,
+
+                    payload_size=result.get("payload_size")
+
                 )
             )
 
@@ -1364,7 +1475,9 @@ class PLCBufferOperationManager:
 
                     recipe_values=values,
 
-                    payload=source_payload
+                    payload=source_payload,
+
+                    payload_size=result.get("payload_size")
 
                 )
             )
@@ -1420,6 +1533,10 @@ class PLCBufferOperationManager:
                     label="Read CRS buffer back",
 
                     percent=95
+
+                ,
+
+                    payload_size=result.get("payload_size")
 
                 )
             )
@@ -1998,7 +2115,25 @@ class PLCBufferOperationManager:
 
     ):
 
-        return PLCTagManager.get_tag_by_purpose(
+        return PLCBufferOperationManager.get_tag_for_purpose(
+            recipe,
+            purpose
+        )
+
+    @staticmethod
+    def get_tag_for_purpose(
+
+        recipe,
+
+        purpose
+
+    ):
+
+        if not recipe or not purpose:
+
+            return None
+
+        tag = PLCTagManager.get_tag_by_purpose(
 
             machine_id=recipe["machine_id"],
 
@@ -2007,6 +2142,255 @@ class PLCBufferOperationManager:
             tag_purpose=purpose
 
         )
+
+        if tag:
+
+            return tag
+
+        try:
+
+            stage_tags = (
+                PLCDownloadTagReadinessManager
+                .get_tags_for_stage(
+                    machine_id=recipe["machine_id"],
+                    stage_id=recipe["stage_id"]
+                )
+            )
+
+            return (
+                PLCDownloadTagReadinessManager
+                .find_tag_for_purpose(
+                    stage_tags,
+                    purpose
+                )
+            )
+
+        except Exception:
+
+            return None
+
+    @staticmethod
+    def get_live_tag_status(
+
+        recipe_id,
+
+        plc_id=None
+
+    ):
+
+        result = {
+            "connected": False,
+            "status": "NOT_CHECKED",
+            "summary": "Live PLC status was not checked.",
+            "groups": [],
+            "issues": []
+        }
+
+        recipe = RecipeManager.get_recipe_by_id(
+            recipe_id
+        )
+
+        if not recipe:
+
+            result["status"] = "BLOCKED"
+            result["summary"] = "Recipe not found."
+            result["issues"].append(
+                "Recipe not found."
+            )
+
+            return result
+
+        plc = PLCDownloadPreparationManager.get_plc_for_recipe(
+            recipe,
+            plc_id
+        )
+
+        if not plc:
+
+            result["status"] = "BLOCKED"
+            result["summary"] = "No active PLC selected."
+            result["issues"].append(
+                "No active PLC selected for live interlock check."
+            )
+
+            return result
+
+        groups = {}
+
+        for rule in PLCBufferOperationManager.LIVE_STATUS_PURPOSES:
+
+            groups.setdefault(
+                rule["group"],
+                []
+            ).append({
+                "purpose": rule["purpose"],
+                "label": rule["label"],
+                "tag": PLCBufferOperationManager.get_tag_for_purpose(
+                    recipe,
+                    rule["purpose"]
+                ),
+                "value": None,
+                "status": "missing",
+                "status_text": "Missing",
+                "message": "Tag is not mapped.",
+            })
+
+        try:
+
+            with LogixDriver(
+                plc["ip_address"]
+            ) as plc_conn:
+
+                result["connected"] = True
+
+                for rule in PLCBufferOperationManager.LIVE_STATUS_PURPOSES:
+
+                    item = None
+
+                    for candidate in groups[rule["group"]]:
+
+                        if candidate["purpose"] == rule["purpose"]:
+
+                            item = candidate
+                            break
+
+                    if not item or not item.get("tag"):
+
+                        result["issues"].append(
+                            f"{rule['purpose']} is not mapped."
+                        )
+
+                        continue
+
+                    tag = item["tag"]
+
+                    try:
+
+                        read_result = plc_conn.read(
+                            tag["tag_name"]
+                        )
+
+                        read_error = getattr(
+                            read_result,
+                            "error",
+                            None
+                        )
+
+                        if read_result is None or read_error:
+
+                            item["status"] = "bad"
+                            item["status_text"] = "Read Error"
+                            item["message"] = str(
+                                read_error
+                                or
+                                "No read result"
+                            )
+                            result["issues"].append(
+                                f"{tag['tag_name']} read failed: {item['message']}"
+                            )
+                            continue
+
+                        value = getattr(
+                            read_result,
+                            "value",
+                            None
+                        )
+
+                        item["value"] = value
+
+                        expected = rule.get(
+                            "healthy_when"
+                        )
+
+                        if expected is None:
+
+                            item["status"] = "ok"
+                            item["status_text"] = "Readable"
+                            item["message"] = "Tag is readable from PLC."
+
+                        else:
+
+                            bool_value = (
+                                PLCDownloadPreparationManager
+                                .is_true_value(
+                                    value
+                                )
+                            )
+
+                            if bool_value == expected:
+
+                                item["status"] = "ok"
+                                item["status_text"] = "Healthy"
+                                item["message"] = "Good to go."
+
+                            else:
+
+                                item["status"] = "bad"
+                                item["status_text"] = "Check"
+                                item["message"] = rule.get(
+                                    "bad_message",
+                                    "PLC state is not healthy."
+                                )
+                                result["issues"].append(
+                                    f"{rule['label']}: {item['message']} Actual value: {value}"
+                                )
+
+                    except Exception as exc:
+
+                        item["status"] = "bad"
+                        item["status_text"] = "Read Error"
+                        item["message"] = str(
+                            exc
+                        )
+                        result["issues"].append(
+                            f"{rule['label']} read failed: {exc}"
+                        )
+
+        except Exception as exc:
+
+            result["status"] = "BLOCKED"
+            result["summary"] = f"PLC live status connection failed: {exc}"
+            result["issues"].append(
+                result["summary"]
+            )
+
+            # Keep mapped tags visible even when live read fails.
+            result["groups"] = [
+                {
+                    "title": group_name,
+                    "items": items
+                }
+                for group_name, items in groups.items()
+            ]
+
+            return result
+
+        bad_count = sum(
+            1
+            for items in groups.values()
+            for item in items
+            if item.get("status") in ["bad", "missing"]
+        )
+
+        result["groups"] = [
+            {
+                "title": group_name,
+                "items": items
+            }
+            for group_name, items in groups.items()
+        ]
+
+        if bad_count:
+
+            result["status"] = "BLOCKED"
+            result["summary"] = f"{bad_count} live PLC interlock/handshake item(s) need checking."
+
+        else:
+
+            result["status"] = "READY"
+            result["summary"] = "All readable live PLC interlocks are healthy."
+
+        return result
 
     @staticmethod
     def read_bool_value(
@@ -2337,22 +2721,23 @@ class PLCBufferOperationManager:
 
     ):
 
-        tag = PLCTagManager.get_tag_by_purpose(
+        tag = PLCBufferOperationManager.get_tag_for_purpose(
+            recipe,
+            purpose
+        )
 
-            machine_id=recipe["machine_id"],
-
-            stage_id=recipe["stage_id"],
-
-            tag_purpose=purpose
-
+        payload_size = (
+            PLCDownloadPreparationManager
+            .get_payload_size_for_recipe(recipe)
         )
 
         if not PLCBufferOperationManager.valid_real_array_tag(
-            tag
+            tag,
+            payload_size=payload_size
         ):
 
             raise Exception(
-                f"{label} tag for {purpose} must be configured as REAL[500]."
+                f"{label} tag for {purpose} must be configured as REAL[{payload_size}]."
             )
 
         return tag
@@ -2368,14 +2753,9 @@ class PLCBufferOperationManager:
 
     ):
 
-        tag = PLCTagManager.get_tag_by_purpose(
-
-            machine_id=recipe["machine_id"],
-
-            stage_id=recipe["stage_id"],
-
-            tag_purpose=purpose
-
+        tag = PLCBufferOperationManager.get_tag_for_purpose(
+            recipe,
+            purpose
         )
 
         tag_type = (
@@ -2408,9 +2788,19 @@ class PLCBufferOperationManager:
     @staticmethod
     def valid_real_array_tag(
 
-        tag
+        tag,
+
+        payload_size=None
 
     ):
+
+        if payload_size is None:
+
+            payload_size = PLCBufferOperationManager.PAYLOAD_SIZE
+
+        if not payload_size:
+
+            return False
 
         if not tag:
 
@@ -2438,7 +2828,7 @@ class PLCBufferOperationManager:
             )
             or
             0
-        ) < PLCBufferOperationManager.PAYLOAD_SIZE:
+        ) < payload_size:
 
             return False
 
@@ -2476,14 +2866,24 @@ class PLCBufferOperationManager:
     @staticmethod
     def build_database_payload(
 
-        recipe_values
+        recipe_values,
+
+        payload_size=None
 
     ):
+
+        if payload_size is None:
+
+            payload_size = PLCBufferOperationManager.PAYLOAD_SIZE
+
+        if not payload_size:
+
+            return []
 
         payload = [
             0.0
             for _ in range(
-                PLCBufferOperationManager.PAYLOAD_SIZE
+                payload_size
             )
         ]
 
@@ -2504,7 +2904,7 @@ class PLCBufferOperationManager:
             if (
                 plc_index < 0
                 or
-                plc_index >= PLCBufferOperationManager.PAYLOAD_SIZE
+                plc_index >= payload_size
             ):
 
                 continue
@@ -2594,13 +2994,31 @@ class PLCBufferOperationManager:
 
         label,
 
-        percent
+        percent,
+
+        payload_size=None
 
     ):
 
+        if payload_size is None:
+
+            payload_size = result.get("payload_size") or PLCBufferOperationManager.PAYLOAD_SIZE
+
+        if not payload_size:
+
+            PLCBufferOperationManager.add_step(
+                result,
+                label,
+                "FAILED",
+                "PLC array read skipped because recipe data array size is not configured.",
+                percent
+            )
+
+            return None
+
         expression = (
             f"{tag_name}"
-            f"{{{PLCBufferOperationManager.PAYLOAD_SIZE}}}"
+            f"{{{payload_size}}}"
         )
 
         read_result = plc_conn.read(
@@ -2638,7 +3056,8 @@ class PLCBufferOperationManager:
             )
 
         payload = PLCBufferOperationManager.normalize_payload(
-            value
+            value,
+            payload_size=payload_size
         )
 
         if payload is None:
@@ -2649,7 +3068,7 @@ class PLCBufferOperationManager:
 
                 label,
 
-                f"{expression} did not return 500 values.",
+                f"{expression} did not return {payload_size} values.",
 
                 percent
 
@@ -2860,7 +3279,9 @@ class PLCBufferOperationManager:
     @staticmethod
     def normalize_payload(
 
-        value
+        value,
+
+        payload_size=None
 
     ):
 
@@ -2878,9 +3299,17 @@ class PLCBufferOperationManager:
 
             return None
 
+        if payload_size is None:
+
+            payload_size = PLCBufferOperationManager.PAYLOAD_SIZE
+
+        if not payload_size:
+
+            return None
+
         if len(
             payload
-        ) < PLCBufferOperationManager.PAYLOAD_SIZE:
+        ) < payload_size:
 
             return None
 
@@ -2891,7 +3320,7 @@ class PLCBufferOperationManager:
                     payload[index]
                 )
                 for index in range(
-                    PLCBufferOperationManager.PAYLOAD_SIZE
+                    payload_size
                 )
             ]
 
@@ -2965,9 +3394,33 @@ class PLCBufferOperationManager:
 
         recipe_values,
 
-        payload
+        payload,
+
+        payload_size=None
 
     ):
+
+        if payload_size is None:
+
+            payload_size = PLCBufferOperationManager.PAYLOAD_SIZE
+
+        if not payload_size:
+
+            result = {
+
+                "checked": False,
+
+                "valid": False,
+
+                "issues": [
+                    "Recipe data array size is not configured for this machine/stage."
+                ],
+
+                "issue_count": 1
+
+            }
+
+            return result
 
         result = {
 
@@ -3000,7 +3453,7 @@ class PLCBufferOperationManager:
             if (
                 plc_index < 0
                 or
-                plc_index >= PLCBufferOperationManager.PAYLOAD_SIZE
+                plc_index >= payload_size
             ):
 
                 continue
@@ -3058,9 +3511,19 @@ class PLCBufferOperationManager:
 
         change_source="CRS_BUFFER_SAVE_TO_RECIPE",
 
-        change_reason="Recipe Save from CRS_Recipe_Data buffer"
+        change_reason="Recipe Save from CRS_Recipe_Data buffer",
+
+        payload_size=None
 
     ):
+
+        if payload_size is None:
+
+            payload_size = PLCBufferOperationManager.PAYLOAD_SIZE
+
+        if not payload_size:
+
+            return 0
 
         changed_count = 0
 
@@ -3081,7 +3544,7 @@ class PLCBufferOperationManager:
             if (
                 plc_index < 0
                 or
-                plc_index >= PLCBufferOperationManager.PAYLOAD_SIZE
+                plc_index >= payload_size
             ):
 
                 continue

@@ -18,8 +18,16 @@ from database.plc_tag_manager import (
     PLCTagManager
 )
 
+from database.audit_manager import (
+    AuditManager
+)
+
 from database.plc_online_tag_browser_manager import (
     PLCOnlineTagBrowserManager
+)
+
+from database.stage_plc_tag_requirement_manager import (
+    StagePLCTagRequirementManager
 )
 
 
@@ -45,6 +53,63 @@ def _engineering_config_allowed():
     )
 
 
+
+def _tag_purpose_options(machine_id, stage_id):
+
+    requirements = (
+        StagePLCTagRequirementManager
+        .get_stage_requirements(
+            machine_id,
+            stage_id,
+            active_only=False
+        )
+    )
+
+    options = []
+
+    for row in requirements:
+
+        purpose = (
+            row.get("purpose")
+            or
+            ""
+        ).strip().upper()
+
+        if purpose and purpose not in options:
+
+            options.append(
+                purpose
+            )
+
+    return options
+
+
+def _audit_plc_tag_changes(tag_id, tag_name, changes, reason, action="PLC_TAG_CONFIGURATION_UPDATED"):
+
+    for change in changes or []:
+
+        try:
+
+            AuditManager.log_event(
+                username=session.get("username"),
+                role=session.get("role"),
+                action=action,
+                change_source="PLC_TAG_GUI_CONFIG",
+                record_id=tag_id,
+                parameter_name=f"{tag_name}.{change.get('field')}",
+                old_value=str(change.get("old") if change.get("old") is not None else ""),
+                new_value=str(change.get("new") if change.get("new") is not None else ""),
+                reason=reason,
+                user_agent=request.headers.get("User-Agent", ""),
+                forwarded_for=request.headers.get("X-Forwarded-For"),
+                request_host=request.host,
+            )
+
+        except Exception:
+
+            pass
+
+
 def _render_plc_tag_browser(machine_id, stage_id, context=None):
 
     search_text = request.args.get(
@@ -56,6 +121,8 @@ def _render_plc_tag_browser(machine_id, stage_id, context=None):
         "purpose",
         ""
     ).strip().upper()
+
+    purpose_requirement = None
 
     bool_only = request.args.get(
         "bool_only",
@@ -78,9 +145,32 @@ def _render_plc_tag_browser(machine_id, stage_id, context=None):
         not search_text
     ):
 
+        purpose_requirement = (
+            StagePLCTagRequirementManager
+            .get_stage_requirement(
+                machine_id,
+                stage_id,
+                purpose_to_assign
+            )
+        )
+
         search_text = (
-            PLCTagManager
-            .get_search_hint_for_purpose(
+            (purpose_requirement or {}).get("search_hint")
+            or
+            (purpose_requirement or {}).get("default_tag_name")
+            or
+            PLCTagManager.get_search_hint_for_purpose(
+                purpose_to_assign
+            )
+        )
+
+    elif purpose_to_assign:
+
+        purpose_requirement = (
+            StagePLCTagRequirementManager
+            .get_stage_requirement(
+                machine_id,
+                stage_id,
                 purpose_to_assign
             )
         )
@@ -178,9 +268,12 @@ def _render_plc_tag_browser(machine_id, stage_id, context=None):
 
         purpose_to_assign=purpose_to_assign,
 
+        purpose_requirement=purpose_requirement,
+
         default_tag_name=(
-            PLCTagManager
-            .get_default_tag_name_for_purpose(
+            (purpose_requirement or {}).get("default_tag_name")
+            or
+            PLCTagManager.get_default_tag_name_for_purpose(
                 purpose_to_assign
             )
         ),
@@ -195,7 +288,12 @@ def _render_plc_tag_browser(machine_id, stage_id, context=None):
 
         online_result=online_result,
 
-        tags=tags
+        tags=tags,
+
+        tag_purpose_options=_tag_purpose_options(
+            machine_id,
+            stage_id
+        )
 
     )
 
@@ -278,6 +376,129 @@ def register_plc_tag_routes(app):
             machine_id,
             stage_id,
             context=context
+        )
+
+
+    @app.route(
+        "/plc-tags/update/<int:tag_id>",
+        methods=["POST"]
+    )
+    def plc_tag_update(
+
+        tag_id
+
+    ):
+
+        if not _engineering_config_allowed():
+
+            return redirect("/")
+
+        tag = PLCTagManager.get_tag_by_id(
+            tag_id
+        )
+
+        if not tag:
+
+            flash(
+                "PLC tag not found.",
+                "error"
+            )
+
+            return redirect(
+                request.referrer
+                or
+                "/dashboard"
+            )
+
+        reason = (
+            request.form.get("reason")
+            or
+            "PLC tag configuration updated from GUI"
+        ).strip()
+
+        if not reason:
+
+            flash(
+                "Enter reason before saving PLC tag configuration.",
+                "error"
+            )
+
+            return redirect(
+                request.form.get("return_url")
+                or
+                request.referrer
+                or
+                "/dashboard"
+            )
+
+        result = PLCTagManager.update_tag_config(
+            tag_id=tag_id,
+            tag_name=request.form.get("tag_name", ""),
+            tag_type=request.form.get("tag_type", ""),
+            is_array=request.form.get("is_array", "0"),
+            array_size=request.form.get("array_size", ""),
+            array_start_index=request.form.get("array_start_index", ""),
+            array_end_index=request.form.get("array_end_index", ""),
+            description=request.form.get("description", ""),
+            tag_purpose=request.form.get("tag_purpose", ""),
+            machine_id=tag["machine_id"],
+            stage_id=tag["stage_id"]
+        )
+
+        if result.get("success"):
+
+            _audit_plc_tag_changes(
+                tag_id=tag_id,
+                tag_name=(result.get("new") or {}).get("tag_name") or tag.get("tag_name"),
+                changes=result.get("changes"),
+                reason=reason
+            )
+
+            flash(
+                result.get("message") or "PLC tag configuration saved.",
+                "success"
+            )
+
+        else:
+
+            for error in result.get("errors", [])[:6]:
+
+                flash(
+                    error,
+                    "error"
+                )
+
+        return_url = request.form.get(
+            "return_url",
+            ""
+        )
+
+        if return_url.startswith(
+            "/"
+        ):
+
+            return redirect(
+                return_url
+            )
+
+        context = get_machine_stage_context_by_id(
+            tag["machine_id"],
+            tag["stage_id"],
+            include_inactive=True
+        )
+
+        return redirect(
+            machine_stage_url(
+                "/plc-tags",
+                context=context
+            )
+            if context
+            else
+            (
+                request.referrer
+                or
+                "/dashboard"
+            )
         )
 
     @app.route(

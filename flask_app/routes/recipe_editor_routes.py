@@ -570,6 +570,19 @@ def register_recipe_editor_routes(app):
             "0"
         )
 
+        parameter_scope = request.args.get(
+            "parameter_scope",
+            "active"
+        )
+
+        if parameter_scope not in [
+            "active",
+            "inactive",
+            "all"
+        ]:
+
+            parameter_scope = "active"
+
         jump_tag = request.args.get(
             "jump_tag",
             ""
@@ -614,20 +627,45 @@ def register_recipe_editor_routes(app):
 
             page_size = 50
 
-        all_values = (
+        all_template_values = (
             RecipeParameterValueManager
             .get_recipe_values(
-                recipe_id
+                recipe_id,
+                include_inactive=True
             )
         )
 
-        editor_metrics = _build_recipe_editor_metrics(
-            all_values
+        active_values = [
+            row
+            for row in all_template_values
+            if int(row.get("used", 1) or 0) == 1
+        ]
+
+        inactive_count = (
+            len(all_template_values)
+            -
+            len(active_values)
         )
 
-        values = list(
-            all_values
+        editor_metrics = _build_recipe_editor_metrics(
+            active_values
         )
+
+        if parameter_scope == "all":
+
+            values = list(all_template_values)
+
+        elif parameter_scope == "inactive":
+
+            values = [
+                row
+                for row in all_template_values
+                if int(row.get("used", 1) or 0) == 0
+            ]
+
+        else:
+
+            values = list(active_values)
 
         if search_text:
 
@@ -728,6 +766,8 @@ def register_recipe_editor_routes(app):
             "page_size": page_size,
 
             "modified_only": modified_only,
+
+            "parameter_scope": parameter_scope,
 
             "jump_tag": jump_tag
 
@@ -920,6 +960,12 @@ def register_recipe_editor_routes(app):
             search_text=search_text,
 
             modified_only=modified_only,
+
+            parameter_scope=parameter_scope,
+
+            active_parameter_count=len(active_values),
+
+            inactive_parameter_count=inactive_count,
 
             jump_tag=jump_tag,
 
@@ -1145,6 +1191,16 @@ def register_recipe_editor_routes(app):
                     row_copy.get("default_value")
                 )
 
+                row_copy["form_used"] = (
+                    1
+                    if form.get(f"used_{row_id}") == "1"
+                    else
+                    0
+                    if f"used_present_{row_id}" in form
+                    else
+                    int(row_copy.get("used", 1) or 0)
+                )
+
                 hydrated_rows.append(row_copy)
 
             return hydrated_rows
@@ -1193,6 +1249,14 @@ def register_recipe_editor_routes(app):
                     )
                 ])
 
+                if f"used_present_{row_id}" in form:
+
+                    posted_used = 1 if form.get(f"used_{row_id}") == "1" else 0
+
+                    if posted_used != int(row.get("used", 1) or 0):
+
+                        return True
+
             for field_name, old_value in compare_fields:
 
                 if field_name not in form:
@@ -1226,7 +1290,8 @@ def register_recipe_editor_routes(app):
         all_rows = (
             RecipeParameterValueManager
             .get_recipe_values(
-                recipe_id
+                recipe_id,
+                include_inactive=True
             )
         )
 
@@ -1386,6 +1451,13 @@ def register_recipe_editor_routes(app):
                             )
                         )
 
+                        used = (
+                            1
+                            if request.form.get(f"used_{row_id}") == "1"
+                            else
+                            0
+                        )
+
                     else:
 
                         parameter_name = row.get("parameter_name") or ""
@@ -1393,6 +1465,7 @@ def register_recipe_editor_routes(app):
                         min_value = row.get("min_value")
                         max_value = row.get("max_value")
                         default_value = row.get("default_value")
+                        used = int(row.get("used", 1) or 0)
 
                     # PLC index is master mapping data. It is intentionally not
                     # editable from Bulk Edit and is never read from the form.
@@ -1444,7 +1517,8 @@ def register_recipe_editor_routes(app):
                         "unit": unit,
                         "min_value": min_value,
                         "max_value": max_value,
-                        "default_value": default_value
+                        "default_value": default_value,
+                        "used": used
                     }
 
                     if parameter_name:
@@ -1546,7 +1620,8 @@ def register_recipe_editor_routes(app):
                                 unit=parsed["unit"],
                                 min_value=parsed["min_value"],
                                 max_value=parsed["max_value"],
-                                default_value=parsed["default_value"]
+                                default_value=parsed["default_value"],
+                                used=parsed["used"]
                             )
                         )
 
@@ -2826,6 +2901,17 @@ def register_recipe_editor_routes(app):
             )
         )
 
+        live_tag_status = (
+            PLCBufferOperationManager
+            .get_live_tag_status(
+
+                recipe_id=recipe_id,
+
+                plc_id=selected_plc_id
+
+            )
+        )
+
         recent_operations = (
             PLCOperationJobManager
             .get_recent_for_recipe(
@@ -2854,6 +2940,8 @@ def register_recipe_editor_routes(app):
             operation_context=operation_context,
 
             operation_result=operation_result,
+
+            live_tag_status=live_tag_status,
 
             recent_operations=recent_operations,
 

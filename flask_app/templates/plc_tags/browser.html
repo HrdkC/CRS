@@ -598,7 +598,7 @@ PLC Tag Browser
                                 <form method="GET" action="{{ plc_array_import_url if plc_array_import_url is defined else machine_stage_url('/plc-array-import', machine_id=machine_id, stage_id=stage_id) }}" class="inline-form">
                                     <input type="hidden" name="tag_name" value="{{ online_tag.tag_name }}">
                                     <input type="hidden" name="start_index" value="{% if online_tag.array_start_index is not none %}{{ online_tag.array_start_index }}{% else %}0{% endif %}">
-                                    <input type="hidden" name="end_index" value="{% if online_tag.array_end_index is not none %}{{ online_tag.array_end_index }}{% else %}119{% endif %}">
+                                    <input type="hidden" name="end_index" value="{% if online_tag.array_end_index is not none %}{{ online_tag.array_end_index }}{% elif online_tag.array_size %}{{ online_tag.array_size - 1 }}{% endif %}">
                                     <input type="hidden" name="datatype" value="{{ online_tag.tag_type }}">
                                     <button type="submit" class="row-btn warning">Use For 1D Import</button>
                                 </form>
@@ -633,37 +633,39 @@ PLC Tag Browser
 
                     <label>
                         <span>Data Type</span>
+                        {% set expected_type = (purpose_requirement.expected_type if purpose_requirement else '') or '' %}
                         <select name="tag_type">
-                            <option value="BOOL" {% if purpose_to_assign not in ["RECIPE_DATA", "RECIPE_CODE"] %}selected{% endif %}>BOOL</option>
-                            <option value="REAL" {% if purpose_to_assign == "RECIPE_DATA" %}selected{% endif %}>REAL</option>
-                            <option value="DINT">DINT</option>
-                            <option value="STRING" {% if purpose_to_assign == "RECIPE_CODE" %}selected{% endif %}>STRING</option>
+                            <option value="BOOL" {% if expected_type == "BOOL" or (not expected_type and purpose_to_assign not in ["RECIPE_DATA", "TEST_RECIPE_DATA", "RECIPE_CODE"]) %}selected{% endif %}>BOOL</option>
+                            <option value="REAL" {% if expected_type == "REAL" or (not expected_type and purpose_to_assign in ["RECIPE_DATA", "TEST_RECIPE_DATA"]) %}selected{% endif %}>REAL</option>
+                            <option value="DINT" {% if expected_type == "DINT" %}selected{% endif %}>DINT</option>
+                            <option value="STRING" {% if expected_type == "STRING" or (not expected_type and purpose_to_assign == "RECIPE_CODE") %}selected{% endif %}>STRING</option>
                         </select>
                     </label>
 
                     <label>
                         <span>Array</span>
+                        {% set rule_array_required = purpose_requirement.array_required if purpose_requirement else 0 %}
                         <select name="is_array">
-                            <option value="0" {% if purpose_to_assign != "RECIPE_DATA" %}selected{% endif %}>NO</option>
-                            <option value="1" {% if purpose_to_assign == "RECIPE_DATA" %}selected{% endif %}>YES</option>
+                            <option value="0" {% if not rule_array_required %}selected{% endif %}>NO</option>
+                            <option value="1" {% if rule_array_required %}selected{% endif %}>YES</option>
                         </select>
                     </label>
 
                     <label>
                         <span>Start Index</span>
-                        <input type="number" name="array_start_index" value="{% if purpose_to_assign == 'RECIPE_DATA' %}0{% endif %}">
+                        <input type="number" name="array_start_index" value="{% if purpose_requirement and purpose_requirement.array_start_index is not none %}{{ purpose_requirement.array_start_index }}{% endif %}">
                     </label>
 
                     <label>
                         <span>End Index</span>
-                        <input type="number" name="array_end_index" value="{% if purpose_to_assign == 'RECIPE_DATA' %}499{% endif %}">
+                        <input type="number" name="array_end_index" value="{% if purpose_requirement and purpose_requirement.array_end_index is not none %}{{ purpose_requirement.array_end_index }}{% endif %}">
                     </label>
                 </div>
 
                 <div class="manual-grid second">
                     <label>
                         <span>Array Size</span>
-                        <input type="number" name="array_size" value="{% if purpose_to_assign == 'RECIPE_DATA' %}500{% endif %}">
+                        <input type="number" name="array_size" value="{% if purpose_requirement and purpose_requirement.minimum_array_size is not none %}{{ purpose_requirement.minimum_array_size }}{% endif %}">
                     </label>
 
                     <label>
@@ -682,41 +684,80 @@ PLC Tag Browser
     <div class="saved-card">
         <div class="card-heading">
             <div>
-                <strong>Saved PLC Tags</strong>
-                <p>Total saved tags: {{ tags|length }}</p>
+                <strong>Saved PLC Tags - GUI Edit / Rename / Remap</strong>
+                <p>Total saved tags: {{ tags|length }}. Edit tag name, datatype, array setup, description and CRS purpose directly from this page.</p>
             </div>
         </div>
 
-        <div class="table-scroll" style="max-height: 360px;">
-            <table>
+        <div class="notice notice-info">
+            <b>No manual SQLite required.</b>
+            Use Purpose to remap wrong configuration. RECIPE_DATA is CRS buffer; TEST_RECIPE_DATA is PLC destination/running recipe tag.
+        </div>
+
+        <div class="table-scroll plc-tag-config-table-wrap" style="max-height: 430px;">
+            <table class="plc-tag-config-table">
                 <thead>
                     <tr>
-                        <th style="min-width: 360px;">Tag Name</th>
-                        <th>Data Type</th>
-                        <th>Purpose</th>
-                        <th>Array</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Size</th>
-                        <th style="min-width: 260px;">Action</th>
+                        <th style="min-width: 260px;">Tag Name / Rename</th>
+                        <th style="min-width: 90px;">Type</th>
+                        <th style="min-width: 84px;">Array</th>
+                        <th style="min-width: 78px;">Start</th>
+                        <th style="min-width: 78px;">End</th>
+                        <th style="min-width: 78px;">Size</th>
+                        <th style="min-width: 220px;">Purpose / Remap</th>
+                        <th style="min-width: 230px;">Description</th>
+                        <th style="min-width: 300px;">Action</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     {% for tag in tags %}
                     <tr>
-                        <td><div class="tag-name-cell" title="{{ tag.tag_name }}">{{ tag.tag_name }}</div></td>
-                        <td><span class="mini-badge">{{ tag.tag_type }}</span></td>
-                        <td>{% if tag.tag_purpose %}{{ tag.tag_purpose }}{% else %}-{% endif %}</td>
-                        <td>{% if tag.is_array %}<span class="mini-badge array">YES</span>{% else %}<span class="mini-badge scalar">NO</span>{% endif %}</td>
-                        <td>{{ tag.array_start_index }}</td>
-                        <td>{{ tag.array_end_index }}</td>
-                        <td>{{ tag.array_size }}</td>
                         <td>
-                            <div class="row-actions">
+                            <input class="plc-tag-config-input plc-tag-name-input" form="plc-tag-edit-{{ tag.id }}" type="text" name="tag_name" value="{{ tag.tag_name or '' }}" required title="Saved PLC tag name">
+                        </td>
+                        <td>
+                            <input class="plc-tag-config-input plc-tag-type-input" form="plc-tag-edit-{{ tag.id }}" type="text" name="tag_type" value="{{ tag.tag_type or '' }}" placeholder="REAL / BOOL" required>
+                        </td>
+                        <td>
+                            <select class="plc-tag-config-input" form="plc-tag-edit-{{ tag.id }}" name="is_array">
+                                <option value="0" {% if not tag.is_array %}selected{% endif %}>No</option>
+                                <option value="1" {% if tag.is_array %}selected{% endif %}>Yes</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input class="plc-tag-config-input plc-tag-small-input" form="plc-tag-edit-{{ tag.id }}" type="number" name="array_start_index" value="{{ tag.array_start_index if tag.array_start_index is not none else '' }}" step="1" placeholder="-">
+                        </td>
+                        <td>
+                            <input class="plc-tag-config-input plc-tag-small-input" form="plc-tag-edit-{{ tag.id }}" type="number" name="array_end_index" value="{{ tag.array_end_index if tag.array_end_index is not none else '' }}" step="1" placeholder="-">
+                        </td>
+                        <td>
+                            <input class="plc-tag-config-input plc-tag-small-input" form="plc-tag-edit-{{ tag.id }}" type="number" name="array_size" value="{{ tag.array_size if tag.array_size is not none else '' }}" step="1" min="1" placeholder="-">
+                        </td>
+                        <td>
+                            <select class="plc-tag-config-input plc-tag-purpose-select" form="plc-tag-edit-{{ tag.id }}" name="tag_purpose">
+                                <option value="" {% if not tag.tag_purpose %}selected{% endif %}>-- Not Assigned --</option>
+                                {% for purpose in tag_purpose_options %}
+                                <option value="{{ purpose }}" {% if tag.tag_purpose == purpose %}selected{% endif %}>{{ purpose }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input class="plc-tag-config-input" form="plc-tag-edit-{{ tag.id }}" type="text" name="description" value="{{ tag.description or '' }}" placeholder="Description / note">
+                        </td>
+                        <td>
+                            <div class="row-actions plc-tag-action-cell">
+                                <form method="POST" action="/plc-tags/update/{{ tag.id }}" id="plc-tag-edit-{{ tag.id }}" class="inline-form">
+                                    <input type="hidden" name="return_url" value="{{ plc_tag_browser_url if plc_tag_browser_url is defined else machine_stage_url('/plc-tags', machine_id=machine_id, stage_id=stage_id) }}{% if purpose_to_assign %}?purpose={{ purpose_to_assign }}{% endif %}">
+                                </form>
+
+                                <input class="plc-tag-reason-input" form="plc-tag-edit-{{ tag.id }}" type="text" name="reason" placeholder="Reason" required>
+
+                                <button type="submit" form="plc-tag-edit-{{ tag.id }}" class="row-btn success">Save</button>
+
                                 {% if tag.is_array %}
-                                <a href="/plc-tags/array/{{ tag.id }}" class="row-link primary">Browse Indexes</a>
-                                <a href="/plc-array-import/tag/{{ tag.id }}" class="row-link warning">Use For 1D Import</a>
+                                <a href="/plc-tags/array/{{ tag.id }}" class="row-link primary">Browse</a>
+                                <a href="/plc-array-import/tag/{{ tag.id }}" class="row-link warning">1D Import</a>
                                 {% else %}
                                 <span class="mini-badge scalar">Scalar</span>
                                 {% endif %}
@@ -725,7 +766,7 @@ PLC Tag Browser
                                 <form method="POST" action="/plc-tags/set-purpose/{{ tag.id }}" class="inline-form">
                                     <input type="hidden" name="tag_purpose" value="{{ purpose_to_assign }}">
                                     <input type="hidden" name="return_url" value="{{ plc_tag_browser_url if plc_tag_browser_url is defined else machine_stage_url('/plc-tags', machine_id=machine_id, stage_id=stage_id) }}?purpose={{ purpose_to_assign }}">
-                                    <button type="submit" class="row-btn success">Set {{ purpose_to_assign }}</button>
+                                    <button type="submit" class="row-btn primary">Set {{ purpose_to_assign }}</button>
                                 </form>
                                 {% endif %}
                             </div>
@@ -733,7 +774,7 @@ PLC Tag Browser
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8">
+                        <td colspan="9">
                             <div class="empty-state">No saved PLC tags found for this machine/stage.</div>
                         </td>
                     </tr>
