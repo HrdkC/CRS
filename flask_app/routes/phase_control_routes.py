@@ -10,6 +10,7 @@ from flask import (
 
 from database.audit_manager import AuditManager
 from database.database import get_connection
+from database.phase_control_default_manager import PhaseControlDefaultManager
 from flask_app.security.role_guard import role_can
 from flask_app.stage_url_helper import (
     add_machine_stage_url_fields,
@@ -298,44 +299,9 @@ def _insert_phase_if_missing(cursor, context, group_code, group_name, phase_name
 
 
 def _initialize_standard_phase_master(context):
-    stage_type = str(context.get("stage_type") or "").upper()
-    groups = SECOND_STAGE_DEFAULT_GROUPS
-    phases = SECOND_STAGE_DEFAULT_PHASES
-
-    if stage_type == "FIRST_STAGE":
-        groups = FIRST_STAGE_DEFAULT_GROUPS
-        phases = FIRST_STAGE_DEFAULT_PHASES
-
-    conn = get_connection()
-    cursor = conn.cursor()
-    inserted_groups = 0
-    inserted_phases = 0
-
-    for group_code, group_name, description, display_order in groups:
-        if _insert_group_if_missing(
-            cursor,
-            context,
-            group_code,
-            group_name,
-            description,
-            display_order,
-        ):
-            inserted_groups += 1
-
-        for index, phase_name in enumerate(phases.get(group_code, []), start=1):
-            if _insert_phase_if_missing(
-                cursor,
-                context,
-                group_code,
-                group_name,
-                phase_name,
-                phase_name,
-                index,
-            ):
-                inserted_phases += 1
-
-    conn.commit()
-    conn.close()
+    result = PhaseControlDefaultManager.initialize_for_context(context)
+    inserted_groups = result.get("groups_added", 0)
+    inserted_phases = result.get("phases_added", 0)
 
     AuditManager.log_event(
         username=session.get("username"),

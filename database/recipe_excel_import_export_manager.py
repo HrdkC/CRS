@@ -673,8 +673,7 @@ class RecipeExcelImportExportManager:
                         "Parameter Definition ID": None,
                         "__excel_row__": excel_row_no,
                     }
-                    if item["Used"]:
-                        rows.append(item)
+                    rows.append(item)
                 if rows:
                     return rows
 
@@ -705,8 +704,7 @@ class RecipeExcelImportExportManager:
                     "Parameter Definition ID": None,
                     "__excel_row__": excel_row_no,
                 }
-                if item["Used"]:
-                    rows.append(item)
+                rows.append(item)
             if rows:
                 return rows
         return []
@@ -811,17 +809,42 @@ class RecipeExcelImportExportManager:
         return 1
 
     @staticmethod
-    def _append_missing_parameter_defaults(definitions, seen_defs, parsed_parameters, warnings):
+    def _append_missing_parameter_defaults(
+        definitions,
+        seen_defs,
+        parsed_parameters,
+        warnings,
+        mark_missing_parameters_not_used=False,
+    ):
         missing_defs = [r for r in definitions if r["id"] not in seen_defs]
         for definition in missing_defs:
+            excel_detail = None
+            if mark_missing_parameters_not_used:
+                excel_detail = {
+                    "Parameter Name": definition.get("parameter_name"),
+                    "Parameter Class": definition.get("parameter_class"),
+                    "Unit": definition.get("unit"),
+                    "Data Type": definition.get("datatype"),
+                    "Min Value": definition.get("min_value"),
+                    "Max Value": definition.get("max_value"),
+                    "Default Value": definition.get("default_value"),
+                    "English Memo": definition.get("english_memo"),
+                    "Used": 0,
+                }
             parsed_parameters.append({
                 "definition": definition,
                 "value": RecipeExcelImportExportManager._default_parameter_value(definition),
+                "excel_detail": excel_detail,
             })
         if missing_defs:
-            warnings.append(
-                f"{len(missing_defs)} parameter row(s) were not present in Excel. CRS inserted master default values for those missing rows so PLC index mapping remains complete."
-            )
+            if mark_missing_parameters_not_used:
+                warnings.append(
+                    f"{len(missing_defs)} active parameter row(s) were not present in Excel. CRS will mark them Not Used and keep default values for traceability."
+                )
+            else:
+                warnings.append(
+                    f"{len(missing_defs)} parameter row(s) were not present in Excel. CRS inserted master default values for those missing rows so PLC index mapping remains complete."
+                )
         return missing_defs
 
     @staticmethod
@@ -872,17 +895,37 @@ class RecipeExcelImportExportManager:
                     })
             return phase_rows
 
+        group_code = "APPLICATION_SIDE"
+        group_name = "Application Side"
         cur.execute(
             """
             SELECT id, phase_control_name
             FROM phase_control_master
-            WHERE active = 1 AND stage_type = ? AND phase_control_name = 'Empty Phase'
+            WHERE active = 1
+                AND stage_type = ?
+                AND phase_group_code = ?
+                AND phase_control_name = 'Empty Phase'
             ORDER BY display_order, id
             LIMIT 1
             """,
-            (stage_type,),
+            (
+                stage_type,
+                group_code,
+            ),
         )
         empty = cur.fetchone()
+        if not empty:
+            cur.execute(
+                """
+                SELECT id, phase_control_name
+                FROM phase_control_master
+                WHERE active = 1 AND stage_type = ? AND phase_control_name = 'Empty Phase'
+                ORDER BY display_order, id
+                LIMIT 1
+                """,
+                (stage_type,)
+            )
+            empty = cur.fetchone()
         phase_id = int(empty["id"]) if empty else None
         phase_name = empty["phase_control_name"] if empty else "Empty Phase"
         return [
@@ -893,8 +936,8 @@ class RecipeExcelImportExportManager:
                 "stop_option": "No",
                 "position_option": "No",
                 "sequence_no": line_no,
-                "phase_group_code": "MAIN",
-                "phase_group_name": "Phase Control",
+                "phase_group_code": group_code,
+                "phase_group_name": group_name,
             }
             for line_no in range(1, 13)
         ]
@@ -1071,12 +1114,16 @@ class RecipeExcelImportExportManager:
         import_mode="create_new",
         existing_recipe_id=None,
         update_master_details=True,
+        mark_missing_parameters_not_used=False,
     ):
         errors = []
         warnings = []
         legacy_format = False
         import_mode = RecipeExcelImportExportManager._normalize_import_mode(import_mode)
         update_master_details = RecipeExcelImportExportManager._truthy(update_master_details)
+        mark_missing_parameters_not_used = RecipeExcelImportExportManager._truthy(
+            mark_missing_parameters_not_used
+        )
 
         requested_machine_id = machine_id
         requested_stage_id = stage_id
@@ -1277,12 +1324,17 @@ class RecipeExcelImportExportManager:
                 cur.execute(
                     """
                     SELECT * FROM parameter_definitions
-                    WHERE machine_id = ? AND stage_id = ? AND COALESCE(used, 1) = 1
+                    WHERE machine_id = ? AND stage_id = ?
                     ORDER BY tag_index
                     """,
                     (machine_id, stage_id),
                 )
                 definitions = [dict(r) for r in cur.fetchall()]
+                active_definitions = [
+                    row
+                    for row in definitions
+                    if int(row.get("used") if row.get("used") is not None else 1) == 1
+                ]
                 by_id = {int(r["id"]): r for r in definitions}
                 by_tag = {int(r["tag_index"]): r for r in definitions}
                 current_values = RecipeExcelImportExportManager._current_value_map(cur, int(update_target["id"])) if update_target else {}
@@ -1330,14 +1382,21 @@ class RecipeExcelImportExportManager:
                         update_master_details,
                     )
 
+                    row_used = RecipeExcelImportExportManager._optional_excel_int(
+                        row.get("Used"),
+                        definition.get("used") or 1,
+                    )
                     value_label = excel_name or definition["parameter_name"]
                     value = RecipeExcelImportExportManager._to_float(
                         row.get("Parameter Value"),
                         f"Parameter Value for {value_label}",
                         errors,
                         row_no,
+                        required=bool(row_used),
                     )
-                    if value is not None:
+                    if value is None and not row_used:
+                        value = RecipeExcelImportExportManager._default_parameter_value(definition)
+                    if value is not None and row_used:
                         if effective_min_v is not None and value < float(effective_min_v):
                             errors.append(f"Row {row_no}: {value_label} value {value} is below minimum {effective_min_v}.")
                         if effective_max_v is not None and value > float(effective_max_v):
@@ -1384,14 +1443,17 @@ class RecipeExcelImportExportManager:
                     })
 
                 if import_mode == "create_new":
-                    RecipeExcelImportExportManager._append_missing_parameter_defaults(
-                        definitions,
+                    missing_defs = RecipeExcelImportExportManager._append_missing_parameter_defaults(
+                        active_definitions,
                         seen_defs,
                         parsed_parameters,
-                        warnings
+                        warnings,
+                        mark_missing_parameters_not_used,
                     )
+                    if update_master_details and mark_missing_parameters_not_used:
+                        master_detail_change_count += len(missing_defs)
                 else:
-                    missing_count = max(0, len(definitions) - len(seen_defs))
+                    missing_count = max(0, len(active_definitions) - len(seen_defs))
                     if missing_count:
                         warnings.append(
                             f"Existing-recipe update mode: {missing_count} parameter row(s) were not present in Excel and will be left unchanged."
@@ -1446,6 +1508,7 @@ class RecipeExcelImportExportManager:
             "unchanged_value_count": unchanged_value_count,
             "master_detail_change_count": master_detail_change_count,
             "update_master_details": 1 if update_master_details else 0,
+            "mark_missing_parameters_not_used": 1 if mark_missing_parameters_not_used else 0,
         }
         return {
             "ok": not errors,
@@ -1453,7 +1516,7 @@ class RecipeExcelImportExportManager:
             "warnings": warnings,
             "summary": summary,
             "parameters": parsed_parameters[:15] if 'parsed_parameters' in locals() else [],
-            "phase_rows": parsed_phase[:12] if 'parsed_phase' in locals() else [],
+            "phase_rows": parsed_phase[:24] if 'parsed_phase' in locals() else [],
             "_parsed_parameters": parsed_parameters if 'parsed_parameters' in locals() else [],
             "_parsed_phase": parsed_phase if 'parsed_phase' in locals() else [],
         }
@@ -1472,10 +1535,14 @@ class RecipeExcelImportExportManager:
         import_mode="create_new",
         existing_recipe_id=None,
         update_master_details=True,
+        mark_missing_parameters_not_used=False,
     ):
         file_path = RecipeExcelImportExportManager.pending_path(token)
         import_mode = RecipeExcelImportExportManager._normalize_import_mode(import_mode)
         update_master_details = RecipeExcelImportExportManager._truthy(update_master_details)
+        mark_missing_parameters_not_used = RecipeExcelImportExportManager._truthy(
+            mark_missing_parameters_not_used
+        )
         preview = RecipeExcelImportExportManager.preview_import(
             file_path,
             machine_id=machine_id,
@@ -1485,6 +1552,7 @@ class RecipeExcelImportExportManager:
             import_mode=import_mode,
             existing_recipe_id=existing_recipe_id,
             update_master_details=update_master_details,
+            mark_missing_parameters_not_used=mark_missing_parameters_not_used,
         )
         if not preview["ok"]:
             return False, None, preview

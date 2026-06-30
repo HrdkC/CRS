@@ -8,6 +8,7 @@ from database.database import (
     get_connection
 )
 
+from helper.datetime_helper import utc_to_ist
 from flask_app.security.role_guard import (
     normalize_role,
     role_can
@@ -28,6 +29,196 @@ def _safe_count(cursor, query, params=()):
     except Exception:
 
         return 0
+
+
+def _safe_rows(cursor, query, params=()):
+
+    try:
+
+        cursor.execute(
+            query,
+            params
+        )
+
+        return [
+            dict(row)
+            for row in cursor.fetchall()
+        ]
+
+    except Exception:
+
+        return []
+
+
+def _percent(count, total):
+
+    try:
+        total = int(total or 0)
+        count = int(count or 0)
+        if total <= 0:
+            return 0
+        return min(100, round((count / total) * 100))
+    except Exception:
+        return 0
+
+
+def _build_recipe_lifecycle(cursor):
+
+    rows = _safe_rows(
+        cursor,
+        """
+        SELECT UPPER(COALESCE(status, 'UNKNOWN')) AS status, COUNT(*) AS count
+        FROM recipes
+        WHERE COALESCE(is_test_only, 0) = 0
+        GROUP BY UPPER(COALESCE(status, 'UNKNOWN'))
+        """
+    )
+    counts = {
+        row["status"]: int(row["count"] or 0)
+        for row in rows
+    }
+    total = sum(counts.values())
+
+    lifecycle = [
+        ("DRAFT", "Draft", "status-warning"),
+        ("REVIEW", "Review", "status-info"),
+        ("APPROVED", "Approved", "status-neutral"),
+        ("RELEASED", "Released", "status-success"),
+        ("REJECTED", "Rejected", "status-danger"),
+    ]
+
+    return [
+        {
+            "key": key,
+            "label": label,
+            "count": counts.get(key, 0),
+            "percent": _percent(counts.get(key, 0), total),
+            "status_class": status_class,
+        }
+        for key, label, status_class in lifecycle
+    ]
+
+
+def _build_stage_readiness(cursor):
+
+    rows = _safe_rows(
+        cursor,
+        """
+        SELECT
+            m.machine_code,
+            s.stage_type,
+            s.id AS stage_id,
+            (
+                SELECT COUNT(*)
+                FROM plc_registry pr
+                WHERE pr.machine_stage_id = s.id
+                    AND COALESCE(pr.active, 1) = 1
+            ) AS active_plcs,
+            (
+                SELECT COUNT(*)
+                FROM parameter_definitions pd
+                WHERE pd.machine_id = m.id
+                    AND pd.stage_id = s.id
+                    AND COALESCE(pd.used, 1) = 1
+            ) AS used_parameters,
+            (
+                SELECT COUNT(*)
+                FROM parameter_definitions pd
+                WHERE pd.machine_id = m.id
+                    AND pd.stage_id = s.id
+                    AND COALESCE(pd.used, 1) = 0
+            ) AS unused_parameters,
+            (
+                SELECT COUNT(*)
+                FROM phase_control_group_master pg
+                WHERE pg.machine_stage_id = s.id
+                    AND COALESCE(pg.active, 1) = 1
+            ) AS phase_groups,
+            (
+                SELECT COUNT(*)
+                FROM phase_control_master pm
+                WHERE pm.machine_stage_id = s.id
+                    AND COALESCE(pm.active, 1) = 1
+            ) AS phase_options,
+            (
+                SELECT COUNT(*)
+                FROM recipes r
+                WHERE r.machine_id = m.id
+                    AND r.stage_id = s.id
+                    AND r.status = 'RELEASED'
+                    AND COALESCE(r.is_test_only, 0) = 0
+            ) AS released_recipes
+        FROM tbm_machines m
+        INNER JOIN machine_stages s
+            ON s.machine_id = m.id
+        WHERE COALESCE(m.active, 1) = 1
+            AND COALESCE(s.active, 1) = 1
+        ORDER BY
+            m.machine_code,
+            CASE UPPER(s.stage_type)
+                WHEN 'FIRST_STAGE' THEN 1
+                WHEN 'SECOND_STAGE' THEN 2
+                ELSE 99
+            END
+        LIMIT 10
+        """
+    )
+
+    readiness = []
+    for row in rows:
+        active_plcs = int(row.get("active_plcs") or 0)
+        used_parameters = int(row.get("used_parameters") or 0)
+        phase_groups = int(row.get("phase_groups") or 0)
+        phase_options = int(row.get("phase_options") or 0)
+        released_recipes = int(row.get("released_recipes") or 0)
+
+        status = "OK"
+        status_class = "status-success"
+        if active_plcs == 0 or used_parameters == 0 or phase_groups == 0 or phase_options == 0:
+            status = "Blocked"
+            status_class = "status-danger"
+        elif released_recipes == 0:
+            status = "Warning"
+            status_class = "status-warning"
+
+        stage_code = "FS" if str(row.get("stage_type")).upper() == "FIRST_STAGE" else "SS"
+        row["status"] = status
+        row["status_class"] = status_class
+        row["stage_code"] = stage_code
+        row["configuration_url"] = f"/configuration/{row.get('machine_code')}/{stage_code}"
+        row["recipe_url"] = f"/recipes/{row.get('machine_code')}/{stage_code}"
+        readiness.append(row)
+
+    return readiness
+
+
+def _build_recent_activity(cursor):
+
+    rows = _safe_rows(
+        cursor,
+        """
+        SELECT
+            timestamp,
+            username,
+            role,
+            action,
+            recipe_code,
+            recipe_version,
+            change_source
+        FROM audit_log
+        ORDER BY timestamp DESC, id DESC
+        LIMIT 6
+        """
+    )
+
+    for row in rows:
+        row["timestamp_ist"] = utc_to_ist(row.get("timestamp"))
+        if row.get("recipe_code") and row.get("recipe_version"):
+            row["record_label"] = f"{row.get('recipe_code')} V{row.get('recipe_version')}"
+        else:
+            row["record_label"] = row.get("recipe_code") or "-"
+
+    return rows
 
 
 def _alert_is_accessible(role, href):
@@ -286,6 +477,9 @@ def register_dashboard_routes(app):
             session.get("role"),
             dashboard_counts
         )
+        recipe_lifecycle = _build_recipe_lifecycle(cursor)
+        stage_readiness = _build_stage_readiness(cursor)
+        recent_activity = _build_recent_activity(cursor)
 
         conn.close()
 
@@ -299,5 +493,8 @@ def register_dashboard_routes(app):
             stage_count=stage_count,
             user_count=user_count,
             current_released_count=dashboard_counts["current_released_count"],
-            dashboard_alerts=dashboard_alerts
+            dashboard_alerts=dashboard_alerts,
+            recipe_lifecycle=recipe_lifecycle,
+            stage_readiness=stage_readiness,
+            recent_activity=recent_activity
         )

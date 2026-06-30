@@ -244,7 +244,7 @@ Recipe PLC Buffer Operations
 
 .live-status-item {
     display: grid;
-    grid-template-columns: 88px minmax(0, 1fr) 90px;
+    grid-template-columns: 96px minmax(0, 1fr) 106px;
     gap: 8px;
     align-items: center;
     border: 1px solid #e9e3f0;
@@ -265,6 +265,7 @@ Recipe PLC Buffer Operations
 .live-status-value {
     display: inline-flex;
     justify-content: center;
+    align-items: center;
     min-width: 58px;
     border-radius: 999px;
     padding: 4px 8px;
@@ -272,6 +273,18 @@ Recipe PLC Buffer Operations
     color: #253044;
     font-size: 12px;
     font-weight: 900;
+}
+
+.live-status-actual {
+    display: grid;
+    gap: 3px;
+}
+
+.live-status-actual span {
+    color: #625a70;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
 }
 
 .live-status-item-ok .live-status-value {
@@ -297,6 +310,39 @@ Recipe PLC Buffer Operations
     color: #625a70;
     font-size: 11px;
     overflow-wrap: anywhere;
+}
+
+.live-status-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.live-status-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    border: 1px solid #dbe3ee;
+    border-radius: 999px;
+    padding: 3px 7px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 10px;
+    font-weight: 850;
+}
+
+.live-status-item-ok .live-status-state {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.live-status-item-bad .live-status-state,
+.live-status-item-missing .live-status-state {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
 }
 
 .tag-purpose {
@@ -894,21 +940,28 @@ body.operation-running * {
             <div class="live-status-group">
                 <h3>{{ group.title }}</h3>
                 <div class="live-status-grid">
-                    {% for item in group.items %}
+                    {% for item in group["items"] %}
                     <div class="live-status-item live-status-item-{{ item.status }}">
-                        <div class="live-status-value">
-                            {% if item.value is not none %}
-                                {{ item.value }}
-                            {% else %}
-                                -
-                            {% endif %}
+                        <div class="live-status-actual">
+                            <span>Actual</span>
+                            <div class="live-status-value">
+                                {% if item.value is not none %}
+                                    {{ item.value }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
                         </div>
                         <div class="live-status-body">
                             <strong>{{ item.label }}</strong>
                             <small>
                                 {{ item.tag.tag_name if item.tag else 'Not mapped' }}
-                                | {{ item.message }}
                             </small>
+                            <div class="live-status-meta">
+                                <span>Expected {{ item.expected_text or 'Readable' }}</span>
+                                <span class="live-status-state">{{ item.status_text }}</span>
+                            </div>
+                            <small>{{ item.message }}</small>
                         </div>
                         <span class="status-pill {% if item.status == 'ok' %}status-ready{% elif item.status == 'bad' or item.status == 'missing' %}status-blocked{% else %}status-neutral{% endif %}">
                             {{ item.status_text }}

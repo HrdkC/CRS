@@ -9,7 +9,9 @@
         CRS.flash.init();
         CRS.confirm.init();
         CRS.dropdown.init();
+        CRS.navigation.init();
         CRS.cards.init();
+        CRS.tables.init();
         CRS.loginAlerts.init();
         CRS.recipeEditLock.init();
         CRS.session.init();
@@ -117,6 +119,25 @@
         }
     };
 
+    CRS.navigation = {
+        init() {
+            CRS.util.qsa(".nav-back-button").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const fallback = button.getAttribute("data-back-fallback") || "/";
+                    const referrer = document.referrer || "";
+                    const sameOrigin = referrer.indexOf(window.location.origin) === 0;
+
+                    if (window.history.length > 1 && sameOrigin) {
+                        window.history.back();
+                        return;
+                    }
+
+                    window.location.href = fallback;
+                });
+            });
+        }
+    };
+
     CRS.cards = {
         init() {
             CRS.util.qsa(".dashboard-card").forEach(function (card, index) {
@@ -128,6 +149,92 @@
                     card.style.transform = "translateY(0)";
                 }, Math.min(index * 50, 400));
             });
+        }
+    };
+
+    CRS.tables = {
+        init() {
+            CRS.util.qsa("table").forEach(function (table) {
+                if (table.dataset.clientSortReady === "1" || table.classList.contains("no-client-sort")) return;
+
+                const headerRow = table.tHead ? table.tHead.rows[0] : table.querySelector("tr");
+                const body = table.tBodies && table.tBodies.length ? table.tBodies[0] : null;
+                if (!headerRow || !body || body.rows.length < 2) return;
+
+                table.dataset.clientSortReady = "1";
+                table.classList.add("client-sort-table");
+
+                CRS.util.qsa("th", headerRow).forEach(function (th, columnIndex) {
+                    if (th.colSpan && th.colSpan > 1) return;
+                    if (th.querySelector("a, button, input, select")) {
+                        th.classList.add("client-sort-existing-control");
+                        return;
+                    }
+
+                    const label = th.textContent.trim();
+                    if (!label) return;
+
+                    th.textContent = "";
+                    const button = document.createElement("button");
+                    const labelSpan = document.createElement("span");
+                    const icon = document.createElement("b");
+                    button.type = "button";
+                    button.className = "client-sort-button";
+                    button.title = "Sort by " + label;
+                    labelSpan.textContent = label;
+                    icon.setAttribute("aria-hidden", "true");
+                    icon.textContent = "↕";
+                    button.appendChild(labelSpan);
+                    button.appendChild(icon);
+                    button.addEventListener("click", function () {
+                        CRS.tables.sort(table, columnIndex, button);
+                    });
+
+                    th.appendChild(button);
+                });
+            });
+        },
+
+        cellText(row, columnIndex) {
+            const cell = row.cells[columnIndex];
+            if (!cell) return "";
+            return (cell.getAttribute("data-sort-value") || cell.textContent || "").trim();
+        },
+
+        compareValues(a, b) {
+            const numericA = Number(String(a).replace(/,/g, ""));
+            const numericB = Number(String(b).replace(/,/g, ""));
+            const bothNumeric = a !== "" && b !== "" && !Number.isNaN(numericA) && !Number.isNaN(numericB);
+
+            if (bothNumeric) return numericA - numericB;
+            return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: "base" });
+        },
+
+        sort(table, columnIndex, button) {
+            const body = table.tBodies[0];
+            const currentDirection = button.getAttribute("data-sort-direction") || "none";
+            const nextDirection = currentDirection === "asc" ? "desc" : "asc";
+            const rows = Array.prototype.slice.call(body.rows);
+
+            rows.sort(function (rowA, rowB) {
+                const result = CRS.tables.compareValues(
+                    CRS.tables.cellText(rowA, columnIndex),
+                    CRS.tables.cellText(rowB, columnIndex)
+                );
+                return nextDirection === "asc" ? result : -result;
+            });
+
+            rows.forEach(function (row) { body.appendChild(row); });
+
+            CRS.util.qsa(".client-sort-button", table).forEach(function (otherButton) {
+                otherButton.removeAttribute("data-sort-direction");
+                const icon = otherButton.querySelector("b");
+                if (icon) icon.textContent = "↕";
+            });
+
+            button.setAttribute("data-sort-direction", nextDirection);
+            const icon = button.querySelector("b");
+            if (icon) icon.textContent = nextDirection === "asc" ? "↑" : "↓";
         }
     };
 
@@ -381,7 +488,7 @@
                 userActivitySinceHeartbeat = true;
             }
 
-            ["click", "keydown", "mousemove", "scroll", "touchstart"].forEach(function (eventName) {
+            ["click", "keydown", "input", "change", "scroll", "touchstart", "pointerdown"].forEach(function (eventName) {
                 document.addEventListener(eventName, markActivity, { passive: true });
             });
 

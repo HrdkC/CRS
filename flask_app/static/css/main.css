@@ -3208,3 +3208,963 @@ button:disabled,
         min-width: 100%;
     }
 }
+
+/* =====================================================
+   CRS V6.20 - Modern hardening polish
+   Shared navigation, error pages, table legibility, and Full HD fit.
+   ===================================================== */
+.menu-back-item {
+    background: #f1f5f9 !important;
+    box-shadow: none !important;
+    border: 1px solid var(--line-200);
+}
+
+.menu-back-item:hover {
+    background: #e8eef6 !important;
+}
+
+.nav-back-button {
+    min-height: 32px !important;
+    padding: 7px 13px !important;
+    color: var(--ink-800) !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    line-height: 18px !important;
+}
+
+.nav-back-button:hover {
+    color: var(--apollo-violet-dark) !important;
+    transform: none !important;
+}
+
+.main-container {
+    width: 100%;
+    max-width: 1920px;
+    margin: 0 auto;
+}
+
+.page-header,
+.workbench-hero,
+.workbench-card,
+.dashboard-card,
+.metric-card,
+.form-card,
+.card,
+.panel {
+    border-color: #dde6f3 !important;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.045) !important;
+}
+
+table {
+    color: var(--ink-800);
+}
+
+td,
+th {
+    max-width: 420px;
+}
+
+td {
+    overflow-wrap: anywhere;
+}
+
+.professional-table td,
+.registry-table td,
+.data-table td {
+    line-height: 1.32;
+}
+
+.professional-table td:last-child,
+.registry-table td:last-child,
+.data-table td:last-child {
+    white-space: normal;
+}
+
+.row-actions,
+.compact-actions,
+.hero-actions,
+.workbench-actions {
+    gap: 8px;
+}
+
+.row-actions a,
+.row-actions button,
+.compact-actions a,
+.compact-actions button {
+    white-space: nowrap;
+}
+
+.audit-history-table-pro {
+    min-width: 1580px !important;
+}
+
+.audit-history-table-pro th:nth-child(4) { width: 210px !important; }
+.audit-history-table-pro th:nth-child(5) { width: 210px !important; }
+.audit-history-table-pro th:nth-child(7) { width: 250px !important; }
+.audit-history-table-pro th:nth-child(9) { width: 250px !important; }
+
+.audit-action-cell,
+.audit-record-cell,
+.audit-value-cell,
+.audit-reason-cell,
+.audit-clip-cell {
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.audit-action-badge {
+    display: inline-flex !important;
+    max-width: 100%;
+    min-height: 24px !important;
+    padding: 5px 9px !important;
+    white-space: normal !important;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.audit-record-cell strong,
+.audit-record-cell .muted-inline,
+.audit-clip-cell,
+.audit-reason-cell,
+.audit-value-cell {
+    white-space: normal !important;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.audit-value-cell {
+    color: var(--ink-800);
+}
+
+.crs-error-shell {
+    min-height: calc(100svh - 240px);
+    display: grid;
+    place-items: center;
+    padding: 28px 12px;
+}
+
+.crs-error-card {
+    width: min(980px, 100%);
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    overflow: hidden;
+    border: 1px solid #dde6f3;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 24px 52px rgba(15, 23, 42, 0.10);
+}
+
+.crs-error-status {
+    display: grid;
+    place-items: center;
+    min-height: 240px;
+    color: #fff;
+    background:
+        radial-gradient(circle at 24% 24%, rgba(255,255,255,.24), transparent 34%),
+        linear-gradient(135deg, #6f2da8, #2563eb);
+    font-size: 56px;
+    font-weight: 950;
+    letter-spacing: 0;
+}
+
+.crs-error-body {
+    display: grid;
+    align-content: center;
+    gap: 12px;
+    padding: 30px 34px;
+}
+
+.crs-error-body h1 {
+    margin: 0;
+    color: var(--ink-900);
+    font-size: 28px;
+    line-height: 1.12;
+}
+
+.crs-error-body p {
+    max-width: 720px;
+    margin: 0;
+    color: var(--ink-600);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.crs-error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 4px;
+}
+
+.crs-error-actions .nav-back-button {
+    border: 1px solid var(--line-200) !important;
+    background: #f1f5f9 !important;
+}
+
+.crs-error-detail {
+    margin-top: 8px;
+}
+
+.plc-tag-config-table-wrap,
+.stage-plc-rule-table-wrap,
+.professional-table-wrap,
+.table-container {
+    scrollbar-gutter: stable both-edges;
+}
+
+.stage-plc-rule-table,
+.plc-tag-config-table {
+    border-spacing: 0 6px !important;
+    background: transparent !important;
+}
+
+.stage-plc-rule-table tbody tr,
+.plc-tag-config-table tbody tr {
+    background: #fff;
+    box-shadow: 0 1px 0 rgba(15,23,42,.04);
+}
+
+.stage-plc-rule-table td,
+.plc-tag-config-table td {
+    white-space: normal !important;
+}
+
+.plc-tag-config-table input,
+.plc-tag-config-table select,
+.stage-plc-rule-table input,
+.stage-plc-rule-table select {
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 900px) {
+    .crs-error-card {
+        grid-template-columns: 1fr;
+    }
+
+    .crs-error-status {
+        min-height: 120px;
+        font-size: 42px;
+    }
+
+    .crs-error-body {
+        padding: 24px;
+    }
+}
+
+/* Dashboard V2: compact operational visuals */
+.dashboard-insight-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(340px, .9fr);
+    gap: 13px;
+}
+
+.dashboard-insight-card {
+    min-width: 0;
+}
+
+.lifecycle-stack {
+    display: grid;
+    gap: 9px;
+}
+
+.lifecycle-row {
+    display: grid;
+    gap: 6px;
+}
+
+.lifecycle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.lifecycle-label strong {
+    color: var(--ink-900);
+    font-size: 17px;
+}
+
+.lifecycle-bar {
+    width: 100%;
+    height: 9px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #edf2f7;
+}
+
+.lifecycle-bar span {
+    display: block;
+    height: 100%;
+    min-width: 3px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #673ab7, #4285f4, #34a853);
+}
+
+.activity-feed {
+    display: grid;
+    gap: 8px;
+}
+
+.activity-item {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr) 180px;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 11px;
+    border: 1px solid var(--line-100);
+    border-radius: 10px;
+    background: #fbfcff;
+    color: var(--ink-700);
+    text-decoration: none;
+}
+
+.activity-item strong,
+.activity-item small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.activity-item span {
+    color: var(--ink-500);
+    font-size: 11.5px;
+}
+
+.activity-item strong {
+    color: var(--apollo-violet-dark);
+    font-size: 12.5px;
+}
+
+.activity-item small {
+    color: var(--ink-600);
+}
+
+.stage-readiness-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 11px;
+}
+
+.stage-readiness-card {
+    display: grid;
+    gap: 10px;
+    padding: 13px;
+    border: 1px solid var(--line-100);
+    border-left: 4px solid var(--apollo-violet);
+    border-radius: 12px;
+    background: #fff;
+    min-width: 0;
+}
+
+.stage-readiness-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.stage-readiness-head div {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.stage-readiness-head strong {
+    color: var(--ink-900);
+    font-size: 15px;
+}
+
+.stage-readiness-head span:not(.status-badge) {
+    color: var(--ink-500);
+    font-size: 11px;
+}
+
+.stage-readiness-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+}
+
+.stage-readiness-metrics span {
+    padding: 8px;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: var(--ink-600);
+    font-size: 11.5px;
+}
+
+.stage-readiness-metrics b {
+    color: var(--ink-900);
+    font-size: 14px;
+}
+
+.stage-readiness-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 980px) {
+    .dashboard-insight-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .activity-item {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+}
+
+/* Import page: prevent dense labels and buttons from overlapping */
+.recipe-import-export-page .import-field-full,
+.recipe-import-export-page .import-master-detail-option {
+    min-width: 0;
+}
+
+.recipe-import-export-page .inline-check-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.recipe-import-export-page .inline-check-option input {
+    flex: 0 0 auto;
+    width: 16px !important;
+    min-height: 16px !important;
+    margin-top: 2px;
+}
+
+.recipe-import-export-page .inline-check-option strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.recipe-import-export-page .import-form-button,
+.recipe-import-export-page .crs-btn {
+    max-width: 100%;
+}
+
+/* 2026-06-30 CRS usability/resource hardening */
+body {
+    background-attachment: scroll;
+}
+
+.site-header {
+    backdrop-filter: none;
+}
+
+.crs-btn,
+.primary-action,
+.secondary-action,
+.row-action,
+.btn,
+button {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.crs-btn,
+.primary-action,
+.secondary-action,
+.row-action {
+    min-width: 86px;
+    max-width: 190px;
+    min-height: 34px;
+    padding: 7px 12px;
+    line-height: 1.15;
+    text-align: center;
+}
+
+.compact-actions,
+.workbench-actions,
+.form-action-row,
+.stage-readiness-actions {
+    gap: 7px;
+}
+
+.page-body-back {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 10px;
+}
+
+.page-body-back .crs-btn {
+    min-width: 92px;
+}
+
+.client-sort-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.client-sort-button span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.client-sort-button b {
+    flex: 0 0 auto;
+    color: #fef3c7;
+    font-size: 12px;
+}
+
+.client-sort-button:hover span {
+    text-decoration: underline;
+}
+
+.client-sort-existing-control {
+    cursor: default;
+}
+
+.professional-table-wrap,
+.registry-table-wrap,
+.data-table-wrap,
+.audit-table-wrap-pro {
+    max-width: 100%;
+}
+
+table th,
+table td {
+    vertical-align: middle;
+}
+
+table td {
+    overflow-wrap: anywhere;
+}
+
+.audit-record-card-pro {
+    overflow: hidden;
+}
+
+.audit-table-wrap-pro {
+    max-height: calc(100vh - 340px);
+    overflow: auto;
+}
+
+.audit-history-table-pro {
+    min-width: 1280px !important;
+    table-layout: fixed;
+    font-size: 11.4px;
+}
+
+.audit-history-table-pro th {
+    padding: 8px 9px;
+    font-size: 10.6px;
+}
+
+.audit-history-table-pro td {
+    padding: 8px 9px;
+    line-height: 1.24;
+}
+
+.audit-history-table-pro th:nth-child(1) { width: 132px !important; }
+.audit-history-table-pro th:nth-child(2) { width: 92px !important; }
+.audit-history-table-pro th:nth-child(3) { width: 86px !important; }
+.audit-history-table-pro th:nth-child(4) { width: 180px !important; }
+.audit-history-table-pro th:nth-child(5) { width: 170px !important; }
+.audit-history-table-pro th:nth-child(6) { width: 150px !important; }
+.audit-history-table-pro th:nth-child(7) { width: 210px !important; }
+.audit-history-table-pro th:nth-child(8) { width: 136px !important; }
+.audit-history-table-pro th:nth-child(9) { width: 224px !important; }
+
+.audit-action-cell,
+.audit-record-cell,
+.audit-value-cell,
+.audit-reason-cell,
+.audit-clip-cell {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.audit-action-badge {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.14;
+    padding: 4px 7px;
+    text-align: left;
+}
+
+.audit-record-cell strong,
+.audit-record-cell .muted-inline {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.audit-value-cell {
+    min-width: 0;
+    max-height: 46px;
+    overflow: hidden;
+}
+
+.phase-control-board {
+    gap: 12px;
+    align-items: stretch;
+}
+
+.phase-control-column {
+    border: 1px solid #d8b4fe;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(111,45,168,0.07);
+    overflow: hidden;
+}
+
+.phase-control-column-header {
+    min-height: 42px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e9d5ff;
+    background: linear-gradient(135deg, #f5f0ff, #ffffff);
+    color: var(--apollo-violet-dark);
+}
+
+.phase-control-column-header strong {
+    color: var(--apollo-violet-dark);
+    font-size: 15px;
+}
+
+.phase-control-display-cell {
+    min-height: 46px;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid #eee7f8;
+    border-radius: 0;
+    background: #fff;
+    color: var(--ink-900);
+}
+
+.phase-control-display-cell:last-child {
+    border-bottom: 0;
+}
+
+.phase-control-display-cell strong {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.phase-control-display-empty {
+    background: #fbfaff;
+    color: var(--ink-500);
+}
+
+.phase-control-slot-edit {
+    border-color: #e9d5ff;
+    background: #fff;
+}
+
+.phase-control-slot-edit:focus-within {
+    border-color: var(--apollo-violet);
+    box-shadow: 0 0 0 2px rgba(111,45,168,.12);
+}
+
+.phase-control-row-header {
+    background: var(--apollo-violet-dark);
+    color: #fff;
+}
+
+.menu-back-item {
+    display: none !important;
+}
+
+@media (max-width: 1200px) {
+    .header-top {
+        grid-template-columns: 190px minmax(0,1fr) 230px;
+    }
+
+    .brand-title {
+        font-size: 22px;
+    }
+
+}
+
+/* 2026-06-30: compact header and readable audit grid.
+   This override intentionally sits last so older broad table/header rules cannot
+   make the audit screen tall, clipped, or crowded again. */
+.site-header {
+    background: rgba(255, 255, 255, .98) !important;
+}
+
+.site-header .header-top {
+    grid-template-columns: 188px minmax(0, 1fr) 218px !important;
+    min-height: 58px !important;
+    padding: 7px 22px 5px !important;
+    gap: 12px !important;
+    align-items: center !important;
+}
+
+.site-header .header-logo-panel {
+    min-width: 0 !important;
+    justify-self: start !important;
+    justify-content: flex-start !important;
+}
+
+.site-header .header-brand-lockup {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    grid-template-rows: auto auto !important;
+    row-gap: 0 !important;
+    justify-items: start !important;
+    align-content: center !important;
+}
+
+.site-header .header-brand-logo-row {
+    display: grid !important;
+    grid-template-columns: auto auto !important;
+    justify-content: start !important;
+    gap: 1px !important;
+    align-items: center !important;
+    height: auto !important;
+}
+
+.site-header .header-logo-main {
+    height: 46px !important;
+    max-height: 46px !important;
+    width: auto !important;
+}
+
+.site-header .header-logo-bcci {
+    height: 48px !important;
+    max-height: 48px !important;
+    width: auto !important;
+}
+
+.site-header .header-campaign-caption {
+    margin-top: 0 !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    text-align: left !important;
+}
+
+.site-header .brand-title {
+    font-size: 26px !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0 !important;
+}
+
+.site-header .brand-subtitle {
+    margin-top: 1px !important;
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+}
+
+.site-header .user-info {
+    min-width: 205px !important;
+    max-width: 218px !important;
+    padding: 6px 9px !important;
+    font-size: 11px !important;
+    line-height: 1.22 !important;
+}
+
+.site-header .user-info strong {
+    display: inline-block !important;
+    margin-bottom: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.1 !important;
+}
+
+.site-header .session-countdown {
+    margin-top: 5px !important;
+    min-height: 24px !important;
+    padding: 3px 8px !important;
+    gap: 4px !important;
+    font-size: 10.5px !important;
+    line-height: 1 !important;
+}
+
+.site-header .navbar {
+    padding: 0 22px 7px !important;
+}
+
+.site-header .navbar ul {
+    gap: 7px !important;
+}
+
+.site-header .navbar a {
+    min-height: 29px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    line-height: 17px !important;
+}
+
+.site-header .menu-item {
+    box-shadow: 0 5px 12px rgba(111, 45, 168, .13) !important;
+}
+
+.site-header .dropdown-menu {
+    top: calc(100% + 6px) !important;
+}
+
+.site-header .dropdown-menu a {
+    min-height: 29px !important;
+    padding: 7px 10px !important;
+    font-size: 12px !important;
+}
+
+.audit-page-pro .workbench-hero {
+    margin-top: 4px !important;
+}
+
+.audit-record-card-pro {
+    overflow: hidden !important;
+}
+
+.audit-table-wrap-pro {
+    max-height: calc(100vh - 300px) !important;
+    overflow: auto !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+}
+
+.audit-history-table-pro {
+    min-width: 1700px !important;
+    table-layout: fixed !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    font-size: 11.2px !important;
+}
+
+.audit-history-table-pro th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+    padding: 8px 9px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+}
+
+.audit-history-table-pro td {
+    height: auto !important;
+    max-height: none !important;
+    padding: 7px 9px !important;
+    vertical-align: top !important;
+    line-height: 1.22 !important;
+    white-space: normal !important;
+    overflow: hidden !important;
+}
+
+.audit-history-table-pro tbody tr {
+    height: auto !important;
+    min-height: 44px !important;
+}
+
+.audit-history-table-pro th:nth-child(1) { width: 132px !important; }
+.audit-history-table-pro th:nth-child(2) { width: 90px !important; }
+.audit-history-table-pro th:nth-child(3) { width: 78px !important; }
+.audit-history-table-pro th:nth-child(4) { width: 190px !important; }
+.audit-history-table-pro th:nth-child(5) { width: 190px !important; }
+.audit-history-table-pro th:nth-child(6) { width: 180px !important; }
+.audit-history-table-pro th:nth-child(7) { width: 250px !important; }
+.audit-history-table-pro th:nth-child(8) { width: 170px !important; }
+.audit-history-table-pro th:nth-child(9) { width: 420px !important; }
+
+.audit-time-cell,
+.audit-user-cell,
+.audit-action-cell,
+.audit-record-cell,
+.audit-clip-cell,
+.audit-value-cell,
+.audit-reason-cell {
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+}
+
+.audit-user-cell strong {
+    white-space: nowrap !important;
+}
+
+.audit-action-badge {
+    display: inline-block !important;
+    max-width: 100% !important;
+    padding: 4px 7px !important;
+    line-height: 1.12 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: left !important;
+}
+
+.audit-record-cell strong,
+.audit-record-cell .muted-inline {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.audit-value-cell {
+    max-height: none !important;
+}
+
+.audit-value-cell,
+.audit-value-cell span {
+    white-space: normal !important;
+}
+
+.audit-old-value,
+.audit-new-value {
+    display: inline !important;
+}
+
+.audit-reason-cell,
+.audit-clip-cell {
+    display: table-cell !important;
+}
+
+.audit-reason-cell {
+    color: var(--ink-700) !important;
+}
+
+.audit-page-pro .sort-link-pro,
+.audit-page-pro .client-sort-button {
+    white-space: nowrap !important;
+}
+
+@media (max-width: 1200px) {
+    .site-header .header-top {
+        grid-template-columns: 170px minmax(0, 1fr) 205px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    .site-header .brand-title {
+        font-size: 19px !important;
+    }
+
+    .site-header .header-campaign-caption {
+        font-size: 12px !important;
+    }
+
+    .site-header .navbar {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+}

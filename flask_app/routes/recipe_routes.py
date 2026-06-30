@@ -482,7 +482,8 @@ def register_recipe_routes(app):
                 recipe_name_override=request.form.get("recipe_name"),
                 import_mode=request.form.get("import_mode"),
                 existing_recipe_id=request.form.get("existing_recipe_id", type=int),
-                update_master_details=request.form.get("update_master_details")
+                update_master_details=request.form.get("update_master_details"),
+                mark_missing_parameters_not_used=request.form.get("mark_missing_parameters_not_used")
             )
         except Exception as exc:
             flash(str(exc), "error")
@@ -530,6 +531,7 @@ def register_recipe_routes(app):
         import_mode = request.form.get("import_mode")
         existing_recipe_id = request.form.get("existing_recipe_id", type=int)
         update_master_details = request.form.get("update_master_details")
+        mark_missing_parameters_not_used = request.form.get("mark_missing_parameters_not_used")
 
         try:
             success, recipe_id, preview = RecipeExcelImportExportManager.import_pending_file(
@@ -544,7 +546,8 @@ def register_recipe_routes(app):
                 recipe_name_override=recipe_name_override,
                 import_mode=import_mode,
                 existing_recipe_id=existing_recipe_id,
-                update_master_details=update_master_details
+                update_master_details=update_master_details,
+                mark_missing_parameters_not_used=mark_missing_parameters_not_used
             )
         except Exception as exc:
             flash(f"Recipe import failed: {exc}", "error")

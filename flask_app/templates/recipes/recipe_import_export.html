@@ -173,6 +173,15 @@ Recipe Import / Export
                     <small>Updates Parameter Name, Class, Unit, Data Type, Min, Max, Default, Memo, and Used flag. Protected: Tag Index, PLC Array Index, Parameter Definition ID, and Phase_Control.</small>
                 </label>
 
+                <label class="import-field import-field-full import-master-detail-option">
+                    <span>Missing Excel Parameters</span>
+                    <label class="inline-check-option">
+                        <input type="checkbox" name="mark_missing_parameters_not_used" value="1">
+                        <strong>Mark missing template parameters as Not Used</strong>
+                    </label>
+                    <small>Use only for template cleanup imports. Missing rows stay as default active parameters when this is not selected.</small>
+                </label>
+
                 <input type="hidden" name="machine_id">
                 <input type="hidden" name="stage_id">
 
@@ -290,6 +299,9 @@ Recipe Import / Export
             <input type="hidden" name="existing_recipe_id" value="{{ preview.summary.existing_recipe_id }}">
             {% if preview.summary.update_master_details %}
             <input type="hidden" name="update_master_details" value="1">
+            {% endif %}
+            {% if preview.summary.mark_missing_parameters_not_used %}
+            <input type="hidden" name="mark_missing_parameters_not_used" value="1">
             {% endif %}
             <label>
                 <span>Import Reason / Remarks</span>

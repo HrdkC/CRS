@@ -18,7 +18,8 @@ SKIP_ENDPOINTS = {
     "logout",
     "static",
     "my_password",
-    "session_auto_expire"
+    "session_auto_expire",
+    "session_heartbeat"
 }
 
 

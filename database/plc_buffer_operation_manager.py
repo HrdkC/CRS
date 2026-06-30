@@ -2230,6 +2230,16 @@ class PLCBufferOperationManager:
                     rule["purpose"]
                 ),
                 "value": None,
+                "expected_text": (
+                    "Readable"
+                    if rule.get("healthy_when") is None
+                    else (
+                        "TRUE"
+                        if rule.get("healthy_when") is True
+                        else
+                        "FALSE"
+                    )
+                ),
                 "status": "missing",
                 "status_text": "Missing",
                 "message": "Tag is not mapped.",

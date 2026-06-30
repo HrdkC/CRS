@@ -128,6 +128,96 @@ Apollo CRS Dashboard
         </div>
     </div>
 
+    <div class="dashboard-insight-grid">
+        <section class="workbench-card dashboard-insight-card">
+            <div class="panel-heading table-heading">
+                <div>
+                    <span>Recipe Lifecycle</span>
+                    <p>Current recipe workload by approval state.</p>
+                </div>
+                <a href="/recipes" class="secondary-action">Open Recipes</a>
+            </div>
+            <div class="lifecycle-stack">
+                {% for item in recipe_lifecycle %}
+                <div class="lifecycle-row">
+                    <div class="lifecycle-label">
+                        <span class="status-badge {{ item.status_class }}">{{ item.label }}</span>
+                        <strong>{{ item.count }}</strong>
+                    </div>
+                    <div class="lifecycle-bar" title="{{ item.label }}: {{ item.count }}">
+                        <span style="width: {{ item.percent }}%;"></span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="workbench-card dashboard-insight-card">
+            <div class="panel-heading table-heading">
+                <div>
+                    <span>Recent Activity</span>
+                    <p>Latest audited CRS changes in IST.</p>
+                </div>
+                {% if role_can("audit_view") %}
+                <a href="/audit-history" class="secondary-action">Audit</a>
+                {% endif %}
+            </div>
+            <div class="activity-feed">
+                {% for item in recent_activity %}
+                <a href="/audit-history" class="activity-item">
+                    <span>{{ item.timestamp_ist or "-" }}</span>
+                    <strong title="{{ item.action }}">{{ item.action }}</strong>
+                    <small>{{ item.username or "-" }} | {{ item.record_label }}</small>
+                </a>
+                {% else %}
+                <div class="empty-state">No recent audit records.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <section class="workbench-card dashboard-insight-card">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Machine / Stage Readiness</span>
+                <p>Configuration status for active machine-stage templates.</p>
+            </div>
+            {% if role_can("engineering_config") %}
+            <a href="/configuration" class="secondary-action">Configuration</a>
+            {% endif %}
+        </div>
+
+        <div class="stage-readiness-grid">
+            {% for row in stage_readiness %}
+            <div class="stage-readiness-card">
+                <div class="stage-readiness-head">
+                    <div>
+                        <strong>{{ row.machine_code }} / {{ row.stage_code }}</strong>
+                        <span>{{ row.stage_type }}</span>
+                    </div>
+                    <span class="status-badge {{ row.status_class }}">{{ row.status }}</span>
+                </div>
+                <div class="stage-readiness-metrics">
+                    <span><b>{{ row.active_plcs }}</b> PLC</span>
+                    <span><b>{{ row.used_parameters }}</b> Used</span>
+                    <span><b>{{ row.unused_parameters }}</b> Not Used</span>
+                    <span><b>{{ row.phase_groups }}</b> Groups</span>
+                    <span><b>{{ row.phase_options }}</b> Phases</span>
+                    <span><b>{{ row.released_recipes }}</b> Released</span>
+                </div>
+                <div class="stage-readiness-actions">
+                    <a href="{{ row.recipe_url }}" class="secondary-action">Recipes</a>
+                    {% if role_can("engineering_config") %}
+                    <a href="{{ row.configuration_url }}" class="secondary-action">Configure</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">No active machine-stage records found.</div>
+            {% endfor %}
+        </div>
+    </section>
+
 </section>
 
 {% endblock %}

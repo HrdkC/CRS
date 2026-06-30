@@ -176,6 +176,36 @@ def register_session_routes(app):
         timeout_minutes = SystemSettingsManager.get_session_timeout_minutes()
         timeout_seconds = timeout_minutes * 60
         heartbeat_grace_seconds = SystemSettingsManager.get_heartbeat_stale_grace_seconds()
+        last_activity_epoch = int(session.get("last_activity_epoch", now))
+
+        if now - last_activity_epoch > timeout_seconds:
+            username = session.get("username")
+            role = session.get("role")
+            session_id = session.get("session_id")
+
+            if session_id:
+                UserSessionManager.auto_logout(session_id)
+
+            AuditManager.log_event(
+                username=username,
+                role=role,
+                action="AUTO_LOGOUT",
+                change_source="SESSION_HEARTBEAT",
+                client_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+                user_agent=request.headers.get("User-Agent", ""),
+                forwarded_for=request.headers.get("X-Forwarded-For"),
+                request_host=request.host,
+                reason=f"Idle timeout exceeded {timeout_minutes} minute(s)"
+            )
+
+            session.clear()
+            return jsonify(
+                {
+                    "ok": False,
+                    "redirect": "/login",
+                    "message": "Session timed out due to inactivity."
+                }
+            ), 401
 
         payload = request.get_json(silent=True) or {}
         user_activity = bool(payload.get("user_activity"))
@@ -204,8 +234,8 @@ def register_session_routes(app):
                 "timeout_minutes": timeout_minutes,
                 "timeout_seconds": timeout_seconds,
                 "heartbeat_stale_grace_seconds": heartbeat_grace_seconds,
-                "last_activity_epoch": session.get("last_activity_epoch", now),
-                "remaining_seconds": timeout_seconds - (now - int(session.get("last_activity_epoch", now))),
+                "last_activity_epoch": session.get("last_activity_epoch", last_activity_epoch),
+                "remaining_seconds": timeout_seconds - (now - int(session.get("last_activity_epoch", last_activity_epoch))),
                 "login_attempt_alerts": alerts
             }
         )

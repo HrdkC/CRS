@@ -1,4 +1,4 @@
-from flask import Flask, session
+from flask import Flask, render_template, session
 
 from config.settings import SECRET_KEY
 
@@ -87,5 +87,51 @@ def create_app():
             "machine_stage_path": machine_stage_path,
             "machine_stage_url": machine_stage_url,
         }
+
+    @app.errorhandler(404)
+    def page_not_found(error):
+        return (
+            render_template(
+                "errors/error.html",
+                status_code=404,
+                title="Page Not Found",
+                message=(
+                    "This CRS page or link is not available. "
+                    "Use Back or Dashboard and report the missing link if it repeats."
+                ),
+                technical_detail=(
+                    str(error)
+                    if session.get("role") == "ADMIN"
+                    else
+                    ""
+                ),
+            ),
+            404,
+        )
+
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        app.logger.exception(
+            "Unhandled CRS server error",
+            exc_info=True
+        )
+        return (
+            render_template(
+                "errors/error.html",
+                status_code=500,
+                title="CRS Server Error",
+                message=(
+                    "The requested operation could not be completed safely. "
+                    "No PLC download should be assumed complete unless the operation history shows success."
+                ),
+                technical_detail=(
+                    str(error)
+                    if session.get("role") == "ADMIN"
+                    else
+                    ""
+                ),
+            ),
+            500,
+        )
 
     return app
