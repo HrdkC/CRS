@@ -1,8 +1,13 @@
 CRS Priority 11 - CSS / JS Professional Standardization
 
-This package replaces:
+Original package replaced:
 - flask_app/static/css/main.css
 - flask_app/static/js/main.js
+
+Current CSS architecture update:
+- main.css is no longer the place for new page-specific rules.
+- main.css is now the CSS entry point that imports ordered modules from flask_app/static/css/modules/.
+- Read project_docs/78_CSS_MODULE_SPLIT_V1.txt before changing CRS CSS.
 
 Purpose:
 - Remove scattered duplicate CSS rules.
@@ -15,8 +20,9 @@ Purpose:
 
 Important:
 - base.html does not need to change.
-- After replacing files, restart Flask and press Ctrl+F5 in browser.
-- If any page-specific template has custom classes not covered here, add its style only in the correct section, not at the bottom as random overrides.
+- After CSS changes, restart Flask if static caching is suspected and press Ctrl+F5 in browser.
+- If any page-specific template has custom classes not covered here, add its style only in the correct CSS module, not at the bottom of main.css as random overrides.
+- Do not reorder main.css imports unless all major pages are visually checked afterward.
 
 Test Pages:
 - /login

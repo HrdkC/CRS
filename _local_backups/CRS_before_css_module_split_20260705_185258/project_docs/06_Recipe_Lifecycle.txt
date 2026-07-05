@@ -1,0 +1,152 @@
+RECIPE LIFECYCLE
+================
+
+Recipe States
+-------------
+
+DRAFT
+
+REVIEW
+
+APPROVED
+
+RELEASED
+
+Workflow
+--------
+
+Production
+    ↓
+
+Create Draft
+
+    ↓
+
+Technology Review
+
+    ↓
+
+Approve
+
+    ↓
+
+Release
+
+    ↓
+
+Operator Use
+
+Draft Stage
+-----------
+
+Draft recipes may be edited before review.
+
+Draft recipes are used for:
+
+- New recipe creation
+- Copied recipe creation
+- Major production revision work
+
+Review Stage
+------------
+
+Recipe reviewed for:
+
+- Parameter values
+- Phase controls
+- Engineering requirements
+
+Approval Stage
+--------------
+
+Technology approves recipe.
+
+Release Stage
+-------------
+
+Recipe becomes available for production use and PLC download.
+
+Current Released Recipe Edit Policy
+-----------------------------------
+
+Current RELEASED recipe values are editable with audit for operator ease of use.
+
+Historical released versions remain locked and read-only.
+
+This policy intentionally replaces the older rule that every released recipe change must create a new version.
+
+Use direct current-release editing for small production corrections where maintaining the same current production version is operationally simpler.
+
+Use Create Version / production revision for major recipe development, large parameter changes, trial work, or changes that should be reviewed as a new version.
+
+Historical Version Rules
+------------------------
+
+Historical versions may only be:
+
+- Viewed
+- Exported
+- Compared
+- Used as reference
+
+Historical versions must not be:
+
+- Edited directly
+- Overwritten from PLC upload
+- Downloaded as the active production recipe
+- Used for normal production changes
+
+Operator Restrictions
+---------------------
+
+Operators may only:
+
+- View approved/released recipes
+- Download approved/released recipes
+- Upload recipes where permission is allowed by role configuration
+
+Operators cannot:
+
+- Approve recipes
+- Modify templates
+- Modify PLC configuration
+- Modify user permissions
+
+Production / Technology / Admin Editing
+---------------------------------------
+
+Authorized Production, Technology, or Admin users may edit current released recipe values if:
+
+- The recipe is the current production version
+- The value passes min/max validation
+- Old value and new value are captured
+- User, timestamp, reason, machine, stage, and source are audited
+
+Versioning
+----------
+
+Current released recipe values may be edited with audit.
+
+Create Version is used for major revisions and controlled recipe development.
+
+History must remain available.
+
+Historical released versions remain immutable.
+
+Audit Requirements
+------------------
+
+Track:
+
+- User
+- Timestamp
+- Old Value
+- New Value
+- Reason
+- Version
+- Recipe ID
+- Recipe Code
+- Machine
+- Stage
+- Source
+- Current/Historical version flag

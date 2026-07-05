@@ -1,0 +1,31 @@
+Priority 11 - Apollo Corporate Branding Login + Dashboard Header FIX5
+
+Scope:
+- Redesigns CRS login page into a corporate two-panel login screen using approved uploaded Apollo Tyres campaign/BCCI/leadership images.
+- Login page is designed to fit Full HD browser 100% zoom without vertical scrollbar.
+- Adds Apollo/BCCI Lead Sponsor + Har Safar Mein Dum Hai compact branding into authenticated CRS header.
+- Adds optimized static webp images under flask_app/static/images/branding for resource-friendly loading.
+- Uses official Apollo Tyres corporate Vision/Purpose/Values wording:
+  Vision: Driving Progress, Together
+  Purpose: Enabling Excellence
+  Values: Following Our Passion, One Family, Taking Responsibility
+- Adds leadership mini cards for Onkar S Kanwar and Neeraj Kanwar using user-provided image assets and official titles.
+- Keeps YouTube campaign film as an external link instead of embedding video to avoid plant intranet page weight.
+- Reduces page content scale by approx. 2px.
+- Adds consistent action/status color strategy.
+- Includes Engineering Units template fix from FIX4.
+
+Files changed:
+- flask_app/templates/auth/login.html
+- flask_app/templates/base.html
+- flask_app/templates/admin/engineering_units.html
+- flask_app/static/css/main.css
+- flask_app/static/js/main.js
+- flask_app/static/images/branding/*.webp
+
+Test:
+1. Restart Flask.
+2. Hard refresh browser (Ctrl + F5).
+3. Open /login at 100% zoom and verify no vertical scrollbar on Full HD.
+4. Login and verify header shows campaign branding.
+5. Check /, /recipes, /stages, /audit-archive, /auto-logout-settings, /engineering-units.

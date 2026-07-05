@@ -1,0 +1,25 @@
+Priority 11 UI Professional Compact FIX4
+Date: 2026-06-24
+
+Purpose
+- Fix /engineering-units 500 caused by missing Jinja endif in engineering_units.html.
+- Rework CRS CSS to a compact professional Full HD layout with controlled font sizes and spacing.
+- Keep login page visible in one browser page at 100% zoom without vertical scroll on typical Full HD screens.
+- Add Apollo Tyres branded login presentation with BBCI Lead Sponsor and Har Safar Mein Dum Hai text badges.
+- Strengthen action/status color strategy for operator-friendly visual separation.
+
+Files Changed
+- flask_app/templates/admin/engineering_units.html
+- flask_app/templates/auth/login.html
+- flask_app/static/css/main.css
+- flask_app/static/js/main.js
+
+Notes
+- No backend logic is changed in this package.
+- Login background uses CSS gradient and approved existing Apollo logo. Optional official campaign image assets can later be placed in static/images and wired in CSS if approved by plant/brand owner.
+- Browser security does not allow pulling workstation image or local branding file automatically; assets must be stored in flask_app/static/images.
+
+Validation
+- Parse all Jinja templates: passed.
+- /engineering-units should no longer throw TemplateSyntaxError.
+- Check /login, /, /recipes, /stages, /audit-archive, /auto-logout-settings, /active-sessions, /recipe-editor/download-preparation/8.

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Phase Control
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    {% set stage_upper = (recipe.stage_type or "")|upper|replace(" ", "_") %}
+    {% set is_second_stage_phase = (stage_upper in ["SECOND_STAGE", "SECONDSTAGE", "SS"]) or (phase_groups|length >= 3) %}
+    {% set inline_edit_mode = can_edit_phase_control %}
+
+    <div class="workbench-hero">
+
+        <div class="workbench-title">
+
+            <span class="section-kicker">
+                Production Sequence
+            </span>
+
+            <h1>
+                Phase Control
+            </h1>
+
+            <p>
+                {{ recipe.recipe_code }}
+                <span>|</span>
+                {{ recipe.recipe_name }}
+                <span>|</span>
+                {{ recipe.machine_code }} / {{ recipe.stage_type }}
+            </p>
+
+        </div>
+
+        <div class="workbench-actions">
+
+            <a
+                href="/recipe-editor/{{ recipe.id }}"
+                class="crs-btn crs-btn-soft"
+            >
+                Editor
+            </a>
+
+            <a
+                href="/recipe-editor/versions/{{ recipe.id }}"
+                class="crs-btn crs-btn-soft"
+            >
+                Versions
+            </a>
+
+            <a
+                href="/recipe-editor/status-history/{{ recipe.id }}"
+                class="crs-btn crs-btn-soft"
+            >
+                Status History
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="metric-grid">
+
+        <div class="metric-card">
+            <span class="metric-label">Recipe</span>
+            <strong>{{ recipe.recipe_code }}</strong>
+            <small>Recipe ID {{ recipe.id }}</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Version</span>
+            <strong>V{{ recipe.version }}</strong>
+            <small>{{ recipe.version_usage_status }}</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong>{{ recipe.status }}</strong>
+            <small>Lifecycle state</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Phase Rows</span>
+            <strong>{{ phase_rows|length }}</strong>
+            <small>Configured control rows</small>
+        </div>
+
+    </div>
+
+    {% if not can_edit_phase_control %}
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Historical Version Lock</span>
+            <span class="status-badge status-warning">Read Only</span>
+        </div>
+        <p>
+            Historical released recipe phase controls are locked. Open the
+            current production version to make changes.
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="workbench-card data-workbench">
+
+        <div class="panel-heading table-heading">
+            <div>
+                <span>
+                    Phase Control Rows
+                    <span
+                        class="info-hint"
+                        title="Only phase options configured for this recipe machine/stage and phase group are available."
+                    >?</span>
+                </span>
+            </div>
+
+            <div class="compact-actions">
+                {% if inline_edit_mode %}
+                <span class="status-badge status-success">Inline Edit</span>
+                {% else %}
+                <span class="status-badge status-neutral">Read Only</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="POST">
+
+            {% if phase_groups %}
+            <div class="phase-control-board {% if is_second_stage_phase %}phase-board-ss{% else %}phase-board-fs{% endif %}">
+
+                {% for group in phase_groups %}
+                <section class="phase-control-column">
+                    <div class="phase-control-column-header">
+                        <strong>{{ group.name }}</strong>
+                        {% if inline_edit_mode %}
+                        <span class="status-badge status-info">{{ recipe.stage_type }}</span>
+                        {% endif %}
+                    </div>
+
+                    {% if inline_edit_mode %}
+                    <div class="phase-control-row-header {% if is_second_stage_phase %}phase-control-row-header-ss{% endif %}">
+                        <span>Line</span>
+                        <span>Phase Control</span>
+                        {% if not is_second_stage_phase %}
+                        <span>Stop</span>
+                        <span>Position</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% for row in group.rows %}
+                    {% set is_empty_phase = (row.phase_control_name or "")|upper == "EMPTY PHASE" %}
+                    {% if inline_edit_mode %}
+                    <div class="phase-control-slot phase-control-slot-edit {% if is_second_stage_phase %}phase-control-slot-edit-ss{% endif %} {% if is_empty_phase %}phase-control-slot-empty{% endif %}">
+                        <span class="tag-pill">{{ row.line_no }}</span>
+                        <select
+                            name="phase_control_id_{{ row.id }}"
+                            {% if not can_edit_phase_control %}
+                            disabled
+                            {% endif %}
+                        >
+                            {% for phase in group.options %}
+                            <option
+                                value="{{ phase.id }}"
+                                {% if row.phase_control_id == phase.id %}
+                                selected
+                                {% endif %}
+                            >
+                                {{ phase.phase_control_name|upper }}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                        {% if is_second_stage_phase %}
+                        <input type="hidden" name="stop_option_{{ row.id }}" value="{{ row.stop_option or 'No' }}">
+                        <input type="hidden" name="position_option_{{ row.id }}" value="{{ row.position_option or 'No' }}">
+                        {% else %}
+                        <select
+                            name="stop_option_{{ row.id }}"
+                            {% if not can_edit_phase_control %}
+                            disabled
+                            {% endif %}
+                        >
+                            <option value="No" {% if row.stop_option == "No" %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if row.stop_option == "Yes" %}selected{% endif %}>Yes</option>
+                        </select>
+
+                        <select
+                            name="position_option_{{ row.id }}"
+                            {% if not can_edit_phase_control %}
+                            disabled
+                            {% endif %}
+                        >
+                            <option value="No" {% if row.position_option == "No" %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if row.position_option == "Yes" %}selected{% endif %}>Yes</option>
+                        </select>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="phase-control-display-cell {% if is_empty_phase %}phase-control-display-empty{% endif %}">
+                        <span class="phase-display-line">{{ row.line_no }}</span>
+                        <strong>{{ row.phase_control_name|upper }}</strong>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </section>
+                {% endfor %}
+
+            </div>
+            {% else %}
+            <div class="empty-state">
+                No phase-control rows configured for this recipe.
+            </div>
+            {% endif %}
+
+            <div class="form-action-row">
+
+                {% if inline_edit_mode %}
+                <button
+                    type="submit"
+                    class="crs-btn crs-btn-primary"
+                >
+                    Save Phase Control
+                </button>
+                {% endif %}
+
+                <a
+                    href="/recipe-editor/{{ recipe.id }}"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Back To Editor
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+{% endblock %}

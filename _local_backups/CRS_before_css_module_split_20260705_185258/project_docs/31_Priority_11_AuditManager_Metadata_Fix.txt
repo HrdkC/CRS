@@ -1,0 +1,22 @@
+# Priority 11 - AuditManager Metadata Fix
+
+## Reason
+Priority 11 login/session hardening passes client metadata into AuditManager.log_event:
+- user_agent
+- forwarded_for
+- request_host
+
+The running project had an older database/audit_manager.py that did not accept these arguments, causing:
+
+TypeError: AuditManager.log_event() got an unexpected keyword argument 'user_agent'
+
+## Fix
+Replace database/audit_manager.py with the updated metadata-compatible AuditManager.
+
+## Expected Result
+Login, active-session blocking, viewer role, and client metadata audit logging work without TypeError.
+
+## Test
+Run Flask and login again. Then run:
+
+python -c 'import sqlite3; conn=sqlite3.connect("database\\recipe.db"); conn.row_factory=sqlite3.Row; cur=conn.cursor(); rows=cur.execute("SELECT id, username, role, action, change_source, client_ip, workstation_name, request_host, user_agent, timestamp FROM audit_log ORDER BY id DESC LIMIT 5").fetchall(); print([dict(r) for r in rows]); conn.close()'

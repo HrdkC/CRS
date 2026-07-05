@@ -1,0 +1,17 @@
+CRS Audit History - Old/New Value Fit and Wrap Fix
+Date: 2026-07-05
+
+Fixes:
+- Gives Old → New column 22% of available table width.
+- Changes old/new values from side-by-side flex items to vertically stacked rows.
+- Adds compact OLD and NEW labels.
+- Wraps long identifiers and text within the full column width.
+- Limits each value to a three-line preview to prevent oversized audit rows.
+- Preserves the complete old/new value in the existing hover tooltip.
+- Avoids character-by-character vertical wrapping.
+
+Apply:
+Expand-Archive -Path .\CRS_Audit_Old_New_Value_Fit_Wrap_FIX_PATCH_ONLY_050726.zip -DestinationPath . -Force
+
+Refresh:
+Ctrl + F5

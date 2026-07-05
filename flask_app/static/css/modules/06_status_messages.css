@@ -1,0 +1,61 @@
+/*
+ * 06_status_messages.css
+ * Status badges, flash messages, session alert basics.
+ * Cascade order is controlled by flask_app/static/css/main.css.
+ */
+
+/* 09. Status badges + messages */
+.status-badge,
+.status-pill { display: inline-flex; align-items: center; justify-content: center; min-height: 23px; padding: 4px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 900; line-height: 1; text-transform: uppercase; white-space: nowrap; border: 1px solid transparent; }
+.status-success,
+.status-active,
+.status-ready,
+.status-released { background: var(--success-bg); color: var(--success); border-color: #bbf7d0; }
+.status-warning,
+.status-draft,
+.status-review,
+.status-pending { background: var(--warning-bg); color: var(--warning); border-color: #fde68a; }
+.status-danger,
+.status-disabled,
+.status-blocked,
+.status-failed,
+.status-error { background: var(--danger-bg); color: var(--danger); border-color: #fecaca; }
+.status-info,
+.status-current,
+.status-running,
+.status-approved { background: var(--info-bg); color: var(--info); border-color: #bfdbfe; }
+.status-neutral,
+.status-history,
+.status-test { background: var(--neutral-bg); color: var(--neutral); border-color: #d1d5db; }
+.flash-stack { display: grid; gap: 9px; margin: 0 0 12px; }
+.flash-message { display: flex; align-items: flex-start; gap: 10px; padding: 11px 13px; border-radius: var(--radius-md); border: 1px solid transparent; box-shadow: var(--shadow-sm); }
+.flash-icon { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; min-width: 24px; border-radius: 50%; font-weight: 900; font-size: 13px; }
+.flash-title { font-size: 10.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
+.flash-text { font-size: 12.5px; font-weight: 650; }
+.flash-success { background: #ecfdf5; border-color: #bbf7d0; color: #166534; }
+.flash-success .flash-icon { background: #bbf7d0; color: #166534; }
+.flash-warning { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.flash-warning .flash-icon { background: #facc15; color: #713f12; }
+.flash-danger { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+.flash-danger .flash-icon { background: #ef4444; color: #fff; }
+.flash-info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+.flash-info .flash-icon { background: #bfdbfe; color: #1d4ed8; }
+.flash-message-neutral { background: #f8fafc; border-color: #e2e8f0; color: #334155; }
+.flash-message-neutral .flash-icon { background: #e2e8f0; color: #334155; }
+
+/* 10. Session countdown + login attempt alerts */
+.session-countdown { margin-top: 7px; display: inline-flex; align-items: center; gap: 5px; min-height: 27px; padding: 4px 9px; border-radius: 999px; background: var(--info-bg); border: 1px solid #bfdbfe; color: var(--info); font-size: 11px; font-weight: 900; }
+.session-countdown-label { text-transform: uppercase; letter-spacing: .04em; }
+#session-countdown-value { font-variant-numeric: tabular-nums; }
+.session-countdown-warning { background: var(--warning-bg); border-color: #fde68a; color: var(--warning); }
+.session-countdown-danger { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); animation: sessionCountdownPulse 1s ease-in-out infinite; }
+@keyframes sessionCountdownPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
+.login-attempt-alert-stack { width: 100%; display: grid; gap: 9px; margin: 0 0 13px; }
+.login-attempt-alert { display: grid; grid-template-columns: 36px minmax(0,1fr) auto; gap: 11px; align-items: center; min-height: 62px; padding: 10px 12px; border: 1px solid #facc15; border-left: 4px solid #d97706; border-radius: var(--radius-md); background: #fffbeb; color: #78350f; box-shadow: 0 10px 22px rgba(120,53,15,0.07); }
+.login-attempt-alert-icon { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background: #fef3c7; color: #b45309; font-weight: 900; }
+.login-attempt-alert-body { font-size: 12px; line-height: 1.35; }
+.login-attempt-alert-body strong { display: block; font-size: 12.5px; margin-bottom: 2px; }
+.login-attempt-alert-meta { color: #92400e; font-size: 11.5px; }
+.login-attempt-alert-form { margin: 0 !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; background: transparent !important; }
+.login-attempt-alert-form button { min-height: 32px; padding: 7px 14px; box-shadow: none; }
+

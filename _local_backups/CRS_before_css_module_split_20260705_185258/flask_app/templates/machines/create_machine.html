@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Machine
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Machine Registry</span>
+            <h1>Create Machine</h1>
+            <p>Machine code is globally unique and stages are created automatically.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/machines" class="crs-btn crs-btn-soft">Back To Machines</a>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="workbench-card">
+        <div class="panel-heading"><span>Error</span><span class="status-badge status-danger">Blocked</span></div>
+        <p>{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Machine Details</span>
+            <span class="status-badge status-info">Auto Stages</span>
+        </div>
+
+        {% if not families %}
+        <div class="empty-state-card">
+            <div>
+                <strong>TBM family is required before creating a machine.</strong>
+                <p class="muted-text">
+                    Create a family first. After machine creation, CRS will automatically create First Stage and Second Stage records.
+                </p>
+            </div>
+            <a href="/families/create" class="crs-btn crs-btn-primary">Create Family</a>
+        </div>
+        {% else %}
+        <form method="POST" class="parameter-edit-form">
+            <label>
+                <span>Machine Code</span>
+                <input type="text" name="machine_code" required>
+            </label>
+            <label>
+                <span>TBM Family</span>
+                <select name="family_id" required>
+                    {% for family in families %}
+                    <option value="{{ family.id }}">{{ family.family_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Description</span>
+                <input type="text" name="description">
+            </label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Create Machine</button>
+                <a href="/machines" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+
+</section>
+
+{% endblock %}

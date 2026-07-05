@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RSLogix5000Content SchemaRevision="1.0" SoftwareRevision="31.00" TargetName="Controller Tags" TargetType="Controller" ContainsContext="true" Owner="CRS" ExportDate="Sun Jun 28 04:00:00 2026" ExportOptions="References NoRawData L5KData DecoratedData Context">
+  <Controller Use="Context" Name="CRS_TAG_IMPORT_CONTEXT">
+    <Tags Use="Context">
+      <Tag Name="CRS_Recipe_Data" TagType="Base" DataType="REAL" Radix="Float" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[CRS source recipe buffer. CRS writes/restores selected DB recipe here before PLC download.]]></Description>
+        <Dimensions Dimension="150"/>
+      </Tag>
+      <Tag Name="CRS_Test_Recipe_Data" TagType="Base" DataType="REAL" Radix="Float" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[PLC destination/source test recipe buffer. Download writes here; Upload reads here.]]></Description>
+        <Dimensions Dimension="150"/>
+      </Tag>
+      <Tag Name="CRS_Recipe_Code" TagType="Base" DataType="STRING" Radix="ASCII" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Selected CRS recipe code for operator/PLC visibility.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Download_Enable" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[PLC/maintenance permissive. Must be TRUE before CRS Download To PLC.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Test_Machine_In_Manual" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Temporary CRS manual-mode permissive for test only. Set TRUE only in safe manual/test condition.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Download_Request" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[CRS sets this TRUE during Download To PLC handshake.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Download_Complete" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[PLC/test handshake complete bit. CRS waits for this during Download To PLC.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Download_Ack" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional CRS acknowledgement bit after download handshake.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Download_Busy" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional PLC/test busy bit for download handshake diagnostics.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Download_Error" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional PLC/test error bit for download handshake diagnostics.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Download_Result" TagType="Base" DataType="DINT" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional numeric result code. 1 can be used for test success.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Download_OS" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional one-shot/storage bit if PLC ladder is added later.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Last_Download_Time" TagType="Base" DataType="STRING" Radix="ASCII" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional last download timestamp string written by CRS/PLC test logic.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Last_Download_User" TagType="Base" DataType="STRING" Radix="ASCII" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional last download username string written by CRS/PLC test logic.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Test_Recipe_No" TagType="Base" DataType="DINT" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional simple test recipe number tag, matching existing P15 FS test setup.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Test_Length" TagType="Base" DataType="REAL" Radix="Float" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional simple test length tag, matching existing P15 FS test setup.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Test_Width" TagType="Base" DataType="REAL" Radix="Float" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional simple test width tag, matching existing P15 FS test setup.]]></Description>
+      </Tag>
+      <Tag Name="CRS_Test_Speed" TagType="Base" DataType="REAL" Radix="Float" Constant="false" ExternalAccess="Read/Write">
+        <Description><![CDATA[Optional simple test speed tag, matching existing P15 FS test setup.]]></Description>
+      </Tag>
+    </Tags>
+  </Controller>
+</RSLogix5000Content>

@@ -1,0 +1,305 @@
+PROJECT DECISIONS LOG
+=====================
+
+Decision 001
+------------
+
+Machine Ownership
+
+Decision:
+
+Machine belongs to one TBM Family.
+
+Reason:
+
+Physical machine identity is unique.
+
+Examples:
+
+P03 Family_A
+
+Valid
+
+P03 Family_B
+
+Invalid
+
+--------------------------------------------------
+
+Decision 002
+------------
+
+Machine Code Standardization
+
+Decision:
+
+Machine codes are case-insensitive.
+
+Examples:
+
+P03 = p03
+
+Reason:
+
+Avoid duplicate machine records.
+
+--------------------------------------------------
+
+Decision 003
+------------
+
+Stage Creation
+
+Decision:
+
+Stages created automatically.
+
+FIRST_STAGE
+
+SECOND_STAGE
+
+Reason:
+
+All PCR TBMs have both stages.
+
+Manual stage creation unnecessary.
+
+--------------------------------------------------
+
+Decision 004
+------------
+
+Template Ownership
+
+Decision:
+
+Templates belong to:
+
+Machine + Stage
+
+Reason:
+
+PLC mappings differ by machine and stage.
+
+--------------------------------------------------
+
+Decision 005
+------------
+
+Recipe Structure
+
+Decision:
+
+Recipes store values.
+
+Templates define structure.
+
+Reason:
+
+Allows template expansion without redesign.
+
+--------------------------------------------------
+
+Decision 006
+------------
+
+Recipe Validation
+
+Decision:
+
+Entire stage recipe must pass validation.
+
+No partial download allowed.
+
+Reason:
+
+Prevent incomplete recipe downloads.
+
+--------------------------------------------------
+
+Decision 007
+------------
+
+Phase Controls
+
+Decision:
+
+Dropdown selection only.
+
+No free text entry.
+
+Reason:
+
+Reduce operator mistakes.
+
+--------------------------------------------------
+
+Decision 008
+------------
+
+Time Handling
+
+Decision:
+
+Store UTC
+
+Display IST
+
+Reason:
+
+Consistent database handling.
+
+--------------------------------------------------
+
+Decision 009
+------------
+
+Database Strategy
+
+Decision:
+
+SQLite for development.
+
+MySQL for production.
+
+Future MSSQL support.
+
+Reason:
+
+Flexibility and portability.
+
+--------------------------------------------------
+
+Decision 010
+------------
+
+Workstation Recovery
+
+Decision:
+
+Application should automatically create:
+
+Tables
+
+Columns
+
+Settings
+
+Default records
+
+Reason:
+
+Minimize recovery effort.
+
+--------------------------------------------------
+
+Decision 011
+------------
+
+User Experience
+
+Decision:
+
+System must help operators.
+
+System must not create additional burden.
+
+Reason:
+
+Operator adoption and usability.
+
+--------------------------------------------------
+
+Decision 012
+------------
+
+Recipe Creation
+
+Decision:
+
+Support both:
+
+Manual Recipe Creation
+
+Automatic Recipe Creation
+
+Reason:
+
+Production must continue even if automatic generation is unavailable.
+
+--------------------------------------------------
+
+Decision 013
+------------
+
+PLC Registry
+
+Decision:
+
+PLC belongs to Machine + Stage.
+
+Reason:
+
+Each stage has independent PLC logic.
+
+--------------------------------------------------
+
+Decision 014
+------------
+
+Traceability
+
+Decision:
+
+Track:
+
+User
+
+Timestamp
+
+Old Value
+
+New Value
+
+Reason
+
+Version
+
+Machine
+
+Stage
+
+Reason:
+
+Support root cause analysis and quality investigations.
+
+--------------------------------------------------
+
+Decision 015
+------------
+
+Current Released Recipe Editing
+
+Decision:
+
+Current RELEASED recipe values are editable with audit.
+
+Historical released versions remain locked and read-only.
+
+Create Version remains available for major revisions, trial work, and controlled recipe development, but it is not mandatory for every small current-production adjustment.
+
+Reason:
+
+The system must help operators and reduce unnecessary operational burden while maintaining traceability.
+
+Small production corrections should be possible directly on the current production version when authorized, validated, and audited.
+
+Safety Rules:
+
+- Only the current production released version can be edited.
+- Historical released versions must not be edited.
+- Min/max validation is mandatory.
+- Old value and new value must be audited.
+- User, timestamp, reason, machine, stage, and source must be captured.
+- PLC upload overwrite must follow the same audit and historical-lock rules.
+

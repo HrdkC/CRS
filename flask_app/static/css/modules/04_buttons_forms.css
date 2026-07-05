@@ -1,0 +1,89 @@
+/*
+ * 04_buttons_forms.css
+ * Buttons, action links, and base form controls.
+ * Cascade order is controlled by flask_app/static/css/main.css.
+ */
+
+/* 07. Buttons, action links, forms */
+button,
+.btn,
+.crs-btn,
+.row-action,
+.primary-action,
+.secondary-action,
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 8px 18px;
+    font-size: 12.5px;
+    font-weight: 850;
+    line-height: 1.15;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+}
+button:hover,
+.btn:hover,
+.crs-btn:hover,
+.row-action:hover,
+.primary-action:hover,
+.secondary-action:hover { transform: translateY(-1px); }
+button,
+.btn-primary,
+.crs-btn-primary,
+.primary-action { color: #fff; background: var(--apollo-violet); box-shadow: 0 7px 15px rgba(111,45,168,0.18); }
+button:hover,
+.btn-primary:hover,
+.crs-btn-primary:hover,
+.primary-action:hover { color: #fff; background: var(--apollo-violet-dark); }
+.btn-secondary,
+.crs-btn-soft,
+.secondary-action { color: var(--ink-800); background: #f1f5f9; border-color: var(--line-200); box-shadow: none; }
+.btn-secondary:hover,
+.crs-btn-soft:hover,
+.secondary-action:hover { color: var(--ink-900); background: #e8eef6; }
+.row-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.row-action { min-height: 31px; padding: 7px 17px; border-radius: 999px; box-shadow: none; font-size: 12px; }
+.row-action.primary,
+.row-action.edit { background: #2563eb; color: #fff; }
+.row-action.open,
+.row-action.info { background: #1d4ed8; color: #fff; }
+.row-action.buffer,
+.row-action.violet { background: var(--apollo-violet); color: #fff; }
+.row-action.version,
+.row-action.neutral { background: #475569; color: #fff; }
+.row-action.history,
+.row-action.audit,
+.row-action.warning { background: #d97706; color: #fff; }
+.row-action.success,
+.row-action.copy,
+.row-action.enable { background: #15803d; color: #fff; }
+.row-action.danger,
+.row-action.disable,
+.row-action.delete { background: #dc2626; color: #fff; }
+button:disabled,
+.operation-button:disabled,
+.disabled { background: var(--danger-bg) !important; color: var(--danger) !important; border-color: #fecaca !important; cursor: not-allowed !important; opacity: .8; box-shadow: none !important; transform: none !important; }
+form { margin: 0; }
+label { display: inline-block; color: var(--ink-700); font-size: 12.5px; font-weight: 800; margin-bottom: 4px; }
+input,
+select,
+textarea { width: 100%; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line-300); border-radius: var(--radius-sm); background: #fff; color: var(--ink-900); font: 13px var(--font-sans); outline: none; }
+input:focus,
+select:focus,
+textarea:focus { border-color: var(--apollo-violet); box-shadow: 0 0 0 3px rgba(111,45,168,0.13); }
+textarea { min-height: 68px; resize: vertical; }
+.form-card,
+form.form-card { background: var(--surface); border: 1px solid var(--line-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 16px; }
+.form-grid { display: grid; gap: 11px; }
+.compact-form-grid { grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); }
+.two-column-form-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.form-span-2 { grid-column: 1 / -1; }
+.parameter-edit-form { display: grid; gap: 14px; }
+.parameter-edit-form label { display: grid; gap: 6px; margin: 0; }
+.phase-master-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 13px; align-items: start; }
+

@@ -1,0 +1,111 @@
+{
+  "started_at": "2026-06-22T14:52:55",
+  "recipe_id": 6,
+  "plc_id": 3,
+  "plc_ip": "172.20.56.169",
+  "tests": [
+    {
+      "name": "manual_interlock_block",
+      "expected": "Download blocked when CRS_Test_Machine_In_Manual is false.",
+      "manual_after_forced_false": false,
+      "operation_status": "BLOCKED",
+      "operation_success": false,
+      "current_step": "Recipe usage blocked",
+      "errors": [
+        "Historical released recipe cannot use PLC buffer operations. Open the current production version."
+      ],
+      "destination_changed": false,
+      "destination_mismatch_count": 0,
+      "destination_mismatch_samples": []
+    },
+    {
+      "name": "invalid_value_block",
+      "expected": "Download blocked when CRS_Recipe_Data contains out-of-range value.",
+      "injected_tag": "CRS_Recipe_Data[35]",
+      "injected_value": 111.0,
+      "invalid_readback": 111.0,
+      "operation_status": "BLOCKED",
+      "operation_success": false,
+      "current_step": "Recipe usage blocked",
+      "errors": [
+        "Historical released recipe cannot use PLC buffer operations. Open the current production version."
+      ],
+      "destination_changed": false,
+      "destination_mismatch_count": 0,
+      "destination_mismatch_samples": []
+    }
+  ],
+  "restores": [
+    {
+      "name": "manual_bit_restore",
+      "restored_value": true,
+      "expected_value": true,
+      "ok": true
+    },
+    {
+      "name": "source_invalid_value_restore",
+      "restored_index": 35,
+      "restored_value": 90.0,
+      "expected_value": 90.0,
+      "source_full_mismatch_count": 0,
+      "source_full_mismatch_samples": [],
+      "ok": true
+    }
+  ],
+  "exports": {
+    "total_tags": 3038,
+    "crs_recipe_manual_related_tags": 77,
+    "json_path": "study_exports\\plc_online_tags\\P15_FS_PLC_online_tags_20260622_145344.json",
+    "csv_path": "study_exports\\plc_online_tags\\P15_FS_PLC_online_tags_20260622_145344.csv",
+    "summary_path": "study_exports\\plc_online_tags\\P15_FS_PLC_live_safety_test_20260622_145344.json"
+  },
+  "final_state": {
+    "manual": true,
+    "source_30_38": [
+      1425.0,
+      1242.0,
+      1248.0,
+      1465.0,
+      1471.0,
+      90.0,
+      90.0,
+      90.0
+    ],
+    "dest_30_38": [
+      1425.0,
+      1242.0,
+      1248.0,
+      1465.0,
+      1471.0,
+      90.0,
+      90.0,
+      90.0
+    ]
+  },
+  "initial_state": {
+    "manual_original": true,
+    "source_index_35": 90.0,
+    "dest_index_35": 90.0,
+    "source_30_38": [
+      1425.0,
+      1242.0,
+      1248.0,
+      1465.0,
+      1471.0,
+      90.0,
+      90.0,
+      90.0
+    ],
+    "dest_30_38": [
+      1425.0,
+      1242.0,
+      1248.0,
+      1465.0,
+      1471.0,
+      90.0,
+      90.0,
+      90.0
+    ]
+  },
+  "completed_at": "2026-06-22T14:53:44"
+}

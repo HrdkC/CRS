@@ -1,0 +1,40 @@
+# Virtual environment
+venv/
+
+# Local database
+database/recipe.db
+*.db
+
+# Environment / secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code local settings
+.vscode/
+**/.vscode/
+
+# Debug logs
+debug.log
+*.log
+
+# Local backup folders
+local_backups/
+study_exports/latest_local_backup/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+
+# Virtual environment
+venv/
+.venv/
+
+# Local databases
+*.db
+database/recipe.db
+
+# Secrets
+.env

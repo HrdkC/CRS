@@ -1,0 +1,78 @@
+CENTRALIZED RECIPE MANAGEMENT SYSTEM
+FOR PCR TYRE BUILDING MACHINES (TBM)
+
+PROJECT VISION
+==============
+
+Purpose
+-------
+
+Develop an industrial-grade Centralized Recipe Management System for PCR Tyre Building Machines (TBMs).
+
+The system shall provide:
+
+- Centralized recipe storage
+- Recipe version control
+- Recipe approval workflow
+- PLC recipe download/upload
+- Audit trail
+- User management
+- Template management
+- Phase control management
+- Historical analysis support
+- Future automatic recipe generation
+
+Primary Objective
+-----------------
+
+Reduce operator workload while increasing process traceability, consistency, quality control, and engineering visibility.
+
+Core Philosophy
+---------------
+
+The system should help operators.
+
+The system should never create additional operational burden.
+
+The system should be simple enough for operators while providing engineering-level traceability.
+
+Technology Stack
+----------------
+
+Frontend:
+- HTML
+- CSS
+- JavaScript
+
+Backend:
+- Python
+- Flask
+
+Database:
+- SQLite (Development)
+- MySQL (Production Preferred)
+- MSSQL (Future Support)
+
+PLC Communication:
+- pycomm3
+- EtherNet/IP
+- Allen Bradley ControlLogix
+
+Deployment
+----------
+
+Central workstation deployed on plant intranet.
+
+Accessible through browser by authorized users.
+
+Future Vision
+-------------
+
+The system should evolve into a lightweight industrial platform similar in concept to:
+
+- FactoryTalk View SE
+- FactoryTalk AssetCentre
+- RecipePro
+- Custom MES Recipe Systems
+
+while remaining simple, maintainable, and aligned with existing PCR TBM workflows.

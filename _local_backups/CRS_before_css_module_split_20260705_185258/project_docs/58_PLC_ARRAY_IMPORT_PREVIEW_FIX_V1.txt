@@ -1,0 +1,54 @@
+CRS V6.5.1 - PLC 1D Array Import Preview Fix
+=============================================
+
+Purpose
+-------
+Fix Preview PLC Array on /plc-array-import/P15/SS.
+
+Problem fixed
+-------------
+The preview result dictionary used a key named "values". In the Jinja template,
+result.values was interpreted as the Python dict values() method instead of the
+PLC value list. After pressing Preview PLC Array, this caused a 500 Internal
+Server Error.
+
+Approved P15 Second Stage PLC array standard
+--------------------------------------------
+CRS_Recipe_Data       REAL[150]
+CRS_Test_Recipe_Data  REAL[150]
+Valid indexes: 0 to 149
+
+Do not preview/import CRS_Recipe_Code. It is STRING, not 1D recipe data.
+
+Included changes
+----------------
+1. Fixed preview template to use result["values"] instead of result.values.
+2. Added result error/warning display on the preview page.
+3. Set default P15/SS import tag to CRS_Recipe_Data and end index to 149.
+4. Added quick select buttons for CRS_Recipe_Data and CRS_Test_Recipe_Data.
+5. Added friendly validation to block known non-array tags such as CRS_Recipe_Code.
+6. Added P15/SS REAL[150] range check so indexes above 149 are blocked.
+7. Preview is now allowed even if parameter master already exists; Build remains blocked.
+8. Added route-level exception protection so preview errors show on page instead of 500.
+
+Patch files
+-----------
+database/plc_1d_array_recipe_builder.py
+flask_app/routes/plc_array_import_routes.py
+flask_app/templates/plc_array_import/import_1d_array.html
+project_docs/58_PLC_ARRAY_IMPORT_PREVIEW_FIX_V1.txt
+
+Apply
+-----
+From project root:
+    Expand-Archive -Path .\CRS_V6.5.1_PLC_Array_Import_Preview_Fix_PATCH_ONLY_280626.zip -DestinationPath . -Force
+    python app.py
+
+Test
+----
+1. Open /plc-array-import/P15/SS.
+2. Confirm default tag is CRS_Recipe_Data.
+3. Confirm End Index is 149.
+4. Click Preview PLC Array.
+5. If PLC tag exists and PLC is online, 150 rows should preview.
+6. If wrong tag is selected, page should show red error message instead of 500.

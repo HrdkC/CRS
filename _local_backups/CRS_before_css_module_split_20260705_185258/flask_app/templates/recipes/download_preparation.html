@@ -1,0 +1,2317 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe PLC Buffer Operations
+{% endblock %}
+
+{% block content %}
+
+<style>
+
+.buffer-shell {
+    display: grid;
+    gap: 16px;
+}
+
+.buffer-hero {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 14px;
+    align-items: stretch;
+}
+
+.buffer-panel {
+    background: #ffffff;
+    border: 1px solid #e5e0ec;
+    border-radius: 8px;
+    box-shadow: 0 12px 30px rgba(60, 30, 90, 0.08);
+    padding: 16px;
+}
+
+.buffer-header-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: end;
+}
+
+.buffer-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.recipe-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.strip-item {
+    border-left: 3px solid #6f2dbd;
+    background: #faf8fd;
+    padding: 10px 12px;
+    min-height: 62px;
+}
+
+.strip-label {
+    color: #5e5870;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.strip-value {
+    color: #162033;
+    font-size: 17px;
+    font-weight: 800;
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.status-ready {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+.status-blocked {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.status-neutral {
+    background: #eef2f7;
+    color: #253044;
+}
+
+.operation-form {
+    box-shadow: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.top-controls {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.button-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.operation-button {
+    border: 0;
+    border-radius: 8px;
+    padding: 13px 12px;
+    font-size: 14px;
+    font-weight: 800;
+    min-height: 48px;
+    cursor: pointer;
+}
+
+.operation-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    filter: grayscale(0.35);
+}
+
+.btn-restore {
+    background: #f0ebff;
+    color: #4a178c;
+}
+
+.btn-save {
+    background: #eaf6ff;
+    color: #0f5782;
+}
+
+.btn-download {
+    background: #6f2dbd;
+    color: #ffffff;
+}
+
+.btn-upload {
+    background: #eaf7ef;
+    color: #146236;
+}
+
+.operation-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.flow-map {
+    display: grid;
+    gap: 8px;
+}
+
+.flow-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px;
+    align-items: center;
+    color: #3f3a4f;
+    font-size: 13px;
+}
+
+.flow-node {
+    background: #f8f6fb;
+    border: 1px solid #e6dff1;
+    border-radius: 7px;
+    padding: 9px 10px;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.flow-arrow {
+    color: #6f2dbd;
+    font-weight: 900;
+}
+
+.tag-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.tag-chip {
+    background: #fbfafc;
+    border: 1px solid #e6e1ed;
+    border-radius: 7px;
+    padding: 9px;
+}
+
+.tag-name {
+    font-weight: 800;
+    color: #1b2333;
+    overflow-wrap: anywhere;
+}
+
+.live-status-panel {
+    display: grid;
+    gap: 12px;
+}
+
+.live-status-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.live-status-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.live-status-group {
+    border: 1px solid #e5e0ec;
+    border-radius: 9px;
+    background: #fbfafc;
+    padding: 10px;
+}
+
+.live-status-group h3 {
+    margin: 0 0 8px;
+    color: #162033;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.live-status-grid {
+    display: grid;
+    gap: 7px;
+}
+
+.live-status-item {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) 106px;
+    gap: 8px;
+    align-items: center;
+    border: 1px solid #e9e3f0;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 8px 9px;
+}
+
+.live-status-item-ok {
+    border-left: 4px solid #16824f;
+}
+
+.live-status-item-bad,
+.live-status-item-missing {
+    border-left: 4px solid #c62828;
+}
+
+.live-status-value {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 58px;
+    border-radius: 999px;
+    padding: 4px 8px;
+    background: #eef2f7;
+    color: #253044;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.live-status-actual {
+    display: grid;
+    gap: 3px;
+}
+
+.live-status-actual span {
+    color: #625a70;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.live-status-item-ok .live-status-value {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+.live-status-item-bad .live-status-value,
+.live-status-item-missing .live-status-value {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.live-status-body strong {
+    display: block;
+    color: #162033;
+    font-size: 13px;
+    line-height: 1.15;
+}
+
+.live-status-body small {
+    display: block;
+    color: #625a70;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+.live-status-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.live-status-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    border: 1px solid #dbe3ee;
+    border-radius: 999px;
+    padding: 3px 7px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 10px;
+    font-weight: 850;
+}
+
+.live-status-item-ok .live-status-state {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.live-status-item-bad .live-status-state,
+.live-status-item-missing .live-status-state {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.tag-purpose {
+    color: #625a70;
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+.metric-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.metric-chip {
+    background: #fbfafc;
+    border: 1px solid #e6e1ed;
+    border-radius: 7px;
+    padding: 9px 10px;
+}
+
+.metric-label {
+    color: #625a70;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.metric-value {
+    color: #162033;
+    font-size: 18px;
+    font-weight: 900;
+    margin-top: 3px;
+}
+
+.history-list {
+    display: grid;
+    gap: 8px;
+}
+
+.history-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1.2fr) 110px 70px minmax(190px, 1fr);
+    gap: 10px;
+    align-items: center;
+    border: 1px solid #ebe6f3;
+    border-radius: 7px;
+    padding: 10px;
+    background: #fbfafc;
+}
+
+.history-title {
+    font-weight: 900;
+    color: #162033;
+}
+
+.progress-card {
+    display: grid;
+    gap: 12px;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+}
+
+.progress-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #162033;
+}
+
+.progress-percent {
+    font-size: 24px;
+    font-weight: 900;
+    color: #6f2dbd;
+}
+
+.progress-track {
+    height: 12px;
+    background: #ebe7f1;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #6f2dbd, #16a085);
+    border-radius: 999px;
+    transition: width 0.35s ease;
+}
+
+.result-success .progress-fill {
+    background: linear-gradient(90deg, #2e7d32, #16a085);
+}
+
+.result-blocked .progress-fill {
+    background: linear-gradient(90deg, #c62828, #e67e22);
+}
+
+.step-list {
+    display: grid;
+    gap: 8px;
+}
+
+.step-item {
+    display: grid;
+    grid-template-columns: 64px 90px 1fr;
+    gap: 10px;
+    align-items: start;
+    border: 1px solid #ebe6f3;
+    border-radius: 7px;
+    padding: 9px 10px;
+    background: #ffffff;
+}
+
+.step-percent {
+    color: #6f2dbd;
+    font-weight: 900;
+}
+
+.step-state {
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.step-ok {
+    color: #1b7f3a;
+}
+
+.step-failed {
+    color: #b71c1c;
+}
+
+.step-message {
+    color: #514b5f;
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+.compact-details {
+    border: 1px solid #e5e0ec;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #ffffff;
+}
+
+.compact-details summary {
+    cursor: pointer;
+    font-weight: 900;
+    color: #4a178c;
+}
+
+.issue-list {
+    margin: 8px 0 0 18px;
+}
+
+.live-progress {
+    display: none;
+}
+
+
+.operation-lock-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(18, 16, 24, 0.58);
+    backdrop-filter: blur(3px);
+    pointer-events: all;
+}
+
+.operation-lock-overlay.is-active {
+    display: flex;
+}
+
+.operation-lock-card {
+    width: min(560px, 96vw);
+    background: #ffffff;
+    border: 1px solid #e5e0ec;
+    border-radius: 14px;
+    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.28);
+    padding: 22px;
+    text-align: center;
+}
+
+.operation-lock-icon {
+    width: 52px;
+    height: 52px;
+    border: 5px solid #eadff8;
+    border-top-color: #6f2dbd;
+    border-radius: 50%;
+    margin: 0 auto 14px;
+    animation: operationSpin 0.9s linear infinite;
+}
+
+.operation-lock-title {
+    color: #172033;
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.operation-lock-text {
+    color: #4d5668;
+    line-height: 1.45;
+    margin-bottom: 14px;
+}
+
+.operation-lock-warning {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 8px;
+    color: #6d4c00;
+    font-weight: 800;
+    padding: 10px 12px;
+    margin-top: 14px;
+}
+
+.operation-lock-progress-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.operation-lock-track {
+    height: 10px;
+    border-radius: 999px;
+    background: #ece7f2;
+    overflow: hidden;
+}
+
+.operation-lock-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #2e7d32, #16a085);
+    transition: width 0.25s ease;
+}
+
+.operation-lock-percent {
+    color: #6f2dbd;
+    font-size: 18px;
+    font-weight: 900;
+    min-width: 54px;
+    text-align: right;
+}
+
+body.operation-running {
+    overflow: hidden;
+}
+
+body.operation-running * {
+    cursor: wait !important;
+}
+
+@keyframes operationSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 900px) {
+    .buffer-header-row,
+    .buffer-hero,
+    .top-controls,
+    .button-row,
+    .recipe-strip,
+    .tag-grid,
+    .metric-strip,
+    .history-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+
+
+<div
+    id="operationLockOverlay"
+    class="operation-lock-overlay"
+    role="alertdialog"
+    aria-modal="true"
+    aria-live="assertive"
+    aria-labelledby="operationLockTitle"
+    aria-describedby="operationLockText"
+>
+    <div class="operation-lock-card">
+        <div class="operation-lock-icon" aria-hidden="true"></div>
+        <div class="operation-lock-title" id="operationLockTitle">
+            PLC Buffer Operation Running
+        </div>
+        <div class="operation-lock-text" id="operationLockText">
+            Please wait. Do not refresh, close, go back, or click another menu until this operation finishes with success or failure.
+        </div>
+        <div class="operation-lock-progress-row">
+            <div class="operation-lock-track">
+                <div class="operation-lock-fill" id="operationLockFill"></div>
+            </div>
+            <div class="operation-lock-percent" id="operationLockPercent">0%</div>
+        </div>
+        <div class="operation-lock-warning">
+            ⚠️ PLC communication is active. Screen is locked to prevent duplicate commands or interrupted handshake.
+        </div>
+    </div>
+</div>
+
+<div class="buffer-shell">
+
+    {% set crs_buffer_tag = operation_context.tags.get("RECIPE_DATA") %}
+    {% set plc_destination_tag = operation_context.tags.get("TEST_RECIPE_DATA") %}
+
+    <div class="page-header">
+
+        <div class="buffer-header-row">
+
+            <div>
+
+                <h1>Recipe PLC Buffer Operations</h1>
+
+                <p>
+                    Database is master. CRS buffer is
+                    <strong>{{ crs_buffer_tag.tag_name if crs_buffer_tag else 'CRS_Recipe_Data' }}</strong>.
+                    PLC destination / running recipe tag is
+                    <strong>{{ plc_destination_tag.tag_name if plc_destination_tag else 'CRS_Test_Recipe_Data / Running_Recipe_Data' }}</strong>
+                    with request/complete handshake. Upload From PLC copies PLC destination values back to CRS buffer;
+                    Recipe Save commits them to database with parameter audit.
+                </p>
+
+            </div>
+
+            <div class="buffer-header-actions">
+
+                <a
+                    href="/recipe-editor/{{ recipe.id }}"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Editor
+                </a>
+
+                <a
+                    href="{{ machine_stage_url('/recipes', context=recipe) }}"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Recipe List
+                </a>
+
+                <a
+                    href="/recipe-editor/versions/{{ recipe.id }}"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Versions
+                </a>
+
+                <a
+                    href="/recipe-editor/status-history/{{ recipe.id }}"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Status History
+                </a>
+
+                <a
+                    href="/recipes/{{ recipe.id }}/phase-control"
+                    class="crs-btn crs-btn-soft"
+                >
+                    Phase Control
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="buffer-hero">
+
+        <div class="buffer-panel">
+
+            <div class="recipe-strip">
+
+                <div class="strip-item">
+                    <div class="strip-label">Recipe</div>
+                    <div class="strip-value">{{ recipe.recipe_code }}</div>
+                </div>
+
+                <div class="strip-item">
+                    <div class="strip-label">Version</div>
+                    <div class="strip-value">V{{ recipe.version }}</div>
+                </div>
+
+                <div class="strip-item">
+                    <div class="strip-label">Status</div>
+                    <div class="strip-value">{{ recipe.status }}</div>
+                </div>
+
+                <div class="strip-item">
+                    <div class="strip-label">Usage</div>
+                    <div class="strip-value">
+                        {% if recipe.version_usage_status == "CURRENT_RELEASED" %}
+                            Current
+                        {% elif recipe.version_usage_status == "HISTORY_RELEASED" %}
+                            Historical
+                        {% elif recipe.version_usage_status == "DRAFT_REVISION" %}
+                            Draft Revision
+                        {% else %}
+                            {{ recipe.version_usage_status }}
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="buffer-panel">
+
+            <div class="progress-header">
+                <div>
+                    <div class="strip-label">Buffer Readiness</div>
+                    <div class="strip-value">
+                        {% if operation_context.status == "READY" %}
+                            <span class="status-pill status-ready">READY</span>
+                        {% else %}
+                            <span class="status-pill status-blocked">NOT READY</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <a
+                    href="/recipe-editor/{{ recipe.id }}"
+                    class="status-pill status-neutral"
+                >
+                    Back To Editor
+                </a>
+            </div>
+
+            {% if operation_context.issues %}
+            <ul class="issue-list">
+                {% for issue in operation_context.issues[:4] %}
+                <li>{{ issue }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="buffer-panel">
+
+        {% if available_plcs %}
+
+        <form
+            method="POST"
+            class="operation-form"
+            id="bufferOperationForm"
+            data-start-url="/recipe-editor/download-preparation/{{ recipe.id }}/start"
+        >
+
+            <input
+                type="hidden"
+                name="selected_action"
+                id="selectedAction"
+                value=""
+            >
+
+            <div class="top-controls">
+
+                <div>
+                    <label>Select PLC</label>
+                    <select name="plc_id" required>
+                        {% for plc in available_plcs %}
+                        <option
+                            value="{{ plc.id }}"
+                            {% if selected_plc_id == plc.id|string %}
+                            selected
+                            {% endif %}
+                        >
+                            {{ plc.plc_name }} - {{ plc.ip_address }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    {% if operation_context.plc %}
+                    <span class="status-pill status-neutral">
+                        {{ operation_context.plc.machine_code }}
+                        /
+                        {{ operation_context.plc.stage_type }}
+                    </span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <div class="button-row">
+
+                <button
+                    class="operation-button btn-restore"
+                    type="submit"
+                    name="action"
+                    value="recipe_restore"
+                    data-loading-title="Recipe Restore"
+                    {% if not can_download_recipe %}
+                    disabled
+                    {% endif %}
+                >
+                    Recipe Restore
+                </button>
+
+                <button
+                    class="operation-button btn-save"
+                    type="submit"
+                    name="action"
+                    value="recipe_save"
+                    data-loading-title="Recipe Save"
+                    data-confirm-message="Recipe Save will update database values from CRS_Recipe_Data and create parameter-level audit rows for every changed value. Continue?"
+                    {% if not can_edit_recipe %}
+                    disabled
+                    {% endif %}
+                >
+                    Recipe Save
+                </button>
+
+                <button
+                    class="operation-button btn-download"
+                    type="submit"
+                    name="action"
+                    value="download_to_plc"
+                    data-loading-title="Download To PLC"
+                    data-confirm-message="Final Download To PLC will validate database, compare CRS_Recipe_Data, verify Manual mode and Download Enable, write CRS_Test_Recipe_Data, wait for Download Complete, and audit history. Continue?"
+                    {% if not can_download_recipe %}
+                    disabled
+                    {% endif %}
+                >
+                    Download To PLC
+                </button>
+
+                <button
+                    class="operation-button btn-upload"
+                    type="submit"
+                    name="action"
+                    value="upload_from_plc"
+                    data-loading-title="Upload From PLC"
+                    data-confirm-message="Upload From PLC will read CRS_Test_Recipe_Data, validate min/max, compare against database, and copy values to CRS_Recipe_Data only. Use Recipe Save afterward to commit database changes with audit. Continue?"
+                    {% if not can_edit_recipe %}
+                    disabled
+                    {% endif %}
+                >
+                    Upload From PLC
+                </button>
+
+            </div>
+
+        </form>
+
+        {% else %}
+
+        <p>No active PLC is registered for this recipe machine and stage.</p>
+
+        {% endif %}
+
+    </div>
+
+    <div class="buffer-panel live-status-panel">
+        <div class="live-status-header">
+            <div>
+                <h3>Live PLC Interlock / Handshake Status</h3>
+                <div class="step-message">
+                    Green means healthy / good to go. Red means not healthy or needs checking. Values are read from the selected PLC when this page loads.
+                </div>
+            </div>
+            {% if live_tag_status.status == "READY" %}
+            <span class="status-pill status-ready">LIVE HEALTHY</span>
+            {% elif live_tag_status.status == "BLOCKED" %}
+            <span class="status-pill status-blocked">CHECK REQUIRED</span>
+            {% else %}
+            <span class="status-pill status-neutral">NOT CHECKED</span>
+            {% endif %}
+        </div>
+
+        <div class="step-message">{{ live_tag_status.summary }}</div>
+
+        {% if live_tag_status.groups %}
+        <div class="live-status-groups">
+            {% for group in live_tag_status.groups %}
+            <div class="live-status-group">
+                <h3>{{ group.title }}</h3>
+                <div class="live-status-grid">
+                    {% for item in group["items"] %}
+                    <div class="live-status-item live-status-item-{{ item.status }}">
+                        <div class="live-status-actual">
+                            <span>Actual</span>
+                            <div class="live-status-value">
+                                {% if item.value is not none %}
+                                    {{ item.value }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="live-status-body">
+                            <strong>{{ item.label }}</strong>
+                            <small>
+                                {{ item.tag.tag_name if item.tag else 'Not mapped' }}
+                            </small>
+                            <div class="live-status-meta">
+                                <span>Expected {{ item.expected_text or 'Readable' }}</span>
+                                <span class="live-status-state">{{ item.status_text }}</span>
+                            </div>
+                            <small>{{ item.message }}</small>
+                        </div>
+                        <span class="status-pill {% if item.status == 'ok' %}status-ready{% elif item.status == 'bad' or item.status == 'missing' %}status-blocked{% else %}status-neutral{% endif %}">
+                            {{ item.status_text }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if live_tag_status.issues %}
+        <details class="compact-details">
+            <summary>Live Status Issues</summary>
+            <ul class="issue-list">
+                {% for issue in live_tag_status.issues[:8] %}
+                <li>{{ issue }}</li>
+                {% endfor %}
+            </ul>
+        </details>
+        {% endif %}
+    </div>
+
+    <div class="buffer-panel live-progress" id="liveProgress">
+
+        <div class="progress-card">
+
+            <div class="progress-header">
+                <div class="progress-title" id="liveProgressTitle">
+                    Operation Started
+                </div>
+                <div class="progress-percent" id="liveProgressPercent">
+                    0%
+                </div>
+            </div>
+
+            <div class="progress-track">
+                <div class="progress-fill" id="liveProgressFill"></div>
+            </div>
+
+            <div class="step-message" id="liveProgressText">
+                Sending request to backend. PLC checks and validation are running.
+            </div>
+
+            <div id="liveProgressStatus"></div>
+
+            <div
+                class="metric-strip"
+                id="liveMetricStrip"
+                style="display: none;"
+            ></div>
+
+            <div
+                class="step-list"
+                id="liveStepList"
+            ></div>
+
+            <div
+                id="liveIssueList"
+                style="display: none;"
+            ></div>
+
+        </div>
+
+    </div>
+
+    {% if operation_result %}
+
+    <div
+        id="operationResultPanel"
+        class="buffer-panel {% if operation_result.success %}result-success{% else %}result-blocked{% endif %}"
+    >
+
+        <div class="progress-card">
+
+            <div class="progress-header">
+
+                <div>
+                    <div class="progress-title">
+                        {{ operation_result.title }}
+                    </div>
+                    <div class="step-message">
+                        {{ operation_result.current_step }}
+                    </div>
+                </div>
+
+                <div class="progress-percent">
+                    {{ operation_result.progress_percent }}%
+                </div>
+
+            </div>
+
+            <div class="progress-track">
+                <div
+                    class="progress-fill"
+                    style="width: {{ operation_result.progress_percent }}%;"
+                ></div>
+            </div>
+
+            <div>
+                {% if operation_result.success %}
+                    <span class="status-pill status-ready">SUCCESS</span>
+                {% else %}
+                    <span class="status-pill status-blocked">BLOCKED</span>
+                {% endif %}
+            </div>
+
+            {% if operation_result.metrics %}
+            <div class="metric-strip">
+
+                {% if operation_result.metrics.changed_parameters is defined %}
+                <div class="metric-chip">
+                    <div class="metric-label">DB Changes</div>
+                    <div class="metric-value">
+                        {{ operation_result.metrics.changed_parameters }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if operation_result.metrics.verified_parameters is defined %}
+                <div class="metric-chip">
+                    <div class="metric-label">DB Verified</div>
+                    <div class="metric-value">
+                        {{ operation_result.metrics.verified_parameters }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if operation_result.metrics.upload_candidate_changes is defined %}
+                <div class="metric-chip">
+                    <div class="metric-label">Upload Candidates</div>
+                    <div class="metric-value">
+                        {{ operation_result.metrics.upload_candidate_changes }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if operation_result.metrics.validated_parameters is defined %}
+                <div class="metric-chip">
+                    <div class="metric-label">Upload Validated</div>
+                    <div class="metric-value">
+                        {{ operation_result.metrics.validated_parameters }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if operation_result.payload_compare.checked %}
+                <div class="metric-chip">
+                    <div class="metric-label">Mismatches</div>
+                    <div class="metric-value">
+                        {{ operation_result.payload_compare.mismatch_count }}
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+            {% endif %}
+
+            {% if operation_result.steps %}
+            <div class="step-list">
+
+                {% for step in operation_result.steps %}
+                <div class="step-item">
+
+                    <div class="step-percent">
+                        {{ step.percent }}%
+                    </div>
+
+                    <div
+                        class="step-state {% if step.status == 'OK' %}step-ok{% else %}step-failed{% endif %}"
+                    >
+                        {{ step.status }}
+                    </div>
+
+                    <div>
+                        <strong>{{ step.label }}</strong>
+                        <div class="step-message">
+                            {{ step.message }}
+                        </div>
+                    </div>
+
+                </div>
+                {% endfor %}
+
+            </div>
+            {% endif %}
+
+            {% if operation_result.errors %}
+            <details class="compact-details" open>
+                <summary>Blocking Issues</summary>
+                <ul class="issue-list">
+                    {% for error in operation_result.errors[:10] %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+
+            {% if operation_result.payload_compare.mismatches %}
+            <details class="compact-details">
+                <summary>Payload Mismatch Samples</summary>
+                <ul class="issue-list">
+                    {% for mismatch in operation_result.payload_compare.mismatches %}
+                    <li>{{ mismatch }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+
+            {% if operation_result.destination_compare.mismatches %}
+            <details class="compact-details">
+                <summary>Destination Mismatch Samples</summary>
+                <ul class="issue-list">
+                    {% for mismatch in operation_result.destination_compare.mismatches %}
+                    <li>{{ mismatch }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+
+            {% if operation_result.warnings %}
+            <details class="compact-details">
+                <summary>Notes</summary>
+                <ul class="issue-list">
+                    {% for warning in operation_result.warnings %}
+                    <li>{{ warning }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+    <div class="buffer-panel">
+
+        <div class="progress-header">
+            <h3>Recent Operations</h3>
+            <span class="status-pill status-neutral">
+                {{ recent_operations|length }} Records
+            </span>
+        </div>
+
+        <br>
+
+        {% if recent_operations %}
+        <div class="history-list">
+
+            {% for item in recent_operations %}
+            <div class="history-row">
+
+                <div>
+                    <div class="history-title">
+                        {{ item.title }}
+                    </div>
+                    <div class="step-message">
+                        {{ item.current_step }}
+                    </div>
+                </div>
+
+                <div>
+                    {% if item.status == "SUCCESS" %}
+                    <span class="status-pill status-ready">SUCCESS</span>
+                    {% elif item.status == "RUNNING" or item.status == "QUEUED" %}
+                    <span class="status-pill status-neutral">
+                        {{ item.status }}
+                    </span>
+                    {% else %}
+                    <span class="status-pill status-blocked">
+                        {{ item.status }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="progress-percent">
+                    {{ item.progress_percent }}%
+                </div>
+
+                <div class="step-message">
+                    {{ item.started_by }}
+                    |
+                    {{ item.created_at }}
+                </div>
+
+            </div>
+            {% endfor %}
+
+        </div>
+        {% else %}
+        <div class="step-message">
+            No buffer operations recorded for this recipe yet.
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="buffer-panel machine-stage-tag-panel">
+
+        <div class="panel-heading table-heading">
+            <div>
+                <span>
+                    Machine / Stage PLC Tags
+                    <span
+                        class="info-hint"
+                        title="These tags are configured for the selected machine/stage, not for a single recipe. They are used by Recipe Restore, Recipe Save, Download To PLC, and Upload From PLC."
+                    >?</span>
+                </span>
+            </div>
+            {% if operation_context.status == "READY" %}
+            <span class="status-badge status-success">Tag Ready</span>
+            {% else %}
+            <span class="status-badge status-warning">Check Tags</span>
+            {% endif %}
+        </div>
+
+        {% set array_purposes = ["RECIPE_DATA", "TEST_RECIPE_DATA"] %}
+        {% if "BT_PHASE_CONTROL_STRING" in operation_context.tags or "CAP_STRIP_PHASE_CONTROL_STRING" in operation_context.tags %}
+            {% set phase_purposes = ["CAP_STRIP_PHASE_CONTROL_STRING", "CAP_STRIP_PHASE_STOP_STRING", "BT_PHASE_CONTROL_STRING", "BT_PHASE_STOP_STRING", "BT_PHASE_POSITION_STRING"] %}
+        {% else %}
+            {% set phase_purposes = ["PHASE_CONTROL_STRING", "PHASE_STOP_STRING", "PHASE_POSITION_STRING"] %}
+        {% endif %}
+        {% set interlock_purposes = ["MACHINE_IN_MANUAL", "DOWNLOAD_ENABLE"] %}
+        {% set handshake_purposes = ["DOWNLOAD_REQUEST", "DOWNLOAD_COMPLETE", "DOWNLOAD_ACK", "DOWNLOAD_BUSY", "DOWNLOAD_ERROR", "DOWNLOAD_RESULT", "DOWNLOAD_OS"] %}
+        {% set metadata_purposes = ["RECIPE_CODE", "LAST_DOWNLOAD_TIME", "LAST_DOWNLOAD_USER"] %}
+
+        <div class="tag-purpose-groups">
+
+            {% for group_title, purpose_list in [
+                ("Recipe Arrays", array_purposes),
+                ("Phase Control", phase_purposes),
+                ("Interlocks", interlock_purposes),
+                ("Handshake", handshake_purposes),
+                ("Metadata", metadata_purposes)
+            ] %}
+            <div class="tag-purpose-group">
+                <h3>{{ group_title }}</h3>
+                <div class="tag-grid compact-tag-grid">
+                    {% for purpose in purpose_list %}
+                    {% set tag = operation_context.tags.get(purpose) %}
+                    <div class="tag-chip {% if not tag %}tag-chip-missing{% endif %}">
+                        <div class="tag-purpose">{{ purpose }}</div>
+                        <div class="tag-name">
+                            {% if tag %}
+                                {{ tag.tag_name }}
+                                {% if tag.tag_type %}
+                                <span class="muted-inline">{{ tag.tag_type }}</span>
+                                {% endif %}
+                                {% if tag.is_array %}
+                                <span class="muted-inline">[{{ tag.array_size or "-" }}]</span>
+                                {% endif %}
+                            {% else %}
+                                Not configured
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        var form = document.getElementById(
+            "bufferOperationForm"
+        );
+
+        if (!form) {
+            return;
+        }
+
+        var operationLockActive = false;
+        var operationLockReleaseTimer = null;
+
+        function blockNavigationWhileRunning(event) {
+            if (!operationLockActive) {
+                return;
+            }
+
+            var target = event.target;
+            var link = target && target.closest ? target.closest("a") : null;
+
+            if (link) {
+                event.preventDefault();
+                event.stopPropagation();
+                updateOperationLockMessage(
+                    "Operation is still running. Please wait until the result reaches 100% success or failure."
+                );
+            }
+        }
+
+        function blockRefreshKeysWhileRunning(event) {
+            if (!operationLockActive) {
+                return;
+            }
+
+            var key = event.key;
+            var isRefresh = key === "F5" || (event.ctrlKey && key && key.toLowerCase() === "r");
+            var isBack = event.altKey && key === "ArrowLeft";
+            var isForward = event.altKey && key === "ArrowRight";
+            var isEscape = key === "Escape";
+
+            if (isRefresh || isBack || isForward || isEscape) {
+                event.preventDefault();
+                event.stopPropagation();
+                updateOperationLockMessage(
+                    "Navigation is locked while PLC communication is active. Wait for completion."
+                );
+            }
+        }
+
+        function beforeUnloadWhileRunning(event) {
+            if (!operationLockActive) {
+                return;
+            }
+
+            event.preventDefault();
+            event.returnValue = "PLC buffer operation is running. Leaving this page may interrupt operator visibility.";
+            return event.returnValue;
+        }
+
+        document.addEventListener(
+            "click",
+            blockNavigationWhileRunning,
+            true
+        );
+
+        document.addEventListener(
+            "keydown",
+            blockRefreshKeysWhileRunning,
+            true
+        );
+
+        window.addEventListener(
+            "beforeunload",
+            beforeUnloadWhileRunning
+        );
+
+        function activateOperationLock(operationTitle) {
+            operationLockActive = true;
+
+            if (operationLockReleaseTimer) {
+                window.clearTimeout(operationLockReleaseTimer);
+                operationLockReleaseTimer = null;
+            }
+
+            document.body.classList.add("operation-running");
+
+            var overlay = document.getElementById("operationLockOverlay");
+            var title = document.getElementById("operationLockTitle");
+            var text = document.getElementById("operationLockText");
+            var fill = document.getElementById("operationLockFill");
+            var percent = document.getElementById("operationLockPercent");
+
+            if (title) {
+                title.textContent = operationTitle || "PLC Buffer Operation Running";
+            }
+
+            if (text) {
+                text.textContent = "Please wait. Do not refresh, close, go back, or click another menu until this operation finishes with success or failure.";
+            }
+
+            if (fill) {
+                fill.style.width = "0%";
+            }
+
+            if (percent) {
+                percent.textContent = "0%";
+            }
+
+            if (overlay) {
+                overlay.classList.add("is-active");
+            }
+        }
+
+        function updateOperationLockMessage(message) {
+            var text = document.getElementById("operationLockText");
+            if (text && message) {
+                text.textContent = message;
+            }
+        }
+
+        function updateOperationLockProgress(percentValue, message) {
+            var percent = Number(percentValue || 0);
+            if (percent < 0) {
+                percent = 0;
+            }
+            if (percent > 100) {
+                percent = 100;
+            }
+
+            var fill = document.getElementById("operationLockFill");
+            var percentText = document.getElementById("operationLockPercent");
+
+            if (fill) {
+                fill.style.width = percent + "%";
+            }
+
+            if (percentText) {
+                percentText.textContent = percent + "%";
+            }
+
+            if (message) {
+                updateOperationLockMessage(message);
+            }
+        }
+
+        function releaseOperationLock(finalStatus, finalMessage) {
+            updateOperationLockProgress(
+                finalStatus === "ERROR" || finalStatus === "BLOCKED" ? 100 : 100,
+                finalMessage || "Operation completed. Screen unlocked."
+            );
+
+            operationLockReleaseTimer = window.setTimeout(
+                function () {
+                    operationLockActive = false;
+                    document.body.classList.remove("operation-running");
+
+                    var overlay = document.getElementById("operationLockOverlay");
+                    if (overlay) {
+                        overlay.classList.remove("is-active");
+                    }
+                },
+                900
+            );
+        }
+
+        form.addEventListener(
+            "submit",
+            function (event) {
+
+                event.preventDefault();
+
+                var submitter = event.submitter;
+
+                if (!submitter) {
+                    return;
+                }
+
+                var selectedAction = document.getElementById(
+                    "selectedAction"
+                );
+
+                if (selectedAction) {
+                    selectedAction.value = submitter.value;
+                }
+
+                if (
+                    submitter.dataset.confirmMessage
+                    &&
+                    !window.confirm(
+                        submitter.dataset.confirmMessage
+                    )
+                ) {
+                    return;
+                }
+
+                activateOperationLock(
+                    submitter.dataset.loadingTitle
+                    || "PLC Buffer Operation"
+                );
+
+                var panel = document.getElementById(
+                    "liveProgress"
+                );
+
+                var title = document.getElementById(
+                    "liveProgressTitle"
+                );
+
+                var fill = document.getElementById(
+                    "liveProgressFill"
+                );
+
+                var percentText = document.getElementById(
+                    "liveProgressPercent"
+                );
+
+                var text = document.getElementById(
+                    "liveProgressText"
+                );
+
+                var statusContainer = document.getElementById(
+                    "liveProgressStatus"
+                );
+
+                var metricStrip = document.getElementById(
+                    "liveMetricStrip"
+                );
+
+                var stepList = document.getElementById(
+                    "liveStepList"
+                );
+
+                var issueList = document.getElementById(
+                    "liveIssueList"
+                );
+
+                if (panel) {
+                    panel.style.display = "block";
+                    panel.classList.remove(
+                        "result-success",
+                        "result-blocked"
+                    );
+                }
+
+                var oldResultPanel = document.getElementById(
+                    "operationResultPanel"
+                );
+
+                if (oldResultPanel) {
+                    oldResultPanel.style.display = "none";
+                }
+
+                if (title) {
+                    title.textContent = (
+                        submitter.dataset.loadingTitle
+                        || "PLC Buffer Operation"
+                    );
+                }
+
+                if (text) {
+                    text.textContent = (
+                        "Backend validation, PLC connection, interlock checks, "
+                        + "buffer transfer, and readback verification are running."
+                    );
+                }
+
+                if (fill) {
+                    fill.style.width = "0%";
+                }
+
+                if (percentText) {
+                    percentText.textContent = "0%";
+                }
+
+                if (statusContainer) {
+                    statusContainer.innerHTML = "";
+                    appendStatusPill(
+                        statusContainer,
+                        "QUEUED"
+                    );
+                }
+
+                if (metricStrip) {
+                    metricStrip.innerHTML = "";
+                    metricStrip.style.display = "none";
+                }
+
+                if (stepList) {
+                    stepList.innerHTML = "";
+                }
+
+                if (issueList) {
+                    issueList.innerHTML = "";
+                    issueList.style.display = "none";
+                }
+
+                var buttons = form.querySelectorAll(
+                    "button"
+                );
+
+                buttons.forEach(
+                    function (button) {
+                        button.disabled = true;
+                    }
+                );
+
+                buttons.forEach(
+                    function (button) {
+                        if (!button.dataset.originalText) {
+                            button.dataset.originalText = button.textContent;
+                        }
+                    }
+                );
+
+                submitter.textContent = "Running...";
+
+                var formData = new FormData(
+                    form
+                );
+
+                formData.set(
+                    "action",
+                    submitter.value
+                );
+
+                fetch(
+                    form.dataset.startUrl,
+                    {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    }
+                )
+                    .then(
+                        function (response) {
+                            return response.json().then(
+                                function (payload) {
+                                    if (!response.ok) {
+                                        throw new Error(
+                                            payload.message
+                                            || "Operation could not start."
+                                        );
+                                    }
+                                    return payload;
+                                }
+                            );
+                        }
+                    )
+                    .then(
+                        function (payload) {
+                            pollOperation(
+                                payload.status_url,
+                                buttons
+                            );
+                        }
+                    )
+                    .catch(
+                        function (error) {
+                            renderFailure(
+                                error.message,
+                                buttons
+                            );
+                        }
+                    );
+
+            }
+        );
+
+        function pollOperation(
+            statusUrl,
+            buttons
+        ) {
+
+            fetch(
+                statusUrl,
+                {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                }
+            )
+                .then(
+                    function (response) {
+                        return response.json();
+                    }
+                )
+                .then(
+                    function (payload) {
+
+                        if (!payload.success) {
+                            throw new Error(
+                                payload.message
+                                || "Operation status could not be read."
+                            );
+                        }
+
+                        renderJob(
+                            payload.job
+                        );
+
+                        if (payload.done) {
+                            var finalStatus = (
+                                payload.job
+                                && (
+                                    payload.job.status
+                                    || (
+                                        payload.job.result
+                                        && payload.job.result.status
+                                    )
+                                )
+                            ) || "SUCCESS";
+
+                            var finalMessage = "Operation finished. Screen unlocked.";
+
+                            if (
+                                payload.job
+                                && payload.job.result
+                                && payload.job.result.current_step
+                            ) {
+                                finalMessage = payload.job.result.current_step;
+                            }
+
+                            releaseOperationLock(
+                                finalStatus,
+                                finalMessage
+                            );
+
+                            restoreButtons(
+                                buttons
+                            );
+                            return;
+                        }
+
+                        window.setTimeout(
+                            function () {
+                                pollOperation(
+                                    statusUrl,
+                                    buttons
+                                );
+                            },
+                            700
+                        );
+
+                    }
+                )
+                .catch(
+                    function (error) {
+                        renderFailure(
+                            error.message,
+                            buttons
+                        );
+                    }
+                );
+
+        }
+
+        function renderJob(
+            job
+        ) {
+
+            var result = job.result || {};
+
+            var status = (
+                job.status
+                || result.status
+                || "RUNNING"
+            );
+
+            var percent = Number(
+                result.progress_percent
+                || job.progress_percent
+                || 0
+            );
+
+            updateOperationLockProgress(
+                percent,
+                result.current_step || job.current_step || "PLC operation is running. Please wait."
+            );
+
+            var panel = document.getElementById(
+                "liveProgress"
+            );
+
+            var title = document.getElementById(
+                "liveProgressTitle"
+            );
+
+            var fill = document.getElementById(
+                "liveProgressFill"
+            );
+
+            var percentText = document.getElementById(
+                "liveProgressPercent"
+            );
+
+            var text = document.getElementById(
+                "liveProgressText"
+            );
+
+            var statusContainer = document.getElementById(
+                "liveProgressStatus"
+            );
+
+            if (panel) {
+                panel.classList.remove(
+                    "result-success",
+                    "result-blocked"
+                );
+                if (status == "SUCCESS") {
+                    panel.classList.add(
+                        "result-success"
+                    );
+                }
+                if (
+                    status == "BLOCKED"
+                    ||
+                    status == "ERROR"
+                ) {
+                    panel.classList.add(
+                        "result-blocked"
+                    );
+                }
+            }
+
+            if (title) {
+                title.textContent = (
+                    result.title
+                    || job.title
+                    || "PLC Buffer Operation"
+                );
+            }
+
+            if (fill) {
+                fill.style.width = percent + "%";
+            }
+
+            if (percentText) {
+                percentText.textContent = percent + "%";
+            }
+
+            if (text) {
+                text.textContent = (
+                    result.current_step
+                    || job.current_step
+                    || ""
+                );
+            }
+
+            if (statusContainer) {
+                statusContainer.innerHTML = "";
+                appendStatusPill(
+                    statusContainer,
+                    status
+                );
+            }
+
+            renderSteps(
+                result.steps
+                || []
+            );
+
+            renderMetrics(
+                result
+            );
+
+            renderIssues(
+                result
+            );
+
+        }
+
+        function appendStatusPill(
+            container,
+            status
+        ) {
+
+            var pill = document.createElement(
+                "span"
+            );
+
+            pill.className = "status-pill ";
+
+            if (status == "SUCCESS") {
+                pill.className += "status-ready";
+            } else if (
+                status == "BLOCKED"
+                ||
+                status == "ERROR"
+            ) {
+                pill.className += "status-blocked";
+            } else {
+                pill.className += "status-neutral";
+            }
+
+            pill.textContent = status;
+
+            container.appendChild(
+                pill
+            );
+
+        }
+
+        function renderSteps(
+            steps
+        ) {
+
+            var stepList = document.getElementById(
+                "liveStepList"
+            );
+
+            if (!stepList) {
+                return;
+            }
+
+            stepList.innerHTML = "";
+
+            steps.forEach(
+                function (step) {
+
+                    var row = document.createElement(
+                        "div"
+                    );
+
+                    row.className = "step-item";
+
+                    var percent = document.createElement(
+                        "div"
+                    );
+                    percent.className = "step-percent";
+                    percent.textContent = step.percent + "%";
+
+                    var state = document.createElement(
+                        "div"
+                    );
+                    state.className = (
+                        "step-state "
+                        + (
+                            step.status == "OK"
+                            ? "step-ok"
+                            : "step-failed"
+                        )
+                    );
+                    state.textContent = step.status;
+
+                    var body = document.createElement(
+                        "div"
+                    );
+
+                    var label = document.createElement(
+                        "strong"
+                    );
+                    label.textContent = step.label;
+
+                    var message = document.createElement(
+                        "div"
+                    );
+                    message.className = "step-message";
+                    message.textContent = step.message;
+
+                    body.appendChild(
+                        label
+                    );
+                    body.appendChild(
+                        message
+                    );
+
+                    row.appendChild(
+                        percent
+                    );
+                    row.appendChild(
+                        state
+                    );
+                    row.appendChild(
+                        body
+                    );
+
+                    stepList.appendChild(
+                        row
+                    );
+
+                }
+            );
+
+        }
+
+        function renderMetrics(
+            result
+        ) {
+
+            var metricStrip = document.getElementById(
+                "liveMetricStrip"
+            );
+
+            if (!metricStrip) {
+                return;
+            }
+
+            metricStrip.innerHTML = "";
+
+            addMetric(
+                metricStrip,
+                "DB Changes",
+                result.metrics
+                &&
+                result.metrics.changed_parameters
+            );
+
+            addMetric(
+                metricStrip,
+                "DB Verified",
+                result.metrics
+                &&
+                result.metrics.verified_parameters
+            );
+
+            addMetric(
+                metricStrip,
+                "Upload Candidates",
+                result.metrics
+                &&
+                result.metrics.upload_candidate_changes
+            );
+
+            addMetric(
+                metricStrip,
+                "Upload Validated",
+                result.metrics
+                &&
+                result.metrics.validated_parameters
+            );
+
+            if (
+                result.payload_compare
+                &&
+                result.payload_compare.checked
+            ) {
+                addMetric(
+                    metricStrip,
+                    "Mismatches",
+                    result.payload_compare.mismatch_count
+                );
+            }
+
+            if (
+                result.destination_compare
+                &&
+                result.destination_compare.checked
+            ) {
+                addMetric(
+                    metricStrip,
+                    "PLC Mismatches",
+                    result.destination_compare.mismatch_count
+                );
+            }
+
+            metricStrip.style.display = (
+                metricStrip.children.length
+                ? "grid"
+                : "none"
+            );
+
+        }
+
+        function addMetric(
+            container,
+            labelText,
+            value
+        ) {
+
+            if (
+                value === undefined
+                ||
+                value === null
+            ) {
+                return;
+            }
+
+            var chip = document.createElement(
+                "div"
+            );
+            chip.className = "metric-chip";
+
+            var label = document.createElement(
+                "div"
+            );
+            label.className = "metric-label";
+            label.textContent = labelText;
+
+            var metricValue = document.createElement(
+                "div"
+            );
+            metricValue.className = "metric-value";
+            metricValue.textContent = value;
+
+            chip.appendChild(
+                label
+            );
+            chip.appendChild(
+                metricValue
+            );
+            container.appendChild(
+                chip
+            );
+
+        }
+
+        function renderIssues(
+            result
+        ) {
+
+            var issueList = document.getElementById(
+                "liveIssueList"
+            );
+
+            if (!issueList) {
+                return;
+            }
+
+            issueList.innerHTML = "";
+
+            var issues = [];
+
+            if (result.errors) {
+                issues = issues.concat(
+                    result.errors
+                );
+            }
+
+            if (
+                result.payload_compare
+                &&
+                result.payload_compare.mismatches
+            ) {
+                issues = issues.concat(
+                    result.payload_compare.mismatches
+                );
+            }
+
+            if (
+                result.destination_compare
+                &&
+                result.destination_compare.mismatches
+            ) {
+                issues = issues.concat(
+                    result.destination_compare.mismatches
+                );
+            }
+
+            if (!issues.length) {
+                issueList.style.display = "none";
+                return;
+            }
+
+            var details = document.createElement(
+                "details"
+            );
+            details.className = "compact-details";
+            details.open = true;
+
+            var summary = document.createElement(
+                "summary"
+            );
+            summary.textContent = "Blocking Issues";
+
+            var list = document.createElement(
+                "ul"
+            );
+            list.className = "issue-list";
+
+            issues.slice(
+                0,
+                10
+            ).forEach(
+                function (issue) {
+                    var item = document.createElement(
+                        "li"
+                    );
+                    item.textContent = issue;
+                    list.appendChild(
+                        item
+                    );
+                }
+            );
+
+            details.appendChild(
+                summary
+            );
+            details.appendChild(
+                list
+            );
+
+            issueList.appendChild(
+                details
+            );
+            issueList.style.display = "block";
+
+        }
+
+        function renderFailure(
+            message,
+            buttons
+        ) {
+
+            var panel = document.getElementById(
+                "liveProgress"
+            );
+            var title = document.getElementById(
+                "liveProgressTitle"
+            );
+            var text = document.getElementById(
+                "liveProgressText"
+            );
+            var fill = document.getElementById(
+                "liveProgressFill"
+            );
+            var percentText = document.getElementById(
+                "liveProgressPercent"
+            );
+
+            if (panel) {
+                panel.style.display = "block";
+                panel.classList.add(
+                    "result-blocked"
+                );
+            }
+            if (title) {
+                title.textContent = "PLC Buffer Operation";
+            }
+            if (text) {
+                text.textContent = message;
+            }
+            if (fill) {
+                fill.style.width = "5%";
+            }
+            if (percentText) {
+                percentText.textContent = "5%";
+            }
+
+            renderIssues({
+                errors: [
+                    message
+                ]
+            });
+
+            releaseOperationLock(
+                "ERROR",
+                message || "Operation failed. Screen unlocked."
+            );
+
+            restoreButtons(
+                buttons
+            );
+
+        }
+
+        function restoreButtons(
+            buttons
+        ) {
+
+            buttons.forEach(
+                function (button) {
+                    button.disabled = false;
+                    if (button.dataset.originalText) {
+                        button.textContent = button.dataset.originalText;
+                    }
+                }
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

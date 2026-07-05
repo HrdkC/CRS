@@ -29,6 +29,14 @@ MSSQL (Future)
 pycomm3
 Allen Bradley ControlLogix
 
+Current UI CSS Architecture:
+
+- flask_app/static/css/main.css is only the CSS entry point.
+- Do not add page-specific rules directly to main.css.
+- CSS modules live under flask_app/static/css/modules/.
+- Keep main.css import order unchanged unless all major pages are visually checked.
+- Read project_docs/78_CSS_MODULE_SPLIT_V1.txt before changing CRS styling.
+
 Project Philosophy
 ------------------
 

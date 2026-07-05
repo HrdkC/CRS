@@ -1,0 +1,55 @@
+CRS V6.5 - Recipe List Machine/Stage Selection
+================================================
+
+Purpose
+-------
+The /recipes page must not show mixed recipe records from all machines/stages.
+Operators must select machine and stage first, then CRS shows only the recipe list for the selected stage.
+
+Approved user-facing standard
+-----------------------------
+URL:
+    /recipes/P15/FS
+    /recipes/P15/SS
+
+Display:
+    P15 - FS First Stage
+    P15 - SS Second Stage
+
+Internal DB:
+    machine_id and stage_id remain numeric.
+    Example: P15 machine_id=5, FS stage_id=11, SS stage_id=12.
+
+Included changes
+----------------
+1. /recipes now shows machine/stage selection first.
+2. /recipes?machine_id=5&stage_id=12 redirects to /recipes/P15/SS.
+3. /recipes/5/12 redirects to /recipes/P15/SS.
+4. /recipes/P15/FS and /recipes/P15/SS show only records for that selected stage.
+5. Recipe page heading, metrics, create recipe button, and parameter-master warnings are stage-specific.
+6. Fixed RecipeManager.get_recipes so stage-specific recipe routes return actual recipe rows.
+7. Recipe list selection UI uses active tbm_machines and machine_stages records.
+
+Patch files
+-----------
+database/recipe_manager.py
+flask_app/routes/recipe_routes.py
+flask_app/templates/recipes/recipes.html
+flask_app/static/css/main.css
+project_docs/57_RECIPE_LIST_MACHINE_STAGE_SELECTION_V1.txt
+
+Apply
+-----
+From project root:
+    Expand-Archive -Path .\CRS_V6.5_Recipe_List_Machine_Stage_Selection_PATCH_ONLY_280626.zip -DestinationPath . -Force
+    python app.py
+
+Test
+----
+1. Open /recipes.
+2. Confirm only machine/stage selector is shown, not mixed all-stage recipe list.
+3. Select P15 + FS - First Stage and click Show Recipes.
+4. Confirm URL is /recipes/P15/FS and only First Stage recipes are shown.
+5. Select P15 + SS - Second Stage and click Show Recipes.
+6. Confirm URL is /recipes/P15/SS and only Second Stage recipes are shown.
+7. Open /recipes/5/12 and confirm it redirects to /recipes/P15/SS.

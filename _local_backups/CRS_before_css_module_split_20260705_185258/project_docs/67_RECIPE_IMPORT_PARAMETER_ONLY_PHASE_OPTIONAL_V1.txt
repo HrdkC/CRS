@@ -1,0 +1,27 @@
+# CRS V6.14 - Recipe Import Parameter-Only / Phase Optional
+
+## Purpose
+Recipe export continues to include Phase_Control rows for full recipe visibility and reference.
+Recipe import now saves recipe parameter values only. Phase_Control content in Excel is optional and ignored.
+
+## Reason
+Plant Excel or exported files may contain phase-control names/IDs/text that differ from the current CRS phase master. Blocking import on phase text causes unnecessary failures. The safer workflow is:
+
+1. Import recipe identity and parameter values.
+2. CRS creates default Empty Phase rows for the target stage.
+3. Engineering/Technology manually selects correct phases in the CRS Phase Control page.
+4. Recipe is reviewed before PLC download.
+
+## Scope
+Changed files:
+- database/recipe_excel_import_export_manager.py
+- flask_app/templates/recipes/recipe_import_export.html
+
+## Behavior
+- Parameters sheet is still validated by Tag Index / Parameter Definition ID fallback.
+- Parameter Value is imported.
+- PLC Index / Tag Index are not edited by import.
+- Parameter master details are not modified by import.
+- Phase_Control sheet may be present, missing, or contain text different from CRS master.
+- CRS ignores Excel phase-control data and inserts default Empty Phase rows.
+- User must manually select phase controls after import and before download.
