@@ -1,0 +1,57 @@
+Priority 11 Production Safety Single Change Cycle
+================================================
+
+Purpose
+-------
+This package consolidates the Priority 11 findings from V4 review into one stabilization cycle before Priority 12.
+
+Implemented Corrections
+-----------------------
+1. UI stabilization
+   - Replaced scattered CSS/JS with grouped professional files.
+   - Login page is compact for Full HD 1920x1080 at browser 100% zoom and should not require vertical scrolling.
+   - Header uses sticky normal-flow layout to avoid content/alert overlap.
+   - Dashboard, recipe tables, stage tables, audit archive, cards, forms, and status badges use consistent scale.
+   - Action colors are standardized: Open blue, Buffer violet, History amber, Copy green, Disable red, Neutral grey.
+   - Status colors are standardized: ACTIVE/READY/RELEASED green, DISABLED/BLOCKED/FAILED red, DRAFT/REVIEW/PENDING yellow, CURRENT/RUNNING/INFO blue, HISTORICAL/TEST grey.
+
+2. Session/login safety
+   - Existing active user has priority.
+   - New same-username login is blocked only if the existing session is truly live.
+   - Stale/browser-closed sessions are closed by heartbeat/timeout logic.
+   - Blocked login screen does not expose workstation/IP metadata.
+   - Login attempt metadata is visible only to active authenticated user and stored in audit.
+   - Last-login timestamp is updated only after the login is actually allowed.
+
+3. Resource locking
+   - Added database/recipe_resource_lock_manager.py.
+   - Recipe edit locks are acquired when editing parameter values.
+   - PLC buffer operations acquire both recipe-level and PLC-level locks.
+   - Other users are blocked from recipe/PLC operation access while a conflicting operation is active.
+   - Locks are released on save/operation completion, session logout, forced logout, and stale-session cleanup.
+   - Expired locks are automatically closed to prevent plant stoppage after browser/workstation failure.
+
+4. Audit archive page
+   - Removed inline congested page CSS and moved layout responsibility into main.css.
+   - Page now separates controls, operation guide, archive records, and recent export jobs.
+
+5. Flask run hygiene
+   - app.py now defaults to debug disabled.
+   - Development debug can be enabled only with CRS_FLASK_DEBUG=1.
+
+Validation Required
+-------------------
+After applying this package, validate:
+- /login fits in one browser page without vertical scroll at 100% zoom.
+- / dashboard, /recipes, /stages visual balance is acceptable.
+- /audit-archive is readable and not congested.
+- Same-user active session priority still blocks second login without closing the first session.
+- Acknowledge login alert works without 404.
+- Browser close without logout becomes stale after Browser Close Grace seconds and then allows login.
+- Recipe edit lock blocks second user editing same recipe.
+- PLC buffer operation screen lock and backend recipe/PLC locks block conflicting users until operation reaches final status.
+
+Commit Suggestion
+-----------------
+git add app.py database flask_app project_docs
+git commit -m "Stabilize Priority 11 production safety baseline"

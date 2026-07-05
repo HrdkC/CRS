@@ -1,0 +1,21 @@
+CRS Audit History - Final Old/New TD Display Fix
+Date: 2026-07-05
+
+Root cause:
+An older CSS rule applied display: -webkit-box and line-clamp directly to
+.audit-value-cell (the TD element). The TD therefore shrink-wrapped its content
+instead of using the complete Old -> New column width.
+
+Fix:
+- Restores audit-value-cell to display: table-cell.
+- Removes line clamp from the TD.
+- Keeps the Old -> New column at 22%.
+- Stretches OLD and NEW containers to the full cell width.
+- Applies three-line clamping only to inner value text.
+- Preserves full values in the existing hover tooltip.
+
+Apply:
+Expand-Archive -Path .\CRS_Audit_Old_New_TD_Display_FINAL_FIX_PATCH_ONLY_050726.zip -DestinationPath . -Force
+
+Refresh:
+Ctrl + F5

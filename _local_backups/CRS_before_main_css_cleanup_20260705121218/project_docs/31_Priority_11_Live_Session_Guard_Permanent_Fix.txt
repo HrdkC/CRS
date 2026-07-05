@@ -1,0 +1,63 @@
+# Priority 11 - Live Session Guard Permanent Fix
+
+## Final rule
+
+Existing active user has priority. A second login for the same username must not replace or logout the active user, because the active user may be editing a recipe, saving CRS buffer, or running PLC Download/Upload.
+
+## Permanent solution
+
+CRS now separates two concepts:
+
+1. User activity / idle timeout
+   - Stored in user_sessions.last_activity
+   - Drives normal auto logout countdown
+   - Updated only when user interacts with GUI or makes a real request
+
+2. Browser liveness / heartbeat
+   - Stored in user_sessions.heartbeat_at
+   - Proves the browser session is still open
+   - Updated by a passive heartbeat every 15 seconds without extending idle timeout
+
+## Browser closed without logout
+
+If the user closes the browser without Logout:
+
+- No more heartbeat reaches CRS.
+- After SESSION_HEARTBEAT_STALE_GRACE_SECONDS, the session is treated as stale.
+- On next login/session check, CRS closes that stale row automatically with logout_reason starting with STALE_OR_EXPIRED_SESSION_CLOSED.
+- The same username can then login normally.
+
+This avoids production stoppage caused by stale user_sessions.logout_time NULL records.
+
+## Active same-user login attempt
+
+If a real live active session exists for the same username:
+
+- New login is blocked.
+- Existing active session remains untouched.
+- New login screen shows only generic message: user is already logged in.
+- No active workstation/IP metadata is exposed on the login screen.
+- Audit history stores LOGIN_BLOCKED_ACTIVE_SESSION.
+- Active user receives a login-attempt alert with attempted workstation/IP metadata.
+
+## Admin configuration
+
+Auto Logout Settings page now contains:
+
+- Idle Auto Logout Time in minutes.
+- Browser Close Grace in seconds.
+
+Both values are audit tracked under SESSION_TIMEOUT_UPDATED.
+
+Recommended production values:
+
+- Idle Auto Logout Time: 15 to 30 minutes.
+- Browser Close Grace: 60 to 120 seconds.
+
+Use 30 seconds only after plant network validation.
+
+## Viewer role
+
+VIEWER role remains read-only and follows the same active-session rule.
+
+Viewer can view recipe lists and parameter/current DB values only. Viewer cannot edit, download, upload, save, approve, configure, or manage users.

@@ -1,0 +1,93 @@
+CURRENT RELEASED RECIPE EDIT POLICY
+===================================
+
+Status
+------
+
+Approved project decision.
+
+Policy
+------
+
+Current RELEASED recipe values are editable with audit.
+
+Historical released versions remain locked and read-only.
+
+Reason
+------
+
+This decision improves operator ease of use and avoids unnecessary version creation for small production corrections.
+
+Direct current-release edits are allowed only when the edit is authorized, validated, and fully audited.
+
+When To Edit Current Released Recipe
+------------------------------------
+
+Use current-release editing for small production corrections where the active production version should remain in use.
+
+Examples:
+
+- Minor setpoint correction
+- Small process tuning value
+- Correction after PLC upload/readback verification
+
+When To Create Version
+----------------------
+
+Use Create Version for major recipe development or controlled revision work.
+
+Examples:
+
+- Large recipe change
+- Trial recipe development
+- Engineering change
+- Change requiring review before production release
+- New production standard version
+
+Historical Version Lock
+-----------------------
+
+Historical versions may be viewed, exported, and compared.
+
+Historical versions must not be edited directly.
+
+Historical versions must not be overwritten by manual edit, import, PLC upload, or system process.
+
+Mandatory Audit For Current Released Edits
+------------------------------------------
+
+Every current released value edit must capture:
+
+- Recipe ID
+- Recipe Code
+- Version
+- Machine
+- Stage
+- Parameter ID
+- Parameter Name
+- Old Value
+- New Value
+- Changed By
+- Changed At
+- Reason / Remarks
+- Source
+
+Allowed Sources
+---------------
+
+- MANUAL_EDIT
+- PLC_UPLOAD
+- IMPORT
+- SYSTEM
+
+Validation
+----------
+
+Every changed value must pass min/max validation before saving or PLC download.
+
+Download Rule
+-------------
+
+PLC download is allowed only from the current released production version.
+
+Historical released versions are not valid for normal PLC download.

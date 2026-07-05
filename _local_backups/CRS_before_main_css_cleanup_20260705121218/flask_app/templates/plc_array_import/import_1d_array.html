@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-shell">
+    <div class="panel-card">
+        <div class="panel-heading">
+            <div>
+                <span class="section-kicker">PLC 1D ARRAY IMPORT</span>
+                <h2>{{ context.machine_stage_display if context.machine_stage_display is defined else machine_stage_display(context=context) }} Parameter Master + Draft Recipe</h2>
+                <p class="muted-text">
+                    Read a selected PLC 1D recipe array, create placeholder parameter master rows,
+                    and create one DRAFT recipe. This does not write to PLC and does not release recipe.
+                </p>
+            </div>
+            <a class="btn btn-secondary" href="{{ plc_tag_browser_url if plc_tag_browser_url is defined else machine_stage_url('/plc-tags', machine_id=context.machine_id, stage_id=context.stage_id) }}?online_search=1&search=CRS_&array_only=1&bool_only=0">Browse PLC Tags</a>
+        </div>
+
+        <div class="info-grid" style="grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 12px;">
+            <div class="info-card">
+                <span>Machine</span>
+                <strong>{{ context.machine_code }}</strong>
+            </div>
+            <div class="info-card">
+                <span>Stage</span>
+                <strong>{{ context.stage_url_code if context.stage_url_code is defined else stage_url_code(context.stage_type) }} {{ context.stage_display_name if context.stage_display_name is defined else stage_display_name(context.stage_type) }}</strong>
+            </div>
+            <div class="info-card">
+                <span>Active PLC</span>
+                <strong>{{ active_plc.plc_name if active_plc else 'Not configured' }}</strong>
+                <small>{{ active_plc.ip_address if active_plc else '' }}</small>
+            </div>
+            <div class="info-card">
+                <span>Existing Master</span>
+                <strong>{{ existing_parameter_count }} parameter(s)</strong>
+                <small>{{ existing_recipe_count }} recipe(s)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="flash-message flash-info" style="margin-top: 14px;">
+        <span class="flash-icon" aria-hidden="true">i</span>
+        <div class="flash-content">
+            <div class="flash-title">PLC ARRAY TAG SELECTION</div>
+            <div class="flash-text">
+                For {{ context.machine_stage_display }}, use <strong>CRS_Recipe_Data</strong> or <strong>CRS_Test_Recipe_Data</strong>.
+                For P15 SS these PLC tags must be <strong>REAL[150]</strong> and valid indexes are <strong>0 to 149</strong>.
+                Do not use <strong>CRS_Recipe_Code</strong>; it is a STRING tag, not recipe array data.
+            </div>
+        </div>
+    </div>
+
+    {% if existing_parameter_count > 0 %}
+    <div class="flash-message flash-warning" style="margin-top: 14px;">
+        <span class="flash-icon" aria-hidden="true">!</span>
+        <div class="flash-content">
+            <div class="flash-title">Existing Parameter Master</div>
+            <div class="flash-text">
+                Parameter master already exists for this machine/stage. Preview is allowed, but Build will not overwrite existing parameter definitions.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="panel-card" style="margin-top: 14px;">
+        <div class="panel-heading">
+            <div>
+                <h3>Import From PLC 1D Array</h3>
+                <p class="muted-text">Use a controller-scope REAL array tag. Preview first, then build only after checking values.</p>
+            </div>
+        </div>
+
+        <form method="POST" style="padding: 16px; display: grid; gap: 12px;">
+            <div class="form-grid" style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px;">
+                <label>
+                    <strong>PLC 1D Array Tag Name</strong>
+                    <input class="form-control" id="plc-array-tag-name" name="tag_name" value="{{ form_data.tag_name }}" placeholder="Example: CRS_Recipe_Data" required>
+                    <small class="muted-text">Use base array name only. Example: CRS_Recipe_Data, not CRS_Recipe_Data[0].</small>
+                </label>
+                <label>
+                    <strong>Start Index</strong>
+                    <input class="form-control" id="plc-array-start-index" name="start_index" type="number" min="0" value="{{ form_data.start_index }}" required>
+                </label>
+                <label>
+                    <strong>End Index</strong>
+                    <input class="form-control" id="plc-array-end-index" name="end_index" type="number" min="0" value="{{ form_data.end_index }}" required>
+                </label>
+            </div>
+
+            <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                <span class="muted-text"><strong>Quick select:</strong></span>
+                {% for tag in standard_array_tags %}
+                <button class="btn btn-secondary" type="button" onclick="document.getElementById('plc-array-tag-name').value='{{ tag }}'; document.getElementById('plc-array-start-index').value='0'; document.getElementById('plc-array-end-index').value='149';">
+                    {{ tag }} REAL[150]
+                </button>
+                {% endfor %}
+            </div>
+
+            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr 120px; gap: 12px;">
+                <label>
+                    <strong>Recipe Code</strong>
+                    <input class="form-control" name="recipe_code" value="{{ form_data.recipe_code }}" required>
+                </label>
+                <label>
+                    <strong>Recipe Name</strong>
+                    <input class="form-control" name="recipe_name" value="{{ form_data.recipe_name }}" required>
+                </label>
+                <label>
+                    <strong>Version</strong>
+                    <input class="form-control" name="version" type="number" min="1" value="{{ form_data.version }}" required>
+                </label>
+            </div>
+
+            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px;">
+                <label>
+                    <strong>Default Unit</strong>
+                    <input class="form-control" name="unit" value="{{ form_data.unit }}" placeholder="MM / DEG / blank">
+                </label>
+                <label>
+                    <strong>Default Min</strong>
+                    <input class="form-control" name="min_value" value="{{ form_data.min_value }}">
+                </label>
+                <label>
+                    <strong>Default Max</strong>
+                    <input class="form-control" name="max_value" value="{{ form_data.max_value }}">
+                </label>
+                <label>
+                    <strong>Datatype</strong>
+                    <select class="form-control" name="datatype">
+                        <option value="REAL" {% if form_data.datatype == 'REAL' %}selected{% endif %}>REAL</option>
+                        <option value="DINT" {% if form_data.datatype == 'DINT' %}selected{% endif %}>DINT</option>
+                        <option value="INT" {% if form_data.datatype == 'INT' %}selected{% endif %}>INT</option>
+                        <option value="BOOL" {% if form_data.datatype == 'BOOL' %}selected{% endif %}>BOOL</option>
+                    </select>
+                </label>
+            </div>
+
+            <label>
+                <strong>Reason for Build</strong>
+                <textarea class="form-control" name="reason" rows="3" placeholder="Required only when building actual draft recipe">{{ form_data.reason }}</textarea>
+            </label>
+
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn btn-primary" type="submit" name="action" value="preview">Preview PLC Array</button>
+                <button class="btn btn-warning" type="submit" name="action" value="build"
+                        onclick="return confirm('Create selected machine/stage parameter master and DRAFT recipe from this PLC array? This will be audited.');">
+                    Build Parameter Master + Draft Recipe
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if result %}
+    <div class="panel-card" style="margin-top: 14px;">
+        <div class="panel-heading">
+            <div>
+                <h3>PLC Array Preview</h3>
+                <p class="muted-text">
+                    Tag {{ result["tag_name"] }} | Index {{ result["start_index"] }} to {{ result["end_index"] }} | Count {{ result["count"] }}
+                </p>
+            </div>
+            {% if result["ok"] %}<span class="status-pill status-success">OK</span>{% else %}<span class="status-pill status-danger">FAILED</span>{% endif %}
+        </div>
+
+        {% if result["errors"] %}
+        <div style="padding: 0 16px 12px; display:grid; gap:8px;">
+            {% for error in result["errors"] %}
+            <div class="flash-message flash-danger">
+                <span class="flash-icon" aria-hidden="true">⚠</span>
+                <div class="flash-content">
+                    <div class="flash-title">Preview Error</div>
+                    <div class="flash-text">{{ error }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if result["warnings"] %}
+        <div style="padding: 0 16px 12px; display:grid; gap:8px;">
+            {% for warning in result["warnings"] %}
+            <div class="flash-message flash-warning">
+                <span class="flash-icon" aria-hidden="true">!</span>
+                <div class="flash-content">
+                    <div class="flash-title">Preview Warning</div>
+                    <div class="flash-text">{{ warning }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if result.get("diagnostics") %}
+        <div style="padding: 0 16px 12px; display:grid; gap:8px;">
+            <div class="flash-message flash-info">
+                <span class="flash-icon" aria-hidden="true">i</span>
+                <div class="flash-content">
+                    <div class="flash-title">PLC Read Diagnostics</div>
+                    <div class="flash-text">
+                        {% for diagnostic in result["diagnostics"] %}
+                            <div>{{ diagnostic }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if result["values"] %}
+        <div style="max-height: 420px; overflow:auto; padding: 0 16px 16px;">
+            <table class="data-table compact-table">
+                <thead>
+                    <tr>
+                        <th>Index</th>
+                        <th>PLC Value</th>
+                        <th>Initial Parameter Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in result["values"][:300] %}
+                    <tr>
+                        <td>{{ row.index }}</td>
+                        <td>{{ row.value }}</td>
+                        <td>{{ row.parameter_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if result["values"]|length > 300 %}
+            <p class="muted-text">Showing first 300 rows only.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

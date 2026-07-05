@@ -1,0 +1,31 @@
+Priority 11 - UI Visual Tuning FIX2
+
+Purpose:
+- Replace the oversized Full HD CSS/JS standardization with a compact professional UI system.
+- Keep base.html unchanged.
+- Remove duplicate/scattered late CSS overrides.
+- Align header, dashboard, recipes, stages, audit, archive, auto logout and PLC operation pages around common tokens.
+
+Key decisions:
+- Sticky header in document flow, not fixed overlay.
+- Base font 14px, page title 27px, brand title 28px.
+- Moderate cards and table spacing suitable for 1920x1080 at 100% browser zoom.
+- Generic .metric-card strong reduced so text values like Master/Trace do not become oversized.
+- Login card reduced and centered.
+- Forms, tables, flash messages and login-attempt alerts use compact industrial spacing.
+- JS grouped by module and confirmation fires only on submit/click of intended element.
+
+Files:
+- flask_app/static/css/main.css
+- flask_app/static/js/main.js
+
+Test pages:
+- /login
+- /
+- /recipes
+- /stages
+- /audit-history
+- /audit-archive
+- /auto-logout-settings
+- /active-sessions
+- /recipe-editor/download-preparation/8

@@ -1,0 +1,54 @@
+CRS V6.5.2 - PLC Array Import Tag Found / Read Diagnostics Fix
+==============================================================
+
+Purpose
+-------
+Improve /plc-array-import/P15/SS Preview PLC Array when CRS_Test_Recipe_Data
+or CRS_Recipe_Data already exists in the PLC, but pycomm3 preview reports
+"Tag doesn't exist".
+
+Approved P15 Second Stage PLC array standard
+--------------------------------------------
+CRS_Recipe_Data       REAL[150]
+CRS_Test_Recipe_Data  REAL[150]
+Valid indexes: 0 to 149
+Controller-scope tags in the active P15 SS PLC.
+
+Changes
+-------
+1. Preview now initializes the online controller tag cache before reading.
+2. Preview checks if the entered tag exists in the active PLC online tag list.
+3. Preview resolves case-only tag name differences.
+4. Preview shows similar online CRS_ tags if the entered tag is not found.
+5. Preview tries TAG{count} first for zero-based array reads, then TAG[0]{count}, then per-index fallback.
+6. Preview result now shows PLC read diagnostics on the page.
+7. Added scripts/diagnose_p15_ss_crs_array_tags.py to test active P15/SS PLC tag metadata and read expressions from PowerShell.
+
+Patch files
+-----------
+database/plc_1d_array_recipe_builder.py
+flask_app/templates/plc_array_import/import_1d_array.html
+scripts/diagnose_p15_ss_crs_array_tags.py
+project_docs/59_PLC_ARRAY_IMPORT_TAG_FOUND_READ_FIX_V1.txt
+
+Apply
+-----
+From project root:
+    Expand-Archive -Path .\CRS_V6.5.2_PLC_Array_Import_Tag_Read_Diagnostics_PATCH_ONLY_280626.zip -DestinationPath . -Force
+    python app.py
+
+Test in browser
+---------------
+1. Open /plc-array-import/P15/SS.
+2. Select CRS_Test_Recipe_Data or CRS_Recipe_Data.
+3. Use Start Index 0 and End Index 149.
+4. Click Preview PLC Array.
+5. Read the PLC Read Diagnostics block. It should show whether the active PLC online tag list contains the tag and which read expression was used.
+
+Test in PowerShell
+------------------
+From project root, with venv active:
+    python scripts/diagnose_p15_ss_crs_array_tags.py --stage SS
+
+If the diagnostic says NOT FOUND, then CRS is connected to an active PLC that does not contain that tag, or the tag was created in another controller/project/path.
+If it says FOUND but all reads fail, check Studio 5000 tag External Access and confirm it is a normal controller-scope REAL[150] tag.

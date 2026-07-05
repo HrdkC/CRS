@@ -1,0 +1,23 @@
+CRS V6.7 - Phase Control Apollo Violet Standard
+
+Purpose:
+- Make Phase Control screens follow CRS Apollo violet/blue color scheme.
+- Remove red phase-control grid lines.
+- Keep P15 Second Stage as three columns: Cap Strip Side, B&T Side, Shaping Side.
+- Use professional compact card/table layout for both view and edit modes.
+
+Changed screens:
+- Recipe Editor phase-control summary.
+- Recipe Phase Control view page.
+- Recipe Phase Control edit page.
+
+Second Stage rule:
+- Second Stage shows only line number + phase-control selection.
+- Stop and Position selects are hidden for Second Stage and preserved internally with hidden values.
+
+Patch files:
+- flask_app/templates/base.html
+- flask_app/templates/recipes/editor.html
+- flask_app/templates/recipes/recipe_phase_control.html
+- flask_app/static/css/main.css
+- project_docs/60_PHASE_CONTROL_APOLLO_VIOLET_STANDARD_V1.txt

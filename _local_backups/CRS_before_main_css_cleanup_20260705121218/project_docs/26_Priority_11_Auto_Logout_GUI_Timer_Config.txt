@@ -1,0 +1,56 @@
+# Priority 11 Add-On: Auto Logout GUI Timer + Admin Configuration
+
+Date: 2026-06-23
+Project: Centralized Recipe System (CRS)
+
+## Purpose
+
+Add operator-visible ticking idle timeout countdown and ADMIN-super-user configurable auto logout time from the GUI.
+
+## Final Rule
+
+- Every logged-in user sees remaining allowed idle time in the page header.
+- ADMIN super user can configure auto logout time from Active Sessions GUI.
+- Default timeout comes from CRS_SESSION_TIMEOUT_MINUTES environment variable if no DB setting exists.
+- After the database setting exists, DB setting is source of truth.
+- Timeout range: 1 to 480 minutes.
+- GUI countdown auto-expires the session and redirects to login when the timer reaches zero.
+- Active users send a heartbeat to keep the server session alive only when there is GUI activity.
+
+## ADMIN Configuration Page
+
+Open:
+
+    /active-sessions
+
+ADMIN can update:
+
+    Auto Logout Time = N minutes
+
+The change is audited using:
+
+    action = SESSION_TIMEOUT_UPDATED
+    change_source = WEB_ADMIN_SETTINGS
+
+## GUI Verification
+
+1. Login as admin/hardik.
+2. Open Active Sessions.
+3. Set Auto Logout Time to 1 minute.
+4. Confirm header shows ticking Auto Logout timer.
+5. Do not touch the browser.
+6. After timer reaches 00:00, user should be redirected to login.
+7. Check audit log for AUTO_LOGOUT.
+8. Set Auto Logout Time back to production value, e.g. 30 minutes.
+
+## Files Updated
+
+- database/system_settings_manager.py
+- database/upgrade_user_management_priority11.py
+- flask_app/security/session_guard.py
+- flask_app/routes/session_routes.py
+- flask_app/templates/base.html
+- flask_app/templates/sessions/active_sessions.html
+- flask_app/static/js/main.js
+- flask_app/static/css/main.css
+- flask_app/__init__.py

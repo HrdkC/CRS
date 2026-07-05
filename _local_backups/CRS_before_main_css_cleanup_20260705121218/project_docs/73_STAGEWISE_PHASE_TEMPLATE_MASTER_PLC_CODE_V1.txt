@@ -1,0 +1,52 @@
+CRS V6.20 / V8.1 - Stage-wise Phase Template Master + PLC Phase Code
+Date: 2026-06-30
+
+Purpose
+- Make phase-control dropdown strings stage/module owned.
+- Preserve exact case entered in each machine/stage phase template.
+- Prevent duplicate phase names case-insensitively within the same machine/stage/group.
+- Prepare phase-control master for PLC trial using numeric DINT phase codes.
+
+Core rule
+- phase_control_name: display text, case preserved.
+- phase_control_key: normalized duplicate key, uppercase and whitespace-normalized.
+- plc_phase_code: DINT code for PLC phase arrays. Empty Phase uses code 0.
+
+New GUI behavior
+- Phase Master page is now Stage-wise Phase Template.
+- User can paste approved phase strings line-by-line for a group.
+- User can edit existing phase string, PLC phase code, order, active status, and description.
+- Duplicate phase names ignoring case can be merged from GUI.
+- Duplicate check blocks active duplicates inside the same group.
+
+Recipe behavior
+- Recipe phase editor uses only active options from the recipe machine/stage template.
+- Dropdown options are de-duplicated case-insensitively.
+- New recipe phase rows are created as Empty Phase slots from the stage template, not one row per phase option.
+- First Stage default slot count: 12.
+- Second Stage default slot count: 6 per active group.
+
+PLC preparation
+- PLC must use plc_phase_code, not display string.
+- Recommended future PLC phase buffers:
+  First Stage:
+    CRS_Phase_Application_Data DINT[]
+    Running_Phase_Application_Data DINT[]
+  Second Stage:
+    CRS_Phase_CapStrip_Data DINT[]
+    CRS_Phase_BT_Data DINT[]
+    CRS_Phase_Shaping_Data DINT[]
+    Running_Phase_CapStrip_Data DINT[]
+    Running_Phase_BT_Data DINT[]
+    Running_Phase_Shaping_Data DINT[]
+
+Files changed
+- database/phase_template_manager.py
+- database/phase_control_default_manager.py
+- database/phase_control_manager.py
+- database/recipe_phase_control_manager.py
+- database/create_phase_control_master_table.py
+- flask_app/routes/phase_control_routes.py
+- flask_app/routes/recipe_routes.py
+- flask_app/templates/phase_controls/stage_master.html
+- flask_app/static/css/main.css

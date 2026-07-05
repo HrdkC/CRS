@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block title %}
+Phase Option Master - {{ context.machine_stage_display }}
+{% endblock %}
+
+{% block content %}
+
+{% set stage_upper = (context.stage_type or "")|upper %}
+{% set is_second_stage = stage_upper in ["SECOND_STAGE", "SECONDSTAGE", "SS"] %}
+{% set is_first_stage = stage_upper in ["FIRST_STAGE", "FIRSTSTAGE", "FS"] %}
+{% set duplicate_name_count = (duplicate_report.duplicate_name_count if duplicate_report else 0) %}
+{% set duplicate_code_count = (duplicate_report.duplicate_code_count if duplicate_report else 0) %}
+
+<section class="recipe-workbench phase-workbench phase-template-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Eligible Phase Master</span>
+            <h1>{{ context.machine_stage_display }} Phase Option Master</h1>
+            <p>
+                Master list only. Recipe phase rows are selected separately from this list on the Recipe Phase Control screen.
+            </p>
+        </div>
+
+        <div class="workbench-actions">
+            <form method="POST" class="inline-form">
+                <input type="hidden" name="action" value="initialize_defaults">
+                <button
+                    type="submit"
+                    class="crs-btn crs-btn-soft"
+                    title="Creates standard master groups and default eligible phase names if missing. Existing rows are kept."
+                >
+                    Initialize Master Defaults
+                </button>
+            </form>
+            <a href="{{ back_url }}" class="crs-btn crs-btn-soft">Back To Master List</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Machine</span>
+            <strong>{{ context.machine_code }}</strong>
+            <small>Template ownership</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Stage</span>
+            <strong>{{ context.stage_url_code }} {{ context.stage_display_name }}</strong>
+            <small>Recipes use only this stage template</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Master Groups</span>
+            <strong>{{ groups|length }}</strong>
+            <small>FS uses one group; SS can use side groups</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Eligible Phases</span>
+            <strong>{{ options|length }}</strong>
+            <small>Master rows, active + inactive</small>
+        </div>
+    </div>
+
+    {% if duplicate_name_count or duplicate_code_count %}
+    <section class="workbench-card phase-template-warning-card">
+        <div class="panel-heading">
+            <span>Duplicate Phase Template Warning</span>
+            <span class="status-badge status-warning">Needs Cleanup</span>
+        </div>
+
+        <div class="phase-template-warning-grid">
+            <div>
+                <strong>{{ duplicate_name_count }}</strong>
+                <span>case-insensitive name duplicate group(s)</span>
+            </div>
+            <div>
+                <strong>{{ duplicate_code_count }}</strong>
+                <span>PLC phase-code duplicate group(s)</span>
+            </div>
+        </div>
+
+        {% if duplicate_report.duplicate_names %}
+        <ul class="compact-alert-list">
+            {% for duplicate in duplicate_report.duplicate_names[:6] %}
+            <li>
+                {{ duplicate.group_code }} / {{ duplicate.phase_key }}:
+                {% for row in duplicate.rows %}
+                    #{{ row.id }} {{ row.phase_control_name }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <form method="POST" class="inline-action-form phase-cleanup-form">
+            <input type="hidden" name="action" value="cleanup_duplicates">
+            <input type="text" name="reason" value="Merge case-insensitive duplicate phase names for {{ context.machine_stage_display }}" required>
+            <button type="submit" class="crs-btn crs-btn-primary">Merge Duplicate Names</button>
+        </form>
+    </section>
+    {% endif %}
+
+    <section class="workbench-card phase-template-rule-card">
+        <div class="panel-heading">
+            <span>Master / Recipe Boundary</span>
+            <span class="status-badge status-info">Master List</span>
+        </div>
+        <div class="phase-template-guidance-grid">
+            <div>
+                <strong>This page maintains eligible phases.</strong>
+                <p>It does not set the recipe sequence. Operators select recipe rows on Recipe Phase Control.</p>
+            </div>
+            <div>
+                <strong>PLC string case is preserved.</strong>
+                <p>Display can be uppercase, but saved PLC text remains exact for stage-specific PLC logic.</p>
+            </div>
+            <div>
+                <strong>Duplicate check ignores case.</strong>
+                <p>Within one master group, the same phase name with different letter case is treated as duplicate.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="workbench-card phase-option-master-card">
+        <div class="panel-heading">
+            <span>Eligible Phase Master</span>
+            <span class="status-badge status-info">{{ "Second Stage Master" if is_second_stage else "First Stage Master" }}</span>
+        </div>
+
+        {% if grouped_options %}
+        <div class="phase-option-master-grid {% if is_second_stage %}phase-option-master-grid-ss{% else %}phase-option-master-grid-fs{% endif %}">
+            {% for item in grouped_options %}
+            <section class="phase-option-master-group">
+                <div class="phase-option-master-group-header">
+                    <strong>{{ item.group.phase_group_name }}</strong>
+                    <span class="status-badge status-info">{{ item.options|length }}</span>
+                </div>
+                <table class="phase-option-master-table">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Eligible Phase String</th>
+                            <th>PLC Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                {% for option in item.options %}
+                        <tr class="{% if option.active != 1 %}row-inactive{% endif %}">
+                            <td><span class="tag-pill">{{ option.display_order }}</span></td>
+                            <td>
+                                <strong title="Saved PLC text: {{ option.phase_control_name }}">{{ option.phase_control_name|upper }}</strong>
+                            </td>
+                            <td><span class="phase-code-pill">PLC {{ option.plc_phase_code if option.plc_phase_code is not none else '-' }}</span></td>
+                        </tr>
+                {% else %}
+                        <tr>
+                            <td colspan="3" class="empty-state">No eligible phase names configured.</td>
+                        </tr>
+                {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state-card">
+            <div>
+                <strong>No eligible phase master configured for this stage.</strong>
+                <p class="muted-text">Use Initialize Defaults or create a group manually below.</p>
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="workbench-card phase-template-paste-card">
+        <div class="panel-heading">
+            <div>
+                <span>Bulk Load Eligible Phase Names</span>
+                <p>Paste approved master phase names line-by-line. Recipe rows will use these names in dropdowns.</p>
+            </div>
+            <span class="status-badge status-info">Fast Setup</span>
+        </div>
+
+        <form method="POST" class="phase-template-paste-form">
+            <input type="hidden" name="action" value="save_group_template_text">
+            <div class="form-grid two-column-form-grid">
+                <label>
+                    <span>Master Group</span>
+                    <select name="phase_group_code" required>
+                        {% for group in groups %}
+                        {% if group.active == 1 %}
+                        <option value="{{ group.phase_group_code }}">{{ group.phase_group_name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="checkbox-tile">
+                    <input type="checkbox" name="deactivate_missing" value="1">
+                    <span>Deactivate active phase names not present in pasted list</span>
+                </label>
+                <label class="form-span-2">
+                    <span>Eligible Phase Strings</span>
+                    <textarea
+                        name="phase_template_text"
+                        rows="12"
+                        placeholder="Example for P15 FS uppercase template:&#10;IL WITH TOPROLL&#10;IL WITHOUT TOPROLL&#10;PLY 1 WITH TOPROLL&#10;PLY 1 WITHOUT TOPROLL&#10;INSERT BEADS&#10;SET BEADS&#10;EMPTY PHASE"
+                        required
+                    ></textarea>
+                </label>
+                <label class="form-span-2">
+                    <span>Change Reason</span>
+                    <input type="text" name="reason" placeholder="Example: Load approved P15 FS uppercase phase template" required>
+                </label>
+            </div>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Save Master List</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="workbench-card phase-template-edit-card">
+        <div class="panel-heading">
+            <div>
+                <span>Maintain Eligible Phase Master</span>
+                <p>Edit master phase text, PLC phase code, display order, active status, and description.</p>
+            </div>
+            <span class="status-badge status-info">Audited</span>
+        </div>
+
+        {% if options %}
+        <form method="POST" class="phase-template-edit-form">
+            <input type="hidden" name="action" value="save_phase_template">
+            <div class="table-container phase-template-table-wrap">
+                <table class="phase-template-table">
+                    <thead>
+                        <tr>
+                            <th>Active</th>
+                            <th>Master Group</th>
+                            <th>Sort Order</th>
+                            <th>PLC Code</th>
+                            <th>Eligible Phase String</th>
+                            <th>Case-insensitive Key</th>
+                            <th>Description</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for option in options %}
+                        {% set option_key = (option.phase_control_key or option.phase_control_name or "")|upper %}
+                        <tr class="{% if option.active != 1 %}row-inactive{% endif %}">
+                            <td>
+                                <input type="hidden" name="phase_id" value="{{ option.id }}">
+                                <input type="hidden" name="phase_group_code_{{ option.id }}" value="{{ option.phase_group_code or 'MAIN' }}">
+                                <input type="checkbox" name="active_{{ option.id }}" value="1" {% if option.active == 1 %}checked{% endif %}>
+                            </td>
+                            <td>
+                                <strong>{{ option.phase_group_code or 'MAIN' }}</strong>
+                                <small>{{ option.phase_group_name or 'Phase Control' }}</small>
+                            </td>
+                            <td>
+                                <input type="number" name="display_order_{{ option.id }}" value="{{ option.display_order or 0 }}" class="compact-cell-input">
+                            </td>
+                            <td>
+                                <input type="number" name="plc_phase_code_{{ option.id }}" value="{{ option.plc_phase_code if option.plc_phase_code is not none else '' }}" class="compact-cell-input" placeholder="DINT">
+                            </td>
+                            <td>
+                                <input type="text" name="phase_control_name_{{ option.id }}" value="{{ option.phase_control_name }}" class="wide-cell-input" required>
+                            </td>
+                            <td>
+                                <span class="mini-badge">{{ option.phase_control_key or (option.phase_control_name or '')|upper }}</span>
+                            </td>
+                            <td>
+                                <input type="text" name="description_{{ option.id }}" value="{{ option.description or '' }}" class="wide-cell-input">
+                            </td>
+                            <td class="phase-remove-cell">
+                                {% if option_key == "EMPTY PHASE" %}
+                                <span class="mini-badge" title="Required placeholder for unused phase rows.">Required</span>
+                                {% elif option.active == 1 %}
+                                <label class="phase-remove-toggle" title="Removes this phase from recipe dropdowns for this machine/stage. History remains stored.">
+                                    <input type="checkbox" name="remove_phase_id" value="{{ option.id }}">
+                                    <span>Remove</span>
+                                </label>
+                                {% else %}
+                                <span class="status-badge status-warning">Removed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="stage-plc-rule-actions">
+                <label>
+                    <span>Change Reason</span>
+                    <input type="text" name="reason" placeholder="Example: Remove unused phase option from P15 SS master dropdown" required>
+                </label>
+                <button type="submit" class="crs-btn crs-btn-primary">Save / Remove Selected</button>
+            </div>
+        </form>
+        {% else %}
+        <div class="empty-state">No phase options found for this machine/stage.</div>
+        {% endif %}
+    </section>
+
+    <div class="phase-master-grid">
+        {% if not is_first_stage %}
+        <div class="workbench-card edit-parameter-panel">
+            <div class="panel-heading">
+                <span>Add Master Group</span>
+                <span class="status-badge status-info">Master Group</span>
+            </div>
+
+            <form method="POST" class="parameter-edit-form">
+                <input type="hidden" name="action" value="create_group">
+                <div class="form-grid two-column-form-grid">
+                    <label>
+                        <span>Group Code</span>
+                        <input type="text" name="phase_group_code" placeholder="Example: CAP_STRIP_SIDE">
+                    </label>
+                    <label>
+                        <span>Display Order</span>
+                        <input type="number" name="display_order" value="{{ groups|length + 1 }}">
+                    </label>
+                    <label class="form-span-2">
+                        <span>Group Name</span>
+                        <input type="text" name="phase_group_name" required placeholder="Example: Cap Strip Side">
+                    </label>
+                    <label class="form-span-2">
+                        <span>Description</span>
+                        <input type="text" name="description" placeholder="Optional engineering note">
+                    </label>
+                </div>
+                <div class="form-action-row">
+                    <button type="submit" class="crs-btn crs-btn-primary">Add Master Group</button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="workbench-card edit-parameter-panel">
+            <div class="panel-heading">
+                <span>Add Eligible Phase</span>
+                <span class="status-badge status-info">Master Option</span>
+            </div>
+
+            <form method="POST" class="parameter-edit-form">
+                <input type="hidden" name="action" value="create_phase">
+                <div class="form-grid two-column-form-grid">
+                    <label>
+                        <span>Master Group</span>
+                        <select name="phase_group_code" required>
+                            {% for group in groups %}
+                            {% if group.active == 1 %}
+                            <option value="{{ group.phase_group_code }}">{{ group.phase_group_name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        <span>Display Order</span>
+                        <input type="number" name="display_order" value="{{ options|length + 1 }}">
+                    </label>
+                    <label>
+                        <span>PLC Phase Code</span>
+                        <input type="number" name="plc_phase_code" placeholder="Example: 101">
+                    </label>
+                    <label class="form-span-2">
+                        <span>Phase Name</span>
+                        <input type="text" name="phase_control_name" required placeholder="Example: IL WITH TOPROLL">
+                    </label>
+                    <label class="form-span-2">
+                        <span>Description</span>
+                        <input type="text" name="description" placeholder="Optional display or engineering note">
+                    </label>
+                </div>
+                <div class="form-action-row">
+                    <button type="submit" class="crs-btn crs-btn-primary">Add Eligible Phase</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

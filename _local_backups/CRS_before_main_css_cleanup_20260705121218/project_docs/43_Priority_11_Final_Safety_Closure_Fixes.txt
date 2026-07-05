@@ -1,0 +1,44 @@
+# Priority 11 Final Safety Closure Fixes - V4.1 to V4.2
+
+Date: 2026-06-24
+
+## Purpose
+Finalize the remaining Priority 11 production-safety gaps before starting Priority 12 Disaster Recovery.
+
+## Included Fixes
+
+1. VIEWER direct URL protection
+   - VIEWER can view recipe values and read-only screens only.
+   - VIEWER is blocked from `/recipe-editor/download-preparation/<recipe_id>` and PLC buffer operation start endpoints.
+
+2. Recipe edit lock release improvement
+   - Added explicit `Release Lock & Back` and `Cancel / Release Lock` behavior on recipe parameter edit page.
+   - Added POST route `/recipe-editor/edit/<value_id>/cancel`.
+   - Added POST/AJAX route `/recipe-editor/edit/<value_id>/release-lock` for page close/back cleanup.
+   - Locks are released only for the current user/session so one user cannot release another user's lock.
+
+3. Recipe resource lock manager hardening
+   - Fixed duplicate SQL keyword in `release_session_locks`.
+   - Added current-user resource lock release helper.
+   - Added current-user lock lookup helper.
+
+4. Login attempt alert de-duplication
+   - Added `attempt_count` and `last_attempted_at` to `user_login_attempt_alerts`.
+   - Repeated attempts from same username/session/IP/workstation within 60 seconds update the existing unread alert instead of creating multiple cards.
+   - Active user sees attempt count when repeated attempts occur.
+
+5. Production auto-logout baseline
+   - Upgrade script normalizes `SESSION_TIMEOUT_MINUTES` to 30 minutes if the DB still contains the GUI test value of 5 minutes or less.
+   - ADMIN can still change the setting later from Auto Logout Settings.
+
+6. Campaign carousel documentation correction
+   - Documentation now reflects the accepted slow carousel timing instead of the earlier 2-second test behavior.
+
+## Test Checklist
+
+- Login as VIEWER and open `/recipe-editor/download-preparation/8`: blocked and redirected to read-only recipe editor.
+- Login as ADMIN/ENGINEERING and open parameter edit page: lock is acquired.
+- Press Release Lock & Back: lock status becomes RELEASED.
+- Open edit page and close/back without saving: lock release route is called; stale cleanup still remains as backup protection.
+- Try same-username login multiple times within 60 seconds: active user gets one alert with attempt count instead of repeated cards.
+- Run `python database\upgrade_user_management_priority11.py`: session timeout test value is normalized to 30 if needed.

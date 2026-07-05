@@ -1,0 +1,95 @@
+USER ROLES
+==========
+
+Developer / Master
+------------------
+
+Purpose:
+
+Emergency recovery account.
+
+Permissions:
+
+- Full system access
+- Database recovery
+- User recovery
+- Admin recovery
+
+Admin
+-----
+
+Purpose:
+
+System administration.
+
+Permissions:
+
+- User management
+- Family management
+- Machine management
+- PLC management
+- Configuration management
+
+Engineering
+-----------
+
+Purpose:
+
+Engineering ownership.
+
+Permissions:
+
+- Template management
+- PLC mappings
+- Engineering units
+- Limits
+- Phase control configuration
+
+Technology
+----------
+
+Purpose:
+
+Recipe review and approval.
+
+Permissions:
+
+- Review recipes
+- Approve recipes
+- Reject recipes
+
+Production
+----------
+
+Purpose:
+
+Recipe creation.
+
+Permissions:
+
+- Create draft recipes
+- Edit draft recipes
+
+Operator
+--------
+
+Purpose:
+
+Machine operation.
+
+Permissions:
+
+- View approved recipes
+- Download recipes
+- Upload recipes
+
+Viewer
+------
+
+Purpose:
+
+Read-only access.
+
+Permissions:
+
+- View data only

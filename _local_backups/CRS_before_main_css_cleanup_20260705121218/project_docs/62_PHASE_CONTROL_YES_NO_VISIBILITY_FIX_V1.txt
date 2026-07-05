@@ -1,0 +1,13 @@
+CRS V6.7.2 - Phase Control Yes/No Visibility Fix
+
+Purpose:
+- Fix the V6.7.1 CSS over-compression where Stop / Position dropdown values such as "Yes" were displayed as "Y..." at 100% zoom.
+
+Scope:
+- CSS only.
+- Keeps Apollo violet phase-control UI.
+- Keeps current 3-column Second Stage and First Stage card/table style.
+- Increases Stop and Position columns enough for full Yes/No visibility.
+
+Changed file:
+- flask_app/static/css/main.css

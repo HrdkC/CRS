@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block title %}
+Configuration Readiness
+{% endblock %}
+
+{% block content %}
+
+{% set context = report.context %}
+
+<div class="recipe-workbench configuration-workbench">
+
+    <section class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Configuration Readiness</span>
+            <h1>{{ context.machine_stage_display }}</h1>
+            <p>GUI setup status for templates, phase controls, editable PLC tag rules, and recipe readiness.</p>
+        </div>
+        <div class="workbench-actions">
+            <a class="crs-btn crs-btn-soft" href="{{ back_url }}">All Stages</a>
+            <a class="crs-btn crs-btn-soft" href="{{ report.recipes_url }}">Recipes</a>
+            <a class="crs-btn crs-btn-primary" href="{{ report.create_recipe_url }}">Create Recipe</a>
+        </div>
+    </section>
+
+    <section class="metric-grid configuration-metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong class="metric-text">{{ report.status }}</strong>
+            <small>Overall setup condition</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Score</span>
+            <strong>{{ report.score }}%</strong>
+            <small>{{ report.ready_count }} of {{ report.total_count }} checks OK</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Blocked</span>
+            <strong>{{ report.blocking_count }}</strong>
+            <small>Must be fixed before stable operation</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Warnings</span>
+            <strong>{{ report.warning_count }}</strong>
+            <small>Recommended before plant use</small>
+        </div>
+    </section>
+
+    <section class="workbench-card configuration-action-card">
+        <div class="configuration-action-grid">
+            <a class="configuration-action" href="{{ report.parameters_url }}" title="View, add, edit, enable, or disable stage parameter definitions.">
+                <span>Parameter Template</span>
+                <strong>Open</strong>
+            </a>
+            <a class="configuration-action" href="{{ report.plc_array_import_url }}" title="Build parameter master and draft recipe from a PLC 1D REAL array.">
+                <span>1D Array Import</span>
+                <strong>Open</strong>
+            </a>
+            <a class="configuration-action" href="{{ report.phase_master_url }}" title="Maintain allowed phase groups and phase names for this stage.">
+                <span>Phase Master</span>
+                <strong>Open</strong>
+            </a>
+            <a class="configuration-action" href="{{ report.plc_tags_url }}" title="Browse online/offline PLC tags and assign CRS tag purposes.">
+                <span>PLC Tags</span>
+                <strong>Open</strong>
+            </a>
+            <a class="configuration-action" href="/plcs/create" title="Register PLC metadata and IP address for this machine/stage.">
+                <span>PLC Registry</span>
+                <strong>Open</strong>
+            </a>
+            <a class="configuration-action" href="/recipes/import-export" title="Download or import approved CRS Excel templates.">
+                <span>Recipe Excel</span>
+                <strong>Open</strong>
+            </a>
+        </div>
+    </section>
+
+    {% macro render_plc_rule(rule) %}
+    {% set purpose = rule.purpose %}
+    <article class="plc-setup-row {% if rule.active %}plc-setup-row-active{% else %}plc-setup-row-inactive{% endif %}">
+        <input type="hidden" name="purpose" value="{{ purpose }}">
+
+        <div class="plc-setup-row-main">
+            <label class="plc-rule-switch" title="Inactive rules are stored but not used for readiness or download gates.">
+                <input type="checkbox" name="active_{{ purpose }}" value="1" {% if rule.active %}checked{% endif %}>
+                <span class="plc-rule-switch-box"></span>
+                <span>{% if rule.active %}Active{% else %}Inactive{% endif %}</span>
+            </label>
+            <div class="plc-rule-identity">
+                <span>Purpose key</span>
+                <strong>{{ purpose }}</strong>
+                <small>Fixed system key</small>
+            </div>
+        </div>
+
+        <div class="plc-setup-fields plc-setup-fields-core">
+            <label>
+                <span>Level</span>
+                <select name="requirement_level_{{ purpose }}">
+                    <option value="REQUIRED" {% if rule.requirement_level == 'REQUIRED' %}selected{% endif %}>Required</option>
+                    <option value="RECOMMENDED" {% if rule.requirement_level == 'RECOMMENDED' %}selected{% endif %}>Recommended</option>
+                </select>
+            </label>
+            <label>
+                <span>User Label</span>
+                <input type="text" name="label_{{ purpose }}" value="{{ rule.label or '' }}" required>
+            </label>
+            <label>
+                <span>Data Type</span>
+                <input type="text" name="expected_type_{{ purpose }}" value="{{ rule.expected_type or '' }}" placeholder="REAL / BOOL / STRING">
+            </label>
+        </div>
+
+        <div class="plc-setup-fields plc-setup-fields-array">
+            <label>
+                <span>Array</span>
+                <select name="array_required_{{ purpose }}">
+                    <option value="0" {% if not rule.array_required %}selected{% endif %}>No</option>
+                    <option value="1" {% if rule.array_required %}selected{% endif %}>Yes</option>
+                </select>
+            </label>
+            <label>
+                <span>Size</span>
+                <input type="number" name="minimum_array_size_{{ purpose }}" value="{{ rule.minimum_array_size if rule.minimum_array_size is not none else '' }}" min="1" step="1" placeholder="-">
+            </label>
+            <label>
+                <span>Start</span>
+                <input type="number" name="array_start_index_{{ purpose }}" value="{{ rule.array_start_index if rule.array_start_index is not none else '' }}" step="1" placeholder="-">
+            </label>
+            <label>
+                <span>End</span>
+                <input type="number" name="array_end_index_{{ purpose }}" value="{{ rule.array_end_index if rule.array_end_index is not none else '' }}" step="1" placeholder="-">
+            </label>
+        </div>
+
+        <div class="plc-setup-fields plc-setup-fields-tags">
+            <label>
+                <span>Default PLC Tag</span>
+                <input type="text" name="default_tag_name_{{ purpose }}" value="{{ rule.default_tag_name or '' }}" placeholder="Default tag name">
+            </label>
+            <label>
+                <span>Search Hint</span>
+                <input type="text" name="search_hint_{{ purpose }}" value="{{ rule.search_hint or '' }}" placeholder="Search hint">
+            </label>
+            <label>
+                <span>Order</span>
+                <input type="number" name="display_order_{{ purpose }}" value="{{ rule.display_order or 100 }}" step="1">
+            </label>
+        </div>
+    </article>
+    {% endmacro %}
+
+    <section class="workbench-card stage-plc-rule-card">
+        <div class="plc-setup-header">
+            <div>
+                <span class="section-kicker">Machine / Stage PLC Setup</span>
+                <h2>PLC Setup Registry</h2>
+                <p>Editable stage rules for tag names, datatype, array window, mapping hints, and download safety gates.</p>
+            </div>
+            <div class="plc-setup-summary">
+                <span><b>{{ report.tag_requirements|length }}</b> Rules</span>
+                <span><b>{{ report.tag_requirements|selectattr('active')|list|length }}</b> Active</span>
+                <span><b>{{ context.machine_code }} / {{ context.stage_url_code }}</b></span>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ report.tag_setup_save_url }}" class="stage-plc-rule-form">
+            <div class="plc-setup-guidance">
+                <div>
+                    <strong>Purpose key is fixed.</strong>
+                    Edit the operator label, datatype, array size, indexes, default tag, search hint, level, active status, and order.
+                </div>
+                <a class="crs-btn crs-btn-soft" href="{{ report.plc_tags_url }}">Open PLC Tag Mapping</a>
+            </div>
+
+            <div class="plc-setup-registry">
+                <div class="plc-setup-group">
+                    <div class="plc-setup-group-title">
+                        <strong>Required Gates</strong>
+                        <span>Blocks readiness/download when active and missing or invalid</span>
+                    </div>
+                    {% for rule in report.tag_requirements if rule.requirement_level == 'REQUIRED' %}
+                        {{ render_plc_rule(rule) }}
+                    {% endfor %}
+                </div>
+
+                <div class="plc-setup-group">
+                    <div class="plc-setup-group-title">
+                        <strong>Recommended Handshake / History</strong>
+                        <span>Shows warning when active and missing or invalid</span>
+                    </div>
+                    {% for rule in report.tag_requirements if rule.requirement_level != 'REQUIRED' %}
+                        {{ render_plc_rule(rule) }}
+                    {% endfor %}
+                </div>
+
+                <div class="plc-setup-group">
+                    <div class="plc-setup-group-title">
+                        <strong>Add PLC Purpose Rule</strong>
+                        <span>Add a machine/stage-specific tag requirement without code changes</span>
+                    </div>
+                    <article class="plc-setup-row plc-setup-row-inactive">
+                        <div class="plc-setup-row-main">
+                            <label class="plc-rule-switch" title="Leave purpose key blank when no new row is required.">
+                                <input type="checkbox" name="new_active" value="1" checked>
+                                <span class="plc-rule-switch-box"></span>
+                                <span>Active</span>
+                            </label>
+                            <div class="plc-rule-identity">
+                                <span>New purpose key</span>
+                                <input type="text" name="new_purpose" placeholder="Example: BT_PHASE_CONTROL_STRING">
+                                <small>Use uppercase letters, numbers, and underscore</small>
+                            </div>
+                        </div>
+                        <div class="plc-setup-fields plc-setup-fields-core">
+                            <label>
+                                <span>Level</span>
+                                <select name="new_requirement_level">
+                                    <option value="REQUIRED">Required</option>
+                                    <option value="RECOMMENDED">Recommended</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>User Label</span>
+                                <input type="text" name="new_label" placeholder="Operator-facing label">
+                            </label>
+                            <label>
+                                <span>Data Type</span>
+                                <input type="text" name="new_expected_type" placeholder="REAL / BOOL / STRING">
+                            </label>
+                        </div>
+                        <div class="plc-setup-fields plc-setup-fields-array">
+                            <label>
+                                <span>Array</span>
+                                <select name="new_array_required">
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Size</span>
+                                <input type="number" name="new_minimum_array_size" min="1" step="1" placeholder="-">
+                            </label>
+                            <label>
+                                <span>Start</span>
+                                <input type="number" name="new_array_start_index" step="1" placeholder="-">
+                            </label>
+                            <label>
+                                <span>End</span>
+                                <input type="number" name="new_array_end_index" step="1" placeholder="-">
+                            </label>
+                        </div>
+                        <div class="plc-setup-fields plc-setup-fields-tags">
+                            <label>
+                                <span>Default PLC Tag</span>
+                                <input type="text" name="new_default_tag_name" placeholder="Default PLC tag">
+                            </label>
+                            <label>
+                                <span>Search Hint</span>
+                                <input type="text" name="new_search_hint" placeholder="PLC browser search hint">
+                            </label>
+                            <label>
+                                <span>Order</span>
+                                <input type="number" name="new_display_order" value="200" step="1">
+                            </label>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <div class="stage-plc-rule-actions">
+                <label>
+                    <span>Change Reason</span>
+                    <input type="text" name="reason" placeholder="Example: Set P15 SS recipe buffers to REAL[150]" required>
+                </label>
+                <button type="submit" class="crs-btn crs-btn-primary">Save Setup Rules</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="workbench-card plc-purpose-remap-card">
+        <div class="plc-remap-header">
+            <div>
+                <span class="section-kicker">Saved PLC Tags</span>
+                <h2>PLC Tag Edit / Rename / Remap</h2>
+                <p>Use this GUI table to correct wrong mapping, rename test tags, change datatype, scalar/array setup, array size/window, description, and CRS purpose. No SQLite command is required.</p>
+            </div>
+            <a class="crs-btn crs-btn-soft" href="{{ report.plc_tags_url }}">Open PLC Tag Browser</a>
+        </div>
+
+        <div class="plc-remap-guidance">
+            <strong>Standard purpose rule:</strong>
+            <span>RECIPE_DATA = CRS system buffer. TEST_RECIPE_DATA = PLC destination/running recipe tag. Tag name is editable per machine/stage.</span>
+        </div>
+
+        {% if report.saved_plc_tags %}
+        <form method="POST" action="{{ report.tag_purpose_remap_url }}" class="plc-remap-form">
+            <div class="table-wrap plc-remap-table-wrap plc-tag-config-table-wrap">
+                <table class="data-table plc-remap-table plc-tag-config-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 240px;">Tag Name / Rename</th>
+                            <th style="min-width: 100px;">Type</th>
+                            <th style="min-width: 88px;">Array</th>
+                            <th style="min-width: 82px;">Start</th>
+                            <th style="min-width: 82px;">End</th>
+                            <th style="min-width: 82px;">Size</th>
+                            <th style="min-width: 220px;">Purpose / Remap</th>
+                            <th style="min-width: 230px;">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tag in report.saved_plc_tags %}
+                        <tr>
+                            <td>
+                                <input type="hidden" name="tag_id" value="{{ tag.id }}">
+                                <input class="plc-tag-config-input plc-tag-name-input" type="text" name="tag_name_{{ tag.id }}" value="{{ tag.tag_name or '' }}" required title="{{ tag.tag_name or 'PLC tag name' }}" aria-label="PLC tag name">
+                            </td>
+                            <td>
+                                <input class="plc-tag-config-input plc-tag-type-input" type="text" name="tag_type_{{ tag.id }}" value="{{ tag.tag_type or '' }}" placeholder="REAL / BOOL / DINT" title="{{ tag.tag_type or 'PLC data type' }}" aria-label="PLC data type" required>
+                            </td>
+                            <td>
+                                <select class="plc-tag-config-input" name="is_array_{{ tag.id }}">
+                                    <option value="0" {% if not tag.is_array %}selected{% endif %}>No</option>
+                                    <option value="1" {% if tag.is_array %}selected{% endif %}>Yes</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input class="plc-tag-config-input plc-tag-small-input" type="number" name="array_start_index_{{ tag.id }}" value="{{ tag.array_start_index if tag.array_start_index is not none else '' }}" step="1" placeholder="-">
+                            </td>
+                            <td>
+                                <input class="plc-tag-config-input plc-tag-small-input" type="number" name="array_end_index_{{ tag.id }}" value="{{ tag.array_end_index if tag.array_end_index is not none else '' }}" step="1" placeholder="-">
+                            </td>
+                            <td>
+                                <input class="plc-tag-config-input plc-tag-small-input" type="number" name="array_size_{{ tag.id }}" value="{{ tag.array_size if tag.array_size is not none else '' }}" step="1" min="1" placeholder="-">
+                            </td>
+                            <td>
+                                <select class="plc-tag-config-input plc-tag-purpose-select" name="tag_purpose_{{ tag.id }}">
+                                    <option value="" {% if not tag.tag_purpose %}selected{% endif %}>-- Not Assigned --</option>
+                                    {% for purpose in report.tag_purpose_options %}
+                                    <option value="{{ purpose }}" {% if tag.tag_purpose == purpose %}selected{% endif %}>{{ purpose }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <textarea class="plc-tag-config-input plc-tag-description-input"
+          name="description_{{ tag.id }}"
+          rows="2"
+          placeholder="Description / note"
+          title="{{ tag.description or 'Description / note' }}"
+          aria-label="PLC tag description">{{ tag.description or '' }}</textarea>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="stage-plc-rule-actions plc-tag-config-actions">
+                <label>
+                    <span>Change Reason</span>
+                    <input type="text" name="reason" placeholder="Example: Correct CRS buffer, destination tag, and download complete purpose mapping" required>
+                </label>
+                <button type="submit" class="crs-btn crs-btn-primary">Save PLC Tag Edit / Remap</button>
+            </div>
+        </form>
+        {% else %}
+        <div class="empty-state">No saved PLC tags found for this machine/stage.</div>
+        {% endif %}
+    </section>
+
+    <section class="configuration-section-grid">
+        {% for section in report.sections %}
+        <article class="workbench-card readiness-section readiness-section-{{ section.severity }}">
+            <div class="table-heading">
+                <div>
+                    <strong>{{ section.title }}</strong>
+                    <p>{{ section.summary }}</p>
+                </div>
+                <div class="readiness-heading-actions">
+                    {% if section.key == "phase_master" %}
+                    <form method="POST" action="{{ report.phase_defaults_url }}" class="inline-form">
+                        <button type="submit" class="crs-btn crs-btn-primary" title="Create missing standard phase groups and dropdown names for this machine/stage. Existing rows are kept.">Initialize Defaults</button>
+                    </form>
+                    <a class="crs-btn crs-btn-soft" href="{{ report.phase_master_url }}">Open Master</a>
+                    {% endif %}
+                    <span class="status-badge status-{{ section.severity }}">
+                        {% if section.severity == "ok" %}OK{% elif section.severity == "warning" %}WARNING{% else %}BLOCKED{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="readiness-check-list">
+                {% for item in section["items"] %}
+                <div class="readiness-check readiness-check-{{ item.status }}">
+                    <div class="readiness-check-status">
+                        <span class="status-dot status-dot-{{ item.status }}"></span>
+                        <strong>{{ item.status|upper }}</strong>
+                    </div>
+                    <div class="readiness-check-body">
+                        <strong>{{ item.label }}</strong>
+                        <span title="{{ item.detail }}">{{ item.detail }}</span>
+                    </div>
+                    {% if item.action_url %}
+                    <a class="crs-btn crs-btn-soft readiness-map-tag" href="{{ item.action_url }}" title="Open PLC Tag Browser filtered for this required purpose.">Map Tag</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+
+</div>
+
+{% endblock %}

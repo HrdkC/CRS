@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}
+Copy Recipe
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Recipe Copy</span>
+            <h1>Copy Recipe</h1>
+            <p>
+                Source {{ recipe.recipe_code }}
+                <span>|</span>
+                {{ recipe.recipe_name }}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="{{ machine_stage_url('/recipes', context=recipe) }}" class="crs-btn crs-btn-soft">
+                Back To Recipes
+            </a>
+        </div>
+    </div>
+
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>New Recipe Identity</span>
+            <span class="status-badge status-info">Copy</span>
+        </div>
+
+        <form method="POST" class="parameter-edit-form">
+            <label>
+                <span>New Recipe Code</span>
+                <input type="text" name="recipe_code" required>
+            </label>
+            <label>
+                <span>New Recipe Name</span>
+                <input type="text" name="recipe_name" required>
+            </label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Create Copy</button>
+                <a href="{{ machine_stage_url('/recipes', context=recipe) }}" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</section>
+
+{% endblock %}

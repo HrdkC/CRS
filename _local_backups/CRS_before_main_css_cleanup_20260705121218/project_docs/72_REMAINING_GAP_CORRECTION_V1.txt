@@ -1,0 +1,40 @@
+CRS Remaining Gap Correction V1
+Date: 2026-06-29
+
+Scope
+- Phase-control default seeding for GUI-created stages.
+- Existing stage phase master backfill.
+- Excel import used/not-used handling.
+- Dashboard operational insight pass.
+
+Changes
+1. Stage phase master defaults now live in database.phase_control_default_manager.
+   - FIRST_STAGE seeds APPLICATION_SIDE.
+   - SECOND_STAGE seeds CAP_STRIP_SIDE, BT_SIDE, SHAPING_SIDE.
+   - New GUI-created stages are automatically seeded by StageManager.create_stage.
+
+2. Existing active stages were backfilled once through PhaseControlDefaultManager.initialize_all_stages.
+   Result: 8 stages checked, 12 groups added, 105 phases added.
+
+3. Recipe Excel import now keeps Used=0 rows instead of dropping them.
+   - Not Used rows can carry blank values without blocking import.
+   - New optional import flag can mark missing active parameters as Not Used.
+   - Phase_Control remains reference-only during import.
+   - New first-stage default phase rows use APPLICATION_SIDE instead of legacy MAIN.
+
+4. Dashboard now shows operational insight blocks:
+   - Recipe lifecycle by status.
+   - Recent audit activity in IST.
+   - Machine/stage readiness with PLC, parameter, phase, and released recipe counts.
+
+Verification
+- python -m compileall passed for app.py, flask_app, database, and route smoke tools.
+- tools/route_smoke_check.py passed with checked=69.
+- Focused template load passed for dashboard, recipe import/export, download preparation, configuration readiness, and phase-control templates.
+- P15 phase master check:
+  FIRST_STAGE: 1 group, 21 phase options.
+  SECOND_STAGE: 3 groups, 14 phase options.
+
+Remaining Work
+- Full browser visual QA should still be done after restarting Flask so CSS/template changes are loaded.
+- Deeper redesign of every screen remains a separate larger UI modernization pass.

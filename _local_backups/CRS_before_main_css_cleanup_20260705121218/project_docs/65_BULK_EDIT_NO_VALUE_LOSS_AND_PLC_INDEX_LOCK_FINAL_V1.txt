@@ -1,0 +1,27 @@
+CRS V6.9 Bulk Edit final safety fix
+
+Scope:
+- Bulk Edit Parameter page.
+
+Changes:
+1. PLC Index is no longer editable in the UI.
+   - It is displayed as locked text.
+   - It is not submitted as form input.
+   - Backend never reads PLC index from posted form.
+   - Backend passes existing PLC index only to avoid mapping change.
+
+2. Edited rows are auto-selected.
+   - JavaScript ticks row checkbox on input/change.
+   - Backend independently detects changed rows even if checkbox is not selected.
+
+3. Entered values are preserved on blocked saves.
+   - No redirect on missing row selection.
+   - No redirect on missing change reason.
+   - No redirect on validation errors.
+   - Template receives posted form values back and displays them.
+
+Apply:
+- Extract patch at project root.
+- Run python scripts/clear_crs_pycache.py
+- Stop Flask fully and restart python app.py
+- Hard refresh browser Ctrl+F5.

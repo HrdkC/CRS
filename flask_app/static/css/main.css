@@ -1535,18 +1535,6 @@ button:disabled,
     padding: 2px;
 }
 .header-campaign-caption {
-    /*
-    margin: 0;
-    padding: 0 6px;
-    width: 100%;
-    color: var(--apollo-violet-dark);
-    font-size: 9.5px;
-    line-height: 1.05;
-    font-weight: 950;
-    text-transform: uppercase;
-    letter-spacing: .035em;
-    text-align: center;
-    white-space: nowrap; */
     display: block !important;
     position: static !important;
     width: 100% !important;
@@ -1622,7 +1610,6 @@ button:disabled,
     top: 22px;
     width: 174px;
     min-height: 64px;
-    display: flex;
     align-items: center;
     justify-content: center;
     padding: 7px 10px;

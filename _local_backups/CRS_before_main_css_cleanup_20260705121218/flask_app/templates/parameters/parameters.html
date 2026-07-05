@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Parameters
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Template Parameters</span>
+            <h1>Recipe Parameters</h1>
+            <p>
+                {{ machine_stage_title if machine_stage_title is defined else machine_stage_display(context=context) }}
+                <span>|</span>
+                Parameter definitions used for recipe value creation.
+            </p>
+        </div>
+        <div class="workbench-actions">
+            {% if role_can("engineering_config") %}
+            <a
+                href="{{ add_parameter_url if add_parameter_url is defined else machine_stage_url('/parameters/add', machine_id=machine_id, stage_id=stage_id) }}"
+                class="crs-btn crs-btn-primary"
+            >
+                Add Parameter
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Parameters</span>
+            <strong>{{ active_parameter_count if active_parameter_count is defined else parameters|length }}</strong>
+            <small>
+                Used
+                {% if inactive_parameter_count is defined and inactive_parameter_count %}
+                    | {{ inactive_parameter_count }} not used
+                {% endif %}
+            </small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Machine</span>
+            <strong>{{ machine_code if machine_code is defined else machine_id }}</strong>
+            <small>Machine-owned template</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Stage</span>
+            <strong>
+                {% if stage_url_code is defined and stage_display_name is defined %}
+                    {{ stage_url_code }} {{ stage_display_name }}
+                {% elif context is defined and context.stage_url_code is defined %}
+                    {{ context.stage_url_code }} {{ context.stage_display_name }}
+                {% else %}
+                    {{ stage_id if stage_id is defined else "-" }}
+                {% endif %}
+            </strong>
+            <small>Stage-specific definition set</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Validation</span>
+            <strong class="metric-text">Min/Max</strong>
+            <small>Required before PLC download</small>
+        </div>
+    </div>
+
+    <form class="workbench-toolbar" method="GET">
+        <label>
+            <span>Search</span>
+            <input
+                type="text"
+                name="search"
+                value="{{ search_text }}"
+                placeholder="Parameter name or tag index"
+            >
+        </label>
+        <label>
+            <span>Scope</span>
+            <select name="parameter_scope">
+                <option
+                    value="active"
+                    {% if parameter_scope == "active" %}
+                    selected
+                    {% endif %}
+                >
+                    Used Parameters
+                </option>
+                <option
+                    value="inactive"
+                    {% if parameter_scope == "inactive" %}
+                    selected
+                    {% endif %}
+                >
+                    Not Used
+                </option>
+                <option
+                    value="all"
+                    {% if parameter_scope == "all" %}
+                    selected
+                    {% endif %}
+                >
+                    All Template Rows
+                </option>
+            </select>
+        </label>
+        <button class="crs-btn crs-btn-primary" type="submit">Search</button>
+        <a
+            class="crs-btn crs-btn-soft"
+            href="{{ parameters_url if parameters_url is defined else machine_stage_url('/parameters', machine_id=machine_id, stage_id=stage_id) }}"
+        >
+            Reset
+        </a>
+    </form>
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Parameter Records</span>
+                <p>Parameter definitions expand recipe structure and must remain auditable.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Tag</th>
+                        <th>PLC Index</th>
+                        <th>Parameter Name</th>
+                        <th>Unit</th>
+                        <th>Min</th>
+                        <th>Max</th>
+                        <th>Default</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for parameter in parameters %}
+                    {% set parameter_used = parameter.used if parameter.used is not none else 1 %}
+                    <tr class="{% if parameter_used|int != 1 %}row-inactive{% endif %}">
+                        <td><span class="tag-pill">{{ parameter.tag_index }}</span></td>
+                        <td>
+                            {% if parameter.plc_array_index is not none %}
+                            <span class="tag-pill">{{ parameter.plc_array_index }}</span>
+                            {% else %}
+                            <span class="muted-text">-</span>
+                            {% endif %}
+                        </td>
+                        <td><strong>{{ parameter.parameter_name }}</strong></td>
+                        <td>{{ parameter.unit }}</td>
+                        <td>{{ parameter.min_value }}</td>
+                        <td>{{ parameter.max_value }}</td>
+                        <td>{{ parameter.default_value }}</td>
+                        <td>
+                            {% if parameter_used|int == 1 %}
+                            <span class="status-badge status-success">Used</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">Not Used</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                {% if role_can("engineering_config") %}
+                                <a href="/parameters/edit/{{ parameter.id }}" class="row-action primary">
+                                    Edit
+                                </a>
+                                {% if parameter_used|int == 1 %}
+                                <a
+                                    href="/parameters/disable/{{ parameter.id }}"
+                                    class="row-action danger"
+                                    title="Mark this parameter Not Used for this machine/stage template. Existing recipe values remain stored."
+                                >
+                                    Not Used
+                                </a>
+                                {% else %}
+                                <a
+                                    href="/parameters/enable/{{ parameter.id }}"
+                                    class="row-action success"
+                                    title="Restore this parameter to active use and backfill missing values to existing recipes."
+                                >
+                                    Use
+                                </a>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="empty-state">No parameters found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

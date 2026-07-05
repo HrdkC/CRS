@@ -1,0 +1,20 @@
+Priority 11 - Audit Archive Route Fix
+
+Problem:
+/audit-archive returned 404 because the active audit_routes.py did not contain/register the Audit Archive route.
+
+Fix:
+- Restores /audit-archive GET/POST route inside register_audit_routes(app).
+- Adds AuditArchiveManager utility.
+- Adds audit_archive.html template.
+- Route remains ADMIN-only.
+- Active Audit export creates Excel in selected server path.
+- Archive action moves old audit records to audit_log_archive and can export Excel during archive.
+- Actions are logged as AUDIT_EXPORTED and AUDIT_ARCHIVE_CREATED.
+
+Test:
+1. Restart Flask.
+2. Login as admin or hardik.
+3. Open /audit-archive.
+4. Export active audit to D:\CRS_Audit_Exports or approved server path.
+5. Verify Excel file and audit event.
