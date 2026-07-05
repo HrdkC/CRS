@@ -3829,6 +3829,15 @@ table td {
     align-items: stretch;
 }
 
+.phase-control-board.phase-board-fs {
+    grid-template-columns: minmax(420px, 760px);
+    justify-content: start;
+}
+
+.phase-control-board.phase-board-ss {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .phase-control-column {
     border: 1px solid #d8b4fe;
     border-radius: 12px;
@@ -3854,6 +3863,7 @@ table td {
     min-height: 46px;
     margin: 0;
     border: 0;
+    border-left: 3px solid var(--apollo-violet);
     border-bottom: 1px solid #eee7f8;
     border-radius: 0;
     background: #fff;
@@ -3872,6 +3882,13 @@ table td {
 .phase-control-display-empty {
     background: #fbfaff;
     color: var(--ink-500);
+}
+
+.phase-control-display-empty strong {
+    visibility: visible;
+    color: var(--ink-500);
+    font-style: italic;
+    font-weight: 800;
 }
 
 .phase-control-slot-edit {
@@ -4166,5 +4183,265 @@ table td {
     .site-header .navbar {
         padding-left: 16px !important;
         padding-right: 16px !important;
+    }
+}
+
+/* =====================================================
+   V6.20 - Stage-wise Phase Template Master
+   Case-preserved phase strings + PLC phase code support
+   ===================================================== */
+.phase-template-workbench .phase-template-guidance-grid,
+.phase-template-workbench .phase-template-warning-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.phase-template-workbench .phase-template-guidance-grid > div,
+.phase-template-workbench .phase-template-warning-grid > div {
+    padding: 11px 12px;
+    border: 1px solid var(--line-200);
+    border-radius: var(--radius-md);
+    background: #fbfcfe;
+}
+
+.phase-template-workbench .phase-template-guidance-grid strong,
+.phase-template-workbench .phase-template-warning-grid strong {
+    display: block;
+    color: var(--ink-900);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.phase-template-workbench .phase-template-guidance-grid p,
+.phase-template-workbench .phase-template-warning-grid span {
+    margin: 0;
+    color: var(--ink-600);
+    font-size: 11.5px;
+    font-weight: 750;
+}
+
+.phase-template-warning-card {
+    border-left: 4px solid var(--warning) !important;
+    background: #fffbeb !important;
+}
+
+.phase-cleanup-form {
+    margin-top: 10px !important;
+}
+
+.phase-cleanup-form input[type="text"] {
+    min-width: 420px;
+}
+
+.phase-template-paste-form textarea {
+    min-height: 210px !important;
+    font-family: Consolas, "Courier New", monospace;
+    line-height: 1.45;
+    white-space: pre;
+}
+
+.phase-template-table-wrap {
+    max-height: 58vh;
+}
+
+.phase-template-table {
+    min-width: 1320px;
+}
+
+.phase-template-table th:nth-child(1),
+.phase-template-table td:nth-child(1) {
+    width: 70px;
+    text-align: center;
+}
+
+.phase-template-table th:nth-child(2) { width: 190px; }
+.phase-template-table th:nth-child(3) { width: 90px; }
+.phase-template-table th:nth-child(4) { width: 110px; }
+.phase-template-table th:nth-child(5) { width: 300px; }
+.phase-template-table th:nth-child(6) { width: 240px; }
+.phase-template-table th:nth-child(7) { width: 300px; }
+.phase-template-table th:nth-child(8) { width: 150px; }
+
+.phase-template-table td small {
+    display: block;
+    margin-top: 3px;
+    color: var(--ink-500);
+    font-size: 10.5px;
+    font-weight: 750;
+}
+
+.phase-code-pill {
+    position: absolute;
+    right: 7px;
+    bottom: 4px;
+    display: inline-flex;
+    min-height: 18px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+    font-size: 9.5px;
+    font-weight: 900;
+}
+
+.phase-template-workbench .phase-control-display-cell {
+    padding-right: 56px;
+}
+
+.phase-template-workbench .mini-badge {
+    display: inline-flex;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: var(--ink-600);
+    border: 1px solid var(--line-200);
+    font-size: 10.5px;
+    font-weight: 900;
+}
+
+.phase-remove-cell {
+    text-align: center;
+}
+
+.phase-remove-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 108px;
+    min-height: 34px;
+    padding: 6px 10px;
+    border: 1px solid #fecaca;
+    border-radius: 999px;
+    background: #fff7f7;
+    color: #991b1b;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0;
+    white-space: normal;
+    cursor: pointer;
+}
+
+.phase-remove-toggle input {
+    width: 14px;
+    height: 14px;
+    accent-color: #dc2626;
+}
+
+.phase-remove-toggle:hover {
+    border-color: #f87171;
+    background: #fee2e2;
+}
+
+@media (max-width: 1180px) {
+    .phase-template-workbench .phase-template-guidance-grid,
+    .phase-template-workbench .phase-template-warning-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .phase-cleanup-form input[type="text"] {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+/* V6.21 - Phase Option Master: master list separated from recipe sequence UI */
+.phase-option-master-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.phase-option-master-grid-fs {
+    grid-template-columns: minmax(560px, 920px);
+    justify-content: start;
+}
+
+.phase-option-master-grid-ss {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.phase-option-master-group {
+    overflow: hidden;
+    border: 1px solid #d8c9ff;
+    border-radius: var(--radius-lg);
+    background: #fff;
+}
+
+.phase-option-master-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 42px;
+    padding: 10px 12px;
+    background: #f6f0ff;
+    border-bottom: 1px solid #d8c9ff;
+    color: var(--violet-800);
+}
+
+.phase-option-master-group-header strong {
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.phase-option-master-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.phase-option-master-table th,
+.phase-option-master-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-100);
+    vertical-align: middle;
+}
+
+.phase-option-master-table th {
+    background: #fff;
+    color: var(--ink-600);
+    font-size: 10.5px;
+    font-weight: 900;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+.phase-option-master-table th:nth-child(1),
+.phase-option-master-table td:nth-child(1) {
+    width: 92px;
+}
+
+.phase-option-master-table th:nth-child(3),
+.phase-option-master-table td:nth-child(3) {
+    width: 110px;
+    text-align: right;
+}
+
+.phase-option-master-table td strong {
+    display: block;
+    color: var(--ink-900);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.phase-option-master-table .phase-code-pill {
+    position: static;
+    justify-content: center;
+}
+
+@media (max-width: 1280px) {
+    .phase-option-master-grid-ss {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .phase-option-master-grid-fs {
+        grid-template-columns: 1fr;
     }
 }

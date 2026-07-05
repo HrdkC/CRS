@@ -112,13 +112,21 @@ class RecipeDownloadEligibilityManager:
                 "No phase control rows found."
             )
 
-        elif len(phase_rows) != 12:
+        expected_phase_rows = (
+            RecipePhaseControlManager
+            .get_expected_phase_row_count(
+                recipe.get("stage_id"),
+                recipe.get("stage_type")
+            )
+        )
+
+        if phase_rows and len(phase_rows) != expected_phase_rows:
 
             result["eligible"] = False
 
             result["errors"].append(
                 f"Incomplete phase control rows. "
-                f"Expected 12, found {len(phase_rows)}."
+                f"Expected {expected_phase_rows}, found {len(phase_rows)}."
             )
 
         for row in phase_rows:

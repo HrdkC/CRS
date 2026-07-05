@@ -55,7 +55,6 @@ DEFAULT_RECIPE_VERSION = 1
 PHASE_GROUPS = [
     ("CAP_STRIP_SIDE", "Cap Strip Side", "P15 Second Stage Cap Strip Side phase-control group", 1),
     ("BT_SIDE", "B&T Side", "P15 Second Stage Belt and Tread side phase-control group", 2),
-    ("SHAPING_SIDE", "Shaping Side", "P15 Second Stage Shaping side phase-control group", 3),
 ]
 
 DEFAULT_PHASES = [
@@ -66,10 +65,6 @@ DEFAULT_PHASES = [
     ("BT_SIDE", "B&T Side", "Turn Table", "Turn Table", 3),
     ("BT_SIDE", "B&T Side", "Apply Tread", "Apply Tread", 4),
     ("BT_SIDE", "B&T Side", "Remove Belt Package", "Remove Belt Package", 5),
-    ("SHAPING_SIDE", "Shaping Side", "Carcass Loader", "Carcass Loader", 1),
-    ("SHAPING_SIDE", "Shaping Side", "Preshaping", "Preshaping", 2),
-    ("SHAPING_SIDE", "Shaping Side", "Stitching Cycle", "Stitching Cycle", 3),
-    ("SHAPING_SIDE", "Shaping Side", "Remove Cycle", "Remove Cycle", 4),
 ]
 
 GROUP_NAME_BY_CODE = {code: name for code, name, _desc, _order in PHASE_GROUPS}

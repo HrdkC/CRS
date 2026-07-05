@@ -213,6 +213,22 @@ class PLCTagManager:
 
             "DOWNLOAD_COMPLETE": "Download_Complete",
 
+            "PHASE_CONTROL_STRING": "Phase_Cntrl_String",
+
+            "PHASE_STOP_STRING": "Phase_Cntrl_Stop",
+
+            "PHASE_POSITION_STRING": "Phase_Cntrl_Position",
+
+            "CAP_STRIP_PHASE_CONTROL_STRING": "Phase_Cntrl_String_CapSd",
+
+            "CAP_STRIP_PHASE_STOP_STRING": "Phase_Cntrl_Stop_String_CapSd",
+
+            "BT_PHASE_CONTROL_STRING": "Phase_Cntrl_String",
+
+            "BT_PHASE_STOP_STRING": "Phase_Cntrl_Stop_String",
+
+            "BT_PHASE_POSITION_STRING": "Phase_Cntrl_Pos_String",
+
             "DOWNLOAD_ACK": "Download_Ack",
 
             "DOWNLOAD_BUSY": "Download_Busy",
@@ -260,6 +276,22 @@ class PLCTagManager:
             "DOWNLOAD_REQUEST": "CRS_Download_Request",
 
             "DOWNLOAD_COMPLETE": "CRS_Download_Complete",
+
+            "PHASE_CONTROL_STRING": "CRS_Phase_Cntrl_String",
+
+            "PHASE_STOP_STRING": "CRS_Phase_Cntrl_Stop_String",
+
+            "PHASE_POSITION_STRING": "CRS_Phase_Cntrl_Position_String",
+
+            "CAP_STRIP_PHASE_CONTROL_STRING": "CRS_Phase_Cntrl_String_CapSd",
+
+            "CAP_STRIP_PHASE_STOP_STRING": "CRS_Phase_Cntrl_Stop_String_CapSd",
+
+            "BT_PHASE_CONTROL_STRING": "CRS_Phase_Cntrl_String",
+
+            "BT_PHASE_STOP_STRING": "CRS_Phase_Cntrl_Stop_String",
+
+            "BT_PHASE_POSITION_STRING": "CRS_Phase_Cntrl_Pos_String",
 
             "DOWNLOAD_ACK": "CRS_Download_Ack",
 

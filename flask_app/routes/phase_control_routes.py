@@ -11,6 +11,7 @@ from flask import (
 from database.audit_manager import AuditManager
 from database.database import get_connection
 from database.phase_control_default_manager import PhaseControlDefaultManager
+from database.phase_template_manager import PhaseTemplateManager
 from flask_app.security.role_guard import role_can
 from flask_app.stage_url_helper import (
     add_machine_stage_url_fields,
@@ -22,11 +23,10 @@ from flask_app.stage_url_helper import (
 SECOND_STAGE_DEFAULT_GROUPS = [
     ("CAP_STRIP_SIDE", "Cap Strip Side", "Cap strip side phase-control group", 1),
     ("BT_SIDE", "B&T Side", "Belt and tread side phase-control group", 2),
-    ("SHAPING_SIDE", "Shaping Side", "Shaping side phase-control group", 3),
 ]
 
 FIRST_STAGE_DEFAULT_GROUPS = [
-    ("APPLICATION_SIDE", "Application Side", "First stage application side phase-control group", 1),
+    ("MAIN", "Phase Control", "First stage single phase-control group", 1),
 ]
 
 SECOND_STAGE_DEFAULT_PHASES = {
@@ -43,38 +43,32 @@ SECOND_STAGE_DEFAULT_PHASES = {
         "Remove Belt Package",
         "Empty Phase",
     ],
-    "SHAPING_SIDE": [
-        "Carcass Loader",
-        "Preshaping",
-        "Stitching Cycle",
-        "Remove Cycle",
-        "Empty Phase",
-    ],
 }
 
 FIRST_STAGE_DEFAULT_PHASES = {
-    "APPLICATION_SIDE": [
-        "IL With Toproll",
-        "IL Without Toproll",
-        "Ply 1 With Toproll",
-        "Ply 1 Without Toproll",
-        "Ply 2 With Toproll",
-        "Ply 2 Without Toproll",
-        "Ply 3 With Toproll",
-        "Ply 3 Without Toproll",
-        "Sidewall With Stitcher",
-        "Sidewall Without Stitcher",
-        "RRD With Contour Stitcher",
-        "RRD With Contour & Disk Stitcher",
-        "RRD With Disk Stitcher",
-        "Insert Beads",
-        "Set Beads",
-        "Turnup Ring",
-        "Contour Stitcher",
-        "Material 1 Manual",
-        "Disk Stitcher",
-        "Material 2 Manual",
-        "Empty Phase",
+    "MAIN": [
+        "INNERLINER WITH TOPROLL",
+        "INNERLINER WITHOUT TOPROLL",
+        "PLY 1 WITH TOPROLL",
+        "PLY 1 WITHOUT TOPROLL",
+        "PLY 2 WITH TOPROLL",
+        "PLY 2 WITHOUT TOPROLL",
+        "SIDEWALL WITHOUT STITCHER WITH TOPROLL",
+        "SIDEWALL WITHOUT STITCHER",
+        "RRD WITH CONTOUR STITCHER",
+        "RRD WITH CONTOUR & DISK STITCHER",
+        "RRD WITH DISK STITCHER",
+        "INSERT BEADS",
+        "SET BEADS",
+        "TURNUPRING",
+        "CONTOUR STITCHER",
+        "DISK STITCHER",
+        "MATERIAL 1 MANUAL",
+        "MATERIAL 2 MANUAL",
+        "REINFORCEMENT MATERIAL",
+        "PLY 3 WITH TOPROLL",
+        "PLY 3 WITHOUT TOPROLL",
+        "EMPTY PHASE",
     ],
 }
 
@@ -95,6 +89,13 @@ def _normalize_code(value):
     text = re.sub(r"[^A-Z0-9]+", "_", text)
     text = re.sub(r"_+", "_", text).strip("_")
     return text
+
+
+def _is_first_stage(stage_type):
+    return (
+        str(stage_type or "").strip().upper().replace(" ", "_")
+        in {"FIRST_STAGE", "FIRSTSTAGE", "FS"}
+    )
 
 
 def _stage_targets():
@@ -149,46 +150,62 @@ def _stage_targets():
     return rows
 
 
-def _phase_groups(machine_stage_id):
+def _phase_groups(machine_stage_id, stage_type=None, include_inactive=False):
+    conditions = ["machine_stage_id = ?"]
+    params = [machine_stage_id]
+    if not include_inactive:
+        conditions.append("COALESCE(active, 1) = 1")
+    if _is_first_stage(stage_type):
+        conditions.append("UPPER(COALESCE(phase_group_code, 'MAIN')) = 'MAIN'")
+
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(
-        """
+        f"""
         SELECT *
         FROM phase_control_group_master
-        WHERE machine_stage_id = ?
+        WHERE {" AND ".join(conditions)}
         ORDER BY
             display_order,
             phase_group_name
         """,
-        (machine_stage_id,)
+        tuple(params)
     )
     rows = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return rows
 
 
-def _phase_options(machine_stage_id):
+def _phase_options(machine_stage_id, stage_type=None, include_inactive=False):
+    PhaseTemplateManager.ensure_schema()
+    PhaseTemplateManager.sync_phase_keys(machine_stage_id)
+
+    conditions = ["machine_stage_id = ?"]
+    params = [machine_stage_id]
+    if not include_inactive:
+        conditions.append("COALESCE(active, 1) = 1")
+    if _is_first_stage(stage_type):
+        conditions.append("UPPER(COALESCE(phase_group_code, 'MAIN')) = 'MAIN'")
+
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(
-        """
+        f"""
         SELECT *
         FROM phase_control_master
-        WHERE machine_stage_id = ?
+        WHERE {" AND ".join(conditions)}
         ORDER BY
             CASE COALESCE(phase_group_code, 'MAIN')
-                WHEN 'APPLICATION_SIDE' THEN 1
+                WHEN 'MAIN' THEN 0
                 WHEN 'CAP_STRIP_SIDE' THEN 1
                 WHEN 'BT_SIDE' THEN 2
                 WHEN 'SHAPING_SIDE' THEN 3
-                WHEN 'MAIN' THEN 9
                 ELSE 99
             END,
             display_order,
             phase_control_name
         """,
-        (machine_stage_id,)
+        tuple(params)
     )
     rows = [dict(row) for row in cursor.fetchall()]
     conn.close()
@@ -253,18 +270,26 @@ def _insert_group_if_missing(cursor, context, group_code, group_name, descriptio
 
 
 def _insert_phase_if_missing(cursor, context, group_code, group_name, phase_name, description, display_order):
+    clean_name = PhaseTemplateManager.clean_display_name(phase_name)
+    phase_key = PhaseTemplateManager.phase_key(clean_name)
+    plc_phase_code = PhaseTemplateManager._phase_code_from_name(
+        group_code,
+        clean_name,
+        display_order,
+    )
+
     cursor.execute(
         """
         SELECT id
         FROM phase_control_master
         WHERE machine_stage_id = ?
             AND UPPER(COALESCE(phase_group_code, 'MAIN')) = UPPER(?)
-            AND UPPER(phase_control_name) = UPPER(?)
+            AND UPPER(COALESCE(phase_control_key, phase_control_name)) = UPPER(?)
         """,
         (
             context["stage_id"],
             group_code,
-            phase_name,
+            phase_key,
         )
     )
     if cursor.fetchone():
@@ -276,6 +301,8 @@ def _insert_phase_if_missing(cursor, context, group_code, group_name, phase_name
         (
             stage_type,
             phase_control_name,
+            phase_control_key,
+            plc_phase_code,
             description,
             display_order,
             active,
@@ -283,11 +310,13 @@ def _insert_phase_if_missing(cursor, context, group_code, group_name, phase_name
             phase_group_code,
             phase_group_name
         )
-        VALUES (?, ?, ?, ?, 1, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
         """,
         (
             context["stage_type"],
-            phase_name,
+            clean_name,
+            phase_key,
+            plc_phase_code,
             description,
             display_order,
             context["stage_id"],
@@ -317,6 +346,10 @@ def _initialize_standard_phase_master(context):
 
 
 def _create_group(context):
+    if _is_first_stage(context.get("stage_type")):
+        flash("First stage uses one Phase Control group only.", "warning")
+        return
+
     group_name = (request.form.get("phase_group_name") or "").strip()
     group_code = _normalize_code(
         request.form.get("phase_group_code")
@@ -359,7 +392,7 @@ def _create_group(context):
 
 
 def _create_phase(context):
-    groups = _phase_groups(context["stage_id"])
+    groups = _phase_groups(context["stage_id"], context.get("stage_type"))
     group_by_code = {
         group["phase_group_code"]: group
         for group in groups
@@ -369,6 +402,7 @@ def _create_phase(context):
     phase_name = (request.form.get("phase_control_name") or "").strip()
     description = (request.form.get("description") or phase_name).strip()
     display_order = request.form.get("display_order", type=int) or 0
+    plc_phase_code = (request.form.get("plc_phase_code") or "").strip()
 
     if group_code not in group_by_code:
         flash("Select a valid phase group before adding a phase.", "error")
@@ -379,33 +413,237 @@ def _create_phase(context):
         return
 
     group = group_by_code[group_code]
-    conn = get_connection()
-    cursor = conn.cursor()
-    inserted = _insert_phase_if_missing(
-        cursor,
-        context,
-        group_code,
-        group["phase_group_name"],
-        phase_name,
-        description,
-        display_order,
+    success, message, phase_id = PhaseTemplateManager.create_phase(
+        machine_stage_id=context["stage_id"],
+        stage_type=context["stage_type"],
+        group_code=group_code,
+        group_name=group["phase_group_name"],
+        phase_name=phase_name,
+        description=description,
+        display_order=display_order,
+        plc_phase_code=plc_phase_code if plc_phase_code else None,
     )
-    conn.commit()
-    conn.close()
 
-    if inserted:
+    if success:
         AuditManager.log_event(
             username=session.get("username"),
             role=session.get("role"),
             action="PHASE_CONTROL_MASTER_CREATED",
             change_source="WEB_PHASE_MASTER",
-            record_id=str(context["stage_id"]),
-            new_value=f"{group_code} - {phase_name}",
+            record_id=str(phase_id or context["stage_id"]),
+            new_value=f"{group_code} - {PhaseTemplateManager.clean_display_name(phase_name)}",
             reason=context.get("machine_stage_display")
         )
-        flash("Phase option created.", "success")
+        flash(message, "success")
     else:
-        flash("Phase option already exists in this group.", "warning")
+        flash(message, "error")
+
+
+def _save_phase_template(context):
+    phase_ids = request.form.getlist("phase_id")
+    remove_phase_ids = set()
+    for value in request.form.getlist("remove_phase_id"):
+        try:
+            remove_phase_ids.add(str(int(value)))
+        except Exception:
+            continue
+    reason = (
+        request.form.get("reason")
+        or
+        "Stage-wise phase template updated"
+    ).strip()
+
+    protected_remove_ids = set()
+    if remove_phase_ids:
+        placeholders = ",".join("?" for _ in remove_phase_ids)
+        conn = get_connection()
+        cursor = conn.cursor()
+        protected_rows = cursor.execute(
+            f"""
+            SELECT id
+            FROM phase_control_master
+            WHERE machine_stage_id = ?
+                AND id IN ({placeholders})
+                AND UPPER(COALESCE(phase_control_key, phase_control_name)) = 'EMPTY PHASE'
+            """,
+            tuple([context["stage_id"]] + [int(value) for value in remove_phase_ids])
+        ).fetchall()
+        conn.close()
+        protected_remove_ids = {str(row["id"]) for row in protected_rows}
+
+        if protected_remove_ids:
+            flash(
+                "Empty Phase is a required safe placeholder and cannot be removed.",
+                "warning"
+            )
+            remove_phase_ids = remove_phase_ids - protected_remove_ids
+
+    rows = []
+    for phase_id in phase_ids:
+        try:
+            phase_id_int = int(phase_id)
+        except Exception:
+            continue
+
+        rows.append(
+            {
+                "id": phase_id_int,
+                "phase_group_code": request.form.get(f"phase_group_code_{phase_id}"),
+                "phase_control_name": request.form.get(f"phase_control_name_{phase_id}"),
+                "plc_phase_code": request.form.get(f"plc_phase_code_{phase_id}"),
+                "description": request.form.get(f"description_{phase_id}"),
+                "display_order": request.form.get(f"display_order_{phase_id}"),
+                "active": (
+                    0
+                    if phase_id in remove_phase_ids
+                    else 1 if request.form.get(f"active_{phase_id}") == "1" else 0
+                ),
+            }
+        )
+
+    success, errors, changed_count = PhaseTemplateManager.save_phase_rows(
+        context["stage_id"],
+        rows,
+    )
+
+    if not success:
+        for error in errors[:8]:
+            flash(error, "error")
+        return
+
+    try:
+        AuditManager.log_event(
+            username=session.get("username"),
+            role=session.get("role"),
+            action="PHASE_TEMPLATE_MASTER_UPDATED",
+            change_source="WEB_PHASE_MASTER",
+            record_id=str(context["stage_id"]),
+            new_value=(
+                f"{changed_count} phase option(s) changed; "
+                f"{len(remove_phase_ids)} removed from active dropdowns"
+            ),
+            reason=reason,
+            user_agent=request.headers.get("User-Agent", ""),
+            forwarded_for=request.headers.get("X-Forwarded-For"),
+            request_host=request.host,
+        )
+    except Exception:
+        pass
+
+    if remove_phase_ids:
+        flash(
+            f"Phase template saved. {len(remove_phase_ids)} option(s) removed from recipe dropdowns.",
+            "success"
+        )
+    else:
+        flash(f"Phase template saved. {changed_count} phase option(s) updated.", "success")
+
+
+def _save_group_template_text(context):
+    groups = _phase_groups(context["stage_id"], context.get("stage_type"))
+    group_by_code = {
+        group["phase_group_code"]: group
+        for group in groups
+    }
+
+    group_code = (request.form.get("phase_group_code") or "").strip()
+    if group_code not in group_by_code:
+        flash("Select a valid phase group for the pasted template.", "error")
+        return
+
+    template_text = request.form.get("phase_template_text") or ""
+    deactivate_missing = request.form.get("deactivate_missing") == "1"
+    reason = (
+        request.form.get("reason")
+        or
+        "Stage-wise pasted phase template saved"
+    ).strip()
+    lines = template_text.splitlines()
+    group = group_by_code[group_code]
+
+    success, errors, result = PhaseTemplateManager.save_group_template_lines(
+        machine_stage_id=context["stage_id"],
+        stage_type=context["stage_type"],
+        group_code=group_code,
+        group_name=group["phase_group_name"],
+        lines=lines,
+        deactivate_missing=deactivate_missing,
+    )
+
+    if not success:
+        for error in errors[:8]:
+            flash(error, "error")
+        return
+
+    try:
+        AuditManager.log_event(
+            username=session.get("username"),
+            role=session.get("role"),
+            action="PHASE_TEMPLATE_TEXT_SAVED",
+            change_source="WEB_PHASE_MASTER",
+            record_id=str(context["stage_id"]),
+            parameter_name=group_code,
+            new_value=(
+                f"updated={result.get('updated', 0)}; "
+                f"inserted={result.get('inserted', 0)}; "
+                f"deactivated={result.get('deactivated', 0)}"
+            ),
+            reason=reason,
+            user_agent=request.headers.get("User-Agent", ""),
+            forwarded_for=request.headers.get("X-Forwarded-For"),
+            request_host=request.host,
+        )
+    except Exception:
+        pass
+
+    flash(
+        "Pasted phase template saved. "
+        f"Updated {result.get('updated', 0)}, inserted {result.get('inserted', 0)}, "
+        f"deactivated {result.get('deactivated', 0)}.",
+        "success"
+    )
+
+
+def _cleanup_phase_duplicates(context):
+    reason = (
+        request.form.get("reason")
+        or
+        "Case-insensitive duplicate phase names merged"
+    ).strip()
+    success, errors, result = PhaseTemplateManager.merge_case_duplicates(
+        context["stage_id"]
+    )
+
+    if not success:
+        for error in errors[:8]:
+            flash(error, "error")
+        return
+
+    try:
+        AuditManager.log_event(
+            username=session.get("username"),
+            role=session.get("role"),
+            action="PHASE_TEMPLATE_DUPLICATES_MERGED",
+            change_source="WEB_PHASE_MASTER",
+            record_id=str(context["stage_id"]),
+            new_value=(
+                f"recipe_rows_remapped={result.get('merged', 0)}; "
+                f"duplicates_deactivated={result.get('deactivated', 0)}"
+            ),
+            reason=reason,
+            user_agent=request.headers.get("User-Agent", ""),
+            forwarded_for=request.headers.get("X-Forwarded-For"),
+            request_host=request.host,
+        )
+    except Exception:
+        pass
+
+    flash(
+        "Duplicate phase names merged. "
+        f"Recipe rows remapped: {result.get('merged', 0)}; "
+        f"duplicate master rows deactivated: {result.get('deactivated', 0)}.",
+        "success"
+    )
 
 
 def register_phase_control_routes(app):
@@ -460,19 +698,55 @@ def register_phase_control_routes(app):
                 _create_group(context)
             elif action == "create_phase":
                 _create_phase(context)
+            elif action == "save_phase_template":
+                _save_phase_template(context)
+            elif action == "save_group_template_text":
+                _save_group_template_text(context)
+            elif action == "cleanup_duplicates":
+                _cleanup_phase_duplicates(context)
             else:
                 flash("Unknown phase master action.", "error")
 
             return redirect(canonical_url)
 
-        groups = _phase_groups(context["stage_id"])
-        options = _phase_options(context["stage_id"])
+        PhaseTemplateManager.ensure_schema()
+        existing_group_count = len(_phase_groups(
+            context["stage_id"],
+            context.get("stage_type"),
+            include_inactive=True,
+        ))
+        existing_option_count = len(_phase_options(
+            context["stage_id"],
+            context.get("stage_type"),
+            include_inactive=True,
+        ))
+        if existing_group_count == 0 and existing_option_count == 0:
+            PhaseControlDefaultManager.initialize_for_context(context)
+        PhaseTemplateManager.sync_phase_keys(context["stage_id"])
+
+        groups = _phase_groups(
+            context["stage_id"],
+            context.get("stage_type"),
+        )
+        options = _phase_options(
+            context["stage_id"],
+            context.get("stage_type"),
+            include_inactive=True,
+        )
+        display_options = _phase_options(
+            context["stage_id"],
+            context.get("stage_type"),
+        )
+        duplicate_report = PhaseTemplateManager.get_duplicate_report(
+            context["stage_id"]
+        )
 
         return render_template(
             "phase_controls/stage_master.html",
             context=context,
             groups=groups,
             options=options,
-            grouped_options=_phase_options_by_group(groups, options),
+            grouped_options=_phase_options_by_group(groups, display_options),
+            duplicate_report=duplicate_report,
             back_url="/phase-controls"
         )

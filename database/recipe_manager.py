@@ -29,6 +29,10 @@ class RecipeManager:
             RecipePhaseControlManager
         )
 
+        from database.phase_control_default_manager import (
+            PhaseControlDefaultManager
+        )
+
         conn = get_connection()
 
         cursor = conn.cursor()
@@ -48,6 +52,18 @@ class RecipeManager:
                 "Parameter master is not configured for this machine/stage. "
                 "Build/import parameter definitions before creating recipe."
             )
+
+        stage = cursor.execute(
+            """
+            SELECT stage_type
+            FROM machine_stages
+            WHERE id = ?
+            """,
+            (
+                stage_id,
+            )
+        ).fetchone()
+        stage_type = stage["stage_type"] if stage else ""
 
         cursor.execute(
             """
@@ -95,6 +111,11 @@ class RecipeManager:
 
             stage_id=stage_id
 
+        )
+
+        PhaseControlDefaultManager.initialize_for_stage(
+            machine_stage_id=stage_id,
+            stage_type=stage_type
         )
         
         RecipePhaseControlManager.create_default_phase_rows(

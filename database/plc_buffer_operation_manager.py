@@ -36,6 +36,9 @@ from database.recipe_manager import (
 from database.recipe_parameter_value_manager import (
     RecipeParameterValueManager
 )
+from database.recipe_phase_control_manager import (
+    RecipePhaseControlManager
+)
 
 from database.upload_history_manager import (
     UploadHistoryManager
@@ -55,6 +58,22 @@ class PLCBufferOperationManager:
     DESTINATION_PURPOSE = "TEST_RECIPE_DATA"
 
     RECIPE_CODE_PURPOSE = "RECIPE_CODE"
+
+    PHASE_STRING_PURPOSE = "PHASE_CONTROL_STRING"
+
+    PHASE_STOP_PURPOSE = "PHASE_STOP_STRING"
+
+    PHASE_POSITION_PURPOSE = "PHASE_POSITION_STRING"
+
+    CAP_STRIP_PHASE_STRING_PURPOSE = "CAP_STRIP_PHASE_CONTROL_STRING"
+
+    CAP_STRIP_PHASE_STOP_PURPOSE = "CAP_STRIP_PHASE_STOP_STRING"
+
+    BT_PHASE_STRING_PURPOSE = "BT_PHASE_CONTROL_STRING"
+
+    BT_PHASE_STOP_PURPOSE = "BT_PHASE_STOP_STRING"
+
+    BT_PHASE_POSITION_PURPOSE = "BT_PHASE_POSITION_STRING"
 
     MANUAL_PURPOSE = "MACHINE_IN_MANUAL"
 
@@ -77,6 +96,25 @@ class PLCBufferOperationManager:
     LAST_DOWNLOAD_TIME_PURPOSE = "LAST_DOWNLOAD_TIME"
 
     LAST_DOWNLOAD_USER_PURPOSE = "LAST_DOWNLOAD_USER"
+
+    PHASE_PURPOSES = [
+        PHASE_STRING_PURPOSE,
+        PHASE_STOP_PURPOSE,
+        PHASE_POSITION_PURPOSE,
+        CAP_STRIP_PHASE_STRING_PURPOSE,
+        CAP_STRIP_PHASE_STOP_PURPOSE,
+        BT_PHASE_STRING_PURPOSE,
+        BT_PHASE_STOP_PURPOSE,
+        BT_PHASE_POSITION_PURPOSE
+    ]
+
+    SECOND_STAGE_PHASE_PURPOSES = [
+        CAP_STRIP_PHASE_STRING_PURPOSE,
+        CAP_STRIP_PHASE_STOP_PURPOSE,
+        BT_PHASE_STRING_PURPOSE,
+        BT_PHASE_STOP_PURPOSE,
+        BT_PHASE_POSITION_PURPOSE
+    ]
 
     DOWNLOAD_HANDSHAKE_TIMEOUT_SECONDS = 20
 
@@ -614,6 +652,10 @@ class PLCBufferOperationManager:
                 "No active PLC selected for this recipe stage."
             )
 
+        configured_phase_purposes = (
+            PLCBufferOperationManager.get_phase_purposes_for_recipe(recipe)
+        )
+
         for purpose in [
             PLCBufferOperationManager.SOURCE_PURPOSE,
             PLCBufferOperationManager.DESTINATION_PURPOSE,
@@ -629,7 +671,7 @@ class PLCBufferOperationManager:
             PLCBufferOperationManager.OS_PURPOSE,
             PLCBufferOperationManager.LAST_DOWNLOAD_TIME_PURPOSE,
             PLCBufferOperationManager.LAST_DOWNLOAD_USER_PURPOSE
-        ]:
+        ] + configured_phase_purposes:
 
             context["tags"][purpose] = (
                 PLCBufferOperationManager
@@ -662,6 +704,20 @@ class PLCBufferOperationManager:
 
                 context["issues"].append(
                     f"{purpose} must be configured as {expected_array}."
+                )
+
+        for purpose in configured_phase_purposes:
+
+            tag = context["tags"].get(
+                purpose
+            )
+
+            if not PLCBufferOperationManager.valid_string_array_tag(
+                tag
+            ):
+
+                context["issues"].append(
+                    f"{purpose} must be configured as a STRING array."
                 )
 
         for purpose in [
@@ -809,6 +865,14 @@ class PLCBufferOperationManager:
 
             )
 
+            PLCBufferOperationManager.write_phase_control_arrays(
+                plc_conn=plc_conn,
+                recipe=recipe,
+                result=result,
+                write_percent=78,
+                verify_percent=84
+            )
+
             readback = (
                 PLCBufferOperationManager
                 .read_array_or_block(
@@ -821,7 +885,7 @@ class PLCBufferOperationManager:
 
                     label="Read CRS buffer back",
 
-                    percent=85
+                    percent=88
 
                 ,
 
@@ -1292,6 +1356,14 @@ class PLCBufferOperationManager:
 
             )
 
+            PLCBufferOperationManager.write_phase_control_arrays(
+                plc_conn=plc_conn,
+                recipe=recipe,
+                result=result,
+                write_percent=91,
+                verify_percent=94
+            )
+
             destination_readback = (
                 PLCBufferOperationManager
                 .read_array_or_block(
@@ -1304,7 +1376,7 @@ class PLCBufferOperationManager:
 
                     label="Read PLC destination back",
 
-                    percent=95
+                    percent=96
 
                 ,
 
@@ -2170,6 +2242,37 @@ class PLCBufferOperationManager:
             return None
 
     @staticmethod
+    def is_second_stage_recipe(recipe):
+        stage_type = str((recipe or {}).get("stage_type") or "").strip().upper()
+        if stage_type:
+            return stage_type == "SECOND_STAGE"
+
+        try:
+            conn = get_connection()
+            row = conn.execute(
+                """
+                SELECT stage_type
+                FROM machine_stages
+                WHERE id = ?
+                """,
+                (recipe["stage_id"],),
+            ).fetchone()
+            conn.close()
+            return str(row["stage_type"] if row else "").strip().upper() == "SECOND_STAGE"
+        except Exception:
+            return False
+
+    @staticmethod
+    def get_phase_purposes_for_recipe(recipe):
+        if PLCBufferOperationManager.is_second_stage_recipe(recipe):
+            return list(PLCBufferOperationManager.SECOND_STAGE_PHASE_PURPOSES)
+        return [
+            PLCBufferOperationManager.PHASE_STRING_PURPOSE,
+            PLCBufferOperationManager.PHASE_STOP_PURPOSE,
+            PLCBufferOperationManager.PHASE_POSITION_PURPOSE
+        ]
+
+    @staticmethod
     def get_live_tag_status(
 
         recipe_id,
@@ -2796,6 +2899,120 @@ class PLCBufferOperationManager:
         return tag
 
     @staticmethod
+    def require_string_array_tag(
+
+        recipe,
+
+        purpose,
+
+        label
+
+    ):
+
+        tag = PLCBufferOperationManager.get_tag_for_purpose(
+            recipe,
+            purpose
+        )
+
+        if not PLCBufferOperationManager.valid_string_array_tag(
+            tag
+        ):
+
+            raise Exception(
+                f"{label} tag for {purpose} must be configured as STRING array."
+            )
+
+        return tag
+
+    @staticmethod
+    def get_array_size_from_tag(
+
+        tag
+
+    ):
+
+        if not tag:
+
+            return None
+
+        try:
+
+            size = int(
+                tag.get(
+                    "array_size"
+                )
+                or
+                0
+            )
+
+        except Exception:
+
+            size = 0
+
+        if size > 0:
+
+            return size
+
+        start = tag.get(
+            "array_start_index"
+        )
+
+        end = tag.get(
+            "array_end_index"
+        )
+
+        if start is None or end is None:
+
+            return None
+
+        try:
+
+            start = int(
+                start
+            )
+
+            end = int(
+                end
+            )
+
+        except Exception:
+
+            return None
+
+        if end < start:
+
+            return None
+
+        return (
+            end - start + 1
+        )
+
+    @staticmethod
+    def get_array_start_from_tag(
+
+        tag
+
+    ):
+
+        if not tag:
+
+            return 0
+
+        try:
+
+            return int(
+                tag.get(
+                    "array_start_index"
+                )
+                or
+                0
+            )
+
+        except Exception:
+
+            return 0
+
+    @staticmethod
     def valid_real_array_tag(
 
         tag,
@@ -2872,6 +3089,1066 @@ class PLCBufferOperationManager:
             return False
 
         return True
+
+    @staticmethod
+    def valid_string_array_tag(
+
+        tag
+
+    ):
+
+        if not tag:
+
+            return False
+
+        if str(
+            tag.get(
+                "tag_type"
+            )
+            or
+            ""
+        ).upper() != "STRING":
+
+            return False
+
+        if tag.get(
+            "is_array"
+        ) != 1:
+
+            return False
+
+        array_size = PLCBufferOperationManager.get_array_size_from_tag(
+            tag
+        )
+
+        return bool(
+            array_size
+            and
+            array_size > 0
+        )
+
+    @staticmethod
+    def get_phase_payload_size(
+
+        tags
+
+    ):
+
+        sizes = []
+
+        for tag in tags:
+
+            size = PLCBufferOperationManager.get_array_size_from_tag(
+                tag
+            )
+
+            if not size:
+
+                raise Exception(
+                    "Phase control array size is not configured."
+                )
+
+            sizes.append(
+                size
+            )
+
+        unique_sizes = set(
+            sizes
+        )
+
+        if len(
+            unique_sizes
+        ) != 1:
+
+            raise Exception(
+                "Phase control name, stop, and position arrays must use the same size."
+            )
+
+        return sizes[0]
+
+    @staticmethod
+    def build_phase_control_payload(
+
+        recipe,
+
+        payload_size
+
+    ):
+
+        rows = RecipePhaseControlManager.get_recipe_phase_control(
+            recipe["id"]
+        )
+
+        if len(
+            rows
+        ) > payload_size:
+
+            raise Exception(
+                "Configured phase control rows exceed PLC phase array size "
+                f"({len(rows)} rows > {payload_size} array elements)."
+            )
+
+        phase_names = []
+
+        stop_values = []
+
+        position_values = []
+
+        for row in rows:
+
+            phase_name = str(
+                row.get(
+                    "phase_control_name"
+                )
+                or
+                ""
+            )
+
+            if phase_name.strip().upper() == "EMPTY PHASE":
+
+                phase_name = ""
+
+            phase_names.append(
+                phase_name
+            )
+
+            stop_values.append(
+                str(
+                    row.get(
+                        "stop_option"
+                    )
+                    or
+                    "No"
+                )
+            )
+
+            position_values.append(
+                str(
+                    row.get(
+                        "position_option"
+                    )
+                    or
+                    "No"
+                )
+            )
+
+        while len(
+            phase_names
+        ) < payload_size:
+
+            phase_names.append(
+                ""
+            )
+
+            stop_values.append(
+                "No"
+            )
+
+            position_values.append(
+                "No"
+            )
+
+        return {
+            "rows": rows,
+            "phase_names": phase_names,
+            "stop_values": stop_values,
+            "position_values": position_values,
+            "payload_size": payload_size
+        }
+
+    @staticmethod
+    def write_string_array_or_block(
+
+        plc_conn,
+
+        tag,
+
+        values,
+
+        result,
+
+        label,
+
+        percent
+
+    ):
+
+        start_index = PLCBufferOperationManager.get_array_start_from_tag(
+            tag
+        )
+
+        tag_name = tag[
+            "tag_name"
+        ]
+
+        for offset, value in enumerate(
+            values
+        ):
+
+            element_tag = (
+                f"{tag_name}"
+                f"[{start_index + offset}]"
+            )
+
+            write_result = plc_conn.write(
+                (
+                    element_tag,
+                    value
+                )
+            )
+
+            error = getattr(
+                write_result,
+                "error",
+                None
+            )
+
+            if (
+                write_result is None
+                or
+                error
+                or
+                not bool(
+                    write_result
+                )
+            ):
+
+                PLCBufferOperationManager.fail_with_step(
+
+                    result,
+
+                    label,
+
+                    f"{element_tag} write failed: {error}",
+
+                    percent
+
+                )
+
+        PLCBufferOperationManager.add_step(
+
+            result,
+
+            label,
+
+            "OK",
+
+            f"{tag_name}[{start_index}] to {tag_name}[{start_index + len(values) - 1}] written.",
+
+            percent
+
+        )
+
+    @staticmethod
+    def read_string_array_or_block(
+
+        plc_conn,
+
+        tag,
+
+        result,
+
+        label,
+
+        percent
+
+    ):
+
+        size = PLCBufferOperationManager.get_array_size_from_tag(
+            tag
+        )
+
+        start_index = PLCBufferOperationManager.get_array_start_from_tag(
+            tag
+        )
+
+        tag_name = tag[
+            "tag_name"
+        ]
+
+        payload = []
+
+        for offset in range(
+            size
+        ):
+
+            element_tag = (
+                f"{tag_name}"
+                f"[{start_index + offset}]"
+            )
+
+            read_result = plc_conn.read(
+                element_tag
+            )
+
+            error = getattr(
+                read_result,
+                "error",
+                None
+            )
+
+            if (
+                read_result is None
+                or
+                error
+            ):
+
+                PLCBufferOperationManager.fail_with_step(
+
+                    result,
+
+                    label,
+
+                    f"{element_tag} read failed: {error}",
+
+                    percent
+
+                )
+
+            value = getattr(
+                read_result,
+                "value",
+                ""
+            )
+
+            payload.append(
+                ""
+                if value is None
+                else
+                str(
+                    value
+                )
+            )
+
+        PLCBufferOperationManager.add_step(
+
+            result,
+
+            label,
+
+            "OK",
+
+            f"{tag_name}[{start_index}] to {tag_name}[{start_index + size - 1}] read successfully.",
+
+            percent
+
+        )
+
+        return payload
+
+    @staticmethod
+    def compare_string_payloads(
+
+        expected,
+
+        actual
+
+    ):
+
+        mismatches = []
+
+        for index, expected_value in enumerate(
+            expected
+        ):
+
+            actual_value = (
+                actual[index]
+                if actual and index < len(actual)
+                else
+                None
+            )
+
+            if str(
+                actual_value
+                if actual_value is not None
+                else
+                ""
+            ) != str(
+                expected_value
+                if expected_value is not None
+                else
+                ""
+            ):
+
+                mismatches.append(
+                    {
+                        "index": index,
+                        "expected": expected_value,
+                        "actual": actual_value
+                    }
+                )
+
+        return {
+            "matched": not mismatches,
+            "mismatch_count": len(
+                mismatches
+            ),
+            "mismatches": mismatches
+        }
+
+    @staticmethod
+    def find_stage_string_array_tag_by_name(
+        recipe,
+        tag_name
+    ):
+        if not recipe or not tag_name:
+            return None
+
+        try:
+            tags = PLCTagManager.get_stage_tags(
+                recipe["machine_id"],
+                recipe["stage_id"]
+            )
+        except Exception:
+            return None
+
+        expected = str(tag_name or "").strip().upper()
+        for tag in tags:
+            if str(tag.get("tag_name") or "").strip().upper() != expected:
+                continue
+
+            if PLCBufferOperationManager.valid_string_array_tag(tag):
+                return tag
+
+        return None
+
+    @staticmethod
+    def probe_string_array_tag(
+        plc_conn,
+        tag_name,
+        array_size,
+        start_index=0
+    ):
+        try:
+            read_result = plc_conn.read(
+                f"{tag_name}[{start_index}]"
+            )
+        except Exception:
+            return None
+
+        error = getattr(
+            read_result,
+            "error",
+            None
+        )
+
+        if (
+            read_result is None
+            or
+            error
+            or
+            not bool(read_result)
+        ):
+            return None
+
+        return {
+            "tag_name": tag_name,
+            "tag_type": "STRING",
+            "is_array": 1,
+            "array_size": int(array_size),
+            "array_start_index": int(start_index),
+            "array_end_index": int(start_index) + int(array_size) - 1
+        }
+
+    @staticmethod
+    def normalize_phase_control_plc_text(row):
+        phase_name = str(
+            row.get("phase_control_name")
+            or
+            ""
+        )
+
+        if phase_name.strip().upper() == "EMPTY PHASE":
+            return ""
+
+        return phase_name
+
+    @staticmethod
+    def phase_row_has_payload(row):
+        phase_name = PLCBufferOperationManager.normalize_phase_control_plc_text(
+            row
+        )
+
+        stop_value = str(
+            row.get("stop_option")
+            or
+            "No"
+        )
+
+        position_value = str(
+            row.get("position_option")
+            or
+            "No"
+        )
+
+        return bool(
+            phase_name.strip()
+            or
+            stop_value.strip().upper() == "YES"
+            or
+            position_value.strip().upper() == "YES"
+        )
+
+    @staticmethod
+    def build_phase_control_payload_from_rows(
+        rows,
+        payload_size
+    ):
+        if payload_size is None or int(payload_size) <= 0:
+            raise Exception("Phase control array size is not configured.")
+
+        payload_size = int(payload_size)
+
+        overflow_rows = [
+            row for row in rows[payload_size:]
+            if PLCBufferOperationManager.phase_row_has_payload(row)
+        ]
+
+        if overflow_rows:
+            first = overflow_rows[0]
+            raise Exception(
+                "Configured phase control rows exceed PLC phase array size "
+                f"for group {first.get('phase_group_name') or first.get('phase_group_code')}. "
+                f"Array size is {payload_size}."
+            )
+
+        phase_names = []
+        stop_values = []
+        position_values = []
+
+        for row in rows[:payload_size]:
+            phase_names.append(
+                PLCBufferOperationManager.normalize_phase_control_plc_text(row)
+            )
+            stop_values.append(
+                str(
+                    row.get("stop_option")
+                    or
+                    "No"
+                )
+            )
+            position_values.append(
+                str(
+                    row.get("position_option")
+                    or
+                    "No"
+                )
+            )
+
+        while len(phase_names) < payload_size:
+            phase_names.append("")
+            stop_values.append("No")
+            position_values.append("No")
+
+        return {
+            "phase_names": phase_names,
+            "stop_values": stop_values,
+            "position_values": position_values,
+            "payload_size": payload_size
+        }
+
+    @staticmethod
+    def split_phase_rows_by_group(rows):
+        grouped = {}
+
+        for row in rows:
+            group_code = str(
+                row.get("phase_group_code")
+                or
+                "MAIN"
+            ).strip().upper()
+
+            grouped.setdefault(
+                group_code,
+                []
+            ).append(row)
+
+        return grouped
+
+    @staticmethod
+    def compare_split_phase_tag(
+        plc_conn,
+        tag,
+        values,
+        result,
+        label,
+        verify_percent
+    ):
+        readback = PLCBufferOperationManager.read_string_array_or_block(
+            plc_conn=plc_conn,
+            tag=tag,
+            result=result,
+            label=f"Read {label} back",
+            percent=verify_percent
+        )
+
+        compare = PLCBufferOperationManager.compare_string_payloads(
+            values,
+            readback
+        )
+
+        if not compare["matched"]:
+            first = compare["mismatches"][0]
+            PLCBufferOperationManager.fail_with_step(
+                result,
+                f"Verify {label}",
+                (
+                    f"Mismatch at index {first['index']}: "
+                    f"expected {first['expected']!r}, actual {first['actual']!r}."
+                ),
+                verify_percent
+            )
+
+    @staticmethod
+    def write_phase_split_tag(
+        plc_conn,
+        tag,
+        values,
+        result,
+        label,
+        write_percent,
+        verify_percent
+    ):
+        PLCBufferOperationManager.write_string_array_or_block(
+            plc_conn=plc_conn,
+            tag=tag,
+            values=values,
+            result=result,
+            label=f"Write {label}",
+            percent=write_percent
+        )
+
+        PLCBufferOperationManager.compare_split_phase_tag(
+            plc_conn=plc_conn,
+            tag=tag,
+            values=values,
+            result=result,
+            label=label,
+            verify_percent=verify_percent
+        )
+
+    @staticmethod
+    def write_split_second_stage_phase_arrays(
+        plc_conn,
+        recipe,
+        result,
+        write_percent,
+        verify_percent,
+        phase_tag,
+        stop_tag,
+        position_tag
+    ):
+        rows = RecipePhaseControlManager.get_recipe_phase_control(
+            recipe["id"]
+        )
+
+        grouped = PLCBufferOperationManager.split_phase_rows_by_group(rows)
+
+        if not any(
+            code in grouped
+            for code in (
+                "CAP_STRIP_SIDE",
+                "BT_SIDE"
+            )
+        ):
+            return None
+
+        cap_phase_tag = PLCBufferOperationManager.get_tag_for_purpose(
+            recipe,
+            PLCBufferOperationManager.CAP_STRIP_PHASE_STRING_PURPOSE
+        )
+        if not PLCBufferOperationManager.valid_string_array_tag(cap_phase_tag):
+            cap_phase_tag = PLCBufferOperationManager.find_stage_string_array_tag_by_name(
+                recipe,
+                "CRS_Phase_Cntrl_String_CapSd"
+            )
+        if not cap_phase_tag:
+            cap_phase_tag = PLCBufferOperationManager.probe_string_array_tag(
+                plc_conn,
+                "CRS_Phase_Cntrl_String_CapSd",
+                2
+            )
+
+        cap_stop_tag = PLCBufferOperationManager.get_tag_for_purpose(
+            recipe,
+            PLCBufferOperationManager.CAP_STRIP_PHASE_STOP_PURPOSE
+        )
+        if not PLCBufferOperationManager.valid_string_array_tag(cap_stop_tag):
+            cap_stop_tag = PLCBufferOperationManager.find_stage_string_array_tag_by_name(
+                recipe,
+                "CRS_Phase_Cntrl_Stop_String_CapSd"
+            )
+        if not cap_stop_tag:
+            cap_stop_tag = PLCBufferOperationManager.probe_string_array_tag(
+                plc_conn,
+                "CRS_Phase_Cntrl_Stop_String_CapSd",
+                2
+            )
+
+        cap_position_tag = (
+            PLCBufferOperationManager.find_stage_string_array_tag_by_name(
+                recipe,
+                "CRS_Phase_Cntrl_Pos_String_CapSd"
+            )
+            or
+            PLCBufferOperationManager.find_stage_string_array_tag_by_name(
+                recipe,
+                "CRS_Phase_Cntrl_Position_String_CapSd"
+            )
+        )
+        if not cap_position_tag:
+            cap_position_tag = (
+                PLCBufferOperationManager.probe_string_array_tag(
+                    plc_conn,
+                    "CRS_Phase_Cntrl_Pos_String_CapSd",
+                    2
+                )
+                or
+                PLCBufferOperationManager.probe_string_array_tag(
+                    plc_conn,
+                    "CRS_Phase_Cntrl_Position_String_CapSd",
+                    2
+                )
+            )
+
+        if not cap_phase_tag:
+            raise Exception(
+                "Cap strip phase names tag must be configured as STRING array."
+            )
+
+        if not cap_stop_tag:
+            raise Exception(
+                "Cap strip stop options tag must be configured as STRING array."
+            )
+
+        main_rows = grouped.get("BT_SIDE", [])
+
+        cap_rows = grouped.get(
+            "CAP_STRIP_SIDE",
+            []
+        )
+
+        written_elements = 0
+
+        cap_phase_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
+            cap_rows,
+            PLCBufferOperationManager.get_array_size_from_tag(cap_phase_tag)
+        )
+
+        PLCBufferOperationManager.write_phase_split_tag(
+            plc_conn=plc_conn,
+            tag=cap_phase_tag,
+            values=cap_phase_payload["phase_names"],
+            result=result,
+            label="cap strip phase names",
+            write_percent=write_percent,
+            verify_percent=verify_percent
+        )
+        written_elements += cap_phase_payload["payload_size"]
+
+        if cap_stop_tag:
+            cap_stop_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
+                cap_rows,
+                PLCBufferOperationManager.get_array_size_from_tag(cap_stop_tag)
+            )
+            PLCBufferOperationManager.write_phase_split_tag(
+                plc_conn=plc_conn,
+                tag=cap_stop_tag,
+                values=cap_stop_payload["stop_values"],
+                result=result,
+                label="cap strip stop options",
+                write_percent=write_percent,
+                verify_percent=verify_percent
+            )
+
+        if cap_position_tag:
+            cap_position_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
+                cap_rows,
+                PLCBufferOperationManager.get_array_size_from_tag(cap_position_tag)
+            )
+            PLCBufferOperationManager.write_phase_split_tag(
+                plc_conn=plc_conn,
+                tag=cap_position_tag,
+                values=cap_position_payload["position_values"],
+                result=result,
+                label="cap strip position options",
+                write_percent=write_percent,
+                verify_percent=verify_percent
+            )
+
+        main_phase_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
+            main_rows,
+            PLCBufferOperationManager.get_array_size_from_tag(phase_tag)
+        )
+
+        PLCBufferOperationManager.write_phase_split_tag(
+            plc_conn=plc_conn,
+            tag=phase_tag,
+            values=main_phase_payload["phase_names"],
+            result=result,
+            label="main phase names",
+            write_percent=write_percent,
+            verify_percent=verify_percent
+        )
+        written_elements += main_phase_payload["payload_size"]
+
+        main_stop_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
+            main_rows,
+            PLCBufferOperationManager.get_array_size_from_tag(stop_tag)
+        )
+
+        PLCBufferOperationManager.write_phase_split_tag(
+            plc_conn=plc_conn,
+            tag=stop_tag,
+            values=main_stop_payload["stop_values"],
+            result=result,
+            label="main stop options",
+            write_percent=write_percent,
+            verify_percent=verify_percent
+        )
+
+        main_position_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
+            main_rows,
+            PLCBufferOperationManager.get_array_size_from_tag(position_tag)
+        )
+
+        PLCBufferOperationManager.write_phase_split_tag(
+            plc_conn=plc_conn,
+            tag=position_tag,
+            values=main_position_payload["position_values"],
+            result=result,
+            label="main position options",
+            write_percent=write_percent,
+            verify_percent=verify_percent
+        )
+
+        PLCBufferOperationManager.add_step(
+            result,
+            "Phase control arrays verified",
+            "OK",
+            "Second-stage cap strip and B&T phase-control arrays written and verified.",
+            verify_percent
+        )
+
+        result["metrics"]["phase_control_elements"] = written_elements
+
+        return {
+            "rows": rows,
+            "grouped": True,
+            "payload_size": written_elements
+        }
+
+    @staticmethod
+    def require_phase_string_array_tag(
+        recipe,
+        purpose,
+        label,
+        fallback_tag_names=None
+    ):
+        try:
+            return PLCBufferOperationManager.require_string_array_tag(
+                recipe,
+                purpose,
+                label
+            )
+        except Exception as exc:
+            for tag_name in fallback_tag_names or []:
+                tag = PLCBufferOperationManager.find_stage_string_array_tag_by_name(
+                    recipe,
+                    tag_name
+                )
+
+                if tag:
+                    return tag
+
+            raise exc
+
+    @staticmethod
+    def write_phase_control_arrays(
+
+        plc_conn,
+
+        recipe,
+
+        result,
+
+        write_percent,
+
+        verify_percent
+
+    ):
+
+        if PLCBufferOperationManager.is_second_stage_recipe(recipe):
+            phase_purpose = PLCBufferOperationManager.BT_PHASE_STRING_PURPOSE
+            stop_purpose = PLCBufferOperationManager.BT_PHASE_STOP_PURPOSE
+            position_purpose = PLCBufferOperationManager.BT_PHASE_POSITION_PURPOSE
+        else:
+            phase_purpose = PLCBufferOperationManager.PHASE_STRING_PURPOSE
+            stop_purpose = PLCBufferOperationManager.PHASE_STOP_PURPOSE
+            position_purpose = PLCBufferOperationManager.PHASE_POSITION_PURPOSE
+
+        phase_tag = PLCBufferOperationManager.require_phase_string_array_tag(
+            recipe,
+            phase_purpose,
+            "Phase control names",
+            [
+                "CRS_Phase_Cntrl_String",
+                "CRS_Phase_Control_String"
+            ]
+        )
+
+        stop_tag = PLCBufferOperationManager.require_phase_string_array_tag(
+            recipe,
+            stop_purpose,
+            "Phase control stop",
+            [
+                "CRS_Phase_Cntrl_Stop_String",
+                "CRS_Phase_Control_Stop_String"
+            ]
+        )
+
+        position_tag = PLCBufferOperationManager.require_phase_string_array_tag(
+            recipe,
+            position_purpose,
+            "Phase control position",
+            [
+                "CRS_Phase_Cntrl_Pos_String",
+                "CRS_Phase_Cntrl_Position_String",
+                "CRS_Phase_Control_Position_String"
+            ]
+        )
+
+        split_payload = (
+            PLCBufferOperationManager.write_split_second_stage_phase_arrays(
+                plc_conn=plc_conn,
+                recipe=recipe,
+                result=result,
+                write_percent=write_percent,
+                verify_percent=verify_percent,
+                phase_tag=phase_tag,
+                stop_tag=stop_tag,
+                position_tag=position_tag
+            )
+        )
+
+        if split_payload:
+            return split_payload
+
+        phase_size = PLCBufferOperationManager.get_phase_payload_size(
+            [
+                phase_tag,
+                stop_tag,
+                position_tag
+            ]
+        )
+
+        payload = PLCBufferOperationManager.build_phase_control_payload(
+            recipe,
+            phase_size
+        )
+
+        PLCBufferOperationManager.write_string_array_or_block(
+            plc_conn=plc_conn,
+            tag=phase_tag,
+            values=payload["phase_names"],
+            result=result,
+            label="Write phase control names",
+            percent=write_percent
+        )
+
+        PLCBufferOperationManager.write_string_array_or_block(
+            plc_conn=plc_conn,
+            tag=stop_tag,
+            values=payload["stop_values"],
+            result=result,
+            label="Write phase stop options",
+            percent=write_percent
+        )
+
+        PLCBufferOperationManager.write_string_array_or_block(
+            plc_conn=plc_conn,
+            tag=position_tag,
+            values=payload["position_values"],
+            result=result,
+            label="Write phase position options",
+            percent=write_percent
+        )
+
+        phase_readback = PLCBufferOperationManager.read_string_array_or_block(
+            plc_conn=plc_conn,
+            tag=phase_tag,
+            result=result,
+            label="Read phase control names back",
+            percent=verify_percent
+        )
+
+        stop_readback = PLCBufferOperationManager.read_string_array_or_block(
+            plc_conn=plc_conn,
+            tag=stop_tag,
+            result=result,
+            label="Read phase stop options back",
+            percent=verify_percent
+        )
+
+        position_readback = PLCBufferOperationManager.read_string_array_or_block(
+            plc_conn=plc_conn,
+            tag=position_tag,
+            result=result,
+            label="Read phase position options back",
+            percent=verify_percent
+        )
+
+        compare_results = [
+            (
+                "phase names",
+                PLCBufferOperationManager.compare_string_payloads(
+                    payload["phase_names"],
+                    phase_readback
+                )
+            ),
+            (
+                "phase stop options",
+                PLCBufferOperationManager.compare_string_payloads(
+                    payload["stop_values"],
+                    stop_readback
+                )
+            ),
+            (
+                "phase position options",
+                PLCBufferOperationManager.compare_string_payloads(
+                    payload["position_values"],
+                    position_readback
+                )
+            )
+        ]
+
+        for label, compare in compare_results:
+
+            if not compare["matched"]:
+
+                first = compare["mismatches"][0]
+
+                PLCBufferOperationManager.fail_with_step(
+                    result,
+                    f"Verify {label}",
+                    (
+                        f"Mismatch at index {first['index']}: "
+                        f"expected {first['expected']!r}, actual {first['actual']!r}."
+                    ),
+                    verify_percent
+                )
+
+        PLCBufferOperationManager.add_step(
+            result,
+            "Phase control arrays verified",
+            "OK",
+            f"{phase_size} phase-control elements written and verified.",
+            verify_percent
+        )
+
+        result["metrics"]["phase_control_elements"] = phase_size
+
+        return payload
 
     @staticmethod
     def build_database_payload(

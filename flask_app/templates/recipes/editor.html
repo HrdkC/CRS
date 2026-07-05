@@ -935,7 +935,7 @@ Recipe Editor
                 {% set is_empty_phase = (row.phase_control_name or "")|upper == "EMPTY PHASE" %}
                 <div class="phase-control-display-cell {% if is_empty_phase %}phase-control-display-empty{% endif %}">
                     <span class="phase-display-line">{{ row.line_no }}</span>
-                    <strong>{{ row.phase_control_name }}</strong>
+                    <strong>{{ row.phase_control_name|upper }}</strong>
                 </div>
                 {% endfor %}
             </section>

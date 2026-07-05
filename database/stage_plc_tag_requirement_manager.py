@@ -12,6 +12,20 @@ class StagePLCTagRequirementManager:
     LEVEL_REQUIRED = "REQUIRED"
     LEVEL_RECOMMENDED = "RECOMMENDED"
 
+    GENERIC_PHASE_PURPOSES = {
+        "PHASE_CONTROL_STRING",
+        "PHASE_STOP_STRING",
+        "PHASE_POSITION_STRING",
+    }
+
+    SECOND_STAGE_PHASE_PURPOSES = {
+        "CAP_STRIP_PHASE_CONTROL_STRING",
+        "CAP_STRIP_PHASE_STOP_STRING",
+        "BT_PHASE_CONTROL_STRING",
+        "BT_PHASE_STOP_STRING",
+        "BT_PHASE_POSITION_STRING",
+    }
+
     DEFAULT_RULES = [
         {
             "purpose": "RECIPE_DATA",
@@ -110,6 +124,118 @@ class StagePLCTagRequirementManager:
             "search_hint": "Download_Complete",
             "active": 1,
             "display_order": 70,
+        },
+        {
+            "purpose": "PHASE_CONTROL_STRING",
+            "label": "Phase control names",
+            "requirement_level": LEVEL_REQUIRED,
+            "expected_type": "STRING",
+            "array_required": 1,
+            "minimum_array_size": None,
+            "array_start_index": None,
+            "array_end_index": None,
+            "default_tag_name": "CRS_Phase_Cntrl_String",
+            "search_hint": "Phase_Cntrl_String",
+            "active": 1,
+            "display_order": 80,
+        },
+        {
+            "purpose": "PHASE_STOP_STRING",
+            "label": "Phase stop options",
+            "requirement_level": LEVEL_REQUIRED,
+            "expected_type": "STRING",
+            "array_required": 1,
+            "minimum_array_size": None,
+            "array_start_index": None,
+            "array_end_index": None,
+            "default_tag_name": "CRS_Phase_Cntrl_Stop_String",
+            "search_hint": "Phase_Cntrl_Stop",
+            "active": 1,
+            "display_order": 90,
+        },
+        {
+            "purpose": "PHASE_POSITION_STRING",
+            "label": "Phase position options",
+            "requirement_level": LEVEL_REQUIRED,
+            "expected_type": "STRING",
+            "array_required": 1,
+            "minimum_array_size": None,
+            "array_start_index": None,
+            "array_end_index": None,
+            "default_tag_name": "CRS_Phase_Cntrl_Position_String",
+            "search_hint": "Phase_Cntrl_Position",
+            "active": 1,
+            "display_order": 100,
+        },
+        {
+            "purpose": "CAP_STRIP_PHASE_CONTROL_STRING",
+            "label": "Cap strip phase names",
+            "requirement_level": LEVEL_REQUIRED,
+            "expected_type": "STRING",
+            "array_required": 1,
+            "minimum_array_size": 2,
+            "array_start_index": 0,
+            "array_end_index": 1,
+            "default_tag_name": "CRS_Phase_Cntrl_String_CapSd",
+            "search_hint": "Phase_Cntrl_String_CapSd",
+            "active": 1,
+            "display_order": 82,
+        },
+        {
+            "purpose": "CAP_STRIP_PHASE_STOP_STRING",
+            "label": "Cap strip stop options",
+            "requirement_level": LEVEL_REQUIRED,
+            "expected_type": "STRING",
+            "array_required": 1,
+            "minimum_array_size": 2,
+            "array_start_index": 0,
+            "array_end_index": 1,
+            "default_tag_name": "CRS_Phase_Cntrl_Stop_String_CapSd",
+            "search_hint": "Phase_Cntrl_Stop_String_CapSd",
+            "active": 1,
+            "display_order": 84,
+        },
+        {
+            "purpose": "BT_PHASE_CONTROL_STRING",
+            "label": "B&T phase names",
+            "requirement_level": LEVEL_REQUIRED,
+            "expected_type": "STRING",
+            "array_required": 1,
+            "minimum_array_size": 20,
+            "array_start_index": 0,
+            "array_end_index": 19,
+            "default_tag_name": "CRS_Phase_Cntrl_String",
+            "search_hint": "Phase_Cntrl_String",
+            "active": 1,
+            "display_order": 86,
+        },
+        {
+            "purpose": "BT_PHASE_STOP_STRING",
+            "label": "B&T stop options",
+            "requirement_level": LEVEL_REQUIRED,
+            "expected_type": "STRING",
+            "array_required": 1,
+            "minimum_array_size": 10,
+            "array_start_index": 0,
+            "array_end_index": 9,
+            "default_tag_name": "CRS_Phase_Cntrl_Stop_String",
+            "search_hint": "Phase_Cntrl_Stop_String",
+            "active": 1,
+            "display_order": 88,
+        },
+        {
+            "purpose": "BT_PHASE_POSITION_STRING",
+            "label": "B&T position options",
+            "requirement_level": LEVEL_REQUIRED,
+            "expected_type": "STRING",
+            "array_required": 1,
+            "minimum_array_size": 10,
+            "array_start_index": 0,
+            "array_end_index": 9,
+            "default_tag_name": "CRS_Phase_Cntrl_Pos_String",
+            "search_hint": "Phase_Cntrl_Pos_String",
+            "active": 1,
+            "display_order": 90,
         },
         {
             "purpose": "DOWNLOAD_ACK",
@@ -257,7 +383,20 @@ class StagePLCTagRequirementManager:
 
     @staticmethod
     def _default_rule_for_stage(rule, stage_type):
-        return dict(rule)
+        updated = dict(rule)
+        stage = str(stage_type or "").strip().upper()
+        purpose = str(updated.get("purpose") or "").strip().upper()
+        if purpose in StagePLCTagRequirementManager.GENERIC_PHASE_PURPOSES:
+            if stage == "FIRST_STAGE":
+                updated["minimum_array_size"] = 12
+                updated["array_start_index"] = 0
+                updated["array_end_index"] = 11
+            elif stage == "SECOND_STAGE":
+                updated["active"] = 0
+        elif purpose in StagePLCTagRequirementManager.SECOND_STAGE_PHASE_PURPOSES:
+            if stage != "SECOND_STAGE":
+                updated["active"] = 0
+        return updated
 
     @staticmethod
     def seed_stage_defaults(machine_id, stage_id):
@@ -267,6 +406,7 @@ class StagePLCTagRequirementManager:
         stage_type = StagePLCTagRequirementManager._get_stage_type(cur, machine_id, stage_id)
         for default_rule in StagePLCTagRequirementManager.DEFAULT_RULES:
             rule = StagePLCTagRequirementManager._default_rule_for_stage(default_rule, stage_type)
+            purpose = str(rule["purpose"] or "").strip().upper()
             cur.execute(
                 """
                 INSERT OR IGNORE INTO stage_plc_tag_requirements
@@ -292,6 +432,34 @@ class StagePLCTagRequirementManager:
                     int(rule.get("display_order", 100) or 100),
                 ),
             )
+            if (
+                purpose in StagePLCTagRequirementManager.GENERIC_PHASE_PURPOSES
+                or purpose in StagePLCTagRequirementManager.SECOND_STAGE_PHASE_PURPOSES
+            ):
+                cur.execute(
+                    """
+                    UPDATE stage_plc_tag_requirements
+                    SET
+                        minimum_array_size = COALESCE(minimum_array_size, ?),
+                        array_start_index = COALESCE(array_start_index, ?),
+                        array_end_index = COALESCE(array_end_index, ?),
+                        active = CASE WHEN ? = 0 THEN 0 ELSE active END,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE
+                        machine_id = ?
+                        AND stage_id = ?
+                        AND purpose = ?
+                    """,
+                    (
+                        rule.get("minimum_array_size"),
+                        rule.get("array_start_index"),
+                        rule.get("array_end_index"),
+                        int(rule.get("active", 1) or 0),
+                        machine_id,
+                        stage_id,
+                        rule["purpose"],
+                    ),
+                )
         conn.commit()
         conn.close()
 

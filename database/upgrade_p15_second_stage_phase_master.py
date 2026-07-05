@@ -3,10 +3,9 @@ P15 Second Stage Phase-Control Master Upgrade
 
 Purpose:
 - Create proper group-wise phase-control master for P15 SECOND_STAGE.
-- Add 3 second-stage phase groups:
+- Add 2 configurable second-stage phase groups:
     1. CAP_STRIP_SIDE
     2. BT_SIDE
-    3. SHAPING_SIDE
 - Add second-stage phase-control master options under each group.
 - Add group columns to recipe_phase_control for future recipe selections.
 - Keep old FIRST_STAGE recipe phase-control working with group MAIN.
@@ -41,12 +40,6 @@ GROUPS = [
         "phase_group_name": "B&T Side",
         "description": "P15 Second Stage Belt and Tread side phase-control group",
         "display_order": 2,
-    },
-    {
-        "phase_group_code": "SHAPING_SIDE",
-        "phase_group_name": "Shaping Side",
-        "description": "P15 Second Stage Shaping side phase-control group",
-        "display_order": 3,
     },
 ]
 
@@ -105,35 +98,6 @@ PHASE_MASTERS = [
         "display_order": 5,
     },
 
-    # SHAPING SIDE
-    {
-        "phase_group_code": "SHAPING_SIDE",
-        "phase_group_name": "Shaping Side",
-        "phase_control_name": "Carcass Loader",
-        "description": "Carcass Loader",
-        "display_order": 1,
-    },
-    {
-        "phase_group_code": "SHAPING_SIDE",
-        "phase_group_name": "Shaping Side",
-        "phase_control_name": "Preshaping",
-        "description": "Preshaping",
-        "display_order": 2,
-    },
-    {
-        "phase_group_code": "SHAPING_SIDE",
-        "phase_group_name": "Shaping Side",
-        "phase_control_name": "Stitching Cycle",
-        "description": "Stitching Cycle",
-        "display_order": 3,
-    },
-    {
-        "phase_group_code": "SHAPING_SIDE",
-        "phase_group_name": "Shaping Side",
-        "phase_control_name": "Remove Cycle",
-        "description": "Remove Cycle",
-        "display_order": 4,
-    },
 ]
 
 

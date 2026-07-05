@@ -10,6 +10,7 @@ Recipe Phase Control
 
     {% set stage_upper = (recipe.stage_type or "")|upper|replace(" ", "_") %}
     {% set is_second_stage_phase = (stage_upper in ["SECOND_STAGE", "SECONDSTAGE", "SS"]) or (phase_groups|length >= 3) %}
+    {% set inline_edit_mode = can_edit_phase_control %}
 
     <div class="workbench-hero">
 
@@ -115,15 +116,8 @@ Recipe Phase Control
             </div>
 
             <div class="compact-actions">
-                {% if can_edit_phase_control and not edit_mode %}
-                <a
-                    href="/recipes/{{ recipe.id }}/phase-control?mode=edit"
-                    class="crs-btn crs-btn-primary"
-                >
-                    Edit Phase Control
-                </a>
-                {% elif edit_mode %}
-                <span class="status-badge status-success">Edit Mode</span>
+                {% if inline_edit_mode %}
+                <span class="status-badge status-success">Inline Edit</span>
                 {% else %}
                 <span class="status-badge status-neutral">Read Only</span>
                 {% endif %}
@@ -139,12 +133,12 @@ Recipe Phase Control
                 <section class="phase-control-column">
                     <div class="phase-control-column-header">
                         <strong>{{ group.name }}</strong>
-                        {% if edit_mode %}
+                        {% if inline_edit_mode %}
                         <span class="status-badge status-info">{{ recipe.stage_type }}</span>
                         {% endif %}
                     </div>
 
-                    {% if edit_mode %}
+                    {% if inline_edit_mode %}
                     <div class="phase-control-row-header {% if is_second_stage_phase %}phase-control-row-header-ss{% endif %}">
                         <span>Line</span>
                         <span>Phase Control</span>
@@ -157,7 +151,7 @@ Recipe Phase Control
 
                     {% for row in group.rows %}
                     {% set is_empty_phase = (row.phase_control_name or "")|upper == "EMPTY PHASE" %}
-                    {% if edit_mode %}
+                    {% if inline_edit_mode %}
                     <div class="phase-control-slot phase-control-slot-edit {% if is_second_stage_phase %}phase-control-slot-edit-ss{% endif %} {% if is_empty_phase %}phase-control-slot-empty{% endif %}">
                         <span class="tag-pill">{{ row.line_no }}</span>
                         <select
@@ -173,7 +167,7 @@ Recipe Phase Control
                                 selected
                                 {% endif %}
                             >
-                                {{ phase.phase_control_name }}
+                                {{ phase.phase_control_name|upper }}
                             </option>
                             {% endfor %}
                         </select>
@@ -206,7 +200,7 @@ Recipe Phase Control
                     {% else %}
                     <div class="phase-control-display-cell {% if is_empty_phase %}phase-control-display-empty{% endif %}">
                         <span class="phase-display-line">{{ row.line_no }}</span>
-                        <strong>{{ row.phase_control_name }}</strong>
+                        <strong>{{ row.phase_control_name|upper }}</strong>
                     </div>
                     {% endif %}
                     {% endfor %}
@@ -222,22 +216,13 @@ Recipe Phase Control
 
             <div class="form-action-row">
 
-                {% if edit_mode %}
+                {% if inline_edit_mode %}
                 <button
                     type="submit"
                     class="crs-btn crs-btn-primary"
                 >
                     Save Phase Control
                 </button>
-                {% endif %}
-
-                {% if edit_mode %}
-                <a
-                    href="/recipes/{{ recipe.id }}/phase-control"
-                    class="crs-btn crs-btn-soft"
-                >
-                    View Mode
-                </a>
                 {% endif %}
 
                 <a

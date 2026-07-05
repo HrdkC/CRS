@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Phase Control Master
+Phase Option Master
 {% endblock %}
 
 {% block content %}
@@ -11,8 +11,8 @@ Phase Control Master
     <div class="workbench-hero">
         <div class="workbench-title">
             <span class="section-kicker">Engineering Master</span>
-            <h1>Phase Control Master</h1>
-            <p>Maintain machine/stage phase groups and selectable phase names from the browser.</p>
+            <h1>Phase Option Master</h1>
+            <p>Maintain eligible machine/stage phase names and PLC phase codes used by recipe phase dropdowns.</p>
         </div>
         <div class="workbench-actions">
             <a href="/stages" class="crs-btn crs-btn-soft">Stage Registry</a>
@@ -37,16 +37,16 @@ Phase Control Master
         </div>
         <div class="metric-card">
             <span class="metric-label">First Stage</span>
-            <strong class="metric-text">Application</strong>
-            <small>Application-side selection</small>
+            <strong class="metric-text">1 Group</strong>
+            <small>Phase Control master only</small>
         </div>
     </div>
 
     <div class="workbench-card data-workbench">
         <div class="panel-heading table-heading">
             <div>
-                <span>Machine / Stage Phase Masters</span>
-                <p>Open a stage to add or review the phase groups and dropdown phase names used by recipes.</p>
+                <span>Machine / Stage Phase Option Masters</span>
+                <p>Open a stage to add or review eligible master phase names. Actual recipe sequence selection is done inside Recipe Phase Control.</p>
             </div>
         </div>
 

@@ -287,6 +287,25 @@ def register_configuration_routes(app):
                 }
             )
 
+        new_purpose = (request.form.get("new_purpose") or "").strip().upper()
+        if new_purpose:
+            rows.append(
+                {
+                    "purpose": new_purpose,
+                    "label": request.form.get("new_label"),
+                    "requirement_level": request.form.get("new_requirement_level"),
+                    "expected_type": request.form.get("new_expected_type"),
+                    "array_required": request.form.get("new_array_required"),
+                    "minimum_array_size": request.form.get("new_minimum_array_size"),
+                    "array_start_index": request.form.get("new_array_start_index"),
+                    "array_end_index": request.form.get("new_array_end_index"),
+                    "default_tag_name": request.form.get("new_default_tag_name"),
+                    "search_hint": request.form.get("new_search_hint"),
+                    "active": request.form.get("new_active"),
+                    "display_order": request.form.get("new_display_order"),
+                }
+            )
+
         old_rows = StagePLCTagRequirementManager.get_stage_requirements(
             context["machine_id"],
             context["stage_id"],

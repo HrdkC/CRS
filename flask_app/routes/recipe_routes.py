@@ -1026,6 +1026,10 @@ def register_recipe_routes(app):
             PhaseControlManager
         )
 
+        from database.phase_control_default_manager import (
+            PhaseControlDefaultManager
+        )
+
         recipe = RecipeManager.get_recipe_by_id(
 
             recipe_id
@@ -1054,17 +1058,21 @@ def register_recipe_routes(app):
             )
         )
 
-        edit_mode = (
-            request.args.get("mode") == "edit"
-            and
-            can_edit_phase_control
+        edit_mode = can_edit_phase_control
+
+        PhaseControlDefaultManager.initialize_for_stage(
+            recipe["stage_id"],
+            recipe["stage_type"],
         )
 
         RecipePhaseControlManager.ensure_group_empty_phase_slots(
             recipe_id=recipe_id,
             stage_type=recipe["stage_type"],
             stage_id=recipe["stage_id"],
-            min_slots=6
+            min_slots=12 if (
+                str(recipe["stage_type"] or "").upper().replace(" ", "_")
+                in {"FIRST_STAGE", "FIRSTSTAGE", "FS"}
+            ) else 6
         )
 
         phase_controls = (
@@ -1130,9 +1138,13 @@ def register_recipe_routes(app):
                     phase
                     for phase in phase_controls
 
-                    if phase[
-                        "phase_control_name"
-                    ] == "Empty Phase"
+                    if (
+                        phase[
+                            "phase_control_name"
+                        ]
+                        or
+                        ""
+                    ).strip().upper() == "EMPTY PHASE"
                 ),
 
                 None

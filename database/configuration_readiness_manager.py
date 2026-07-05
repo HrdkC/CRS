@@ -58,6 +58,27 @@ class ConfigurationReadinessManager:
             "array_required": False,
             "minimum_array_size": None,
         },
+        {
+            "purpose": "PHASE_CONTROL_STRING",
+            "label": "Phase control names",
+            "expected_type": "STRING",
+            "array_required": True,
+            "minimum_array_size": None,
+        },
+        {
+            "purpose": "PHASE_STOP_STRING",
+            "label": "Phase stop options",
+            "expected_type": "STRING",
+            "array_required": True,
+            "minimum_array_size": None,
+        },
+        {
+            "purpose": "PHASE_POSITION_STRING",
+            "label": "Phase position options",
+            "expected_type": "STRING",
+            "array_required": True,
+            "minimum_array_size": None,
+        },
     ]
 
     RECOMMENDED_TAGS = [
@@ -113,8 +134,8 @@ class ConfigurationReadinessManager:
     ]
 
     EXPECTED_PHASE_GROUPS = {
-        "FIRST_STAGE": ["APPLICATION_SIDE"],
-        "SECOND_STAGE": ["CAP_STRIP_SIDE", "BT_SIDE", "SHAPING_SIDE"],
+        "FIRST_STAGE": ["MAIN"],
+        "SECOND_STAGE": ["CAP_STRIP_SIDE", "BT_SIDE"],
     }
 
     @staticmethod
@@ -256,6 +277,14 @@ class ConfigurationReadinessManager:
             "MACHINE_IN_MANUAL",
             "DOWNLOAD_REQUEST",
             "DOWNLOAD_COMPLETE",
+            "PHASE_CONTROL_STRING",
+            "PHASE_STOP_STRING",
+            "PHASE_POSITION_STRING",
+            "CAP_STRIP_PHASE_CONTROL_STRING",
+            "CAP_STRIP_PHASE_STOP_STRING",
+            "BT_PHASE_CONTROL_STRING",
+            "BT_PHASE_STOP_STRING",
+            "BT_PHASE_POSITION_STRING",
             "DOWNLOAD_ACK",
             "DOWNLOAD_BUSY",
             "DOWNLOAD_ERROR",

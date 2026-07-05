@@ -1,6 +1,7 @@
 from database.database import (
     get_connection
 )
+from database.phase_template_manager import PhaseTemplateManager
 
 
 class RecipePhaseControlManager:
@@ -20,119 +21,287 @@ class RecipePhaseControlManager:
         return {row["name"] for row in rows}
 
     @staticmethod
+    def _is_first_stage(stage_type):
+        return (
+            str(stage_type or "").strip().upper().replace(" ", "_")
+            in {"FIRST_STAGE", "FIRSTSTAGE", "FS"}
+        )
+
+    @staticmethod
+    def _is_second_stage(stage_type):
+        return (
+            str(stage_type or "").strip().upper().replace(" ", "_")
+            in {"SECOND_STAGE", "SECONDSTAGE", "SS"}
+        )
+
+    @staticmethod
+    def _recipe_stage_type(cursor, recipe_id):
+        row = cursor.execute(
+            """
+            SELECT ms.stage_type
+            FROM recipes r
+            LEFT JOIN machine_stages ms
+                ON ms.id = r.stage_id
+            WHERE r.id = ?
+            """,
+            (recipe_id,),
+        ).fetchone()
+        return (row["stage_type"] if row else "") or ""
+
+    @staticmethod
+    def get_expected_phase_row_count(stage_id=None, stage_type=None):
+        """
+        Return the required number of recipe phase-control rows.
+
+        The phase master is a dropdown list; recipe rows are fixed slots:
+        first stage has one 12-row phase-control block, while second stage
+        has six rows for each active stage-specific phase group.
+        """
+        resolved_stage_type = stage_type or ""
+        conn = None
+
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            if not resolved_stage_type and stage_id:
+                row = cursor.execute(
+                    """
+                    SELECT stage_type
+                    FROM machine_stages
+                    WHERE id = ?
+                    """,
+                    (stage_id,)
+                ).fetchone()
+                resolved_stage_type = (row["stage_type"] if row else "") or ""
+
+            if RecipePhaseControlManager._is_first_stage(resolved_stage_type):
+                return 12
+
+            PhaseTemplateManager.ensure_schema()
+
+            group_count = 0
+            if (
+                stage_id
+                and RecipePhaseControlManager._table_exists(
+                    cursor,
+                    "phase_control_group_master"
+                )
+            ):
+                row = cursor.execute(
+                    """
+                    SELECT COUNT(*) AS total
+                    FROM phase_control_group_master
+                    WHERE machine_stage_id = ?
+                        AND COALESCE(active, 1) = 1
+                    """,
+                    (stage_id,)
+                ).fetchone()
+                group_count = int(row["total"] or 0) if row else 0
+
+            if group_count > 0:
+                return group_count * 6
+
+            if RecipePhaseControlManager._is_second_stage(resolved_stage_type):
+                return 12
+
+            return 12
+
+        finally:
+            if conn:
+                conn.close()
+
+    @staticmethod
+    def _normalize_first_stage_recipe_rows(cursor, recipe_id):
+        if not RecipePhaseControlManager._is_first_stage(
+            RecipePhaseControlManager._recipe_stage_type(cursor, recipe_id)
+        ):
+            return
+
+        cols = RecipePhaseControlManager._columns(cursor, "recipe_phase_control")
+        if not {"phase_group_code", "phase_group_name"}.issubset(cols):
+            return
+
+        main_count = cursor.execute(
+            """
+            SELECT COUNT(*) AS total
+            FROM recipe_phase_control
+            WHERE recipe_id = ?
+                AND UPPER(COALESCE(phase_group_code, 'MAIN')) = 'MAIN'
+            """,
+            (recipe_id,),
+        ).fetchone()
+
+        if int(main_count["total"] or 0) == 0:
+            cursor.execute(
+                """
+                UPDATE recipe_phase_control
+                SET phase_group_code = 'MAIN',
+                    phase_group_name = 'Phase Control'
+                WHERE recipe_id = ?
+                """,
+                (recipe_id,),
+            )
+
+    @staticmethod
     def _create_group_phase_rows(cursor, recipe_id, machine_id, stage_id):
         """
-        Create grouped second-stage phase-control rows when group masters exist.
-        Example P15 SECOND_STAGE:
-          CAP_STRIP_SIDE, BT_SIDE, SHAPING_SIDE.
+        Create stage-wise phase-control recipe slots from the stage template.
+
+        The phase master is a dropdown/template list. It must not create one
+        recipe row per phase option. New recipes get Empty Phase slots, then the
+        user chooses from the template dropdown for that machine/stage.
         """
+        PhaseTemplateManager.ensure_schema()
+
         if not RecipePhaseControlManager._table_exists(cursor, "phase_control_group_master"):
             return False
 
-        group_count = cursor.execute(
-            """
-            SELECT COUNT(*) AS total
-            FROM phase_control_group_master
-            WHERE machine_stage_id = ? AND COALESCE(active, 1) = 1
-            """,
-            (stage_id,)
-        ).fetchone()["total"]
-
-        if group_count <= 0:
-            return False
-
-        phase_rows = cursor.execute(
+        groups = cursor.execute(
             """
             SELECT
-                pcm.id AS phase_control_id,
-                COALESCE(pcm.phase_group_code, 'MAIN') AS phase_group_code,
-                COALESCE(pcm.phase_group_name, 'Phase Control') AS phase_group_name,
-                pcm.phase_control_name,
-                pcm.display_order,
-                g.display_order AS group_order
-            FROM phase_control_master pcm
-            LEFT JOIN phase_control_group_master g
-                ON g.machine_stage_id = pcm.machine_stage_id
-                AND g.phase_group_code = pcm.phase_group_code
-            WHERE
-                pcm.machine_stage_id = ?
-                AND COALESCE(pcm.active, 1) = 1
-            ORDER BY
-                COALESCE(g.display_order, 99),
-                COALESCE(pcm.display_order, 0),
-                pcm.id
+                phase_group_code,
+                phase_group_name,
+                display_order
+            FROM phase_control_group_master
+            WHERE machine_stage_id = ? AND COALESCE(active, 1) = 1
+            ORDER BY display_order, phase_group_name
             """,
             (stage_id,)
         ).fetchall()
 
-        if not phase_rows:
+        if not groups:
+            return False
+
+        stage_row = cursor.execute(
+            """
+            SELECT stage_type
+            FROM machine_stages
+            WHERE id = ?
+            """,
+            (stage_id,)
+        ).fetchone()
+        stage_type = (stage_row["stage_type"] if stage_row else "") or ""
+        stage_upper = stage_type.upper().replace(" ", "_")
+
+        if stage_upper in {"FIRST_STAGE", "FIRSTSTAGE", "FS"}:
+            slot_count = 12
+            groups = [
+                group for group in groups
+                if (group["phase_group_code"] or "MAIN").upper() == "MAIN"
+            ]
+        elif stage_upper in {"SECOND_STAGE", "SECONDSTAGE", "SS"}:
+            slot_count = 6
+        else:
+            slot_count = 6
+
+        if not groups:
             return False
 
         cols = RecipePhaseControlManager._columns(cursor, "recipe_phase_control")
         has_group_cols = {"phase_group_code", "phase_group_name", "used"}.issubset(cols)
-        group_line_counter = {}
+        created_count = 0
 
-        for row in phase_rows:
-            group_code = row["phase_group_code"] or "MAIN"
-            group_name = row["phase_group_name"] or "Phase Control"
-            group_line_counter[group_code] = group_line_counter.get(group_code, 0) + 1
-            line_no = group_line_counter[group_code]
+        for group in groups:
+            group_code = group["phase_group_code"] or "MAIN"
+            group_name = group["phase_group_name"] or "Phase Control"
 
-            if has_group_cols:
-                cursor.execute(
-                    """
-                    INSERT INTO recipe_phase_control (
-                        recipe_id,
-                        phase_group_code,
-                        phase_group_name,
-                        line_no,
-                        phase_control_id,
-                        stop_option,
-                        position_option,
-                        sequence_no,
-                        used
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-                    """,
-                    (
-                        recipe_id,
-                        group_code,
-                        group_name,
-                        line_no,
-                        row["phase_control_id"],
-                        "No",
-                        "No",
-                        line_no,
-                    )
-                )
+            empty_phase = cursor.execute(
+                """
+                SELECT id
+                FROM phase_control_master
+                WHERE
+                    machine_stage_id = ?
+                    AND COALESCE(phase_group_code, 'MAIN') = ?
+                    AND UPPER(COALESCE(phase_control_key, phase_control_name)) = 'EMPTY PHASE'
+                ORDER BY COALESCE(display_order, 999), id
+                LIMIT 1
+                """,
+                (stage_id, group_code)
+            ).fetchone()
+
+            if empty_phase:
+                empty_phase_id = empty_phase["id"]
             else:
                 cursor.execute(
                     """
-                    INSERT INTO recipe_phase_control (
-                        recipe_id,
-                        line_no,
-                        phase_control_id,
-                        stop_option,
-                        position_option,
-                        sequence_no
+                    INSERT INTO phase_control_master
+                    (
+                        stage_type,
+                        machine_stage_id,
+                        phase_group_code,
+                        phase_group_name,
+                        phase_control_name,
+                        phase_control_key,
+                        plc_phase_code,
+                        description,
+                        display_order,
+                        active
                     )
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, 'Empty Phase', 'EMPTY PHASE', 0, 'Unused phase-control slot', 999, 1)
                     """,
                     (
-                        recipe_id,
-                        line_no,
-                        row["phase_control_id"],
-                        "No",
-                        "No",
-                        line_no,
+                        stage_type,
+                        stage_id,
+                        group_code,
+                        group_name,
                     )
                 )
+                empty_phase_id = cursor.lastrowid
+
+            for line_no in range(1, slot_count + 1):
+                if has_group_cols:
+                    cursor.execute(
+                        """
+                        INSERT INTO recipe_phase_control (
+                            recipe_id,
+                            phase_group_code,
+                            phase_group_name,
+                            line_no,
+                            phase_control_id,
+                            stop_option,
+                            position_option,
+                            sequence_no,
+                            used
+                        )
+                        VALUES (?, ?, ?, ?, ?, 'No', 'No', ?, 1)
+                        """,
+                        (
+                            recipe_id,
+                            group_code,
+                            group_name,
+                            line_no,
+                            empty_phase_id,
+                            line_no,
+                        )
+                    )
+                else:
+                    cursor.execute(
+                        """
+                        INSERT INTO recipe_phase_control (
+                            recipe_id,
+                            line_no,
+                            phase_control_id,
+                            stop_option,
+                            position_option,
+                            sequence_no
+                        )
+                        VALUES (?, ?, ?, 'No', 'No', ?)
+                        """,
+                        (
+                            recipe_id,
+                            line_no,
+                            empty_phase_id,
+                            line_no,
+                        )
+                    )
+                created_count += 1
 
         print(
-            f"Grouped phase rows created for Recipe ID {recipe_id}: "
-            f"{len(phase_rows)} rows across {len(group_line_counter)} group(s)"
+            f"Stage phase template rows created for Recipe ID {recipe_id}: "
+            f"{created_count} Empty Phase slot(s) across {len(groups)} group(s)"
         )
-        return True
+        return created_count > 0
 
 
     @staticmethod
@@ -194,14 +363,16 @@ class RecipePhaseControlManager:
                 conn.close()
                 return
 
+        PhaseTemplateManager.ensure_schema()
+
         cursor.execute(
             """
             SELECT id
 
             FROM phase_control_master
 
-            WHERE phase_control_name =
-            'Empty Phase'
+            WHERE UPPER(COALESCE(phase_control_key, phase_control_name)) =
+            'EMPTY PHASE'
             """
         )
 
@@ -286,6 +457,18 @@ class RecipePhaseControlManager:
 
         cols = RecipePhaseControlManager._columns(cursor, "recipe_phase_control")
         has_group_cols = {"phase_group_code", "phase_group_name"}.issubset(cols)
+        stage_type = RecipePhaseControlManager._recipe_stage_type(
+            cursor,
+            recipe_id,
+        )
+        is_first_stage = RecipePhaseControlManager._is_first_stage(stage_type)
+
+        if has_group_cols and is_first_stage:
+            RecipePhaseControlManager._normalize_first_stage_recipe_rows(
+                cursor,
+                recipe_id,
+            )
+            conn.commit()
 
         if has_group_cols:
             cursor.execute(
@@ -312,6 +495,16 @@ class RecipePhaseControlManager:
 
                     rpc.recipe_id = ?
 
+                    AND (
+                        ? = 0
+                        OR UPPER(COALESCE(rpc.phase_group_code, 'MAIN')) = 'MAIN'
+                    )
+
+                    AND (
+                        ? = 0
+                        OR rpc.line_no BETWEEN 1 AND 12
+                    )
+
                 ORDER BY
                     CASE COALESCE(rpc.phase_group_code, 'MAIN')
                         WHEN 'MAIN' THEN 0
@@ -324,6 +517,8 @@ class RecipePhaseControlManager:
                 """,
                 (
                     recipe_id,
+                    1 if is_first_stage else 0,
+                    1 if is_first_stage else 0,
                 )
             )
         else:
@@ -359,13 +554,20 @@ class RecipePhaseControlManager:
 
         conn.close()
 
-        return [
+        result = [dict(row) for row in rows]
+        if is_first_stage:
+            unique_rows = {}
+            for row in result:
+                try:
+                    line_no = int(row.get("line_no") or 0)
+                except Exception:
+                    line_no = 0
+                if line_no < 1 or line_no > 12 or line_no in unique_rows:
+                    continue
+                unique_rows[line_no] = row
+            result = [unique_rows[line_no] for line_no in sorted(unique_rows)]
 
-            dict(row)
-
-            for row in rows
-
-        ]
+        return result
 
     @staticmethod
     def update_phase_row(
@@ -438,6 +640,8 @@ class RecipePhaseControlManager:
 
     ):
 
+        PhaseTemplateManager.ensure_schema()
+
         conn = get_connection()
 
         cursor = conn.cursor()
@@ -485,6 +689,13 @@ class RecipePhaseControlManager:
             )
         ).fetchall()
 
+        if RecipePhaseControlManager._is_first_stage(stage_type):
+            groups = [
+                group for group in groups
+                if (group["phase_group_code"] or "MAIN").upper() == "MAIN"
+            ]
+            min_slots = 12
+
         if not groups:
 
             conn.close()
@@ -505,7 +716,7 @@ class RecipePhaseControlManager:
                     UPPER(stage_type) = UPPER(?)
                     AND machine_stage_id = ?
                     AND COALESCE(phase_group_code, 'MAIN') = ?
-                    AND UPPER(phase_control_name) = 'EMPTY PHASE'
+                    AND UPPER(COALESCE(phase_control_key, phase_control_name)) = 'EMPTY PHASE'
                 """,
                 (
                     stage_type,
@@ -529,11 +740,13 @@ class RecipePhaseControlManager:
                         phase_group_code,
                         phase_group_name,
                         phase_control_name,
+                        phase_control_key,
+                        plc_phase_code,
                         description,
                         display_order,
                         active
                     )
-                    VALUES (?, ?, ?, ?, 'Empty Phase', 'Unused phase-control slot', 999, 1)
+                    VALUES (?, ?, ?, ?, 'Empty Phase', 'EMPTY PHASE', 0, 'Unused phase-control slot', 999, 1)
                     """,
                     (
                         stage_type,

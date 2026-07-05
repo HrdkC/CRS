@@ -1,4 +1,5 @@
 from database.database import get_connection
+from database.phase_template_manager import PhaseTemplateManager
 
 
 class PhaseControlDefaultManager:
@@ -8,12 +9,37 @@ class PhaseControlDefaultManager:
     here avoids route-only setup logic and lets GUI-created stages self-seed.
     """
 
+    FIRST_STAGE_PHASES = [
+        "INNERLINER WITH TOPROLL",
+        "INNERLINER WITHOUT TOPROLL",
+        "PLY 1 WITH TOPROLL",
+        "PLY 1 WITHOUT TOPROLL",
+        "PLY 2 WITH TOPROLL",
+        "PLY 2 WITHOUT TOPROLL",
+        "SIDEWALL WITHOUT STITCHER WITH TOPROLL",
+        "SIDEWALL WITHOUT STITCHER",
+        "RRD WITH CONTOUR STITCHER",
+        "RRD WITH CONTOUR & DISK STITCHER",
+        "RRD WITH DISK STITCHER",
+        "INSERT BEADS",
+        "SET BEADS",
+        "TURNUPRING",
+        "CONTOUR STITCHER",
+        "DISK STITCHER",
+        "MATERIAL 1 MANUAL",
+        "MATERIAL 2 MANUAL",
+        "REINFORCEMENT MATERIAL",
+        "PLY 3 WITH TOPROLL",
+        "PLY 3 WITHOUT TOPROLL",
+        "EMPTY PHASE",
+    ]
+
     DEFAULT_GROUPS_BY_STAGE = {
         "FIRST_STAGE": [
             (
-                "APPLICATION_SIDE",
-                "Application Side",
-                "First stage application side phase-control group",
+                "MAIN",
+                "Phase Control",
+                "First stage single phase-control group",
                 1,
             ),
         ],
@@ -30,40 +56,12 @@ class PhaseControlDefaultManager:
                 "Belt and tread side phase-control group",
                 2,
             ),
-            (
-                "SHAPING_SIDE",
-                "Shaping Side",
-                "Shaping side phase-control group",
-                3,
-            ),
         ],
     }
 
     DEFAULT_PHASES_BY_STAGE = {
         "FIRST_STAGE": {
-            "APPLICATION_SIDE": [
-                "IL With Toproll",
-                "IL Without Toproll",
-                "Ply 1 With Toproll",
-                "Ply 1 Without Toproll",
-                "Ply 2 With Toproll",
-                "Ply 2 Without Toproll",
-                "Ply 3 With Toproll",
-                "Ply 3 Without Toproll",
-                "Sidewall With Stitcher",
-                "Sidewall Without Stitcher",
-                "RRD With Contour Stitcher",
-                "RRD With Contour & Disk Stitcher",
-                "RRD With Disk Stitcher",
-                "Insert Beads",
-                "Set Beads",
-                "Turnup Ring",
-                "Contour Stitcher",
-                "Material 1 Manual",
-                "Disk Stitcher",
-                "Material 2 Manual",
-                "Empty Phase",
-            ],
+            "MAIN": FIRST_STAGE_PHASES,
         },
         "SECOND_STAGE": {
             "CAP_STRIP_SIDE": [
@@ -79,19 +77,19 @@ class PhaseControlDefaultManager:
                 "Remove Belt Package",
                 "Empty Phase",
             ],
-            "SHAPING_SIDE": [
-                "Carcass Loader",
-                "Preshaping",
-                "Stitching Cycle",
-                "Remove Cycle",
-                "Empty Phase",
-            ],
         },
     }
 
     @staticmethod
     def _normalize_stage_type(stage_type):
         return str(stage_type or "").strip().upper()
+
+    @staticmethod
+    def _is_first_stage(stage_type):
+        return (
+            PhaseControlDefaultManager._normalize_stage_type(stage_type)
+            in {"FIRST_STAGE", "FIRSTSTAGE", "FS"}
+        )
 
     @staticmethod
     def defaults_for_stage(stage_type):
@@ -125,6 +123,23 @@ class PhaseControlDefaultManager:
         )
         row = cursor.fetchone()
         if row:
+            cursor.execute(
+                """
+                UPDATE phase_control_group_master
+                SET
+                    phase_group_name = ?,
+                    description = COALESCE(NULLIF(description, ''), ?),
+                    display_order = ?,
+                    active = 1
+                WHERE id = ?
+                """,
+                (
+                    group_name,
+                    description,
+                    display_order,
+                    row["id"],
+                ),
+            )
             return 0
 
         cursor.execute(
@@ -162,22 +177,46 @@ class PhaseControlDefaultManager:
         phase_name,
         display_order,
     ):
+        clean_name = PhaseTemplateManager.clean_display_name(phase_name)
+        phase_key = PhaseTemplateManager.phase_key(clean_name)
+        plc_phase_code = PhaseTemplateManager._phase_code_from_name(
+            group_code,
+            clean_name,
+            display_order,
+        )
+
         cursor.execute(
             """
             SELECT id
             FROM phase_control_master
             WHERE machine_stage_id = ?
                 AND UPPER(COALESCE(phase_group_code, '')) = UPPER(?)
-                AND UPPER(phase_control_name) = UPPER(?)
+                AND UPPER(COALESCE(phase_control_key, phase_control_name)) = UPPER(?)
             """,
             (
                 machine_stage_id,
                 group_code,
-                phase_name,
+                phase_key,
             ),
         )
         row = cursor.fetchone()
         if row:
+            cursor.execute(
+                """
+                UPDATE phase_control_master
+                SET
+                    phase_group_name = ?,
+                    description = COALESCE(NULLIF(description, ''), ?),
+                    plc_phase_code = COALESCE(plc_phase_code, ?)
+                WHERE id = ?
+                """,
+                (
+                    group_name,
+                    clean_name,
+                    plc_phase_code,
+                    row["id"],
+                ),
+            )
             return 0
 
         cursor.execute(
@@ -189,21 +228,118 @@ class PhaseControlDefaultManager:
                 phase_group_code,
                 phase_group_name,
                 phase_control_name,
+                phase_control_key,
+                plc_phase_code,
                 display_order,
                 active
             )
-            VALUES (?, ?, ?, ?, ?, ?, 1)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
             """,
             (
                 machine_stage_id,
                 stage_type,
                 group_code,
                 group_name,
-                phase_name,
+                clean_name,
+                phase_key,
+                plc_phase_code,
                 display_order,
             ),
         )
         return 1
+
+    @staticmethod
+    def _sync_first_stage_single_group(cursor, machine_stage_id, stage_type):
+        if not PhaseControlDefaultManager._is_first_stage(stage_type):
+            return
+
+        cursor.execute(
+            """
+            SELECT id
+            FROM phase_control_group_master
+            WHERE machine_stage_id = ?
+                AND UPPER(phase_group_code) = 'MAIN'
+            """,
+            (machine_stage_id,),
+        )
+        main_group = cursor.fetchone()
+        if main_group:
+            cursor.execute(
+                """
+                UPDATE phase_control_group_master
+                SET phase_group_name = 'Phase Control',
+                    description = COALESCE(NULLIF(description, ''), 'First stage single phase-control group'),
+                    display_order = 1,
+                    active = 1
+                WHERE id = ?
+                """,
+                (main_group["id"],),
+            )
+        else:
+            cursor.execute(
+                """
+                INSERT INTO phase_control_group_master
+                (
+                    machine_stage_id,
+                    stage_type,
+                    phase_group_code,
+                    phase_group_name,
+                    description,
+                    display_order,
+                    active
+                )
+                VALUES (?, ?, 'MAIN', 'Phase Control', 'First stage single phase-control group', 1, 1)
+                """,
+                (
+                    machine_stage_id,
+                    stage_type,
+                ),
+            )
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS total
+            FROM phase_control_master
+            WHERE machine_stage_id = ?
+                AND UPPER(COALESCE(phase_group_code, 'MAIN')) = 'MAIN'
+                AND COALESCE(active, 1) = 1
+            """,
+            (machine_stage_id,),
+        )
+        main_option_count = int(cursor.fetchone()["total"] or 0)
+
+        if main_option_count == 0:
+            cursor.execute(
+                """
+                UPDATE phase_control_master
+                SET phase_group_code = 'MAIN',
+                    phase_group_name = 'Phase Control',
+                    active = 1
+                WHERE machine_stage_id = ?
+                    AND UPPER(COALESCE(phase_group_code, '')) <> 'MAIN'
+                """,
+                (machine_stage_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                UPDATE phase_control_master
+                SET active = 0
+                WHERE machine_stage_id = ?
+                    AND UPPER(COALESCE(phase_group_code, '')) <> 'MAIN'
+                """,
+                (machine_stage_id,),
+            )
+
+        cursor.execute(
+            """
+            UPDATE phase_control_group_master
+            SET active = 0
+            WHERE machine_stage_id = ?
+                AND UPPER(COALESCE(phase_group_code, '')) <> 'MAIN'
+            """,
+            (machine_stage_id,),
+        )
 
     @staticmethod
     def initialize_for_stage(machine_stage_id, stage_type):
@@ -215,10 +351,18 @@ class PhaseControlDefaultManager:
                 "phases_added": 0,
             }
 
+        PhaseTemplateManager.ensure_schema()
+
         conn = get_connection()
         cursor = conn.cursor()
         groups_added = 0
         phases_added = 0
+
+        PhaseControlDefaultManager._sync_first_stage_single_group(
+            cursor,
+            machine_stage_id,
+            stage_type,
+        )
 
         for group_code, group_name, description, group_order in groups:
             groups_added += PhaseControlDefaultManager._insert_group_if_missing(

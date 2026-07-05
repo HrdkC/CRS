@@ -26,6 +26,14 @@ def create_app():
         print("Priority 11 schema upgrade skipped/failed:", exc)
 
     try:
+        from database.phase_control_default_manager import (
+            PhaseControlDefaultManager
+        )
+        PhaseControlDefaultManager.initialize_all_stages()
+    except Exception as exc:
+        print("Phase control default sync skipped/failed:", exc)
+
+    try:
         from flask_app.security.session_guard import register_session_guard
         register_session_guard(app)
     except Exception as exc:

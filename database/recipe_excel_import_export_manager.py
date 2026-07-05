@@ -853,7 +853,6 @@ class RecipeExcelImportExportManager:
             group_specs = [
                 ("CAP_STRIP_SIDE", "Cap Strip Side"),
                 ("BT_SIDE", "B&T Side"),
-                ("SHAPING_SIDE", "Shaping Side"),
             ]
             phase_rows = []
             for group_code, group_name in group_specs:
@@ -895,8 +894,8 @@ class RecipeExcelImportExportManager:
                     })
             return phase_rows
 
-        group_code = "APPLICATION_SIDE"
-        group_name = "Application Side"
+        group_code = "MAIN"
+        group_name = "Phase Control"
         cur.execute(
             """
             SELECT id, phase_control_name

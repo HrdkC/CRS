@@ -1282,6 +1282,11 @@ body.operation-running * {
         </div>
 
         {% set array_purposes = ["RECIPE_DATA", "TEST_RECIPE_DATA"] %}
+        {% if "BT_PHASE_CONTROL_STRING" in operation_context.tags or "CAP_STRIP_PHASE_CONTROL_STRING" in operation_context.tags %}
+            {% set phase_purposes = ["CAP_STRIP_PHASE_CONTROL_STRING", "CAP_STRIP_PHASE_STOP_STRING", "BT_PHASE_CONTROL_STRING", "BT_PHASE_STOP_STRING", "BT_PHASE_POSITION_STRING"] %}
+        {% else %}
+            {% set phase_purposes = ["PHASE_CONTROL_STRING", "PHASE_STOP_STRING", "PHASE_POSITION_STRING"] %}
+        {% endif %}
         {% set interlock_purposes = ["MACHINE_IN_MANUAL", "DOWNLOAD_ENABLE"] %}
         {% set handshake_purposes = ["DOWNLOAD_REQUEST", "DOWNLOAD_COMPLETE", "DOWNLOAD_ACK", "DOWNLOAD_BUSY", "DOWNLOAD_ERROR", "DOWNLOAD_RESULT", "DOWNLOAD_OS"] %}
         {% set metadata_purposes = ["RECIPE_CODE", "LAST_DOWNLOAD_TIME", "LAST_DOWNLOAD_USER"] %}
@@ -1290,6 +1295,7 @@ body.operation-running * {
 
             {% for group_title, purpose_list in [
                 ("Recipe Arrays", array_purposes),
+                ("Phase Control", phase_purposes),
                 ("Interlocks", interlock_purposes),
                 ("Handshake", handshake_purposes),
                 ("Metadata", metadata_purposes)

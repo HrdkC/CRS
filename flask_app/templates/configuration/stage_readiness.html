@@ -193,6 +193,79 @@ Configuration Readiness
                         {{ render_plc_rule(rule) }}
                     {% endfor %}
                 </div>
+
+                <div class="plc-setup-group">
+                    <div class="plc-setup-group-title">
+                        <strong>Add PLC Purpose Rule</strong>
+                        <span>Add a machine/stage-specific tag requirement without code changes</span>
+                    </div>
+                    <article class="plc-setup-row plc-setup-row-inactive">
+                        <div class="plc-setup-row-main">
+                            <label class="plc-rule-switch" title="Leave purpose key blank when no new row is required.">
+                                <input type="checkbox" name="new_active" value="1" checked>
+                                <span class="plc-rule-switch-box"></span>
+                                <span>Active</span>
+                            </label>
+                            <div class="plc-rule-identity">
+                                <span>New purpose key</span>
+                                <input type="text" name="new_purpose" placeholder="Example: BT_PHASE_CONTROL_STRING">
+                                <small>Use uppercase letters, numbers, and underscore</small>
+                            </div>
+                        </div>
+                        <div class="plc-setup-fields plc-setup-fields-core">
+                            <label>
+                                <span>Level</span>
+                                <select name="new_requirement_level">
+                                    <option value="REQUIRED">Required</option>
+                                    <option value="RECOMMENDED">Recommended</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>User Label</span>
+                                <input type="text" name="new_label" placeholder="Operator-facing label">
+                            </label>
+                            <label>
+                                <span>Data Type</span>
+                                <input type="text" name="new_expected_type" placeholder="REAL / BOOL / STRING">
+                            </label>
+                        </div>
+                        <div class="plc-setup-fields plc-setup-fields-array">
+                            <label>
+                                <span>Array</span>
+                                <select name="new_array_required">
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Size</span>
+                                <input type="number" name="new_minimum_array_size" min="1" step="1" placeholder="-">
+                            </label>
+                            <label>
+                                <span>Start</span>
+                                <input type="number" name="new_array_start_index" step="1" placeholder="-">
+                            </label>
+                            <label>
+                                <span>End</span>
+                                <input type="number" name="new_array_end_index" step="1" placeholder="-">
+                            </label>
+                        </div>
+                        <div class="plc-setup-fields plc-setup-fields-tags">
+                            <label>
+                                <span>Default PLC Tag</span>
+                                <input type="text" name="new_default_tag_name" placeholder="Default PLC tag">
+                            </label>
+                            <label>
+                                <span>Search Hint</span>
+                                <input type="text" name="new_search_hint" placeholder="PLC browser search hint">
+                            </label>
+                            <label>
+                                <span>Order</span>
+                                <input type="number" name="new_display_order" value="200" step="1">
+                            </label>
+                        </div>
+                    </article>
+                </div>
             </div>
 
             <div class="stage-plc-rule-actions">

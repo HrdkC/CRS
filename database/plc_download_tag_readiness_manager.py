@@ -713,6 +713,47 @@ class PLCDownloadTagReadinessManager:
                 "CRS_DOWNLOAD_COMPLETE"
             ],
 
+            "PHASE_CONTROL_STRING": [
+                "CRS_PHASE_CNTRL_STRING",
+                "CRS_PHASE_CONTROL_STRING"
+            ],
+
+            "PHASE_STOP_STRING": [
+                "CRS_PHASE_CNTRL_STOP_STRING",
+                "CRS_PHASE_CONTROL_STOP_STRING"
+            ],
+
+            "PHASE_POSITION_STRING": [
+                "CRS_PHASE_CNTRL_POSITION_STRING",
+                "CRS_PHASE_CONTROL_POSITION_STRING"
+            ],
+
+            "CAP_STRIP_PHASE_CONTROL_STRING": [
+                "CRS_PHASE_CNTRL_STRING_CAPSD",
+                "CRS_PHASE_CONTROL_STRING_CAPSD"
+            ],
+
+            "CAP_STRIP_PHASE_STOP_STRING": [
+                "CRS_PHASE_CNTRL_STOP_STRING_CAPSD",
+                "CRS_PHASE_CONTROL_STOP_STRING_CAPSD"
+            ],
+
+            "BT_PHASE_CONTROL_STRING": [
+                "CRS_PHASE_CNTRL_STRING",
+                "CRS_PHASE_CONTROL_STRING"
+            ],
+
+            "BT_PHASE_STOP_STRING": [
+                "CRS_PHASE_CNTRL_STOP_STRING",
+                "CRS_PHASE_CONTROL_STOP_STRING"
+            ],
+
+            "BT_PHASE_POSITION_STRING": [
+                "CRS_PHASE_CNTRL_POS_STRING",
+                "CRS_PHASE_CNTRL_POSITION_STRING",
+                "CRS_PHASE_CONTROL_POSITION_STRING"
+            ],
+
             "DOWNLOAD_ACK": [
                 "CRS_DOWNLOAD_ACK"
             ],
