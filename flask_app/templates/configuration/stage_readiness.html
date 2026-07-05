@@ -314,10 +314,10 @@ Configuration Readiness
                         <tr>
                             <td>
                                 <input type="hidden" name="tag_id" value="{{ tag.id }}">
-                                <input class="plc-tag-config-input plc-tag-name-input" type="text" name="tag_name_{{ tag.id }}" value="{{ tag.tag_name or '' }}" required title="PLC tag name saved in CRS for this machine/stage">
+                                <input class="plc-tag-config-input plc-tag-name-input" type="text" name="tag_name_{{ tag.id }}" value="{{ tag.tag_name or '' }}" required title="{{ tag.tag_name or 'PLC tag name' }}" aria-label="PLC tag name">
                             </td>
                             <td>
-                                <input class="plc-tag-config-input plc-tag-type-input" type="text" name="tag_type_{{ tag.id }}" value="{{ tag.tag_type or '' }}" placeholder="REAL / BOOL / DINT" required>
+                                <input class="plc-tag-config-input plc-tag-type-input" type="text" name="tag_type_{{ tag.id }}" value="{{ tag.tag_type or '' }}" placeholder="REAL / BOOL / DINT" title="{{ tag.tag_type or 'PLC data type' }}" aria-label="PLC data type" required>
                             </td>
                             <td>
                                 <select class="plc-tag-config-input" name="is_array_{{ tag.id }}">
@@ -343,7 +343,12 @@ Configuration Readiness
                                 </select>
                             </td>
                             <td>
-                                <input class="plc-tag-config-input" type="text" name="description_{{ tag.id }}" value="{{ tag.description or '' }}" placeholder="Description / note">
+                                <textarea class="plc-tag-config-input plc-tag-description-input"
+          name="description_{{ tag.id }}"
+          rows="2"
+          placeholder="Description / note"
+          title="{{ tag.description or 'Description / note' }}"
+          aria-label="PLC tag description">{{ tag.description or '' }}</textarea>
                             </td>
                         </tr>
                         {% endfor %}
@@ -397,7 +402,7 @@ Configuration Readiness
                         <span title="{{ item.detail }}">{{ item.detail }}</span>
                     </div>
                     {% if item.action_url %}
-                    <a class="crs-btn crs-btn-soft" href="{{ item.action_url }}" title="Open PLC Tag Browser filtered for this required purpose.">Map Tag</a>
+                    <a class="crs-btn crs-btn-soft readiness-map-tag" href="{{ item.action_url }}" title="Open PLC Tag Browser filtered for this required purpose.">Map Tag</a>
                     {% endif %}
                 </div>
                 {% endfor %}

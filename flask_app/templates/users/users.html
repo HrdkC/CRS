@@ -6,7 +6,7 @@ Users
 
 {% block content %}
 
-<section class="recipe-workbench">
+<section class="recipe-workbench users-workbench">
 
     <div class="workbench-hero">
         <div class="workbench-title">
@@ -58,9 +58,9 @@ Users
             </div>
         </div>
 
-        <div class="professional-table-wrap registry-table-wrap">
+        <div class="professional-table-wrap registry-table-wrap user-records-table-wrap">
 
-            <table class="professional-table registry-table">
+            <table class="professional-table registry-table user-records-table">
 
                 <thead>
                     <tr>
@@ -78,7 +78,7 @@ Users
                 <tbody>
                     {% for user in users %}
                     <tr>
-                        <td>
+                        <td class="user-name-cell">
                             <strong>{{ user.username }}</strong>
                             {% if user.is_protected_super_user %}
                             <br><span class="status-badge status-info">Protected Super User</span>
@@ -87,11 +87,11 @@ Users
                             <br><span class="status-badge status-warning">Legacy Role</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td class="user-role-cell">
                             {% if user.is_protected_super_user %}
                                 <span class="status-badge status-info">{{ user.role }}</span>
                             {% else %}
-                                <form method="POST" action="/users/update_role/{{ user.username }}" class="inline-form">
+                                <form method="POST" action="/users/update_role/{{ user.username }}" class="inline-form user-role-form">
                                     <select name="role">
                                         {% for role in role_options %}
                                         <option value="{{ role }}" {% if role == user.role %}selected{% endif %}>{{ role }}</option>
@@ -102,7 +102,7 @@ Users
                             {% endif %}
                             <small class="muted-text">{{ user.role_label }}</small>
                         </td>
-                        <td>
+                        <td class="user-status-cell">
                             {% if user.active == 1 %}
                             <span class="status-badge status-success">Active</span>
                             {% else %}
@@ -112,7 +112,7 @@ Users
                             <br><small class="muted-text">{{ user.disabled_at_ist }} by {{ user.disabled_by }}</small>
                             {% endif %}
                         </td>
-                        <td>
+                        <td class="user-password-cell">
                             {% if user.password_reset_required == 1 %}
                             <span class="status-badge status-warning">Reset Required</span>
                             {% else %}
@@ -122,17 +122,17 @@ Users
                             <br><small class="muted-text">Changed: {{ user.password_changed_at_ist }}</small>
                             {% endif %}
                         </td>
-                        <td>{{ user.created_by }}</td>
-                        <td>{{ user.created_at_ist }}</td>
-                        <td>
+                        <td class="user-created-by-cell">{{ user.created_by }}</td>
+                        <td class="user-created-at-cell">{{ user.created_at_ist }}</td>
+                        <td class="user-last-login-cell">
                             {% if user.last_login %}
                                 {{ user.last_login_ist }}
                             {% else %}
                                 <span class="muted-text">Never Logged In</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div class="row-actions">
+                        <td class="user-actions-cell">
+                            <div class="row-actions user-row-actions">
                                 {% if not user.is_protected_super_user and user.username != session.get("username") %}
                                     {% if user.active == 1 %}
                                     <a href="/users/disable/{{ user.username }}" class="row-action danger">Disable</a>

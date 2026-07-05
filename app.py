@@ -43,10 +43,35 @@ register_configuration_routes(app)
 
 
 if __name__ == "__main__":
-    debug_enabled = os.getenv("CRS_FLASK_DEBUG", "0").strip() in {"1", "true", "TRUE", "yes", "YES"}
+    # Debug mode is enabled by default for local CRS development.
+    # Set CRS_FLASK_DEBUG=0 before production deployment.
+    debug_enabled = os.getenv("CRS_FLASK_DEBUG", "1").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+    # Python auto-reloader remains disabled by default to prevent duplicate
+    # PLC/background initialization.
+    reload_enabled = os.getenv("CRS_FLASK_RELOAD", "0").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+    app.config["TEMPLATES_AUTO_RELOAD"] = debug_enabled
+
+    if debug_enabled:
+        app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
+
+    print(f"CRS Flask debug mode: {'ON' if debug_enabled else 'OFF'}")
+    print(f"CRS Python auto-reloader: {'ON' if reload_enabled else 'OFF'}")
+
     app.run(
         host=os.getenv("CRS_FLASK_HOST", "0.0.0.0"),
         port=int(os.getenv("CRS_FLASK_PORT", "5000")),
         debug=debug_enabled,
-        use_reloader=debug_enabled,
+        use_reloader=reload_enabled,
     )

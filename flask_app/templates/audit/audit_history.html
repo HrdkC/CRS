@@ -6,7 +6,7 @@ Audit History
 
 {% block content %}
 
-<section class="recipe-workbench audit-page-pro">
+<section class="recipe-workbench audit-page-pro audit-history-workbench">
 
     <div class="workbench-hero audit-hero-pro">
         <div class="workbench-title">
@@ -155,48 +155,159 @@ Audit History
             </div>
         </div>
 
-        <div class="professional-table-wrap registry-table-wrap audit-table-wrap-pro">
-            <table class="professional-table registry-table audit-history-table audit-history-table-pro">
+        <div class="professional-table-wrap registry-table-wrap audit-table-wrap-pro audit-responsive-table-wrap">
+            <table class="professional-table registry-table audit-history-table audit-history-table-pro audit-responsive-table">
                 <thead>
                     <tr>
-                        <th><a class="sort-link-pro {% if sort_links.timestamp.active %}sort-active{% endif %}" href="{{ sort_links.timestamp.url }}">{{ sort_links.timestamp.label }} <span>{{ sort_links.timestamp.symbol }}</span></a></th>
-                        <th><a class="sort-link-pro {% if sort_links.username.active %}sort-active{% endif %}" href="{{ sort_links.username.url }}">{{ sort_links.username.label }} <span>{{ sort_links.username.symbol }}</span></a></th>
-                        <th><a class="sort-link-pro {% if sort_links.role.active %}sort-active{% endif %}" href="{{ sort_links.role.url }}">{{ sort_links.role.label }} <span>{{ sort_links.role.symbol }}</span></a></th>
-                        <th><a class="sort-link-pro {% if sort_links.action.active %}sort-active{% endif %}" href="{{ sort_links.action.url }}">{{ sort_links.action.label }} <span>{{ sort_links.action.symbol }}</span></a></th>
-                        <th><a class="sort-link-pro {% if sort_links.recipe_code.active %}sort-active{% endif %}" href="{{ sort_links.recipe_code.url }}">{{ sort_links.recipe_code.label }} <span>{{ sort_links.recipe_code.symbol }}</span></a></th>
-                        <th><a class="sort-link-pro {% if sort_links.parameter_name.active %}sort-active{% endif %}" href="{{ sort_links.parameter_name.url }}">{{ sort_links.parameter_name.label }} <span>{{ sort_links.parameter_name.symbol }}</span></a></th>
-                        <th><a class="sort-link-pro {% if sort_links.old_value.active %}sort-active{% endif %}" href="{{ sort_links.old_value.url }}">{{ sort_links.old_value.label }} <span>{{ sort_links.old_value.symbol }}</span></a></th>
-                        <th><a class="sort-link-pro {% if sort_links.change_source.active %}sort-active{% endif %}" href="{{ sort_links.change_source.url }}">{{ sort_links.change_source.label }} <span>{{ sort_links.change_source.symbol }}</span></a></th>
-                        <th><a class="sort-link-pro {% if sort_links.reason.active %}sort-active{% endif %}" href="{{ sort_links.reason.url }}">{{ sort_links.reason.label }} <span>{{ sort_links.reason.symbol }}</span></a></th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.timestamp.active %}sort-active{% endif %}"
+                               href="{{ sort_links.timestamp.url }}"
+                               title="Sort by date and time">
+                                <span>Date / Time</span>
+                                <b>{{ sort_links.timestamp.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.username.active %}sort-active{% endif %}"
+                               href="{{ sort_links.username.url }}"
+                               title="Sort by user">
+                                <span>User</span>
+                                <b>{{ sort_links.username.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.role.active %}sort-active{% endif %}"
+                               href="{{ sort_links.role.url }}"
+                               title="Sort by role">
+                                <span>Role</span>
+                                <b>{{ sort_links.role.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.action.active %}sort-active{% endif %}"
+                               href="{{ sort_links.action.url }}"
+                               title="Sort by action">
+                                <span>Action</span>
+                                <b>{{ sort_links.action.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.recipe_code.active %}sort-active{% endif %}"
+                               href="{{ sort_links.recipe_code.url }}"
+                               title="Sort by recipe or record">
+                                <span>Recipe / Record</span>
+                                <b>{{ sort_links.recipe_code.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.parameter_name.active %}sort-active{% endif %}"
+                               href="{{ sort_links.parameter_name.url }}"
+                               title="Sort by parameter">
+                                <span>Parameter</span>
+                                <b>{{ sort_links.parameter_name.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.old_value.active %}sort-active{% endif %}"
+                               href="{{ sort_links.old_value.url }}"
+                               title="Sort by old value">
+                                <span>Old → New</span>
+                                <b>{{ sort_links.old_value.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.change_source.active %}sort-active{% endif %}"
+                               href="{{ sort_links.change_source.url }}"
+                               title="Sort by source">
+                                <span>Source</span>
+                                <b>{{ sort_links.change_source.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.reason.active %}sort-active{% endif %}"
+                               href="{{ sort_links.reason.url }}"
+                               title="Sort by reason">
+                                <span>Reason</span>
+                                <b>{{ sort_links.reason.symbol }}</b>
+                            </a>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in history %}
                     <tr>
-                        <td class="audit-time-cell" title="{{ row.timestamp_ist }}">{{ row.timestamp_ist }}</td>
-                        <td class="audit-user-cell" title="{{ row.username or '-' }}"><strong>{{ row.username or '-' }}</strong></td>
-                        <td><span class="status-badge status-neutral">{{ row.role or '-' }}</span></td>
-                        <td class="audit-action-cell" title="{{ row.action or '-' }}"><span class="status-badge status-info audit-action-badge">{{ row.action or '-' }}</span></td>
-                        <td class="audit-record-cell" title="{% if row.recipe_code %}{{ row.recipe_code }}{% if row.recipe_version %} V{{ row.recipe_version }}{% endif %}{% else %}{{ row.record_id or '-' }}{% endif %}">
+                        <td class="audit-time-cell" title="{{ row.timestamp_ist }}">
+                            <span class="audit-cell-text audit-cell-text-2">{{ row.timestamp_ist }}</span>
+                        </td>
+
+                        <td class="audit-user-cell" title="{{ row.username or '-' }}">
+                            <strong>{{ row.username or '-' }}</strong>
+                        </td>
+
+                        <td class="audit-role-cell">
+                            <span class="status-badge status-neutral">{{ row.role or '-' }}</span>
+                        </td>
+
+                        <td class="audit-action-cell" title="{{ row.action or '-' }}">
+                            <span class="status-badge status-info audit-action-badge">
+                                {{ row.action or '-' }}
+                            </span>
+                        </td>
+
+                        <td class="audit-record-cell"
+                            title="{% if row.recipe_code %}{{ row.recipe_code }}{% if row.recipe_version %} V{{ row.recipe_version }}{% endif %}{% else %}{{ row.record_id or '-' }}{% endif %}">
                             {% if row.recipe_code %}
                             <strong>{{ row.recipe_code }}</strong>
-                            {% if row.recipe_version %}<span class="muted-inline">V{{ row.recipe_version }}</span>{% endif %}
+                            {% if row.recipe_version %}
+                            <span class="muted-inline">V{{ row.recipe_version }}</span>
+                            {% endif %}
                             {% else %}
-                            {{ row.record_id or '-' }}
+                            <span class="audit-cell-text audit-cell-text-2">{{ row.record_id or '-' }}</span>
                             {% endif %}
                         </td>
-                        <td class="audit-clip-cell" title="{{ row.parameter_name or '-' }}">{{ row.parameter_name or '-' }}</td>
-                        <td class="audit-value-cell" title="{{ row.old_value if row.old_value is not none else '-' }} → {{ row.new_value if row.new_value is not none else '-' }}">
+
+                        <td class="audit-parameter-cell"
+                            title="{{ row.parameter_name or '-' }}">
+                            <span class="audit-cell-text audit-cell-text-2">
+                                {{ row.parameter_name or '-' }}
+                            </span>
+                        </td>
+
+                        <td class="audit-value-cell"
+                            title="{{ row.old_value if row.old_value is not none else '-' }} → {{ row.new_value if row.new_value is not none else '-' }}">
                             {% if row.old_value is not none or row.new_value is not none %}
-                            <span class="audit-old-value">{{ row.old_value }}</span>
-                            <span class="audit-arrow">→</span>
-                            <span class="audit-new-value">{{ row.new_value }}</span>
+                            <div class="audit-value-stack">
+                                <div class="audit-value-item audit-value-item-old">
+                                    <span class="audit-value-label">OLD</span>
+                                    <span class="audit-value-text audit-old-value">
+                                        {{ row.old_value if row.old_value is not none else '-' }}
+                                    </span>
+                                </div>
+                                <div class="audit-value-item audit-value-item-new">
+                                    <span class="audit-value-label">NEW</span>
+                                    <span class="audit-value-text audit-new-value">
+                                        {{ row.new_value if row.new_value is not none else '-' }}
+                                    </span>
+                                </div>
+                            </div>
                             {% else %}
-                            -
+                            <span class="audit-cell-text">-</span>
                             {% endif %}
                         </td>
-                        <td class="audit-clip-cell" title="{{ row.change_source or '-' }}">{{ row.change_source or '-' }}</td>
-                        <td class="audit-reason-cell" title="{{ row.reason or '-' }}">{{ row.reason or '-' }}</td>
+
+                        <td class="audit-source-cell"
+                            title="{{ row.change_source or '-' }}">
+                            <span class="audit-cell-text audit-cell-text-2">
+                                {{ row.change_source or '-' }}
+                            </span>
+                        </td>
+
+                        <td class="audit-reason-cell"
+                            title="{{ row.reason or '-' }}">
+                            <span class="audit-cell-text audit-cell-text-2">
+                                {{ row.reason or '-' }}
+                            </span>
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
