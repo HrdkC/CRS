@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit PLC
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">PLC Registry</span>
+            <h1>Edit PLC</h1>
+            <p>{{ plc.plc_name }}</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/plcs" class="crs-btn crs-btn-soft">Back To PLCs</a>
+        </div>
+    </div>
+
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>PLC Metadata</span>
+            <span class="status-badge status-info">Audit</span>
+        </div>
+
+        <form method="post" class="import-options-form">
+            <label><span>IP Address</span><input type="text" name="ip_address" value="{{ plc.ip_address }}"></label>
+            <label><span>Controller Type</span><input type="text" name="controller_type" value="{{ plc.controller_type }}"></label>
+            <label><span>Firmware Revision</span><input type="text" name="firmware_revision" value="{{ plc.firmware_revision }}"></label>
+            <label><span>Program Revision</span><input type="text" name="program_revision" value="{{ plc.program_revision }}"></label>
+            <label><span>Processor Name</span><input type="text" name="processor_name" value="{{ plc.processor_name }}"></label>
+            <label><span>PLC Software</span><input type="text" name="plc_software" value="{{ plc.plc_software }}"></label>
+            <label><span>Description</span><input type="text" name="description" value="{{ plc.description }}"></label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Save PLC</button>
+                <a href="/plcs" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}
+Parameter History
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Parameter Audit</span>
+            <h1>Parameter History</h1>
+            <p>
+                {{ recipe_code }}
+                <span>|</span>
+                {{ parameter_name }}
+            </p>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Records</span>
+            <strong>{{ history|length }}</strong>
+            <small>Parameter audit entries</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Recipe</span>
+            <strong class="metric-text">{{ recipe_code }}</strong>
+            <small>Recipe code</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Parameter</span>
+            <strong class="metric-text">{{ parameter_name }}</strong>
+            <small>Changed parameter</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Trace</span>
+            <strong class="metric-text">Reason</strong>
+            <small>Change reason retained</small>
+        </div>
+    </div>
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Audit Records</span>
+                <p>Shows version, user, old value, new value, and reason.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Version</th>
+                        <th>User</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in history %}
+                    <tr>
+                        <td>{{ row.display_time }}</td>
+                        <td><span class="tag-pill">V{{ row.recipe_version }}</span></td>
+                        <td><strong>{{ row.username }}</strong></td>
+                        <td>{{ row.old_value }}</td>
+                        <td><strong>{{ row.new_value }}</strong></td>
+                        <td>{{ row.reason }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-state">No history found for this parameter.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

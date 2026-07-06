@@ -406,7 +406,7 @@ def register_plc_registry_routes(app):
 
     @app.route(
         "/plcs/disable/<int:plc_id>",
-        methods=["GET", "POST"]
+        methods=["POST"]
     )
     def disable_plc(plc_id):
 
@@ -472,7 +472,7 @@ def register_plc_registry_routes(app):
 
     @app.route(
         "/plcs/enable/<int:plc_id>",
-        methods=["GET", "POST"]
+        methods=["POST"]
     )
     def enable_plc(plc_id):
 

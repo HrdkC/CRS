@@ -47,6 +47,28 @@ button:hover,
 .crs-btn-soft:hover,
 .secondary-action:hover { color: var(--ink-900); background: #e8eef6; }
 .row-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.row-action-form { display: inline-flex; margin: 0; }
+.inline-action-form { display: inline-flex; margin: 0; }
+.nav-post-form { display: block; margin: 0; }
+.nav-post-link {
+    display: block;
+    min-height: 34px;
+    padding: 8px 15px;
+    border: 0;
+    border-radius: inherit;
+    color: #fff;
+    background: transparent;
+    box-shadow: none;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 18px;
+}
+.nav-post-link:hover {
+    color: #fff;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+}
 .row-action { min-height: 31px; padding: 7px 17px; border-radius: 999px; box-shadow: none; font-size: 12px; }
 .row-action.primary,
 .row-action.edit { background: #2563eb; color: #fff; }
@@ -86,4 +108,3 @@ form.form-card { background: var(--surface); border: 1px solid var(--line-200); 
 .parameter-edit-form { display: grid; gap: 14px; }
 .parameter-edit-form label { display: grid; gap: 6px; margin: 0; }
 .phase-master-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 13px; align-items: start; }
-

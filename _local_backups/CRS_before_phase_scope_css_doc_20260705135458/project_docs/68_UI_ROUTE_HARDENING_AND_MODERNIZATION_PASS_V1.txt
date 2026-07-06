@@ -1,0 +1,72 @@
+CRS UI / Route Hardening and Modernization Pass V1
+==================================================
+
+Date
+----
+2026-06-29
+
+Purpose
+-------
+Reduce visible operator-facing failures, improve shared navigation, and apply
+the first common Full HD visual polish layer without changing recipe or PLC
+business logic.
+
+Completed
+---------
+- Fixed PLC buffer page 500 error caused by Jinja resolving group.items as a
+  dict method instead of the "items" key.
+- Added authenticated route smoke checker:
+  tools/route_smoke_check.py
+- Added shared Back button in the authenticated header.
+- Added professional CRS 404 and 500 error pages.
+- Added final shared CSS polish layer for:
+  - table wrapping and action-cell readability
+  - audit table long text handling
+  - PLC/configuration setup table Full HD fit
+  - error page visual design
+  - shared Back button
+- Improved PLC buffer live-status display to show:
+  - actual PLC value
+  - expected state
+  - mapped tag
+  - health state
+  - message
+
+Verified
+--------
+- Python compile passed:
+  venv\Scripts\python.exe -m compileall app.py flask_app database tools\route_smoke_check.py
+- Edited Jinja templates loaded:
+  base.html
+  errors/error.html
+  recipes/download_preparation.html
+  audit/audit_history.html
+- Authenticated route smoke passed:
+  checked=69
+- 404 handler verified with a missing URL.
+- 500 handler verified with a temporary in-memory test route.
+
+Important Limitation
+--------------------
+Live browser verification against a separate updated Flask instance was not
+completed because starting a second local Flask process from the sandbox was
+blocked. Restart the running Flask app before checking the browser UI so the
+new Python, template, CSS, and JS files are loaded.
+
+Remaining Gaps
+--------------
+1. Full visual browser QA still needs to be done after Flask restart.
+2. Dashboard visual analytics need a dedicated pass:
+   - machine/stage readiness heatmap
+   - recipe lifecycle funnel
+   - recent audit/change trend
+   - PLC/configuration warning summary
+3. GUI-only configuration is partially available but must be completed for:
+   - all stage phase-group defaults
+   - parameter add/remove horizontal propagation
+   - PLC tag requirement templates per machine/stage
+   - recipe import behavior for used/not-used parameters
+4. All POST actions should continue to require reason/audit where they change
+   configuration, recipe values, PLC mappings, or user/security state.
+5. Route smoke should be expanded to POST-safe tests using a test database and
+   pycomm3 mocks before production deployment.

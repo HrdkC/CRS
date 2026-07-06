@@ -14,11 +14,45 @@ from database.audit_manager import AuditManager
 from database.recipe_status_history_manager import RecipeStatusHistoryManager
 
 
+def _configured_max_upload_bytes():
+    try:
+        upload_mb = int(os.getenv("CRS_MAX_UPLOAD_MB", "25"))
+    except (TypeError, ValueError):
+        upload_mb = 25
+    return max(1, upload_mb) * 1024 * 1024
+
+
 class RecipeExcelImportExportManager:
     """Current CRS recipe Excel import/export for recipes, parameters and phase control."""
 
+    SECOND_STAGE_RECIPE_GROUPS = (
+        "CAP_STRIP_SIDE",
+        "BT_SIDE",
+    )
+
+    @staticmethod
+    def _is_second_stage(stage_type):
+        return (
+            str(stage_type or "").strip().upper().replace(" ", "_")
+            in {"SECOND_STAGE", "SECONDSTAGE", "SS"}
+        )
+
+    @staticmethod
+    def _phase_group_filter_sql(stage_type, column_sql):
+        if not RecipeExcelImportExportManager._is_second_stage(stage_type):
+            return "", []
+        placeholders = ", ".join(
+            "?"
+            for _ in RecipeExcelImportExportManager.SECOND_STAGE_RECIPE_GROUPS
+        )
+        return (
+            f" AND UPPER(COALESCE({column_sql}, 'MAIN')) IN ({placeholders})",
+            list(RecipeExcelImportExportManager.SECOND_STAGE_RECIPE_GROUPS),
+        )
+
     TEMPLATE_TYPE = "CRS_RECIPE_IMPORT_EXPORT_V1"
     PENDING_DIR = os.path.join("recipe_imports", "pending")
+    MAX_PENDING_UPLOAD_BYTES = _configured_max_upload_bytes()
 
     RECIPE_INFO_SHEET = "Recipe_Info"
     PARAMETERS_SHEET = "Parameters"
@@ -262,14 +296,30 @@ class RecipeExcelImportExportManager:
         ws.append(["Phase Control ID", "Phase Control Name", "Stage Type", "Description"])
         conn = get_connection()
         cur = conn.cursor()
+        phase_group_filter_sql, phase_group_filter_params = (
+            RecipeExcelImportExportManager._phase_group_filter_sql(
+                stage_type,
+                "phase_group_code",
+            )
+        )
         cur.execute(
-            """
+            f"""
             SELECT id, phase_control_name, stage_type, description
             FROM phase_control_master
-            WHERE active = 1 AND stage_type = ?
-            ORDER BY display_order, phase_control_name
+            WHERE active = 1
+                AND stage_type = ?
+                {phase_group_filter_sql}
+            ORDER BY
+                CASE COALESCE(phase_group_code, 'MAIN')
+                    WHEN 'MAIN' THEN 0
+                    WHEN 'CAP_STRIP_SIDE' THEN 1
+                    WHEN 'BT_SIDE' THEN 2
+                    ELSE 99
+                END,
+                display_order,
+                phase_control_name
             """,
-            (stage_type,),
+            tuple([stage_type] + phase_group_filter_params),
         )
         for row in cur.fetchall():
             ws.append([row["id"], row["phase_control_name"], row["stage_type"], row["description"]])
@@ -347,8 +397,14 @@ class RecipeExcelImportExportManager:
         )
         parameters = [dict(r) for r in cur.fetchall()]
 
+        phase_group_filter_sql, phase_group_filter_params = (
+            RecipeExcelImportExportManager._phase_group_filter_sql(
+                recipe.get("stage_type"),
+                "rpc.phase_group_code",
+            )
+        )
         cur.execute(
-            """
+            f"""
             SELECT
                 rpc.line_no,
                 rpc.phase_control_id,
@@ -357,13 +413,23 @@ class RecipeExcelImportExportManager:
                 rpc.position_option,
                 rpc.sequence_no,
                 pcm.description,
-                pcm.stage_type
+                pcm.stage_type,
+                COALESCE(rpc.phase_group_code, 'MAIN') AS phase_group_code,
+                COALESCE(rpc.phase_group_name, 'Phase Control') AS phase_group_name
             FROM recipe_phase_control rpc
             LEFT JOIN phase_control_master pcm ON pcm.id = rpc.phase_control_id
             WHERE rpc.recipe_id = ?
-            ORDER BY rpc.line_no
+                {phase_group_filter_sql}
+            ORDER BY
+                CASE COALESCE(rpc.phase_group_code, 'MAIN')
+                    WHEN 'MAIN' THEN 0
+                    WHEN 'CAP_STRIP_SIDE' THEN 1
+                    WHEN 'BT_SIDE' THEN 2
+                    ELSE 99
+                END,
+                rpc.line_no
             """,
-            (recipe_id,),
+            tuple([recipe_id] + phase_group_filter_params),
         )
         phase_rows = [dict(r) for r in cur.fetchall()]
         conn.close()
@@ -488,6 +554,12 @@ class RecipeExcelImportExportManager:
         token = uuid.uuid4().hex
         path = os.path.join(RecipeExcelImportExportManager.PENDING_DIR, f"{token}.xlsx")
         upload_file.save(path)
+        if os.path.getsize(path) > RecipeExcelImportExportManager.MAX_PENDING_UPLOAD_BYTES:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+            raise ValueError("Uploaded Excel file is too large.")
         return token, path
 
     @staticmethod

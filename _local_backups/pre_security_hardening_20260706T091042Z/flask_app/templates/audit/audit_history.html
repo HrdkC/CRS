@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}
+Audit History
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench audit-page-pro audit-history-workbench">
+
+    <div class="workbench-hero audit-hero-pro">
+        <div class="workbench-title">
+            <span class="section-kicker">Traceability</span>
+            <h1>Audit History</h1>
+            <p>Professional filtered trail of user, role, action, source, old/new value, reason, and timestamp.</p>
+        </div>
+        <div class="hero-actions compact-actions">
+            <a href="/audit-history" class="secondary-action">Reset View</a>
+        </div>
+    </div>
+
+    <div class="metric-grid audit-metric-grid-pro">
+        <div class="metric-card">
+            <span class="metric-label">Filtered Records</span>
+            <strong>{{ total_count }}</strong>
+            <small>{{ history|length }} shown on this page</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Sort</span>
+            <strong class="metric-text">{{ filters.sort_by|replace('_', ' ')|title }}</strong>
+            <small>{{ filters.sort_dir|upper }}</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Limit</span>
+            <strong>{{ limit }}</strong>
+            <small>Resource-friendly query cap</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Retention</span>
+            <strong class="metric-text">Trace</strong>
+            <small>No delete path from UI</small>
+        </div>
+    </div>
+
+    <div class="workbench-card audit-filter-card-pro">
+        <form method="GET" action="/audit-history" class="audit-filter-form-pro">
+            <input type="hidden" name="sort_by" value="{{ filters.sort_by }}">
+            <input type="hidden" name="sort_dir" value="{{ filters.sort_dir }}">
+
+            <div class="audit-filter-header-pro">
+                <div>
+                    <span class="filter-title-pro">Audit Filters</span>
+                    <p>Compact filters keep the page clean. Use Advanced Filters for date, source, and large searches.</p>
+                </div>
+                <div class="audit-filter-actions-pro">
+                    <button type="submit" class="primary-action">Apply</button>
+                    <a href="/audit-history" class="secondary-action">Clear</a>
+                </div>
+            </div>
+
+            <div class="audit-filter-quick-grid-pro">
+                <div class="form-group compact-form-group">
+                    <label for="keyword">Keyword</label>
+                    <input type="search" id="keyword" name="keyword" value="{{ filters.keyword }}" placeholder="recipe, user, reason, PLC">
+                </div>
+
+                <div class="form-group compact-form-group">
+                    <label for="action">Action</label>
+                    <select id="action" name="action">
+                        <option value="">All Actions</option>
+                        {% for action in filter_options.actions %}
+                        <option value="{{ action }}" {% if filters.action == action %}selected{% endif %}>{{ action }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group compact-form-group">
+                    <label for="username">User</label>
+                    <input type="text" id="username" name="username" value="{{ filters.username }}" placeholder="admin, hardik, operator">
+                </div>
+
+                <div class="form-group compact-form-group compact-limit-field">
+                    <label for="limit">Rows</label>
+                    <select id="limit" name="limit">
+                        {% for option in [100, 250, 500, 1000, 2000, 5000] %}
+                        <option value="{{ option }}" {% if filters.limit|int == option %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <details class="audit-advanced-filter-pro" {% if has_active_filters %}open{% endif %}>
+                <summary>Advanced Filters</summary>
+                <div class="audit-filter-advanced-grid-pro">
+                    <div class="form-group compact-form-group">
+                        <label for="date_from">Date From</label>
+                        <input type="date" id="date_from" name="date_from" value="{{ filters.date_from }}">
+                    </div>
+
+                    <div class="form-group compact-form-group">
+                        <label for="date_to">Date To</label>
+                        <input type="date" id="date_to" name="date_to" value="{{ filters.date_to }}">
+                    </div>
+
+                    <div class="form-group compact-form-group">
+                        <label for="role">Role</label>
+                        <select id="role" name="role">
+                            <option value="">All Roles</option>
+                            {% for role in filter_options.roles %}
+                            <option value="{{ role }}" {% if filters.role == role %}selected{% endif %}>{{ role }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group compact-form-group">
+                        <label for="change_source">Source</label>
+                        <select id="change_source" name="change_source">
+                            <option value="">All Sources</option>
+                            {% for source in filter_options.sources %}
+                            <option value="{{ source }}" {% if filters.change_source == source %}selected{% endif %}>{{ source }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </details>
+
+            {% if has_active_filters %}
+            <div class="audit-chip-row-pro">
+                <span class="chip-muted-pro">Active filters:</span>
+                {% if filters.keyword %}<span class="audit-chip-pro">Keyword: {{ filters.keyword }}</span>{% endif %}
+                {% if filters.username %}<span class="audit-chip-pro">User: {{ filters.username }}</span>{% endif %}
+                {% if filters.role %}<span class="audit-chip-pro">Role: {{ filters.role }}</span>{% endif %}
+                {% if filters.action %}<span class="audit-chip-pro">Action: {{ filters.action }}</span>{% endif %}
+                {% if filters.change_source %}<span class="audit-chip-pro">Source: {{ filters.change_source }}</span>{% endif %}
+                {% if filters.date_from %}<span class="audit-chip-pro">From: {{ filters.date_from }}</span>{% endif %}
+                {% if filters.date_to %}<span class="audit-chip-pro">To: {{ filters.date_to }}</span>{% endif %}
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="workbench-card data-workbench audit-record-card-pro">
+        <div class="panel-heading table-heading audit-table-heading-pro">
+            <div>
+                <span>
+                    Audit Records
+                    <span
+                        class="info-hint"
+                        title="Click column headers to sort. Hover clipped cells to view full audit details."
+                    >?</span>
+                </span>
+            </div>
+            <div class="table-tools-pro">
+                <span>{{ history|length }} / {{ total_count }} records</span>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap audit-table-wrap-pro audit-responsive-table-wrap">
+            <table class="professional-table registry-table audit-history-table audit-history-table-pro audit-responsive-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.timestamp.active %}sort-active{% endif %}"
+                               href="{{ sort_links.timestamp.url }}"
+                               title="Sort by date and time">
+                                <span>Date / Time</span>
+                                <b>{{ sort_links.timestamp.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.username.active %}sort-active{% endif %}"
+                               href="{{ sort_links.username.url }}"
+                               title="Sort by user">
+                                <span>User</span>
+                                <b>{{ sort_links.username.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.role.active %}sort-active{% endif %}"
+                               href="{{ sort_links.role.url }}"
+                               title="Sort by role">
+                                <span>Role</span>
+                                <b>{{ sort_links.role.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.action.active %}sort-active{% endif %}"
+                               href="{{ sort_links.action.url }}"
+                               title="Sort by action">
+                                <span>Action</span>
+                                <b>{{ sort_links.action.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.recipe_code.active %}sort-active{% endif %}"
+                               href="{{ sort_links.recipe_code.url }}"
+                               title="Sort by recipe or record">
+                                <span>Recipe / Record</span>
+                                <b>{{ sort_links.recipe_code.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.parameter_name.active %}sort-active{% endif %}"
+                               href="{{ sort_links.parameter_name.url }}"
+                               title="Sort by parameter">
+                                <span>Parameter</span>
+                                <b>{{ sort_links.parameter_name.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.old_value.active %}sort-active{% endif %}"
+                               href="{{ sort_links.old_value.url }}"
+                               title="Sort by old value">
+                                <span>Old → New</span>
+                                <b>{{ sort_links.old_value.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.change_source.active %}sort-active{% endif %}"
+                               href="{{ sort_links.change_source.url }}"
+                               title="Sort by source">
+                                <span>Source</span>
+                                <b>{{ sort_links.change_source.symbol }}</b>
+                            </a>
+                        </th>
+                        <th>
+                            <a class="sort-link-pro {% if sort_links.reason.active %}sort-active{% endif %}"
+                               href="{{ sort_links.reason.url }}"
+                               title="Sort by reason">
+                                <span>Reason</span>
+                                <b>{{ sort_links.reason.symbol }}</b>
+                            </a>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in history %}
+                    <tr>
+                        <td class="audit-time-cell" title="{{ row.timestamp_ist }}">
+                            <span class="audit-cell-text audit-cell-text-2">{{ row.timestamp_ist }}</span>
+                        </td>
+
+                        <td class="audit-user-cell" title="{{ row.username or '-' }}">
+                            <strong>{{ row.username or '-' }}</strong>
+                        </td>
+
+                        <td class="audit-role-cell">
+                            <span class="status-badge status-neutral">{{ row.role or '-' }}</span>
+                        </td>
+
+                        <td class="audit-action-cell" title="{{ row.action or '-' }}">
+                            <span class="status-badge status-info audit-action-badge">
+                                {{ row.action or '-' }}
+                            </span>
+                        </td>
+
+                        <td class="audit-record-cell"
+                            title="{% if row.recipe_code %}{{ row.recipe_code }}{% if row.recipe_version %} V{{ row.recipe_version }}{% endif %}{% else %}{{ row.record_id or '-' }}{% endif %}">
+                            {% if row.recipe_code %}
+                            <strong>{{ row.recipe_code }}</strong>
+                            {% if row.recipe_version %}
+                            <span class="muted-inline">V{{ row.recipe_version }}</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="audit-cell-text audit-cell-text-2">{{ row.record_id or '-' }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="audit-parameter-cell"
+                            title="{{ row.parameter_name or '-' }}">
+                            <span class="audit-cell-text audit-cell-text-2">
+                                {{ row.parameter_name or '-' }}
+                            </span>
+                        </td>
+
+                        <td class="audit-value-cell"
+                            title="{{ row.old_value if row.old_value is not none else '-' }} → {{ row.new_value if row.new_value is not none else '-' }}">
+                            {% if row.old_value is not none or row.new_value is not none %}
+                            <div class="audit-value-stack">
+                                <div class="audit-value-item audit-value-item-old">
+                                    <span class="audit-value-label">OLD</span>
+                                    <span class="audit-value-text audit-old-value">
+                                        {{ row.old_value if row.old_value is not none else '-' }}
+                                    </span>
+                                </div>
+                                <div class="audit-value-item audit-value-item-new">
+                                    <span class="audit-value-label">NEW</span>
+                                    <span class="audit-value-text audit-new-value">
+                                        {{ row.new_value if row.new_value is not none else '-' }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="audit-cell-text">-</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="audit-source-cell"
+                            title="{{ row.change_source or '-' }}">
+                            <span class="audit-cell-text audit-cell-text-2">
+                                {{ row.change_source or '-' }}
+                            </span>
+                        </td>
+
+                        <td class="audit-reason-cell"
+                            title="{{ row.reason or '-' }}">
+                            <span class="audit-cell-text audit-cell-text-2">
+                                {{ row.reason or '-' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="empty-state">No audit records found for selected filters.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

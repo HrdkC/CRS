@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}
+Compare Versions
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Version Compare</span>
+            <h1>Recipe Compare</h1>
+            <p>{{ recipe_code }}</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipes/{{ recipe_code }}/parameters" class="crs-btn crs-btn-soft">
+                Parameters
+            </a>
+        </div>
+    </div>
+
+    <form class="workbench-toolbar" method="POST">
+        <label>
+            <span>Version A</span>
+            <select name="version_a">
+                {% for version in versions %}
+                <option value="{{ version }}">V{{ version }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            <span>Version B</span>
+            <select name="version_b">
+                {% for version in versions %}
+                <option value="{{ version }}">V{{ version }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button class="crs-btn crs-btn-primary" type="submit">Compare</button>
+    </form>
+
+    {% if comparison %}
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Compared</span>
+            <strong>{{ comparison|length }}</strong>
+            <small>Total parameters checked</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Changed</span>
+            <strong>{{ comparison|selectattr("changed")|list|length }}</strong>
+            <small>Different parameter values</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Same</span>
+            <strong>{{ comparison|rejectattr("changed")|list|length }}</strong>
+            <small>Matching parameter values</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Usage</span>
+            <strong class="metric-text">Audit</strong>
+            <small>Engineering review tool</small>
+        </div>
+    </div>
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Comparison Results</span>
+                <p>Changed rows are marked for quick review.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Version A</th>
+                        <th>Version B</th>
+                        <th>Changed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in comparison %}
+                    <tr {% if row.changed %}class="row-alert"{% endif %}>
+                        <td><strong>{{ row.parameter_name }}</strong></td>
+                        <td>{{ row.value_a }}</td>
+                        <td>{{ row.value_b }}</td>
+                        <td>
+                            {% if row.changed %}
+                            <span class="status-badge status-warning">Changed</span>
+                            {% else %}
+                            <span class="status-badge status-success">Same</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

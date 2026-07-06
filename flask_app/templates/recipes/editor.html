@@ -58,12 +58,16 @@ Recipe Editor
 
             {% if recipe.status != "RELEASED" and can_edit_values %}
 
-            <a
-                class="crs-btn crs-btn-soft"
-                href="/recipe-editor/create-version/{{ recipe.id }}"
+            <form
+                method="POST"
+                action="/recipe-editor/create-version/{{ recipe.id }}"
+                class="inline-action-form"
             >
-                Snapshot
-            </a>
+                {{ csrf_input() }}
+                <button type="submit" class="crs-btn crs-btn-soft">
+                    Snapshot
+                </button>
+            </form>
 
             {% endif %}
 

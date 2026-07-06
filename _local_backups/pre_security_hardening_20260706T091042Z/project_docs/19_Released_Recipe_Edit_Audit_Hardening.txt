@@ -1,0 +1,69 @@
+# CRS Priority 2 - Released Recipe Edit Audit Hardening
+
+Date: 2026-06-22
+
+## Final Policy
+
+Current RELEASED recipe values are editable with audit for operator ease of use.
+Historical released recipe versions remain locked and read-only.
+
+## Priority 2 Implementation
+
+The parameter edit flow now records stronger audit information whenever a recipe parameter value is changed.
+
+Captured audit fields:
+
+- recipe_id
+- recipe_code
+- recipe_version
+- recipe_parameter_value_id
+- parameter_definition_id
+- parameter_name
+- tag_index
+- old_value
+- new_value
+- changed_by
+- user_role
+- changed_at
+- change_source
+- change_reason
+- client_ip
+- workstation_name
+
+## Change Source Values
+
+Current released recipe edits use:
+
+    CURRENT_RELEASED_EDIT
+
+Draft recipe edits use:
+
+    DRAFT_RECIPE_EDIT
+
+## No-Change Rule
+
+If the submitted value is the same as the existing value, CRS does not create a parameter audit row and does not update the value.
+
+## Validation Rule
+
+Min/max validation remains mandatory before saving a parameter value.
+
+## Historical Lock Rule
+
+Historical RELEASED versions remain blocked in the recipe editor route. They can be viewed, but values cannot be edited.
+
+## Files Updated
+
+- database/recipe_parameter_audit_manager.py
+- database/recipe_parameter_value_manager.py
+- database/create_recipe_parameter_audit_table.py
+- flask_app/routes/recipe_editor_routes.py
+- flask_app/templates/recipes/edit_value.html
+- flask_app/templates/recipes/value_history.html
+- flask_app/templates/recipes/editor.html
+
+## Database Migration Behavior
+
+The audit manager safely adds missing optional audit columns to the existing recipe_parameter_audit table using ALTER TABLE. No manual SQLite command is required.
+
+The table is upgraded automatically when a parameter audit operation or history read occurs.

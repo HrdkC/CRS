@@ -1,0 +1,195 @@
+CRS SECURITY DEPLOYMENT HARDENING V1
+====================================
+
+Date
+----
+2026-07-06
+
+Purpose
+-------
+This note records the current web-security hardening added before deployment
+testing. It does not claim CRS is "hacking proof". The target is practical
+industrial hardening: prevent common browser attacks, reduce credential attack
+risk, keep PLC actions traceable, and fail safely.
+
+Implemented In This Pass
+------------------------
+1. Flask debug is now OFF by default.
+   - Set CRS_FLASK_DEBUG=1 only on a local development PC.
+   - Do not expose Flask debugger on the plant network.
+
+2. Production secret-key guard added.
+   - If CRS_DEPLOYMENT_MODE=production and CRS_SECRET_KEY is still the fallback
+     value, startup is blocked.
+   - Production must set a long random CRS_SECRET_KEY.
+
+3. Session cookie hardening added.
+   - HttpOnly enabled.
+   - SameSite defaults to Strict.
+   - CRS_COOKIE_SECURE=1 enables HTTPS-only cookies when CRS is deployed behind
+     HTTPS.
+
+4. Browser security headers added.
+   - X-Content-Type-Options: nosniff
+   - X-Frame-Options: DENY
+   - Referrer-Policy: strict-origin-when-cross-origin
+   - Permissions-Policy blocks camera, microphone, geolocation, payment, USB.
+   - Content-Security-Policy restricts scripts, images, forms, objects, and
+     framing to CRS origin.
+
+5. CSRF protection added for browser state-changing requests.
+   - POST, PUT, PATCH, DELETE requests require a per-session CSRF token.
+   - Token is injected into base template and automatically attached to forms
+     and fetch requests by main.js.
+   - Invalid or expired token returns a safe CRS warning/400 response.
+
+6. Login throttling added.
+   - Failed login attempts are tracked per username and client IP.
+   - Defaults:
+     CRS_LOGIN_MAX_FAILURES=5
+     CRS_LOGIN_LOCKOUT_SECONDS=300
+     CRS_LOGIN_FAILURE_WINDOW_SECONDS=900
+
+7. Password strength policy added.
+   - Defaults:
+     CRS_MIN_PASSWORD_LENGTH=10
+   - Password must include uppercase, lowercase, number, and symbol.
+   - Common weak words and username-in-password are rejected.
+
+8. Audit dynamic SQL column selection hardened.
+   - Audit sort columns were already whitelisted.
+   - Audit distinct-filter columns now also use an explicit whitelist.
+
+9. Common state-changing GET links converted to POST forms.
+   - Logout now uses POST with CSRF.
+   - User enable / disable / password-reset actions use POST.
+   - PLC, machine, family, parameter, engineering-unit enable / disable actions
+     use POST.
+   - Recipe status change, version restore, and snapshot/create-version actions
+     use POST.
+
+10. Request and upload size limits added.
+    - Flask MAX_CONTENT_LENGTH is configured from CRS_MAX_UPLOAD_MB.
+    - Default upload limit is 25 MB.
+    - Pending Excel-import storage uses the same size limit.
+
+11. Active template scan completed for unsafe state-changing links.
+    - Active CRS templates no longer contain direct href links to the hardened
+      disable / enable / logout / status / restore / create-version endpoints.
+
+Required Deployment Environment Variables
+-----------------------------------------
+Minimum recommended production values:
+
+CRS_DEPLOYMENT_MODE=production
+CRS_SECRET_KEY=<long-random-secret-at-least-32-bytes>
+CRS_FLASK_DEBUG=0
+CRS_FLASK_RELOAD=0
+CRS_COOKIE_SECURE=1
+CRS_SESSION_COOKIE_SAMESITE=Strict
+CRS_TRUST_PROXY_HEADERS=0
+CRS_MAX_UPLOAD_MB=25
+
+Set CRS_TRUST_PROXY_HEADERS=1 only when CRS is behind a trusted reverse proxy
+that strips untrusted X-Forwarded-* headers from browser clients.
+
+Completed Checks In This Pass
+-----------------------------
+1. Active template unsafe-link scan.
+   Result: no active CRS template hrefs were found for logout, disable, enable,
+   status, restore-version, or create-version actions.
+
+2. SQL injection pattern scan.
+   Result: no direct route request input was found being concatenated into SQL.
+   Remaining dynamic SQL patterns are maintenance-style uses such as PRAGMA,
+   internal column lists, and parameter placeholder lists. These must remain
+   whitelist/internal-only.
+
+3. CSRF coverage spot-check.
+   Result: base template provides the CSRF token, main.js attaches it to forms
+   and same-origin unsafe fetch calls, and key login/logout/admin forms include
+   token handling.
+
+Still Required Before Plant Production
+--------------------------------------
+1. Run a route-level authorization review.
+   Every POST route must check role permissions server-side, not only hide UI
+   buttons.
+
+2. Use HTTPS for plant browser clients.
+   HTTP is acceptable only for isolated local development. Production should
+   use HTTPS through Waitress + reverse proxy or an equivalent approved setup.
+
+3. Configure Windows service recovery.
+   CRS should run under a low-privilege Windows service account with restart
+   policy and log rotation.
+
+4. Complete database backup/recovery SOP.
+   Backup must be automatic and tested with restore drills before production.
+
+5. Perform dependency review.
+   Pin Python package versions, keep a local approved package cache, and scan
+   dependencies before plant deployment.
+
+6. PLC network segmentation.
+   CRS workstation should access only required PLC IPs and database ports.
+   Browser clients should never have direct PLC write access.
+
+7. Independent security test.
+    Test SQL injection, CSRF, brute-force login, upload abuse, role bypass,
+    session timeout, and direct URL access before final release.
+
+8. Confirm upload extension and workbook validation on plant data.
+   Size limits are implemented, but each import path must continue validating
+   the workbook structure, sheet names, data ranges, machine/stage ownership,
+   and safe pending-storage location.
+
+9. Validate Python runtime and package integrity.
+   The local Python virtual environment must be repaired before dependency
+   audit and runtime tests can be completed.
+
+Anti-Phishing And Operator Trust Controls
+-----------------------------------------
+Phishing cannot be solved by Flask code alone. Use these plant controls:
+
+1. Use one official CRS hostname, not raw IPs, for production.
+   Example: crs-limda.apollotyres.local
+
+2. Use HTTPS with a trusted plant certificate.
+   Operators should be trained that CRS is valid only when the browser shows
+   the correct hostname and valid certificate.
+
+3. Do not allow CRS to be opened through public internet links.
+   Limit access to the plant intranet or VPN.
+
+4. Keep a consistent branded login page.
+   The login screen already uses Apollo CRS branding. Do not accept alternate
+   login pages or copied external forms.
+
+5. Use browser bookmarks or intranet launch links for operators.
+   Avoid asking users to type links manually.
+
+6. Audit suspicious login attempts.
+   Login throttling is implemented in memory. For multi-process deployment,
+   add reverse-proxy rate limiting or persistent rate-limit storage.
+
+Deployment Boundary
+-------------------
+CRS is hardened against common web mistakes, but no system is hacking-proof.
+Safe deployment still depends on:
+
+- trusted plant network design,
+- HTTPS and certificate management,
+- least-privilege Windows service account,
+- least-privilege database account,
+- firewall rules,
+- tested backups,
+- role-based access testing,
+- dependency patching,
+- operator training,
+- and PLC write-permission discipline.
+
+Important Safety Boundary
+-------------------------
+No CRS page should claim a PLC download, upload, restore, or save is complete
+unless the backend operation history and audit trail show success.

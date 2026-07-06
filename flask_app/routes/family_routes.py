@@ -111,7 +111,8 @@ def register_family_routes(
         )
 
     @app.route(
-        "/families/disable/<int:family_id>"
+        "/families/disable/<int:family_id>",
+        methods=["POST"]
     )
     def disable_family(
 
@@ -144,7 +145,8 @@ def register_family_routes(
         return redirect("/families")
 
     @app.route(
-        "/families/enable/<int:family_id>"
+        "/families/enable/<int:family_id>",
+        methods=["POST"]
     )
     def enable_family(
 

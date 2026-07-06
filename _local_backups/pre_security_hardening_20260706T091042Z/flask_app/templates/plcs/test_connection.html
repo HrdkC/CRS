@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}
+PLC Connection Test
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">PLC Test</span>
+            <h1>PLC Connection Test</h1>
+            <p>
+                {{ plc.plc_name }}
+                <span>|</span>
+                {{ plc.ip_address }}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/plcs" class="crs-btn crs-btn-soft">Back To PLCs</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">PLC</span>
+            <strong class="metric-text">{{ plc.plc_name }}</strong>
+            <small>Controller record</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">IP Address</span>
+            <strong class="metric-text">{{ plc.ip_address }}</strong>
+            <small>Network endpoint</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong class="metric-text">{{ status }}</strong>
+            <small>Connection result</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Protocol</span>
+            <strong class="metric-text">EtherNet/IP</strong>
+            <small>ControlLogix connectivity</small>
+        </div>
+    </div>
+
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Test Result</span>
+            {% if status and "OK" in status %}
+            <span class="status-badge status-success">OK</span>
+            {% else %}
+            <span class="status-badge status-info">{{ status }}</span>
+            {% endif %}
+        </div>
+        <p class="muted-text">
+            Use Verify for processor, firmware, program, and serial-number checks.
+        </p>
+    </div>
+
+</section>
+
+{% endblock %}

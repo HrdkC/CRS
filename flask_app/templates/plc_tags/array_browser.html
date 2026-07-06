@@ -122,9 +122,15 @@ Array Browser
                             <div class="row-actions">
                                 {% if row.status == "MAPPED" %}
                                 <a href="/parameters/edit/{{ row.parameter.id }}" class="row-action primary">View</a>
-                                <a href="/parameters/disable/{{ row.parameter.id }}" class="row-action danger">Disable</a>
+                                <form method="POST" action="/parameters/disable/{{ row.parameter.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action danger">Disable</button>
+                                </form>
                                 {% elif row.status == "DISABLED" %}
-                                <a href="/parameters/enable/{{ row.parameter.id }}" class="row-action success">Enable</a>
+                                <form method="POST" action="/parameters/enable/{{ row.parameter.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action success">Enable</button>
+                                </form>
                                 {% else %}
                                 <a href="/parameters/create-from-array/{{ tag.id }}/{{ row.index }}" class="row-action primary">Create</a>
                                 {% endif %}

@@ -1,0 +1,33 @@
+Priority 11 - Auto Logout UI / Seconds / Confirm Fix
+====================================================
+
+Purpose
+-------
+This fix resolves three GUI issues found during Priority 11 testing:
+
+1. Login-attempt alert cards could visually crowd the fixed header area.
+2. Browser Close Grace needed to be clearly shown and saved in seconds only.
+3. The browser confirmation dialog on Auto Logout Settings appeared when clicking inside the form instead of only when pressing Save.
+
+Changes
+-------
+- JavaScript confirm framework now handles form[data-confirm] only on submit.
+- Clicking inside Auto Logout Time, Browser Close Grace, or Change Reason fields no longer triggers the confirm dialog.
+- The confirm dialog appears once only when Save Auto Logout Settings is submitted.
+- Browser Close Grace label and helper text now clearly state seconds everywhere.
+- Auto Logout Settings POST route now saves both:
+  - idle timeout in minutes
+  - browser-close grace in seconds
+- Audit history records both values in one SESSION_TIMEOUT_UPDATED event.
+- Login-attempt alert cards are kept inside main content flow below the fixed header.
+- Alert acknowledge form styling is reset so it does not inherit large global form styles.
+
+Validation
+----------
+1. Open /auto-logout-settings.
+2. Click inside all input fields: no confirm dialog should appear.
+3. Press Save Auto Logout Settings: confirm dialog appears once.
+4. Set Browser Close Grace to 60; after save, page shows 60 sec.
+5. Trigger same-username login attempt; alert cards should appear below header without overlap.
+6. Acknowledge alert; dashboard should remain open and card should disappear.
+

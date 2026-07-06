@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}
+Import Legacy PLCs
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">PLC Import</span>
+            <h1>Import Legacy PLCs</h1>
+            <p>Preview legacy PLC records before writing them into the machine-stage PLC registry.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/plcs" class="crs-btn crs-btn-soft">Back To PLCs</a>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Import Error</span>
+            <span class="status-badge status-danger">Error</span>
+        </div>
+        <p>{{ error }}</p>
+    </div>
+    {% endif %}
+
+    {% if result %}
+    <div class="metric-grid">
+        <div class="metric-card"><span class="metric-label">Imported</span><strong>{{ result.imported }}</strong><small>PLC rows created</small></div>
+        <div class="metric-card"><span class="metric-label">Skipped</span><strong>{{ result.skipped }}</strong><small>Rows not imported</small></div>
+        <div class="metric-card"><span class="metric-label">Machines</span><strong>{{ result.created_machines }}</strong><small>Machines created</small></div>
+        <div class="metric-card"><span class="metric-label">Stages</span><strong>{{ result.created_stages }}</strong><small>Stages created</small></div>
+    </div>
+    {% endif %}
+
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Import Options</span>
+            <span class="status-badge status-info">Preview First</span>
+        </div>
+
+        <form method="POST" class="import-options-form">
+            <label>
+                <span>KM Suffix Stage</span>
+                <select name="km_stage">
+                    <option value="FIRST_STAGE" {% if form.get("km_stage", "FIRST_STAGE") == "FIRST_STAGE" %}selected{% endif %}>FIRST_STAGE</option>
+                    <option value="SECOND_STAGE" {% if form.get("km_stage") == "SECOND_STAGE" %}selected{% endif %}>SECOND_STAGE</option>
+                </select>
+            </label>
+
+            <label>
+                <span>PU Suffix Stage</span>
+                <select name="pu_stage">
+                    <option value="SECOND_STAGE" {% if form.get("pu_stage", "SECOND_STAGE") == "SECOND_STAGE" %}selected{% endif %}>SECOND_STAGE</option>
+                    <option value="FIRST_STAGE" {% if form.get("pu_stage") == "FIRST_STAGE" %}selected{% endif %}>FIRST_STAGE</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Default Family</span>
+                <select name="default_family_id">
+                    <option value="">Select Family</option>
+                    {% for family in families %}
+                    <option value="{{ family.id }}" {% if form.get("default_family_id") == family.id|string %}selected{% endif %}>
+                        {{ family.family_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>
+                <span>Reason</span>
+                <input
+                    type="text"
+                    name="reason"
+                    value="{{ form.get('reason', '') }}"
+                    required
+                    placeholder="Reason for PLC import"
+                >
+            </label>
+
+            <label class="checkbox-tile">
+                <input
+                    type="checkbox"
+                    name="create_missing_machines"
+                    value="1"
+                    {% if form.get("create_missing_machines") == "1" %}checked{% endif %}
+                >
+                <span>Create Missing Machines</span>
+            </label>
+
+            <label class="checkbox-tile">
+                <input
+                    type="checkbox"
+                    name="create_missing_stages"
+                    value="1"
+                    {% if form.get("create_missing_stages", "1") == "1" %}checked{% endif %}
+                >
+                <span>Create Missing Stages</span>
+            </label>
+
+            <div class="form-action-row">
+                <button type="submit" name="action_type" value="preview" class="crs-btn crs-btn-primary">
+                    Preview Import
+                </button>
+                <button type="submit" name="action_type" value="import" class="crs-btn crs-btn-success">
+                    Import Previewed PLCs
+                </button>
+                <a href="/plcs" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    {% if preview %}
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Import Preview</span>
+                <p>Review every row before committing import changes.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>PLC Name</th>
+                        <th>IP Address</th>
+                        <th>Machine</th>
+                        <th>Suffix</th>
+                        <th>Stage</th>
+                        <th>Status</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in preview %}
+                    <tr>
+                        <td><strong>{{ item.plc_name }}</strong></td>
+                        <td>{{ item.ip_address }}</td>
+                        <td>{{ item.machine_code }}</td>
+                        <td>{{ item.suffix }}</td>
+                        <td>{{ item.stage_type }}</td>
+                        <td><span class="status-badge status-neutral">{{ item.status }}</span></td>
+                        <td>{{ item.message }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

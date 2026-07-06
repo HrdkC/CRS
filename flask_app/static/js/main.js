@@ -6,6 +6,7 @@
     "use strict";
 
     document.addEventListener("DOMContentLoaded", function () {
+        CRS.security.init();
         CRS.flash.init();
         CRS.confirm.init();
         CRS.dropdown.init();
@@ -35,6 +36,77 @@
             const minutes = Math.floor(safeTotal / 60);
             const seconds = safeTotal % 60;
             return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+        }
+    };
+
+    CRS.security = {
+        init() {
+            this.patchForms();
+            this.patchFetch();
+        },
+
+        token() {
+            const meta = CRS.util.qs('meta[name="csrf-token"]');
+            return meta ? meta.getAttribute("content") || "" : "";
+        },
+
+        isUnsafeMethod(method) {
+            return ["POST", "PUT", "PATCH", "DELETE"].indexOf(String(method || "GET").toUpperCase()) !== -1;
+        },
+
+        isSameOrigin(url) {
+            try {
+                const parsed = new URL(url, window.location.href);
+                return parsed.origin === window.location.origin;
+            } catch (error) {
+                return false;
+            }
+        },
+
+        appendFormToken(form) {
+            if (!form || !this.isUnsafeMethod(form.getAttribute("method"))) return;
+            if (form.querySelector('input[name="_csrf_token"]')) return;
+
+            const token = this.token();
+            if (!token) return;
+
+            const hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.name = "_csrf_token";
+            hidden.value = token;
+            form.appendChild(hidden);
+        },
+
+        patchForms() {
+            document.addEventListener("submit", function (event) {
+                CRS.security.appendFormToken(event.target);
+            }, true);
+        },
+
+        patchFetch() {
+            if (!window.fetch || window.fetch._crsCsrfPatched) return;
+
+            const originalFetch = window.fetch.bind(window);
+
+            window.fetch = function (input, init) {
+                const options = init ? Object.assign({}, init) : {};
+                const inputMethod = input && input.method ? input.method : "GET";
+                const method = (options.method || inputMethod || "GET").toUpperCase();
+                const inputUrl = input && input.url ? input.url : input;
+
+                if (CRS.security.isUnsafeMethod(method) && CRS.security.isSameOrigin(inputUrl)) {
+                    const token = CRS.security.token();
+                    if (token) {
+                        const headers = new Headers(options.headers || (input && input.headers ? input.headers : undefined));
+                        headers.set("X-CSRFToken", token);
+                        options.headers = headers;
+                    }
+                }
+
+                return originalFetch(input, options);
+            };
+
+            window.fetch._crsCsrfPatched = true;
         }
     };
 
@@ -361,6 +433,7 @@
                 const payload = new FormData();
                 payload.append("lock_id", lockId);
                 payload.append("reason", reason || "PAGE_UNLOAD");
+                payload.append("_csrf_token", CRS.security.token());
 
                 if (navigator.sendBeacon) {
                     try {

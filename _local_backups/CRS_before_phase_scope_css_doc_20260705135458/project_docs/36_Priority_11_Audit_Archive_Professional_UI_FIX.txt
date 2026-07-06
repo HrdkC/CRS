@@ -1,0 +1,21 @@
+Priority 11 - Audit Archive Professional UI Fix
+
+Purpose:
+- Replace congested Audit Archive / Export page with a professional, compact, resource-friendly layout.
+- Keep existing backend route and form field names unchanged.
+
+Changes:
+- Professional hero header and KPI cards.
+- Two-column layout: operation form + operation guide.
+- Short helper text instead of long congested paragraphs.
+- Scoped page CSS inside audit_archive.html to avoid breaking global site styling.
+- Dynamic control enable/disable based on selected action.
+- Professional scrollable tables for archive records and export jobs.
+- Clear terminology for download vs approved server path.
+
+Test:
+- Open /audit-archive as ADMIN.
+- Confirm page is readable and not congested.
+- Test Download active audit Excel to this computer.
+- Test Save active audit Excel to approved server path.
+- Test Archive old audit records.

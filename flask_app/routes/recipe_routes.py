@@ -650,7 +650,8 @@ def register_recipe_routes(app):
         )
     
     @app.route(
-        "/recipes/<recipe_code>/create-version"
+        "/recipes/<recipe_code>/create-version",
+        methods=["POST"]
     )
     def create_recipe_version(
         recipe_code
@@ -1551,7 +1552,8 @@ def register_recipe_routes(app):
         )
     
     @app.route(
-        "/engineering-units/<int:unit_id>/disable"
+        "/engineering-units/<int:unit_id>/disable",
+        methods=["POST"]
     )
     def disable_engineering_unit(
         unit_id
@@ -1589,7 +1591,8 @@ def register_recipe_routes(app):
         )
     
     @app.route(
-        "/engineering-units/<int:unit_id>/enable"
+        "/engineering-units/<int:unit_id>/enable",
+        methods=["POST"]
     )
     def enable_engineering_unit(
         unit_id

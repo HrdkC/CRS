@@ -1,0 +1,524 @@
+/* =====================================================
+   Apollo CRS - Professional UI Runtime
+   Version: Priority 11.5 Stabilized
+   ===================================================== */
+(function () {
+    "use strict";
+
+    document.addEventListener("DOMContentLoaded", function () {
+        CRS.flash.init();
+        CRS.confirm.init();
+        CRS.dropdown.init();
+        CRS.navigation.init();
+        CRS.cards.init();
+        CRS.tables.init();
+        CRS.loginAlerts.init();
+        CRS.recipeEditLock.init();
+        CRS.session.init();
+    });
+
+    const CRS = window.CRS = window.CRS || {};
+
+    CRS.util = {
+        qs(selector, root) {
+            return (root || document).querySelector(selector);
+        },
+        qsa(selector, root) {
+            return Array.prototype.slice.call((root || document).querySelectorAll(selector));
+        },
+        isJsonResponse(response) {
+            const type = response.headers.get("content-type") || "";
+            return type.indexOf("application/json") !== -1;
+        },
+        formatSeconds(totalSeconds) {
+            const safeTotal = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+            const minutes = Math.floor(safeTotal / 60);
+            const seconds = safeTotal % 60;
+            return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+        }
+    };
+
+    CRS.flash = {
+        init() {
+            CRS.util.qsa(".flash-message").forEach(function (message) {
+                const sticky = message.dataset.sticky === "1";
+                if (sticky) return;
+                setTimeout(function () {
+                    message.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+                    message.style.opacity = "0";
+                    message.style.transform = "translateY(-4px)";
+                    setTimeout(function () { message.remove(); }, 380);
+                }, 4500);
+            });
+        }
+    };
+
+    CRS.confirm = {
+        init() {
+            const confirmedForms = new WeakSet();
+
+            CRS.util.qsa("form[data-confirm]").forEach(function (form) {
+                form.addEventListener("submit", function (event) {
+                    if (confirmedForms.has(form)) return;
+                    const message = form.getAttribute("data-confirm");
+                    if (message && !window.confirm(message)) {
+                        event.preventDefault();
+                        return;
+                    }
+                    confirmedForms.add(form);
+                });
+            });
+
+            CRS.util.qsa("a[data-confirm], button[data-confirm]").forEach(function (element) {
+                const parentForm = element.closest("form[data-confirm]");
+                if (parentForm && (element.type || "").toLowerCase() === "submit") return;
+
+                element.addEventListener("click", function (event) {
+                    const message = element.getAttribute("data-confirm");
+                    if (message && !window.confirm(message)) {
+                        event.preventDefault();
+                    }
+                });
+            });
+        }
+    };
+
+    CRS.dropdown = {
+        init() {
+            CRS.util.qsa(".dropdown").forEach(function (dropdown) {
+                let closeTimer = null;
+
+                dropdown.addEventListener("mouseenter", function () {
+                    if (closeTimer) clearTimeout(closeTimer);
+                    dropdown.classList.add("dropdown-open");
+                });
+
+                dropdown.addEventListener("mouseleave", function () {
+                    closeTimer = setTimeout(function () {
+                        dropdown.classList.remove("dropdown-open");
+                    }, 500);
+                });
+
+                const trigger = dropdown.querySelector("a");
+                if (trigger) {
+                    trigger.addEventListener("click", function (event) {
+                        if (trigger.getAttribute("href") === "#") {
+                            event.preventDefault();
+                            dropdown.classList.toggle("dropdown-open");
+                        }
+                    });
+                }
+            });
+
+            document.addEventListener("click", function (event) {
+                if (event.target.closest(".dropdown")) return;
+                CRS.util.qsa(".dropdown.dropdown-open").forEach(function (dropdown) {
+                    dropdown.classList.remove("dropdown-open");
+                });
+            });
+        }
+    };
+
+    CRS.navigation = {
+        init() {
+            CRS.util.qsa(".nav-back-button").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const fallback = button.getAttribute("data-back-fallback") || "/";
+                    const referrer = document.referrer || "";
+                    const sameOrigin = referrer.indexOf(window.location.origin) === 0;
+
+                    if (window.history.length > 1 && sameOrigin) {
+                        window.history.back();
+                        return;
+                    }
+
+                    window.location.href = fallback;
+                });
+            });
+        }
+    };
+
+    CRS.cards = {
+        init() {
+            CRS.util.qsa(".dashboard-card").forEach(function (card, index) {
+                card.style.opacity = "0";
+                card.style.transform = "translateY(10px)";
+                setTimeout(function () {
+                    card.style.transition = "opacity 0.25s ease, transform 0.25s ease";
+                    card.style.opacity = "1";
+                    card.style.transform = "translateY(0)";
+                }, Math.min(index * 50, 400));
+            });
+        }
+    };
+
+    CRS.tables = {
+        init() {
+            CRS.util.qsa("table").forEach(function (table) {
+                if (table.dataset.clientSortReady === "1" || table.classList.contains("no-client-sort")) return;
+
+                const headerRow = table.tHead ? table.tHead.rows[0] : table.querySelector("tr");
+                const body = table.tBodies && table.tBodies.length ? table.tBodies[0] : null;
+                if (!headerRow || !body || body.rows.length < 2) return;
+
+                table.dataset.clientSortReady = "1";
+                table.classList.add("client-sort-table");
+
+                CRS.util.qsa("th", headerRow).forEach(function (th, columnIndex) {
+                    if (th.colSpan && th.colSpan > 1) return;
+                    if (th.querySelector("a, button, input, select")) {
+                        th.classList.add("client-sort-existing-control");
+                        return;
+                    }
+
+                    const label = th.textContent.trim();
+                    if (!label) return;
+
+                    th.textContent = "";
+                    const button = document.createElement("button");
+                    const labelSpan = document.createElement("span");
+                    const icon = document.createElement("b");
+                    button.type = "button";
+                    button.className = "client-sort-button";
+                    button.title = "Sort by " + label;
+                    labelSpan.textContent = label;
+                    icon.setAttribute("aria-hidden", "true");
+                    icon.textContent = "↕";
+                    button.appendChild(labelSpan);
+                    button.appendChild(icon);
+                    button.addEventListener("click", function () {
+                        CRS.tables.sort(table, columnIndex, button);
+                    });
+
+                    th.appendChild(button);
+                });
+            });
+        },
+
+        cellText(row, columnIndex) {
+            const cell = row.cells[columnIndex];
+            if (!cell) return "";
+            return (cell.getAttribute("data-sort-value") || cell.textContent || "").trim();
+        },
+
+        compareValues(a, b) {
+            const numericA = Number(String(a).replace(/,/g, ""));
+            const numericB = Number(String(b).replace(/,/g, ""));
+            const bothNumeric = a !== "" && b !== "" && !Number.isNaN(numericA) && !Number.isNaN(numericB);
+
+            if (bothNumeric) return numericA - numericB;
+            return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: "base" });
+        },
+
+        sort(table, columnIndex, button) {
+            const body = table.tBodies[0];
+            const currentDirection = button.getAttribute("data-sort-direction") || "none";
+            const nextDirection = currentDirection === "asc" ? "desc" : "asc";
+            const rows = Array.prototype.slice.call(body.rows);
+
+            rows.sort(function (rowA, rowB) {
+                const result = CRS.tables.compareValues(
+                    CRS.tables.cellText(rowA, columnIndex),
+                    CRS.tables.cellText(rowB, columnIndex)
+                );
+                return nextDirection === "asc" ? result : -result;
+            });
+
+            rows.forEach(function (row) { body.appendChild(row); });
+
+            CRS.util.qsa(".client-sort-button", table).forEach(function (otherButton) {
+                otherButton.removeAttribute("data-sort-direction");
+                const icon = otherButton.querySelector("b");
+                if (icon) icon.textContent = "↕";
+            });
+
+            button.setAttribute("data-sort-direction", nextDirection);
+            const icon = button.querySelector("b");
+            if (icon) icon.textContent = nextDirection === "asc" ? "↑" : "↓";
+        }
+    };
+
+    CRS.loginAlerts = {
+        init() {
+            document.addEventListener("submit", async function (event) {
+                const form = event.target;
+                if (!form || !form.classList || !form.classList.contains("login-attempt-alert-form")) return;
+
+                event.preventDefault();
+                await CRS.loginAlerts.acknowledge(form);
+            });
+        },
+
+        async acknowledge(form) {
+            const alertCard = form.closest(".login-attempt-alert");
+            const button = form.querySelector("button[type='submit']");
+            const originalText = button ? button.textContent : "";
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = "Acknowledging...";
+            }
+
+            try {
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+
+                const payload = await (CRS.util.isJsonResponse(response) ? response.json() : Promise.resolve({}));
+
+                if (response.status === 401 || payload.redirect) {
+                    window.location.href = payload.redirect || "/login";
+                    return;
+                }
+
+                if (!response.ok || !payload.ok) {
+                    if (button) {
+                        button.disabled = false;
+                        button.textContent = originalText || "Acknowledge";
+                    }
+                    return;
+                }
+
+                if (alertCard) {
+                    alertCard.style.transition = "opacity 0.18s ease, transform 0.18s ease";
+                    alertCard.style.opacity = "0";
+                    alertCard.style.transform = "translateY(-5px)";
+                    setTimeout(function () { alertCard.remove(); }, 220);
+                }
+            } catch (error) {
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = originalText || "Acknowledge";
+                }
+            }
+        },
+
+        show(alerts) {
+            if (!alerts || !alerts.length) return;
+
+            let stack = CRS.util.qs(".login-attempt-alert-stack");
+            if (!stack) {
+                stack = document.createElement("div");
+                stack.className = "login-attempt-alert-stack";
+                const main = CRS.util.qs(".main-container");
+                if (main) main.prepend(stack);
+                else document.body.appendChild(stack);
+            }
+
+            alerts.forEach(function (alert) {
+                if (document.querySelector('[data-login-alert-id="' + alert.id + '"]')) return;
+
+                const workstation = alert.attempted_workstation_name || "Unknown workstation";
+                const clientIp = alert.attempted_client_ip || "-";
+                const attemptedAt = alert.last_attempted_at || alert.attempted_at || "";
+                const attemptCount = parseInt(alert.attempt_count || "1", 10);
+                const attemptBadge = attemptCount > 1
+                    ? ' <span class="status-badge status-warning">' + attemptCount + ' attempts</span>'
+                    : '';
+
+                const item = document.createElement("div");
+                item.className = "login-attempt-alert";
+                item.setAttribute("role", "alert");
+                item.setAttribute("data-login-alert-id", alert.id);
+                item.innerHTML =
+                    '<div class="login-attempt-alert-icon">⚠</div>' +
+                    '<div class="login-attempt-alert-body">' +
+                        '<strong>Another workstation tried to login with your username</strong>' +
+                        '<div>Attempted from <b>' + workstation + '</b> / IP <b>' + clientIp + '</b> at ' + attemptedAt + '.' + attemptBadge + '</div>' +
+                        '<div class="login-attempt-alert-meta">Your active CRS session remains protected. Finish your work and logout when ready.</div>' +
+                    '</div>' +
+                    '<form method="POST" action="/login-attempt-alerts/' + alert.id + '/ack" class="login-attempt-alert-form">' +
+                        '<button type="submit" class="btn btn-secondary btn-sm">Acknowledge</button>' +
+                    '</form>';
+
+                stack.prepend(item);
+            });
+        }
+    };
+
+
+    CRS.recipeEditLock = {
+        init() {
+            const page = CRS.util.qs(".recipe-edit-lock-page[data-edit-lock-release-url]");
+            if (!page) return;
+
+            const releaseUrl = page.getAttribute("data-edit-lock-release-url");
+            const lockId = page.getAttribute("data-edit-lock-id") || "";
+            let normalSubmitInProgress = false;
+            let released = false;
+
+            CRS.util.qsa(".recipe-edit-save-form, .recipe-edit-release-form", page).forEach(function (form) {
+                form.addEventListener("submit", function () {
+                    normalSubmitInProgress = true;
+                });
+            });
+
+            function releaseLock(reason) {
+                if (released || normalSubmitInProgress || !releaseUrl) return;
+                released = true;
+
+                const payload = new FormData();
+                payload.append("lock_id", lockId);
+                payload.append("reason", reason || "PAGE_UNLOAD");
+
+                if (navigator.sendBeacon) {
+                    try {
+                        navigator.sendBeacon(releaseUrl, payload);
+                        return;
+                    } catch (error) {
+                        // Fall through to fetch keepalive.
+                    }
+                }
+
+                try {
+                    fetch(releaseUrl, {
+                        method: "POST",
+                        body: payload,
+                        keepalive: true,
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    });
+                } catch (error) {
+                    // Server-side expiry still protects plant operation.
+                }
+            }
+
+            window.addEventListener("pagehide", function () {
+                releaseLock("PAGE_HIDE");
+            });
+
+            document.addEventListener("visibilitychange", function () {
+                if (document.visibilityState === "hidden") {
+                    releaseLock("PAGE_HIDDEN");
+                }
+            });
+        }
+    };
+
+    CRS.session = {
+        init() {
+            const countdown = CRS.util.qs("#session-countdown");
+            if (!countdown) return;
+
+            const countdownValue = CRS.util.qs("#session-countdown-value");
+            const settingsPreview = CRS.util.qs("#session-settings-countdown");
+            let timeoutSeconds = parseInt(countdown.getAttribute("data-timeout-seconds") || "1800", 10);
+            let lastActivityEpoch = parseInt(countdown.getAttribute("data-last-activity-epoch") || "0", 10);
+            if (!lastActivityEpoch) lastActivityEpoch = Math.floor(Date.now() / 1000);
+
+            let deadlineEpoch = lastActivityEpoch + timeoutSeconds;
+            let lastHeartbeatMs = 0;
+            let userActivitySinceHeartbeat = false;
+            let expireInProgress = false;
+            const heartbeatIntervalMs = 15000;
+
+            function render() {
+                const remaining = deadlineEpoch - Math.floor(Date.now() / 1000);
+                const display = CRS.util.formatSeconds(remaining);
+
+                if (countdownValue) countdownValue.textContent = display;
+                if (settingsPreview) settingsPreview.textContent = display;
+
+                countdown.classList.remove("session-countdown-warning", "session-countdown-danger");
+                if (remaining <= 60) countdown.classList.add("session-countdown-danger");
+                else if (remaining <= 180) countdown.classList.add("session-countdown-warning");
+
+                if (remaining <= 0 && !expireInProgress) {
+                    expireInProgress = true;
+                    expireFromClientTimer();
+                }
+            }
+
+            async function heartbeat(forceActivity) {
+                const nowMs = Date.now();
+                if (!forceActivity && nowMs - lastHeartbeatMs < heartbeatIntervalMs) return;
+
+                lastHeartbeatMs = nowMs;
+                const hadUserActivity = Boolean(forceActivity || userActivitySinceHeartbeat);
+                userActivitySinceHeartbeat = false;
+
+                try {
+                    const response = await fetch("/session-heartbeat", {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest",
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ user_activity: hadUserActivity })
+                    });
+
+                    if (!response.ok) {
+                        window.location.href = "/login";
+                        return;
+                    }
+
+                    const payload = await response.json();
+                    if (!payload.ok) {
+                        window.location.href = payload.redirect || "/login";
+                        return;
+                    }
+
+                    timeoutSeconds = parseInt(payload.timeout_seconds || timeoutSeconds, 10);
+                    lastActivityEpoch = parseInt(payload.last_activity_epoch || lastActivityEpoch, 10);
+                    deadlineEpoch = lastActivityEpoch + timeoutSeconds;
+                    countdown.setAttribute("data-timeout-seconds", String(timeoutSeconds));
+                    countdown.setAttribute("data-last-activity-epoch", String(lastActivityEpoch));
+
+                    if (payload.login_attempt_alerts) CRS.loginAlerts.show(payload.login_attempt_alerts);
+                    render();
+                } catch (error) {
+                    // Server remains the source of truth on the next successful request.
+                }
+            }
+
+            async function expireFromClientTimer() {
+                if (countdownValue) countdownValue.textContent = "00:00";
+                try {
+                    await fetch("/session-auto-expire", {
+                        method: "POST",
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    });
+                } catch (error) {
+                    // Redirect still protects the UI.
+                }
+                window.location.href = "/login";
+            }
+
+            function markActivity() {
+                userActivitySinceHeartbeat = true;
+            }
+
+            ["click", "keydown", "input", "change", "scroll", "touchstart", "pointerdown"].forEach(function (eventName) {
+                document.addEventListener(eventName, markActivity, { passive: true });
+            });
+
+            setInterval(function () { heartbeat(false); }, heartbeatIntervalMs);
+            setInterval(function () {
+                render();
+                if (userActivitySinceHeartbeat) heartbeat(true);
+            }, 1000);
+
+            heartbeat(false);
+            render();
+        }
+    };
+
+    CRS.loading = {
+        show(message) {
+            if (CRS.util.qs("#loading-overlay")) return;
+            const overlay = document.createElement("div");
+            overlay.id = "loading-overlay";
+            overlay.className = "operation-lock-overlay";
+            overlay.style.display = "grid";
+            overlay.innerHTML = '<div class="operation-lock-card"><div class="operation-lock-title">' + (message || "Loading...") + '</div></div>';
+            document.body.appendChild(overlay);
+        },
+        hide() {
+            const overlay = CRS.util.qs("#loading-overlay");
+            if (overlay) overlay.remove();
+        }
+    };
+
+    window.showLoading = CRS.loading.show;
+    window.hideLoading = CRS.loading.hide;
+})();

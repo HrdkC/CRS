@@ -1,0 +1,30 @@
+CRS V6.10 Recipe Import Target + Identity Override Fix
+
+Purpose:
+- Fix Recipe Import Preview blocking when Recipe_Info sheet has blank Recipe Code / Recipe Name.
+- Add web form fields for New Recipe Code / GT Code and New Recipe Name.
+- Make Target Machine / Stage required on import page.
+- Web-selected target has priority over hidden Machine ID / Stage ID in Excel.
+- Supports CRS blank templates and legacy plant Excel import by selected target.
+- Keeps PLC Index / Tag Index as fixed mapping; import maps by Tag Index and does not edit PLC index.
+- Second Stage preview now displays expected 18 phase-control lines instead of 12.
+
+Changed files:
+- database/recipe_excel_import_export_manager.py
+- flask_app/routes/recipe_routes.py
+- flask_app/templates/recipes/recipe_import_export.html
+
+Apply:
+cd C:\Users\Administrator\Desktop\Centralized_Recipe_System
+Expand-Archive -Path .\CRS_V6.10_Recipe_Import_Target_Identity_Override_FIX_PATCH_ONLY_280626.zip -DestinationPath . -Force
+python scripts/clear_crs_pycache.py
+python app.py
+
+Test:
+1) Open /recipes/import-export
+2) Select file.
+3) Enter New Recipe Code / GT Code.
+4) Enter New Recipe Name.
+5) Select P15 / SECOND_STAGE.
+6) Preview Import.
+7) Confirm Import As Draft if preview passes.

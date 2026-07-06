@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Version
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Recipe Snapshot</span>
+            <h1>Create Recipe Version</h1>
+            <p>
+                {{ recipe.recipe_code }}
+                <span>|</span>
+                {{ recipe.recipe_name }}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipe-editor/{{ recipe.id }}" class="crs-btn crs-btn-soft">Cancel</a>
+        </div>
+    </div>
+
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Version Comment</span>
+            <span class="status-badge status-info">Audit</span>
+        </div>
+        <form method="POST" class="parameter-edit-form">
+            <label>
+                <span>Comment</span>
+                <input
+                    type="text"
+                    name="version_comment"
+                    required
+                    placeholder="Example: Changed turnup height and drum speed"
+                >
+            </label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Create Version</button>
+                <a href="/recipe-editor/{{ recipe.id }}" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</section>
+
+{% endblock %}

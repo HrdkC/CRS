@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}
+TBM Families
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+
+        <div class="workbench-title">
+
+            <span class="section-kicker">
+                Master Registry
+            </span>
+
+            <h1>
+                TBM Families
+            </h1>
+
+            <p>
+                PCR TBM family grouping for machine ownership and cloning reference.
+            </p>
+
+        </div>
+
+        <div class="workbench-actions">
+
+            {% if role_can("engineering_config") %}
+            <a
+                href="/families/create"
+                class="crs-btn crs-btn-primary"
+            >
+                Create Family
+            </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="metric-grid">
+
+        <div class="metric-card">
+            <span class="metric-label">Total Families</span>
+            <strong>{{ families|length }}</strong>
+            <small>Registered TBM families</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Active</span>
+            <strong>{{ families|selectattr("active", "equalto", 1)|list|length }}</strong>
+            <small>Available for configuration</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Disabled</span>
+            <strong>{{ families|rejectattr("active", "equalto", 1)|list|length }}</strong>
+            <small>Hidden from new use</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Owner</span>
+            <strong class="metric-text">Engineering</strong>
+            <small>Maintained as master data</small>
+        </div>
+
+    </div>
+
+    <div class="workbench-card data-workbench">
+
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Family Records</span>
+                <p>Use disable instead of delete to preserve recipe traceability.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+
+            <table class="professional-table registry-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Family Name</th>
+                        <th>Description</th>
+                        <th>Created By</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for family in families %}
+
+                    <tr>
+                        <td>
+                            <span class="tag-pill">{{ family.id }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ family.family_name }}</strong>
+                        </td>
+                        <td>{{ family.description }}</td>
+                        <td>{{ family.created_by }}</td>
+                        <td>
+                            {% if family.active == 1 %}
+                            <span class="status-badge status-success">Active</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                {% if family.active == 1 %}
+                                <a
+                                    href="/families/disable/{{ family.id }}"
+                                    class="row-action danger"
+                                >
+                                    Disable
+                                </a>
+                                {% else %}
+                                <a
+                                    href="/families/enable/{{ family.id }}"
+                                    class="row-action success"
+                                >
+                                    Enable
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            No TBM families configured.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

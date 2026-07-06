@@ -1,0 +1,52 @@
+Priority 11 Add-on: Auto Logout Separate Page + Audit Filters
+=============================================================
+
+Purpose
+-------
+Auto logout configuration has been moved out of Active Sessions and into a separate
+ADMIN-only page under the Administration menu:
+
+    /auto-logout-settings
+
+Active Sessions remains focused on active logins and force logout control:
+
+    /active-sessions
+
+Rules
+-----
+1. Only ADMIN super users can change auto logout time.
+2. Auto logout time remains visible to all logged-in users as a ticking header timer.
+3. Changes to auto logout time are logged in audit_log with action:
+
+    SESSION_TIMEOUT_UPDATED
+
+4. GUI auto logout expiry is logged with action:
+
+    AUTO_LOGOUT
+
+5. Audit History now includes filters for long-term usability:
+   - Date from
+   - Date to
+   - Username
+   - Role
+   - Action
+   - Source
+   - Keyword
+   - Limit
+
+Recommended GUI Test
+--------------------
+1. Login as admin or hardik.
+2. Open Administration -> Auto Logout Settings.
+3. Set Auto Logout Time to 1 minute with reason "Priority 11 GUI test".
+4. Confirm header countdown starts near 01:00.
+5. Wait for auto logout and confirm redirect to login.
+6. Login again and open Audit History.
+7. Filter Action = SESSION_TIMEOUT_UPDATED and confirm the change is visible.
+8. Filter Action = AUTO_LOGOUT and confirm timeout event is visible.
+9. Restore Auto Logout Time to plant value, usually 30 minutes.
+
+Safety Note
+-----------
+Use 1 minute only for testing. Restore the production timeout immediately after
+validation.

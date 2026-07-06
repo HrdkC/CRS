@@ -1,0 +1,24 @@
+CRS V6.18 - PLC Buffer Flow, Live Status, and Purpose Remap
+
+Scope:
+- Fix PLC buffer operation purpose lookup so saved PLC tags can be resolved by purpose or by configured/standard tag name fallback.
+- Correctly support CRS_Recipe_Data as CRS buffer and TEST_RECIPE_DATA as configurable PLC destination/running recipe tag.
+- Add live PLC interlock/handshake status display on recipe download/upload page.
+- Add PLC tag purpose remap section on Configuration Readiness page for correcting wrong saved tag-purpose mapping.
+- Compact PLC setup registry CSS for Full-HD 100% browser zoom.
+
+Notes:
+- CRS_Recipe_Data remains CRS buffer convention.
+- TEST_RECIPE_DATA can point to CRS_Test_Recipe_Data during testing or Running_Recipe_Data later.
+- Download flow remains CRS buffer -> PLC destination/running tag.
+- Upload flow remains PLC destination/running tag -> CRS buffer.
+- DOWNLOAD_COMPLETE may be found even if tag_purpose was accidentally blank, provided the tag name matches CRS_Download_Complete.
+
+Changed files:
+- database/plc_buffer_operation_manager.py
+- database/configuration_readiness_manager.py
+- flask_app/routes/configuration_routes.py
+- flask_app/routes/recipe_editor_routes.py
+- flask_app/templates/recipes/download_preparation.html
+- flask_app/templates/configuration/stage_readiness.html
+- flask_app/static/css/main.css

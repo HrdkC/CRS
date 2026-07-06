@@ -43,9 +43,9 @@ register_configuration_routes(app)
 
 
 if __name__ == "__main__":
-    # Debug mode is enabled by default for local CRS development.
-    # Set CRS_FLASK_DEBUG=0 before production deployment.
-    debug_enabled = os.getenv("CRS_FLASK_DEBUG", "1").strip().lower() in {
+    # Debug mode is OFF by default. Enable only on a local development PC with
+    # CRS_FLASK_DEBUG=1. Never expose the Flask debugger on the plant network.
+    debug_enabled = os.getenv("CRS_FLASK_DEBUG", "0").strip().lower() in {
         "1",
         "true",
         "yes",

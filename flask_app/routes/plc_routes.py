@@ -494,7 +494,7 @@ def register_plc_routes(app):
 
         return redirect(f"/plcs/verify/{plc_id}")
         
-    @app.route("/plcs/disable/<int:plc_id>")
+    @app.route("/plcs/disable/<int:plc_id>", methods=["POST"])
     def disable_plc(
 
         plc_id
@@ -513,7 +513,7 @@ def register_plc_routes(app):
             "/plcs"
         )
 
-    @app.route("/plcs/enable/<int:plc_id>")
+    @app.route("/plcs/enable/<int:plc_id>", methods=["POST"])
     def enable_plc(
 
         plc_id

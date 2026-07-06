@@ -76,6 +76,7 @@ Apollo CRS Login
         {% endif %}
 
         <form method="POST" autocomplete="off" class="corporate-login-form compact-login-form">
+            {{ csrf_input() }}
             <div class="login-field-stack">
                 <label for="username">Username</label>
                 <input

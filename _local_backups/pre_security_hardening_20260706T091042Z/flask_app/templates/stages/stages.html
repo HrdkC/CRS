@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}
+Stage Registry
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+
+        <div class="workbench-title">
+
+            <span class="section-kicker">
+                Stage Registry
+            </span>
+
+            <h1>
+                Stage Registry
+            </h1>
+
+            <p>
+                First-stage and second-stage configuration generated from machine registry rules.
+            </p>
+
+        </div>
+
+        <div class="workbench-actions">
+
+            <a
+                href="/machines"
+                class="crs-btn crs-btn-soft"
+            >
+                Machine Registry
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="metric-grid">
+
+        <div class="metric-card">
+            <span class="metric-label">Stages</span>
+            <strong>{{ stages|length }}</strong>
+            <small>Total machine stages</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Active</span>
+            <strong>{{ stages|selectattr("active", "equalto", 1)|list|length }}</strong>
+            <small>Available for recipes</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Disabled</span>
+            <strong>{{ stages|rejectattr("active", "equalto", 1)|list|length }}</strong>
+            <small>Retained for traceability</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Creation</span>
+            <strong class="metric-text">Automatic</strong>
+            <small>Created with each machine</small>
+        </div>
+
+    </div>
+
+    <div class="workbench-card data-workbench">
+
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Stage Records</span>
+                <p>Open a stage to view recipe records for that machine-stage pair.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+
+            <table class="professional-table registry-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Machine</th>
+                        <th>Stage Type</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for stage in stages %}
+
+                    <tr>
+                        <td>
+                            <span class="tag-pill">{{ stage.id }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ stage.machine_code }}</strong>
+                        </td>
+                        <td>
+                            {{ stage_url_code(stage.stage_type) }} {{ stage_display_name(stage.stage_type) }}
+                        </td>
+                        <td>{{ stage.description }}</td>
+                        <td>
+                            {% if stage.active == 1 %}
+                            <span class="status-badge status-success">Active</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <a
+                                    href="{{ machine_stage_url('/recipes', context=stage) }}"
+                                    class="row-action open"
+                                >
+                                    Open Recipes
+                                </a>
+                                <a
+                                    href="{{ machine_stage_url('/phase-controls', context=stage) }}"
+                                    class="row-action primary"
+                                >
+                                    Phase Master
+                                </a>
+                                <a
+                                    href="{{ machine_stage_url('/configuration', context=stage) }}"
+                                    class="row-action"
+                                >
+                                    Configuration
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            No machine stages configured.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

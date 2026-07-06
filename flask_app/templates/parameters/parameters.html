@@ -168,21 +168,27 @@ Recipe Parameters
                                     Edit
                                 </a>
                                 {% if parameter_used|int == 1 %}
-                                <a
-                                    href="/parameters/disable/{{ parameter.id }}"
-                                    class="row-action danger"
-                                    title="Mark this parameter Not Used for this machine/stage template. Existing recipe values remain stored."
-                                >
-                                    Not Used
-                                </a>
+                                <form method="POST" action="/parameters/disable/{{ parameter.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button
+                                        type="submit"
+                                        class="row-action danger"
+                                        title="Mark this parameter Not Used for this machine/stage template. Existing recipe values remain stored."
+                                    >
+                                        Not Used
+                                    </button>
+                                </form>
                                 {% else %}
-                                <a
-                                    href="/parameters/enable/{{ parameter.id }}"
-                                    class="row-action success"
-                                    title="Restore this parameter to active use and backfill missing values to existing recipes."
-                                >
-                                    Use
-                                </a>
+                                <form method="POST" action="/parameters/enable/{{ parameter.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button
+                                        type="submit"
+                                        class="row-action success"
+                                        title="Restore this parameter to active use and backfill missing values to existing recipes."
+                                    >
+                                        Use
+                                    </button>
+                                </form>
                                 {% endif %}
                                 {% endif %}
                             </div>

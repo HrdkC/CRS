@@ -1,0 +1,158 @@
+CRS CSS Module Split V1
+Date: 2026-07-05
+
+Purpose
+-------
+
+The earlier monolithic CSS file had grown to about 205 KB and more than 7700 lines.
+It contained base styling, page-specific fixes, responsive fixes, PLC setup rules,
+audit table fixes, phase control fixes, and final override blocks in one file.
+
+This made future UI maintenance risky because a correction for one page could
+accidentally affect another page.
+
+Change Completed
+----------------
+
+The CSS has been split into smaller ordered modules under:
+
+flask_app/static/css/modules/
+
+The existing browser entry point remains:
+
+flask_app/static/css/main.css
+
+main.css now only imports the modules. Existing templates continue to load
+main.css, so no template link changes are required.
+
+Important Design Rule
+---------------------
+
+The split is cascade-preserving.
+
+This means:
+
+- The module import order follows the same order as the earlier monolithic main.css.
+- The module content was moved without semantic reordering.
+- Visual appearance should remain the same after the split.
+- Do not reorder imports unless all major screens are visually checked afterward.
+
+Module List
+-----------
+
+01_base.css
+- Design tokens
+- Reset
+- Base layout
+- Primary header/navigation foundation
+
+02_auth.css
+- Login screen base layout
+
+03_dashboard.css
+- Dashboard cards and summary visuals
+
+04_buttons_forms.css
+- Buttons
+- Action links
+- Base form controls
+
+05_tables.css
+- Generic table foundation
+
+06_status_messages.css
+- Status badges
+- Flash messages
+- Session alert basics
+
+07_audit_help.css
+- Audit history/archive foundation
+- Help center foundation
+
+08_responsive_compact.css
+- Footer
+- Utilities
+- Responsive and compact global tuning
+
+09_configuration.css
+- Configuration center
+
+10_header_auth_branding.css
+- Corporate header
+- Apollo branding
+- Login/campaign branding refinements
+
+11_phase_control.css
+- Recipe phase control display
+- Phase control editor views
+
+12_recipes.css
+- Recipe machine/stage selection
+- Recipe bulk edit safety display
+
+13_plc.css
+- Stage PLC tag setup
+- PLC registry views
+
+14_dashboard_import_export.css
+- Dashboard V2
+- Recipe import/export layout
+
+15_ui_hardening.css
+- General usability hardening
+- Navigation hardening
+- Compact control hardening
+
+16_phase_master.css
+- Phase option master overview
+
+17_plc_setup_tables.css
+- PLC setup responsive rows
+- Readiness card table layout
+
+18_phase_master_tables.css
+- Phase master editable table controls
+
+19_users.css
+- User registry table
+- Role/password/user action controls
+
+20_audit_tables.css
+- Audit responsive table final readability fixes
+- Old/New value display fixes
+
+Future CSS Work Rules
+---------------------
+
+1. Do not add new rules directly to main.css.
+2. Add page-specific CSS to the nearest module.
+3. If a new module is required, add it under flask_app/static/css/modules/.
+4. Add the import to main.css only after deciding the correct cascade position.
+5. Keep selectors page-scoped where possible, for example:
+
+   .audit-history-workbench ...
+   .stage-plc-rule-card ...
+   .phase-master-table ...
+
+6. Avoid broad selectors for table cells, buttons, and form controls unless it
+   is a deliberate global design-system rule.
+7. Do not add "final fix" blocks at the bottom unless it is temporary and
+   documented with the target page and reason.
+
+Validation Performed
+--------------------
+
+- Local backup created before split:
+  _local_backups/CRS_before_css_module_split_20260705_185258
+
+- main.css reduced from about 7763 lines to import-only entry point.
+- Module concatenation was verified to match the pre-split CSS body.
+- CSS brace balance checked after split.
+- Static template references to main.css remain unchanged.
+
+Known Limitation
+----------------
+
+Python runtime compile validation was not completed in this Codex sandbox because
+the current venv launcher points to an inaccessible Python installation path.
+This is an environment/runtime issue, not a CSS syntax issue.

@@ -482,7 +482,8 @@ def register_parameter_routes(app):
         )
 
     @app.route(
-        "/parameters/disable/<int:parameter_id>"
+        "/parameters/disable/<int:parameter_id>",
+        methods=["POST"]
     )
     def disable_parameter(
 
@@ -550,7 +551,8 @@ def register_parameter_routes(app):
         )
 
     @app.route(
-        "/parameters/enable/<int:parameter_id>"
+        "/parameters/enable/<int:parameter_id>",
+        methods=["POST"]
     )
     def enable_parameter(
 

@@ -116,19 +116,15 @@ TBM Families
                         <td>
                             <div class="row-actions">
                                 {% if family.active == 1 %}
-                                <a
-                                    href="/families/disable/{{ family.id }}"
-                                    class="row-action danger"
-                                >
-                                    Disable
-                                </a>
+                                <form method="POST" action="/families/disable/{{ family.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action danger">Disable</button>
+                                </form>
                                 {% else %}
-                                <a
-                                    href="/families/enable/{{ family.id }}"
-                                    class="row-action success"
-                                >
-                                    Enable
-                                </a>
+                                <form method="POST" action="/families/enable/{{ family.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action success">Enable</button>
+                                </form>
                                 {% endif %}
                             </div>
                         </td>

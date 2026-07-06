@@ -135,14 +135,23 @@ Users
                             <div class="row-actions user-row-actions">
                                 {% if not user.is_protected_super_user and user.username != session.get("username") %}
                                     {% if user.active == 1 %}
-                                    <a href="/users/disable/{{ user.username }}" class="row-action danger">Disable</a>
+                                    <form method="POST" action="/users/disable/{{ user.username }}" class="row-action-form">
+                                        {{ csrf_input() }}
+                                        <button type="submit" class="row-action danger">Disable</button>
+                                    </form>
                                     {% else %}
-                                    <a href="/users/enable/{{ user.username }}" class="row-action success">Enable</a>
+                                    <form method="POST" action="/users/enable/{{ user.username }}" class="row-action-form">
+                                        {{ csrf_input() }}
+                                        <button type="submit" class="row-action success">Enable</button>
+                                    </form>
                                     {% endif %}
                                 {% endif %}
 
                                 <a href="/users/change_password/{{ user.username }}" class="row-action primary">Reset Password</a>
-                                <a href="/users/require_password_reset/{{ user.username }}" class="row-action warning">Require Reset</a>
+                                <form method="POST" action="/users/require_password_reset/{{ user.username }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action warning">Require Reset</button>
+                                </form>
                             </div>
                         </td>
                     </tr>

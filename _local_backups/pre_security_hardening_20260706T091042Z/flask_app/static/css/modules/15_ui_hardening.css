@@ -1,0 +1,701 @@
+/*
+ * 15_ui_hardening.css
+ * General usability, navigation, compact controls and hardening.
+ * Cascade order is controlled by flask_app/static/css/main.css.
+ */
+
+/* 2026-06-30 CRS usability/resource hardening */
+body {
+    background-attachment: scroll;
+}
+
+.site-header {
+    backdrop-filter: none;
+}
+
+.crs-btn,
+.primary-action,
+.secondary-action,
+.row-action,
+.btn,
+button {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.crs-btn,
+.primary-action,
+.secondary-action,
+.row-action {
+    min-width: 86px;
+    max-width: 190px;
+    min-height: 34px;
+    padding: 7px 12px;
+    line-height: 1.15;
+    text-align: center;
+}
+
+.compact-actions,
+.workbench-actions,
+.form-action-row,
+.stage-readiness-actions {
+    gap: 7px;
+}
+
+.page-body-back {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 10px;
+}
+
+.page-body-back .crs-btn {
+    min-width: 92px;
+}
+
+.client-sort-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.client-sort-button span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.client-sort-button b {
+    flex: 0 0 auto;
+    color: #fef3c7;
+    font-size: 12px;
+}
+
+.client-sort-button:hover span {
+    text-decoration: underline;
+}
+
+.client-sort-existing-control {
+    cursor: default;
+}
+
+.professional-table-wrap,
+.registry-table-wrap,
+.data-table-wrap,
+.audit-table-wrap-pro {
+    max-width: 100%;
+}
+
+table th,
+table td {
+    vertical-align: middle;
+}
+
+table td {
+    overflow-wrap: anywhere;
+}
+
+.audit-record-card-pro {
+    overflow: hidden;
+}
+
+.audit-table-wrap-pro {
+    max-height: calc(100vh - 340px);
+    overflow: auto;
+}
+
+.audit-history-table-pro {
+    min-width: 1280px !important;
+    table-layout: fixed;
+    font-size: 11.4px;
+}
+
+.audit-history-table-pro th {
+    padding: 8px 9px;
+    font-size: 10.6px;
+}
+
+.audit-history-table-pro td {
+    padding: 8px 9px;
+    line-height: 1.24;
+}
+
+.audit-history-table-pro th:nth-child(1) { width: 132px !important; }
+.audit-history-table-pro th:nth-child(2) { width: 92px !important; }
+.audit-history-table-pro th:nth-child(3) { width: 86px !important; }
+.audit-history-table-pro th:nth-child(4) { width: 180px !important; }
+.audit-history-table-pro th:nth-child(5) { width: 170px !important; }
+.audit-history-table-pro th:nth-child(6) { width: 150px !important; }
+.audit-history-table-pro th:nth-child(7) { width: 210px !important; }
+.audit-history-table-pro th:nth-child(8) { width: 136px !important; }
+.audit-history-table-pro th:nth-child(9) { width: 224px !important; }
+
+.audit-action-cell,
+.audit-record-cell,
+.audit-value-cell,
+.audit-reason-cell,
+.audit-clip-cell {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.audit-action-badge {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.14;
+    padding: 4px 7px;
+    text-align: left;
+}
+
+.audit-record-cell strong,
+.audit-record-cell .muted-inline {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.audit-value-cell {
+    min-width: 0;
+    max-height: 46px;
+    overflow: hidden;
+}
+
+.phase-control-board {
+    gap: 12px;
+    align-items: stretch;
+}
+
+.phase-control-board.phase-board-fs {
+    grid-template-columns: minmax(420px, 760px);
+    justify-content: start;
+}
+
+.phase-control-board.phase-board-ss {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.phase-control-column {
+    border: 1px solid #d8b4fe;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(111,45,168,0.07);
+    overflow: hidden;
+}
+
+.phase-control-column-header {
+    min-height: 42px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e9d5ff;
+    background: linear-gradient(135deg, #f5f0ff, #ffffff);
+    color: var(--apollo-violet-dark);
+}
+
+.phase-control-column-header strong {
+    color: var(--apollo-violet-dark);
+    font-size: 15px;
+}
+
+.phase-control-display-cell {
+    min-height: 46px;
+    margin: 0;
+    border: 0;
+    border-left: 3px solid var(--apollo-violet);
+    border-bottom: 1px solid #eee7f8;
+    border-radius: 0;
+    background: #fff;
+    color: var(--ink-900);
+}
+
+.phase-control-display-cell:last-child {
+    border-bottom: 0;
+}
+
+.phase-control-display-cell strong {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.phase-control-display-empty {
+    background: #fbfaff;
+    color: var(--ink-500);
+}
+
+.phase-control-display-empty strong {
+    visibility: visible;
+    color: var(--ink-500);
+    font-style: italic;
+    font-weight: 800;
+}
+
+.phase-control-slot-edit {
+    border-color: #e9d5ff;
+    background: #fff;
+}
+
+.phase-control-slot-edit:focus-within {
+    border-color: var(--apollo-violet);
+    box-shadow: 0 0 0 2px rgba(111,45,168,.12);
+}
+
+.phase-control-row-header {
+    background: var(--apollo-violet-dark);
+    color: #fff;
+}
+
+.menu-back-item {
+    display: none !important;
+}
+
+@media (max-width: 1200px) {
+    .header-top {
+        grid-template-columns: 190px minmax(0,1fr) 230px;
+    }
+
+    .brand-title {
+        font-size: 22px;
+    }
+
+}
+
+/* 2026-06-30: compact header and readable audit grid.
+   This override intentionally sits last so older broad table/header rules cannot
+   make the audit screen tall, clipped, or crowded again. */
+.site-header {
+    background: rgba(255, 255, 255, .98) !important;
+}
+
+.site-header .header-top {
+    grid-template-columns: 188px minmax(0, 1fr) 218px !important;
+    min-height: 58px !important;
+    padding: 7px 22px 5px !important;
+    gap: 12px !important;
+    align-items: center !important;
+}
+
+.site-header .header-logo-panel {
+    min-width: 0 !important;
+    justify-self: start !important;
+    justify-content: flex-start !important;
+}
+
+.site-header .header-brand-lockup {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    grid-template-rows: auto auto !important;
+    row-gap: 0 !important;
+    justify-items: start !important;
+    align-content: center !important;
+}
+
+.site-header .header-brand-logo-row {
+    display: grid !important;
+    grid-template-columns: auto auto !important;
+    justify-content: start !important;
+    gap: 1px !important;
+    align-items: center !important;
+    height: auto !important;
+}
+
+.site-header .header-logo-main {
+    height: 46px !important;
+    max-height: 46px !important;
+    width: auto !important;
+}
+
+.site-header .header-logo-bcci {
+    height: 48px !important;
+    max-height: 48px !important;
+    width: auto !important;
+}
+
+.site-header .header-campaign-caption {
+    margin-top: 0 !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    text-align: left !important;
+}
+
+.site-header .brand-title {
+    font-size: 26px !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0 !important;
+}
+
+.site-header .brand-subtitle {
+    margin-top: 1px !important;
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+}
+
+.site-header .user-info {
+    min-width: 205px !important;
+    max-width: 218px !important;
+    padding: 6px 9px !important;
+    font-size: 11px !important;
+    line-height: 1.22 !important;
+}
+
+.site-header .user-info strong {
+    display: inline-block !important;
+    margin-bottom: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.1 !important;
+}
+
+.site-header .session-countdown {
+    margin-top: 5px !important;
+    min-height: 24px !important;
+    padding: 3px 8px !important;
+    gap: 4px !important;
+    font-size: 10.5px !important;
+    line-height: 1 !important;
+}
+
+.site-header .navbar {
+    padding: 0 22px 7px !important;
+}
+
+.site-header .navbar ul {
+    gap: 7px !important;
+}
+
+.site-header .navbar a {
+    min-height: 29px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    line-height: 17px !important;
+}
+
+.site-header .menu-item {
+    box-shadow: 0 5px 12px rgba(111, 45, 168, .13) !important;
+}
+
+.site-header .dropdown-menu {
+    top: calc(100% + 6px) !important;
+}
+
+.site-header .dropdown-menu a {
+    min-height: 29px !important;
+    padding: 7px 10px !important;
+    font-size: 12px !important;
+}
+
+.audit-page-pro .workbench-hero {
+    margin-top: 4px !important;
+}
+
+.audit-record-card-pro {
+    overflow: hidden !important;
+}
+
+.audit-table-wrap-pro {
+    max-height: calc(100vh - 300px) !important;
+    overflow: auto !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+}
+
+.audit-history-table-pro {
+    min-width: 1700px !important;
+    table-layout: fixed !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    font-size: 11.2px !important;
+}
+
+.audit-history-table-pro th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+    padding: 8px 9px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+}
+
+.audit-history-table-pro td {
+    height: auto !important;
+    max-height: none !important;
+    padding: 7px 9px !important;
+    vertical-align: top !important;
+    line-height: 1.22 !important;
+    white-space: normal !important;
+    overflow: hidden !important;
+}
+
+.audit-history-table-pro tbody tr {
+    height: auto !important;
+    min-height: 44px !important;
+}
+
+.audit-history-table-pro th:nth-child(1) { width: 132px !important; }
+.audit-history-table-pro th:nth-child(2) { width: 90px !important; }
+.audit-history-table-pro th:nth-child(3) { width: 78px !important; }
+.audit-history-table-pro th:nth-child(4) { width: 190px !important; }
+.audit-history-table-pro th:nth-child(5) { width: 190px !important; }
+.audit-history-table-pro th:nth-child(6) { width: 180px !important; }
+.audit-history-table-pro th:nth-child(7) { width: 250px !important; }
+.audit-history-table-pro th:nth-child(8) { width: 170px !important; }
+.audit-history-table-pro th:nth-child(9) { width: 420px !important; }
+
+.audit-time-cell,
+.audit-user-cell,
+.audit-action-cell,
+.audit-record-cell,
+.audit-clip-cell,
+.audit-value-cell,
+.audit-reason-cell {
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+}
+
+.audit-user-cell strong {
+    white-space: nowrap !important;
+}
+
+.audit-action-badge {
+    display: inline-block !important;
+    max-width: 100% !important;
+    padding: 4px 7px !important;
+    line-height: 1.12 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: left !important;
+}
+
+.audit-record-cell strong,
+.audit-record-cell .muted-inline {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.audit-value-cell {
+    max-height: none !important;
+}
+
+.audit-value-cell,
+.audit-value-cell span {
+    white-space: normal !important;
+}
+
+.audit-old-value,
+.audit-new-value {
+    display: inline !important;
+}
+
+.audit-reason-cell,
+.audit-clip-cell {
+    display: table-cell !important;
+}
+
+.audit-reason-cell {
+    color: var(--ink-700) !important;
+}
+
+.audit-page-pro .sort-link-pro,
+.audit-page-pro .client-sort-button {
+    white-space: nowrap !important;
+}
+
+@media (max-width: 1200px) {
+    .site-header .header-top {
+        grid-template-columns: 170px minmax(0, 1fr) 205px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    .site-header .brand-title {
+        font-size: 19px !important;
+    }
+
+    .site-header .header-campaign-caption {
+        font-size: 12px !important;
+    }
+
+    .site-header .navbar {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+}
+
+/* =====================================================
+   V6.20 - Stage-wise Phase Template Master
+   Case-preserved phase strings + PLC phase code support
+   ===================================================== */
+.phase-template-workbench .phase-template-guidance-grid,
+.phase-template-workbench .phase-template-warning-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.phase-template-workbench .phase-template-guidance-grid > div,
+.phase-template-workbench .phase-template-warning-grid > div {
+    padding: 11px 12px;
+    border: 1px solid var(--line-200);
+    border-radius: var(--radius-md);
+    background: #fbfcfe;
+}
+
+.phase-template-workbench .phase-template-guidance-grid strong,
+.phase-template-workbench .phase-template-warning-grid strong {
+    display: block;
+    color: var(--ink-900);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.phase-template-workbench .phase-template-guidance-grid p,
+.phase-template-workbench .phase-template-warning-grid span {
+    margin: 0;
+    color: var(--ink-600);
+    font-size: 11.5px;
+    font-weight: 750;
+}
+
+.phase-template-warning-card {
+    border-left: 4px solid var(--warning) !important;
+    background: #fffbeb !important;
+}
+
+.phase-cleanup-form {
+    margin-top: 10px !important;
+}
+
+.phase-cleanup-form input[type="text"] {
+    min-width: 420px;
+}
+
+.phase-template-paste-form textarea {
+    min-height: 210px !important;
+    font-family: Consolas, "Courier New", monospace;
+    line-height: 1.45;
+    white-space: pre;
+}
+
+.phase-template-table-wrap {
+    max-height: 58vh;
+}
+
+.phase-template-table {
+    min-width: 1320px;
+}
+
+.phase-template-table th:nth-child(1),
+.phase-template-table td:nth-child(1) {
+    width: 70px;
+    text-align: center;
+}
+
+.phase-template-table th:nth-child(2) { width: 190px; }
+.phase-template-table th:nth-child(3) { width: 90px; }
+.phase-template-table th:nth-child(4) { width: 110px; }
+.phase-template-table th:nth-child(5) { width: 300px; }
+.phase-template-table th:nth-child(6) { width: 240px; }
+.phase-template-table th:nth-child(7) { width: 300px; }
+.phase-template-table th:nth-child(8) { width: 150px; }
+
+.phase-template-table td small {
+    display: block;
+    margin-top: 3px;
+    color: var(--ink-500);
+    font-size: 10.5px;
+    font-weight: 750;
+}
+
+.phase-code-pill {
+    position: absolute;
+    right: 7px;
+    bottom: 4px;
+    display: inline-flex;
+    min-height: 18px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+    font-size: 9.5px;
+    font-weight: 900;
+}
+
+.phase-template-workbench .phase-control-display-cell {
+    padding-right: 56px;
+}
+
+.phase-template-workbench .mini-badge {
+    display: inline-flex;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: var(--ink-600);
+    border: 1px solid var(--line-200);
+    font-size: 10.5px;
+    font-weight: 900;
+}
+
+.phase-remove-cell {
+    text-align: center;
+}
+
+.phase-remove-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 108px;
+    min-height: 34px;
+    padding: 6px 10px;
+    border: 1px solid #fecaca;
+    border-radius: 999px;
+    background: #fff7f7;
+    color: #991b1b;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0;
+    white-space: normal;
+    cursor: pointer;
+}
+
+.phase-remove-toggle input {
+    width: 14px;
+    height: 14px;
+    accent-color: #dc2626;
+}
+
+.phase-remove-toggle:hover {
+    border-color: #f87171;
+    background: #fee2e2;
+}
+
+@media (max-width: 1180px) {
+    .phase-template-workbench .phase-template-guidance-grid,
+    .phase-template-workbench .phase-template-warning-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .phase-cleanup-form input[type="text"] {
+        min-width: 0;
+        width: 100%;
+    }
+}
+

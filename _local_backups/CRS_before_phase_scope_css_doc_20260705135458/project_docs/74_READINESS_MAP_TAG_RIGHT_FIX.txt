@@ -1,0 +1,16 @@
+CRS Readiness Map Tag Right Fix
+Date: 2026-07-05
+
+Root cause:
+A malformed CSS media-query block trapped the later Map Tag rules inside an invalid/small-screen context.
+
+Fix:
+- Repaired the broken max-width: 760px media query.
+- Preserved the dedicated readiness-map-tag class.
+- Existing final grid-area rule now applies on desktop.
+
+Apply:
+Expand-Archive -Path .\CRS_Map_Tag_Right_Fix_PATCH_ONLY_050726.zip -DestinationPath . -Force
+
+Then hard refresh:
+Ctrl + F5

@@ -83,21 +83,25 @@ Engineering Units
                                     Edit
                                 </a>
                                 {% if unit.is_active == 1 %}
-                                <a
-                                    href="/engineering-units/{{ unit.id }}/disable"
-                                    class="row-action disable"
-                                    onclick="return confirm('Disable this engineering unit?')"
+                                <form
+                                    method="POST"
+                                    action="/engineering-units/{{ unit.id }}/disable"
+                                    class="row-action-form"
+                                    onsubmit="return confirm('Disable this engineering unit?')"
                                 >
-                                    Disable
-                                </a>
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action disable">Disable</button>
+                                </form>
                                 {% else %}
-                                <a
-                                    href="/engineering-units/{{ unit.id }}/enable"
-                                    class="row-action enable"
-                                    onclick="return confirm('Enable this engineering unit?')"
+                                <form
+                                    method="POST"
+                                    action="/engineering-units/{{ unit.id }}/enable"
+                                    class="row-action-form"
+                                    onsubmit="return confirm('Enable this engineering unit?')"
                                 >
-                                    Enable
-                                </a>
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action enable">Enable</button>
+                                </form>
                                 {% endif %}
                                 {% endif %}
                             </div>

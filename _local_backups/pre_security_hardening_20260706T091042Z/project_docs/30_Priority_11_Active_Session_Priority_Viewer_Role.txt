@@ -1,0 +1,61 @@
+# Priority 11 Add-on: Active Session Priority + Viewer Role
+
+## Final login/session decision
+
+One username can have only one active CRS session.
+
+The existing active session has priority. CRS must not automatically log out an already-active user when a second login attempt happens from another browser/workstation, because the active user may be editing a recipe, saving values, or running a PLC buffer operation.
+
+## Second login behavior
+
+If the same username tries to login while already active:
+
+1. New login is blocked.
+2. Old active user remains logged in.
+3. New login page shows active workstation/IP information.
+4. Login attempt is recorded in audit history as LOGIN_BLOCKED_ACTIVE_SESSION.
+5. Active user sees an in-app alert on next screen interaction with attempted workstation/IP metadata.
+6. Active user can acknowledge the alert.
+
+## Viewer role
+
+A new final CRS role is added:
+
+VIEWER
+
+Viewer can only view recipe lists, recipe parameter values, current database values, and read-only history screens that are available through recipe view pages.
+
+Viewer cannot:
+- edit recipes
+- edit released values
+- download to PLC
+- upload from PLC
+- save CRS buffer to database
+- copy recipes
+- submit review
+- approve/reject
+- configure PLCs/masters
+- manage users/sessions
+- configure auto logout
+- view admin archive/export pages unless explicitly allowed later
+
+Default seeded user:
+
+viewer / viewer123 / VIEWER / password reset required
+
+## New database table
+
+user_login_attempt_alerts
+
+Stores blocked duplicate login attempts and metadata for the active user notification.
+
+## Validation checklist
+
+1. Run schema upgrade.
+2. Run default user seed.
+3. Login as viewer and confirm read-only recipe access only.
+4. Login as admin in browser A.
+5. Try login as admin in browser B.
+6. Browser B must be blocked.
+7. Browser A must remain active and show alert with Browser B workstation/IP metadata.
+8. Acknowledge alert and verify audit entry.

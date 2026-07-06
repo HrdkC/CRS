@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ status_code }} - {{ title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="crs-error-shell">
+    <div class="crs-error-card">
+        <div class="crs-error-status">{{ status_code }}</div>
+
+        <div class="crs-error-body">
+            <span class="section-kicker">System Notice</span>
+            <h1>{{ title }}</h1>
+            <p>{{ message }}</p>
+
+            <div class="crs-error-actions">
+                <button type="button" class="btn btn-secondary nav-back-button" data-back-fallback="/">
+                    Back
+                </button>
+                <a href="/" class="btn btn-primary">Dashboard</a>
+                <a href="/help" class="btn btn-secondary">Help / SOP</a>
+            </div>
+
+            {% if technical_detail %}
+            <details class="compact-details crs-error-detail">
+                <summary>Technical detail</summary>
+                <div>{{ technical_detail }}</div>
+            </details>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

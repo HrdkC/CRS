@@ -2418,7 +2418,8 @@ def register_recipe_editor_routes(app):
         )
 
     @app.route(
-        "/recipe-editor/restore-version/<int:version_id>"
+        "/recipe-editor/restore-version/<int:version_id>",
+        methods=["POST"]
     )
     def recipe_editor_restore_version(
 
@@ -2508,7 +2509,7 @@ def register_recipe_editor_routes(app):
         
     @app.route(
         "/recipe-editor/status/<int:recipe_id>/<status>",
-        methods=["GET", "POST"]
+        methods=["POST"]
     )
     def recipe_status_change(
 
@@ -2575,8 +2576,6 @@ def register_recipe_editor_routes(app):
 
         remarks = (
             request.form.get("remarks")
-            or
-            request.args.get("remarks")
             or
             ""
         ).strip()

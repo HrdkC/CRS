@@ -1,0 +1,18 @@
+CRS V6.7.1 - Phase Control Position Column Fit Fix
+
+Purpose:
+- Fix phase-control edit screens where the Position dropdown column was not fully visible at 100% browser zoom.
+- Preserve Apollo violet CRS color scheme and existing professional card/table appearance.
+
+Scope:
+- CSS only.
+- Applies to both First Stage and Second Stage phase-control edit/view layout styling.
+- Second Stage remains 3 columns.
+
+Changed file:
+- flask_app/static/css/main.css
+
+Notes:
+- No database changes.
+- No Python route/model changes.
+- No venv, .git, cache, or log files included.

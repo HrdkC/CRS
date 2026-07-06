@@ -1,0 +1,48 @@
+# CRS V6.16 - Recipe Import Existing Recipe Partial Update
+
+Patch type: PATCH-ONLY replacement files.
+
+## Purpose
+Extend Recipe Import / Export so Excel import can be used in two modes:
+
+1. Create New Draft Recipe
+2. Update Existing Recipe Parameters
+
+## Create New Draft Recipe
+- Creates a new DRAFT recipe.
+- Excel can contain full or partial Parameters sheet rows.
+- Missing parameter rows are inserted using current CRS master default values so the recipe payload remains complete.
+- Phase_Control is ignored and default Empty Phase rows are inserted for manual selection.
+- Safe non-PLC parameter master details can be updated from Excel when enabled.
+
+## Update Existing Recipe Parameters
+- User selects an existing recipe.
+- Excel may contain all parameters or only a few parameter rows.
+- Only rows present in Excel are updated.
+- Missing Excel rows are ignored and existing recipe values remain unchanged.
+- Phase_Control is ignored and existing recipe phase selections are not changed.
+- Historical released recipes are blocked.
+- Draft/current released recipes can be updated with audit and reason.
+
+## Safe Master Detail Update
+Optional checkbox on import page:
+- Parameter Name
+- Parameter Class
+- Unit
+- Data Type
+- Min Value
+- Max Value
+- Default Value
+- English Memo
+- Used flag
+
+Protected fields:
+- Tag Index
+- PLC Array Index
+- Parameter Definition ID
+- Phase_Control selections
+
+## Changed files
+- database/recipe_excel_import_export_manager.py
+- flask_app/routes/recipe_routes.py
+- flask_app/templates/recipes/recipe_import_export.html

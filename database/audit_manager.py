@@ -283,6 +283,10 @@ class AuditManager:
         cursor = conn.cursor()
 
         def fetch_distinct(column_name):
+            allowed_columns = {"role", "action", "change_source"}
+            if column_name not in allowed_columns:
+                return []
+
             cursor.execute(
                 f"""
                 SELECT DISTINCT {column_name}

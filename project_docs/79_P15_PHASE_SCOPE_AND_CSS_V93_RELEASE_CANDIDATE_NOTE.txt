@@ -1,0 +1,89 @@
+P15 PHASE SCOPE AND CSS V9.3 RELEASE CANDIDATE NOTE
+===================================================
+
+Date
+----
+
+2026-07-05
+
+Purpose
+-------
+
+This note freezes the current P15 phase-control scope and CSS release-candidate
+baseline so future work does not reintroduce old assumptions.
+
+Phase-Control Scope
+-------------------
+
+FIRST_STAGE:
+
+- One recipe-controlled phase-control block.
+- 12 recipe rows.
+- Each row selects from the machine/stage eligible phase master.
+- PLC string case must be preserved exactly because PLC comparison logic is case-sensitive.
+
+SECOND_STAGE:
+
+- CAP_STRIP_SIDE is recipe-controlled.
+- BT_SIDE is recipe-controlled.
+- SHAPING_SIDE is PLC-fixed and is not recipe-controlled.
+
+Therefore SHAPING_SIDE must not participate in:
+
+- recipe phase rows
+- recipe editor phase selection
+- template creation
+- Excel import/export phase rows
+- restore payload to CRS phase buffers
+- save-from-PLC phase comparison
+- PLC download validation
+- recipe phase audit changes
+
+If legacy SHAPING_SIDE recipe rows exist, they should be deactivated with audit
+or ignored by the runtime filter. Do not blindly delete production history.
+
+Implementation Touchpoints
+--------------------------
+
+Runtime code must filter Second Stage recipe-controlled phase groups to:
+
+- CAP_STRIP_SIDE
+- BT_SIDE
+
+Primary files:
+
+- database/recipe_phase_control_manager.py
+- database/recipe_excel_import_export_manager.py
+- database/configuration_readiness_manager.py
+- flask_app/routes/phase_control_routes.py
+- database/drop_second_stage_shaping_phase_config.py
+
+CSS Baseline
+------------
+
+The accepted CSS baseline is the modular V9.3 split:
+
+- flask_app/static/css/main.css is an import-only entry point.
+- CSS modules live under flask_app/static/css/modules/.
+- Do not add new page-specific rules directly to main.css.
+- Keep module import order unchanged unless all major pages are visually checked.
+- Current template cache key is css-v93-phase-scope-20260705.
+
+Validation Required After Changes
+---------------------------------
+
+Run at minimum:
+
+- python -m py_compile for touched Python modules
+- CSS import integrity check
+- template link/cache-key check
+- P15 FS recipe restore to PLC phase string buffer
+- P15 SS recipe restore to PLC phase string buffers for Cap Strip and B&T only
+- P15 SS download/readiness check must not require Shaping Side rows
+
+Expected Result
+---------------
+
+P15 First Stage and P15 Second Stage can be configured through GUI-maintained
+masters, while P15 Second Stage recipe phase-control runtime only uses Cap Strip
+Side and B&T Side. Shaping Side remains a PLC-side fixed sequence.

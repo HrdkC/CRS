@@ -6,6 +6,7 @@ from flask import (
     flash
 )
 
+import os
 import time
 
 from database.user_manager import UserManager
@@ -13,12 +14,26 @@ from database.user_session_manager import UserSessionManager
 from database.audit_manager import AuditManager
 
 from helper.datetime_helper import utc_to_ist
+from flask_app.security.login_throttle import (
+    is_login_blocked,
+    record_login_failure,
+    record_login_success,
+)
+from flask_app.security.password_policy import validate_password_strength
 
 
 def _client_metadata():
     """Return traceability metadata without exposing it on blocked login page."""
+    trust_proxy_headers = os.getenv(
+        "CRS_TRUST_PROXY_HEADERS",
+        "0"
+    ).strip().lower() in {"1", "true", "yes", "on"}
     forwarded_for = request.headers.get("X-Forwarded-For")
-    client_ip = (forwarded_for.split(",")[0].strip() if forwarded_for else request.remote_addr)
+    client_ip = (
+        forwarded_for.split(",")[0].strip()
+        if trust_proxy_headers and forwarded_for
+        else request.remote_addr
+    )
     request_host = request.host
     user_agent = request.headers.get("User-Agent", "")
     workstation_name = (
@@ -43,13 +58,36 @@ def register_auth_routes(app):
     @app.route("/login", methods=["GET", "POST"])
     def login():
         if request.method == "POST":
-            username = request.form.get("username")
+            username = (request.form.get("username") or "").strip()
             password = request.form.get("password")
+            meta = _client_metadata()
+            client_ip = meta["client_ip"]
+
+            blocked, remaining_seconds = is_login_blocked(username, client_ip)
+            if blocked:
+                wait_minutes = max(1, int((remaining_seconds + 59) / 60))
+                AuditManager.log_event(
+                    username=username or "UNKNOWN",
+                    role="UNKNOWN",
+                    action="LOGIN_RATE_LIMIT_BLOCKED",
+                    change_source="AUTH_RATE_LIMIT",
+                    client_ip=meta["client_ip"],
+                    user_agent=meta["user_agent"],
+                    forwarded_for=meta["forwarded_for"],
+                    request_host=meta["request_host"],
+                    workstation_name=meta["workstation_name"],
+                    reason=f"Too many failed login attempts. Retry after {wait_minutes} minute(s)."
+                )
+                return render_template(
+                    "auth/login.html",
+                    error=(
+                        "Too many failed login attempts. "
+                        f"Please wait {wait_minutes} minute(s) before retrying."
+                    )
+                )
 
             if UserManager.verify_user(username, password):
                 user = UserManager.get_user(username)
-                meta = _client_metadata()
-                client_ip = meta["client_ip"]
                 forwarded_for = meta["forwarded_for"]
                 request_host = meta["request_host"]
                 user_agent = meta["user_agent"]
@@ -94,6 +132,7 @@ def register_auth_routes(app):
                         )
                     )
 
+                record_login_success(username, client_ip)
                 UserManager.update_last_login(username)
                 user = UserManager.get_user(username)
                 last_login_ist = utc_to_ist(user["last_login"])
@@ -141,7 +180,7 @@ def register_auth_routes(app):
 
                 return redirect("/")
 
-            meta = _client_metadata()
+            record_login_failure(username, client_ip)
             AuditManager.log_event(
                 username=username,
                 role="UNKNOWN",
@@ -162,7 +201,7 @@ def register_auth_routes(app):
 
         return render_template("auth/login.html")
 
-    @app.route("/logout")
+    @app.route("/logout", methods=["POST"])
     def logout():
         if session.get("session_id"):
             UserSessionManager.logout(
@@ -209,10 +248,14 @@ def register_auth_routes(app):
                     error="New passwords do not match."
                 )
 
-            if len(new_password or "") < 6:
+            password_ok, password_error = validate_password_strength(
+                new_password,
+                username=username
+            )
+            if not password_ok:
                 return render_template(
                     "auth/my_password.html",
-                    error="Password must be at least 6 characters."
+                    error=password_error
                 )
 
             UserManager.change_password(

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Metadata
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Parameter Metadata</span>
+            <h1>Edit Parameter Metadata</h1>
+            <p>
+                {{ recipe_code }}
+                <span>|</span>
+                Version V{{ selected_version }}
+                <span>|</span>
+                {{ parameter.parameter_name }}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipes/{{ recipe_code }}/parameters?version={{ selected_version }}" class="crs-btn crs-btn-soft">
+                Cancel
+            </a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card"><span class="metric-label">PLC Tag</span><strong class="metric-text">{{ parameter.plc_tag_name }}</strong><small>Mapped PLC tag</small></div>
+        <div class="metric-card"><span class="metric-label">Minimum</span><strong>{{ parameter.min_value }}</strong><small>Current lower limit</small></div>
+        <div class="metric-card"><span class="metric-label">Maximum</span><strong>{{ parameter.max_value }}</strong><small>Current upper limit</small></div>
+        <div class="metric-card"><span class="metric-label">Unit</span><strong class="metric-text">{{ parameter.unit }}</strong><small>Engineering unit</small></div>
+    </div>
+
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Metadata Values</span>
+            <span class="status-badge status-info">Admin</span>
+        </div>
+        <form method="POST" class="parameter-edit-form">
+            <label><span>Minimum Value</span><input type="number" step="any" name="min_value" value="{{ parameter.min_value }}"></label>
+            <label><span>Maximum Value</span><input type="number" step="any" name="max_value" value="{{ parameter.max_value }}"></label>
+            <label><span>Engineering Unit</span><input type="text" name="unit" value="{{ parameter.unit }}"></label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Save Metadata</button>
+                <a href="/recipes/{{ recipe_code }}/parameters?version={{ selected_version }}" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</section>
+
+{% endblock %}

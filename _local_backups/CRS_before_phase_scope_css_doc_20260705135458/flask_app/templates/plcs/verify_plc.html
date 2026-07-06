@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}
+PLC Verification
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">PLC Verification</span>
+            <h1>{{ plc.plc_name }}</h1>
+            <p>Processor, firmware, program, and serial number verification.</p>
+        </div>
+        <div class="workbench-actions">
+            {% if sync_expected_allowed %}
+            <a href="/plc-array-import/plc/{{ plc.id }}" class="crs-btn crs-btn-primary">PLC 1D Array Import</a>
+            {% endif %}
+            <a href="/plcs" class="crs-btn crs-btn-soft">Back To PLCs</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong class="metric-text">{{ result.verification_status }}</strong>
+            <small>Verification result</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Processor</span>
+            <strong class="metric-text">{{ result.actual_processor }}</strong>
+            <small>Expected {{ result.expected_processor }}</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Firmware</span>
+            <strong class="metric-text">{{ result.actual_firmware }}</strong>
+            <small>Expected {{ result.expected_firmware }}</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Program</span>
+            <strong class="metric-text">{{ result.actual_program or result.program_name }}</strong>
+            <small>Expected {{ result.expected_program or plc.program_revision or '-' }}</small>
+        </div>
+    </div>
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Verification Details</span>
+                <p>Mismatch here should block final production deployment until reviewed.</p>
+            </div>
+            {% if result.verification_status in ["PASS", "VERIFIED"] %}
+            <span class="status-badge status-success">{{ result.verification_status }}</span>
+            {% elif result.verification_status == "OFFLINE" %}
+            <span class="status-badge status-danger">Offline</span>
+            {% else %}
+            <span class="status-badge status-warning">{{ result.verification_status }}</span>
+            {% endif %}
+        </div>
+
+        <div class="summary-list result-summary">
+            {% if result.message is defined %}
+            <div><span>Message</span><strong>{{ result.message }}</strong></div>
+            {% endif %}
+            <div><span>Expected Processor</span><strong>{{ result.expected_processor or '-' }}</strong></div>
+            <div><span>Actual Processor</span><strong>{{ result.actual_processor or '-' }}</strong></div>
+            <div><span>Expected Firmware</span><strong>{{ result.expected_firmware or '-' }}</strong></div>
+            <div><span>Actual Firmware</span><strong>{{ result.actual_firmware or '-' }}</strong></div>
+            <div><span>Expected Program</span><strong>{{ result.expected_program or plc.program_revision or '-' }}</strong></div>
+            <div><span>Actual Program</span><strong>{{ result.actual_program or result.program_name or '-' }}</strong></div>
+            <div><span>Serial Number</span><strong>{{ result.serial_number or '-' }}</strong></div>
+            {% if result.mismatches is defined and result.mismatches %}
+            <div><span>Mismatch Fields</span><strong>{{ result.mismatches | join(', ') }}</strong></div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if sync_expected_allowed and result.verification_status != "OFFLINE" and (result.actual_processor or result.actual_firmware or result.actual_program or result.program_name) %}
+    <div class="workbench-card data-workbench" style="margin-top: 16px; border-color: #f59e0b;">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Sync Expected Details From Online PLC</span>
+                <p>
+                    Use this only after confirming this is the correct physical PLC.
+                    CRS expected identity will be updated from latest online actual details and audit will be recorded.
+                </p>
+            </div>
+            <span class="status-badge status-warning">ADMIN / ENGINEERING</span>
+        </div>
+
+        <form method="POST" action="/plcs/verify/{{ plc.id }}/sync-expected" class="professional-form" onsubmit="return confirm('Update CRS expected PLC details from the currently verified online PLC? This action will be audited.');">
+            <div class="summary-list result-summary">
+                <div><span>Processor will become</span><strong>{{ result.actual_processor or '-' }}</strong></div>
+                <div><span>Firmware will become</span><strong>{{ result.actual_firmware or '-' }}</strong></div>
+                <div><span>Program will become</span><strong>{{ result.actual_program or result.program_name or '-' }}</strong></div>
+                <div><span>Online Serial Reference</span><strong>{{ result.serial_number or '-' }}</strong></div>
+            </div>
+
+            <label style="display:block; margin: 14px 0 10px;">
+                <span style="display:block; font-weight:800; margin-bottom:6px;">Reason for updating expected PLC details</span>
+                <textarea name="reason" rows="3" required placeholder="Example: Confirmed correct P15 second-stage PLC after controller/catalog verification." style="width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:10px;"></textarea>
+            </label>
+
+            <div class="form-actions">
+                <button type="submit" class="crs-btn crs-btn-primary">
+                    Sync Expected Details From Online PLC
+                </button>
+                <a href="/plcs/verify/{{ plc.id }}" class="crs-btn crs-btn-soft">Re-Verify</a>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+</section>
+
+{% endblock %}

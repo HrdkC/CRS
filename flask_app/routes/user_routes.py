@@ -17,6 +17,7 @@ from flask_app.security.role_guard import (
     role_label,
     is_protected_super_user
 )
+from flask_app.security.password_policy import validate_password_strength
 
 
 def _admin_required():
@@ -74,11 +75,15 @@ def register_user_routes(app):
                     error="Passwords do not match."
                 )
 
-            if len(password or "") < 6:
+            password_ok, password_error = validate_password_strength(
+                password,
+                username=username
+            )
+            if not password_ok:
                 return render_template(
                     "users/create_user.html",
                     role_options=role_options(),
-                    error="Password must be at least 6 characters."
+                    error=password_error
                 )
 
             created = UserManager.create_user(
@@ -115,7 +120,7 @@ def register_user_routes(app):
             role_options=role_options()
         )
 
-    @app.route("/users/disable/<username>")
+    @app.route("/users/disable/<username>", methods=["POST"])
     def disable_user(username):
         if not _admin_required():
             return redirect("/")
@@ -149,7 +154,7 @@ def register_user_routes(app):
         flash(f"User disabled: {username}", "success")
         return redirect("/users")
 
-    @app.route("/users/enable/<username>")
+    @app.route("/users/enable/<username>", methods=["POST"])
     def enable_user(username):
         if not _admin_required():
             return redirect("/")
@@ -229,11 +234,15 @@ def register_user_routes(app):
                     error="Passwords Do Not Match"
                 )
 
-            if len(new_password or "") < 6:
+            password_ok, password_error = validate_password_strength(
+                new_password,
+                username=username
+            )
+            if not password_ok:
                 return render_template(
                     "users/change_password.html",
                     username=username,
-                    error="Password must be at least 6 characters."
+                    error=password_error
                 )
 
             UserManager.change_password(
@@ -259,7 +268,7 @@ def register_user_routes(app):
             username=username
         )
 
-    @app.route("/users/require_password_reset/<username>")
+    @app.route("/users/require_password_reset/<username>", methods=["POST"])
     def require_password_reset(username):
         if not _admin_required():
             return redirect("/")

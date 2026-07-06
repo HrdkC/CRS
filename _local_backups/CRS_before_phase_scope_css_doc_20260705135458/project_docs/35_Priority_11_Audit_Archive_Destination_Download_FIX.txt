@@ -1,0 +1,44 @@
+Priority 11 - Audit Archive Destination / Browser Download Fix
+
+Purpose:
+- Replace manual free-text export path with a controlled export destination model.
+- Explain why browser folder browsing is not available for server-side Flask paths.
+- Add browser download option so the user can choose save location from the browser.
+- Add approved server export location dropdown for plant-controlled server/shared paths.
+- Clarify Archive old audit records and Export Excel During Archive behavior.
+
+Final design:
+1. Download active audit Excel to this computer
+   - Generates Excel in memory and sends it to browser.
+   - User can select final save location through browser Save As settings.
+   - CRS does not store file in application folder.
+
+2. Save active audit Excel to approved server path
+   - CRS saves Excel to a plant-approved server/local path from dropdown.
+   - Paths are controlled by environment variable CRS_AUDIT_EXPORT_LOCATIONS or defaults.
+
+3. Archive old audit records
+   - Moves old rows from audit_log to audit_log_archive according to Retention Days.
+   - Example: Retention Days = 90 archives records older than 90 days.
+   - Active audit table stays lean/resource-friendly.
+
+4. Export Excel During Archive
+   - Yes: creates Excel backup of the exact rows being archived before/while moving them.
+   - No: moves rows to archive table only; archived rows can still be exported later.
+
+5. Download archived audit Excel to this computer
+   - Downloads archived audit rows through browser.
+
+6. Save archived audit Excel to approved server path
+   - Saves archived rows to selected approved server location.
+
+Approved export locations:
+- Default: D:\CRS_Audit_Exports and \\SERVER\CRS_Audit_Exports
+- Plant can override with PowerShell before app start:
+  $env:CRS_AUDIT_EXPORT_LOCATIONS = 'D:\CRS_Audit_Exports;\\PCR-SERVER\CRS_Audit_Exports'
+
+Security:
+- No arbitrary path typing.
+- Server-side export restricted to approved paths.
+- Browser download does not expose server paths.
+- Export/archive events are audit logged.

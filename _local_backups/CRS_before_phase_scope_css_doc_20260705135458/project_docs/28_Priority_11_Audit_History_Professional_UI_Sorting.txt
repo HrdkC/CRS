@@ -1,0 +1,71 @@
+# Priority 11 Add-on: Audit History Professional UI + Sorting
+
+Date: 2026-06-23
+
+## Purpose
+Improve Audit History page from a beginner-style full-width filter form into a professional, compact, resource-friendly traceability page.
+
+## Implemented
+
+1. Compact filter card
+   - Filter panel has max-width and professional layout.
+   - Common filters are visible in one compact row.
+   - Advanced filters are grouped in collapsible details panel.
+   - Active filters are shown as chips.
+
+2. Sortable audit table
+   - Column headers are clickable sort controls.
+   - Supported sorting:
+     - Date/Time
+     - User
+     - Role
+     - Action
+     - Recipe / Record
+     - Parameter
+     - Old/New value
+     - Source
+     - Reason
+   - Sorting is server-side and preserves active filters.
+
+3. Resource-friendly query behavior
+   - Default limit is 250 rows.
+   - Limit is capped to 5000 rows.
+   - Filtered total count is shown separately from visible records.
+
+4. Professional table behavior
+   - Sticky header.
+   - Fixed layout columns.
+   - Clipped long text with hover title.
+   - Compact result summary.
+   - Scrollable table body to avoid very long pages.
+
+5. Production traceability
+   - Audit records remain read-only from UI.
+   - No delete path is exposed.
+
+## Files Changed
+- database/audit_manager.py
+- flask_app/routes/audit_routes.py
+- flask_app/templates/audit/audit_history.html
+- flask_app/static/css/main.css
+
+## Validation
+Open /audit-history as ADMIN or ENGINEERING.
+
+Test filters:
+- Username = admin
+- Action = SESSION_TIMEOUT_UPDATED
+- Source = WEB_ADMIN_SETTINGS
+- Keyword = GT_Copy_Test
+
+Test sorting:
+- Click Date/Time header
+- Click User header
+- Click Action header
+- Click Source header
+
+Expected:
+- Layout is compact and professional.
+- Table headers sort ascending/descending.
+- Filters remain applied after sorting.
+- Table does not stretch the filter panel across entire screen unnaturally.

@@ -138,7 +138,8 @@ def register_machine_routes(app):
         )
 
     @app.route(
-        "/machines/disable/<int:machine_id>"
+        "/machines/disable/<int:machine_id>",
+        methods=["POST"]
     )
     def disable_machine(
 
@@ -171,7 +172,8 @@ def register_machine_routes(app):
         return redirect("/machines")
 
     @app.route(
-        "/machines/enable/<int:machine_id>"
+        "/machines/enable/<int:machine_id>",
+        methods=["POST"]
     )
     def enable_machine(
 

@@ -21,9 +21,12 @@ Recipe Details
             <a href="/recipes/{{ recipe.recipe_code }}/compare" class="crs-btn crs-btn-soft">
                 Compare
             </a>
-            <a href="/recipes/{{ recipe.recipe_code }}/create-version" class="crs-btn crs-btn-soft">
-                New Version
-            </a>
+            <form method="POST" action="/recipes/{{ recipe.recipe_code }}/create-version" class="inline-action-form">
+                {{ csrf_input() }}
+                <button type="submit" class="crs-btn crs-btn-soft">
+                    New Version
+                </button>
+            </form>
         </div>
     </div>
 

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Parameters
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Recipe Parameters</span>
+            <h1>{{ recipe_code }}</h1>
+            <p>
+                Version V{{ selected_version }}
+                {% if version_info %}
+                <span>|</span>
+                Created by {{ version_info.created_by }}
+                <span>|</span>
+                {{ version_info.display_created_at }}
+                {% endif %}
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipes/{{ recipe_code }}/compare" class="crs-btn crs-btn-soft">
+                Compare
+            </a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Parameters</span>
+            <strong>{{ parameters|length }}</strong>
+            <small>Values in selected version</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Version</span>
+            <strong>V{{ selected_version }}</strong>
+            <small>Loaded recipe version</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Versions</span>
+            <strong>{{ versions|length }}</strong>
+            <small>Available version records</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Mode</span>
+            <strong class="metric-text">Detailed</strong>
+            <small>Legacy parameter grid</small>
+        </div>
+    </div>
+
+    <form class="workbench-toolbar" method="GET">
+        <label>
+            <span>Version</span>
+            <select name="version">
+                {% for version in versions %}
+                <option
+                    value="{{ version }}"
+                    {% if version == selected_version %}
+                    selected
+                    {% endif %}
+                >
+                    V{{ version }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
+        <button class="crs-btn crs-btn-primary" type="submit">Load Version</button>
+    </form>
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Parameter Values</span>
+                <p>Use Recipe Workbench for current production editing and PLC buffer operations.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Value</th>
+                        <th>Range</th>
+                        <th>Unit</th>
+                        <th>PLC Tag</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for parameter in parameters %}
+                    <tr>
+                        <td><strong>{{ parameter.parameter_name }}</strong></td>
+                        <td>{{ parameter.parameter_value }}</td>
+                        <td>{{ parameter.min_value }} to {{ parameter.max_value }}</td>
+                        <td>{{ parameter.unit }}</td>
+                        <td>{{ parameter.plc_tag_name }}</td>
+                        <td>
+                            <div class="row-actions">
+                                <a
+                                    href="/recipes/{{ recipe_code }}/parameters/{{ parameter.parameter_name }}/edit?version={{ selected_version }}"
+                                    class="row-action open"
+                                >
+                                    Edit Value
+                                </a>
+                                {% if session["role"] == "ADMIN" %}
+                                <a
+                                    href="/recipes/{{ recipe_code }}/parameters/{{ parameter.parameter_name }}/metadata?version={{ selected_version }}"
+                                    class="row-action neutral"
+                                >
+                                    Metadata
+                                </a>
+                                {% endif %}
+                                <a
+                                    href="/recipes/{{ recipe_code }}/parameters/{{ parameter.parameter_name }}/history?version={{ selected_version }}"
+                                    class="row-action history"
+                                >
+                                    History
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-state">No parameters found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

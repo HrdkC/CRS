@@ -118,19 +118,15 @@ Machine Registry
                         <td>
                             <div class="row-actions">
                                 {% if machine.active == 1 %}
-                                <a
-                                    href="/machines/disable/{{ machine.id }}"
-                                    class="row-action danger"
-                                >
-                                    Disable
-                                </a>
+                                <form method="POST" action="/machines/disable/{{ machine.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action danger">Disable</button>
+                                </form>
                                 {% else %}
-                                <a
-                                    href="/machines/enable/{{ machine.id }}"
-                                    class="row-action success"
-                                >
-                                    Enable
-                                </a>
+                                <form method="POST" action="/machines/enable/{{ machine.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action success">Enable</button>
+                                </form>
                                 {% endif %}
                             </div>
                         </td>

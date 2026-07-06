@@ -1,0 +1,18 @@
+CRS PLC 1D Array Import FIX1 + Access Button
+
+Purpose:
+- Fix 500 error on /plc-array-import/<machine_id>/<stage_id> caused by incorrect row conversion in PLC1DArrayRecipeBuilder.get_machine_stage_context.
+- Add PLC-ID shortcut route: /plc-array-import/plc/<plc_id>.
+- Add 1D Array Import buttons on PLC list and PLC verification screens.
+
+Scope:
+- Read-only GET page fix.
+- No recipe release.
+- No PLC write.
+- Build still creates DRAFT recipe only after explicit preview/build action and reason.
+
+Test:
+1. Open /plc-array-import/5/12.
+2. Open /plc-array-import/plc/6.
+3. Open /plcs and check 1D Array Import button.
+4. Open /plcs/verify/6 and check PLC 1D Array Import button.

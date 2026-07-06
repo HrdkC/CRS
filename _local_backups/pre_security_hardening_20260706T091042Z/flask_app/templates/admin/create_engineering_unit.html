@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}
+Add Engineering Unit
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Master Data</span>
+            <h1>Add Engineering Unit</h1>
+            <p>Create an approved unit for recipe parameter definitions.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/engineering-units" class="crs-btn crs-btn-soft">Back To Units</a>
+        </div>
+    </div>
+
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Unit Details</span>
+            <span class="status-badge status-info">Engineering</span>
+        </div>
+        <form method="POST" class="parameter-edit-form">
+            <label><span>Unit Code</span><input type="text" name="unit_code" required></label>
+            <label><span>Description</span><input type="text" name="description" required></label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Save Unit</button>
+                <a href="/engineering-units" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+Priority 11 Role Visibility Fix
+================================
+
+Reason
+------
+After adding the ENGINEERING role, engineering users could see Machines, PLC Registry,
+and Stages links, but some underlying routes were still ADMIN-only and redirected to
+the dashboard.
+
+Final Role Hierarchy
+--------------------
+ADMIN > ENGINEERING > TECHNOLOGY > PRODUCTION > OPERATOR
+
+Important Rules
+---------------
+1. ADMIN is the super user.
+2. ENGINEERING can access engineering/master/PLC configuration pages.
+3. ENGINEERING cannot access user management or active session management.
+4. TECHNOLOGY, PRODUCTION, and OPERATOR should not see engineering/admin links.
+5. Templates should hide buttons that the current user is not allowed to use.
+6. Routes must still enforce permission checks even when buttons are hidden.
+
+Pages allowed for ENGINEERING
+-----------------------------
+- Dashboard
+- Recipes
+- TBM Families
+- Machines
+- Stages
+- PLC Registry
+- Engineering Units
+- My Password
+
+Pages blocked for ENGINEERING
+-----------------------------
+- Users
+- Active Sessions
+- Admin-only user/session actions
+
+Technical Changes
+-----------------
+- Added Jinja role helpers from create_app context processor.
+- Updated base navigation to show links based on role_can().
+- Updated machine, family, stage, PLC, PLC tag, parameter, and engineering unit routes to use engineering_config permission instead of ADMIN-only checks.
+- Updated list templates to hide create/enable/disable/edit buttons unless role_can("engineering_config") is true.

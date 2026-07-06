@@ -1,0 +1,75 @@
+/*
+ * 12_recipes.css
+ * Recipe machine/stage selection and bulk edit safety.
+ * Cascade order is controlled by flask_app/static/css/main.css.
+ */
+
+/* Recipe machine/stage selection */
+.recipe-stage-selector-card { display: grid; gap: 12px; }
+.recipe-stage-selector-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, .7fr) minmax(250px, 1fr) auto;
+    gap: 12px;
+    align-items: end;
+}
+.recipe-stage-selector-action { display: flex; align-items: end; }
+.recipe-stage-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 2px;
+}
+.recipe-stage-shortcut {
+    text-decoration: none;
+    border: 1px solid var(--line-200);
+}
+.recipe-stage-shortcut.active {
+    color: #fff;
+    background: var(--apollo-violet);
+    border-color: var(--apollo-violet);
+}
+.recipe-selection-empty-state {
+    min-height: 110px;
+    display: grid;
+    align-content: center;
+    gap: 7px;
+    border-left: 5px solid var(--apollo-violet);
+}
+.recipe-selection-empty-state strong {
+    color: var(--ink-900);
+    font-size: 16px;
+}
+@media (max-width: 760px) {
+    .recipe-stage-selector-grid {
+        grid-template-columns: 1fr;
+    }
+    .recipe-stage-selector-action,
+    .recipe-stage-selector-action .crs-btn {
+        width: 100%;
+    }
+}
+
+
+/* CRS V6.9: Bulk Edit safety and locked PLC Index display */
+.locked-cell-display {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    min-width: 72px;
+    padding: 7px 12px;
+    border: 1px solid #dbe5f3;
+    border-radius: 9px;
+    background: #f4f7fb;
+    color: #334155;
+    font-weight: 800;
+    cursor: not-allowed;
+}
+
+.bulk-row-dirty td {
+    background: #fbf7ff;
+}
+
+.bulk-row-dirty .tag-pill {
+    box-shadow: 0 0 0 2px rgba(113, 44, 163, 0.18);
+}
+

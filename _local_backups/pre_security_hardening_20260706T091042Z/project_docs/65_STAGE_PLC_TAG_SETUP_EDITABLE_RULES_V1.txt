@@ -1,0 +1,73 @@
+CRS V6.12 - Stage PLC Tag Setup Editable Rules
+Date: 2026-06-28
+
+Purpose
+-------
+Configuration Readiness no longer depends only on hardcoded PLC tag setup values.
+Each machine/stage can now store editable PLC tag setup rules for:
+- Purpose
+- Required / Recommended level
+- Display label
+- Expected datatype
+- Array required Yes/No
+- Minimum array size
+- Start index
+- End index
+- Default tag name
+- Search hint
+- Active / Disabled
+
+Scope
+-----
+Changed only the configuration/readiness and PLC tag readiness/payload-size related code.
+Recipe import, bulk edit, phase control, and unrelated screens were not changed.
+
+New database table
+------------------
+stage_plc_tag_requirements is created automatically when Configuration Readiness or PLC tag readiness is opened.
+Existing plc_tags mapping is unchanged.
+Purpose names remain standard so existing Map Tag workflow continues to work.
+
+Default behavior
+----------------
+Existing stages are seeded automatically with standard rules.
+For FIRST_STAGE recipe buffers default to REAL[500] indexes 0..499.
+For SECOND_STAGE recipe buffers default to REAL[150] indexes 0..149.
+
+P15 Second Stage expected setup
+-------------------------------
+RECIPE_DATA:
+  Default tag: CRS_Recipe_Data
+  Expected type: REAL
+  Array required: Yes
+  Minimum size: 150
+  Start index: 0
+  End index: 149
+
+TEST_RECIPE_DATA:
+  Default tag: CRS_Test_Recipe_Data
+  Expected type: REAL
+  Array required: Yes
+  Minimum size: 150
+  Start index: 0
+  End index: 149
+
+PLC operation impact
+--------------------
+PLC download readiness and preparation use stage-specific payload size.
+PLC buffer operation read/write uses the recipe stage payload size instead of a fixed hardcoded 500.
+Temporary test write validation also uses stage-specific payload size.
+
+Files changed
+-------------
+database/stage_plc_tag_requirement_manager.py
+database/configuration_readiness_manager.py
+database/plc_download_tag_readiness_manager.py
+database/plc_download_preparation_manager.py
+database/plc_buffer_operation_manager.py
+database/plc_temporary_test_write_manager.py
+database/plc_tag_manager.py
+flask_app/routes/configuration_routes.py
+flask_app/templates/configuration/stage_readiness.html
+flask_app/static/css/main.css
+project_docs/65_STAGE_PLC_TAG_SETUP_EDITABLE_RULES_V1.txt

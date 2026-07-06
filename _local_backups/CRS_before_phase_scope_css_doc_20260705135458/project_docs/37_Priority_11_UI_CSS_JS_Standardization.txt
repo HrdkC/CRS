@@ -1,0 +1,34 @@
+CRS Priority 11 - CSS / JS Professional Standardization
+
+Original package replaced:
+- flask_app/static/css/main.css
+- flask_app/static/js/main.js
+
+Current CSS architecture update:
+- main.css is no longer the place for new page-specific rules.
+- main.css is now the CSS entry point that imports ordered modules from flask_app/static/css/modules/.
+- Read project_docs/78_CSS_MODULE_SPLIT_V1.txt before changing CRS CSS.
+
+Purpose:
+- Remove scattered duplicate CSS rules.
+- Align CSS and JS with current base.html structure.
+- Use sticky header instead of fixed overlay header.
+- Standardize Full HD 1920x1080 / browser 100% zoom UI scale.
+- Keep login, dashboard, audit, archive, recipe workbench, tables, flash messages, session countdown, and login-attempt alert styles grouped by section.
+- Make confirmation dialog submit-safe so Auto Logout Settings confirmation appears only on Save.
+- Keep heartbeat/session countdown and login attempt acknowledge behavior.
+
+Important:
+- base.html does not need to change.
+- After CSS changes, restart Flask if static caching is suspected and press Ctrl+F5 in browser.
+- If any page-specific template has custom classes not covered here, add its style only in the correct CSS module, not at the bottom of main.css as random overrides.
+- Do not reorder main.css imports unless all major pages are visually checked afterward.
+
+Test Pages:
+- /login
+- /
+- /audit-history
+- /audit-archive
+- /auto-logout-settings
+- /active-sessions
+- /recipe-editor/download-preparation/8

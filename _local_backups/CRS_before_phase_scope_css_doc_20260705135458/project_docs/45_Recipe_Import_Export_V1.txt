@@ -1,0 +1,59 @@
+Priority 11.8 - Recipe Import / Export V1
+========================================
+
+Purpose
+-------
+Adds a professional Excel import/export workflow for complete CRS recipe data:
+- Recipe identity: recipe name, GT/recipe code, version, status and target machine/stage
+- Parameter details: tag index, PLC array index, parameter name, class, unit, datatype, min/max/default/current value, used flag and definition ID
+- Phase control details: 12 phase rows, phase control name/ID, stop option, position option and sequence number
+
+Routes
+------
+- GET  /recipes/import-export
+- GET  /recipes/<recipe_id>/export-excel
+- GET  /recipes/import-template-excel?machine_id=<id>&stage_id=<id>
+- POST /recipes/import-preview
+- POST /recipes/import-confirm
+
+Safety Policy
+-------------
+Imported recipes are saved as DRAFT only. They are not released automatically and cannot be treated as production released values until the normal CRS review/release process is completed.
+
+Validation Rules
+----------------
+Import preview validates before saving:
+- workbook must be CRS_RECIPE_IMPORT_EXPORT_V1
+- Recipe_Info sheet is required
+- Parameters sheet is required
+- Phase_Control sheet is required
+- Recipe Code / GT Code and Recipe Name are required
+- Machine ID and Stage ID must exist and match CRS master data
+- Recipe Code + Machine + Stage + Version must not already exist
+- all used parameter definitions for the machine/stage must be present
+- parameter values must be numeric
+- parameter values must be inside min/max where limits are configured
+- duplicate parameter definitions are blocked
+- 12 unique phase-control lines are required
+- phase-control name/ID must exist for the selected stage type
+- Stop Option and Position Option must be Yes/No
+
+Audit Actions
+-------------
+- RECIPE_EXPORTED_EXCEL
+- RECIPE_IMPORT_TEMPLATE_DOWNLOADED
+- RECIPE_IMPORTED_EXCEL
+
+User Flow
+---------
+1. Open Production -> Recipe Import / Export.
+2. Download a blank template for machine/stage, or export an existing recipe from the recipe list/editor.
+3. Edit Recipe_Info, Parameters, and Phase_Control in Excel.
+4. Upload the file for preview.
+5. Fix any validation errors.
+6. Confirm import with reason.
+7. CRS saves the recipe as DRAFT and opens it in Recipe Editor.
+
+Notes
+-----
+Parameter master metadata is exported for visibility, but import updates only recipe parameter values. Engineering master data changes remain controlled by the existing engineering/master pages.

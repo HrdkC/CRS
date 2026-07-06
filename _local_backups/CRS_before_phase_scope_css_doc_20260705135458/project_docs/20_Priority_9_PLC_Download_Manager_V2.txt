@@ -1,0 +1,65 @@
+# Priority 9 - PLC Download Manager V2
+
+## Goal
+Finalize the Download To PLC flow so it is safe for production validation.
+
+## Final Download Flow
+
+1. Select current RELEASED recipe.
+2. Block historical released and test-only recipes.
+3. Validate database parameter values against min/max.
+4. Build 500 REAL payload from database recipe values.
+5. Read CRS_Recipe_Data from PLC.
+6. Validate CRS_Recipe_Data against min/max.
+7. Compare CRS_Recipe_Data with selected database recipe.
+8. Block download if CRS buffer does not match database recipe.
+9. Confirm machine manual mode.
+10. Confirm download enable.
+11. Write CRS_Recipe_Data to PLC destination buffer.
+12. Read destination buffer back.
+13. Compare destination readback with CRS_Recipe_Data.
+14. Set CRS_Download_Request.
+15. Wait for CRS_Download_Complete or CRS_Download_Error.
+16. Reset CRS_Download_Request.
+17. Pulse CRS_Download_Ack if configured.
+18. Write optional last download metadata tags if configured.
+19. Save download history and audit log.
+
+## Required PLC Tags
+
+- RECIPE_DATA / CRS_Recipe_Data / REAL[500]
+- TEST_RECIPE_DATA / CRS_Test_Recipe_Data / REAL[500]
+- RECIPE_CODE / CRS_Recipe_Code / STRING
+- DOWNLOAD_ENABLE / CRS_Download_Enable / BOOL
+- MACHINE_IN_MANUAL / CRS_Test_Machine_In_Manual / BOOL
+- DOWNLOAD_REQUEST / CRS_Download_Request / BOOL
+- DOWNLOAD_COMPLETE / CRS_Download_Complete / BOOL
+
+## Optional PLC Tags Used When Available
+
+- DOWNLOAD_ACK / CRS_Download_Ack / BOOL
+- DOWNLOAD_BUSY / CRS_Download_Busy / BOOL
+- DOWNLOAD_ERROR / CRS_Download_Error / BOOL
+- DOWNLOAD_RESULT / CRS_Download_Result / DINT
+- DOWNLOAD_OS / CRS_Download_OS / BOOL
+- LAST_DOWNLOAD_TIME / CRS_Last_Download_Time / STRING
+- LAST_DOWNLOAD_USER / CRS_Last_Download_User / STRING
+
+## Validation Rule
+
+Download is allowed only when:
+
+- recipe is current RELEASED,
+- recipe is not test-only,
+- historical version is not selected,
+- database values are valid,
+- CRS buffer values are valid,
+- CRS buffer matches selected database recipe,
+- machine is in manual mode,
+- download enable is TRUE,
+- destination buffer readback matches CRS buffer,
+- PLC handshake completes before timeout.
+
+## Notes
+
+The older typo tag CSR_Download_Complete must be removed from plc_tags. The correct tag is CRS_Download_Complete.

@@ -1,0 +1,16 @@
+# CRS V6.17 - Bulk Edit Toggle, Sorting, and Multi-Action Improvement
+
+Scope: Bulk Parameter Edit page only.
+
+Changed:
+- USED toggle no longer jumps the browser to the bottom blank area.
+- USED toggle changes keep the current scroll position and selected row visible.
+- Toggled rows are auto-selected and highlighted for save.
+- Added client-side row filters: All, Used, Not Used, Modified, Selected.
+- Added visible-row bulk actions: Select Visible, Clear Visible, Mark Selected Used, Mark Selected Not Used, All Visible Used, All Visible Not Used.
+- Added sortable headers for Tag, PLC Index, Used, Parameter Name, Value, Unit, Min, Max, Default, Status.
+- PLC Index remains locked and non-editable.
+- Backend save behavior is unchanged.
+
+Files changed:
+- flask_app/templates/recipes/bulk_edit_parameters.html

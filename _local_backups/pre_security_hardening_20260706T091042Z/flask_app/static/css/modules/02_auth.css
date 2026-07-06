@@ -1,0 +1,81 @@
+/*
+ * 02_auth.css
+ * Login screen base styles.
+ * Cascade order is controlled by flask_app/static/css/main.css.
+ */
+
+/* 05. Login screen - compact single-page */
+.login-layout::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+        linear-gradient(120deg, rgba(255,255,255,0.90), rgba(246,240,251,0.88)),
+        radial-gradient(circle at 15% 10%, rgba(111,45,168,0.16), transparent 30%),
+        radial-gradient(circle at 85% 85%, rgba(111,45,168,0.14), transparent 32%);
+}
+.login-layout::after {
+    content: "Apollo Tyres  ·  Har Safar Mein Dum Hai";
+    position: fixed;
+    right: 36px;
+    bottom: 28px;
+    z-index: -1;
+    color: rgba(111,45,168,0.09);
+    font-size: 34px;
+    font-weight: 900;
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+}
+.login-container {
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    padding: 10px 20px;
+}
+.login-card {
+    width: min(468px, 92vw);
+    max-height: calc(100vh - 20px);
+    overflow: hidden;
+    padding: 18px 30px 15px;
+    background: rgba(255,255,255,0.97);
+    border: 1px solid rgba(255,255,255,0.92);
+    border-radius: 20px;
+    box-shadow: 0 22px 58px rgba(15,23,42,0.10);
+}
+.login-logo { text-align: center; margin: 0 0 5px; }
+.login-logo img { height: 52px; width: auto; object-fit: contain; }
+.login-brand-strip {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 2px 0 8px;
+}
+.login-brand-strip span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid rgba(111,45,168,0.18);
+    background: rgba(111,45,168,0.07);
+    color: var(--apollo-violet-dark);
+    font-size: 10.5px;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.login-title { text-align: center; color: var(--apollo-violet); font-size: 24px; line-height: 1.08; font-weight: 850; margin: 0; }
+.login-subtitle { text-align: center; color: var(--ink-500); font-size: 11.5px; margin: 4px 0 10px; }
+.login-form-panel { background: #eadffc; border: 1px solid #d9c5f8; border-radius: 15px; padding: 16px 22px 17px; }
+.login-form-panel form { margin: 0; padding: 0; background: transparent; border: 0; box-shadow: none; }
+.login-form-panel label { display: block; margin: 0 0 5px; color: var(--ink-900); font-size: 12px; font-weight: 850; }
+.login-form-panel input { height: 38px; margin: 0 0 11px; background: #eaf2fc; font-size: 13px; }
+.login-form-panel button { display: block; width: 44%; min-width: 148px; height: 40px; margin: 10px auto 0; border-radius: 999px; font-size: 13px; box-shadow: 0 10px 20px rgba(111,45,168,0.28); }
+.login-footer { margin-top: 12px; text-align: center; color: var(--ink-500); font-size: 11px; line-height: 1.42; }
+.login-version { color: var(--apollo-violet); font-weight: 850; margin-bottom: 5px; }
+.login-error-message { margin-bottom: 8px; padding: 9px 11px; box-shadow: none; }
+

@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Recipe Parameter
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench recipe-edit-lock-page"
+         data-edit-lock-release-url="/recipe-editor/edit/{{ value.id }}/release-lock"
+         data-edit-lock-id="{{ edit_lock_id or '' }}">
+
+    <div class="workbench-hero">
+
+        <div class="workbench-title">
+
+            <span class="section-kicker">
+                Parameter Edit
+            </span>
+
+            <h1>
+                Tag {{ value.tag_index }}
+            </h1>
+
+            <p>
+                {{ value.parameter_name }}
+                <span>|</span>
+                Recipe ID {{ value.recipe_id }}
+            </p>
+
+        </div>
+
+        <div class="workbench-actions">
+
+            <form
+                class="inline-action-form recipe-edit-release-form"
+                method="POST"
+                action="/recipe-editor/edit/{{ value.id }}/cancel"
+            >
+                <input type="hidden" name="lock_id" value="{{ edit_lock_id or '' }}">
+                <button class="crs-btn crs-btn-soft" type="submit">
+                    Release Lock & Back
+                </button>
+            </form>
+
+            <a
+                class="crs-btn crs-btn-soft"
+                href="/recipe-editor/history/{{ value.id }}"
+            >
+                History
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="metric-grid">
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Current Value
+            </span>
+
+            <strong>
+                {{ value.parameter_value }}
+            </strong>
+
+            <small>
+                {{ value.unit }}
+            </small>
+
+        </div>
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Minimum
+            </span>
+
+            <strong>
+                {{ value.min_value }}
+            </strong>
+
+            <small>
+                Lower validation limit
+            </small>
+
+        </div>
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Maximum
+            </span>
+
+            <strong>
+                {{ value.max_value }}
+            </strong>
+
+            <small>
+                Upper validation limit
+            </small>
+
+        </div>
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Unit
+            </span>
+
+            <strong class="metric-text">
+                {{ value.unit }}
+            </strong>
+
+            <small>
+                Engineering unit
+            </small>
+
+        </div>
+
+    </div>
+
+    {% if is_current_released_edit %}
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Current Released Recipe Edit</span>
+            <span class="status-badge status-warning">Audit Mandatory</span>
+        </div>
+        <p class="muted-text">
+            You are editing the current RELEASED production recipe
+            {{ recipe.recipe_code }} V{{ recipe.version }}.
+            This is allowed by CRS policy for operator ease of use, but every
+            saved change will store old value, new value, user, role, source,
+            timestamp, and reason. Historical released versions remain locked.
+        </p>
+    </div>
+    {% elif recipe and recipe.status == "DRAFT" %}
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Draft Recipe Edit</span>
+            <span class="status-badge status-info">Draft Audit</span>
+        </div>
+        <p class="muted-text">
+            You are editing DRAFT recipe {{ recipe.recipe_code }} V{{ recipe.version }}.
+            The change will still be recorded in parameter audit history.
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="workbench-card edit-parameter-panel">
+
+        <div class="panel-heading">
+
+            <span>
+                Save Parameter Value
+            </span>
+
+            <span class="status-badge status-info">
+                Audit Required
+            </span>
+
+        </div>
+
+        <form
+            class="parameter-edit-form recipe-edit-save-form"
+            method="POST"
+        >
+            <input type="hidden" name="lock_id" value="{{ edit_lock_id or '' }}">
+
+            <label>
+                <span>
+                    Parameter Value
+                </span>
+                <input
+                    type="number"
+                    step="any"
+                    name="parameter_value"
+                    value="{{ value.parameter_value }}"
+                    min="{{ value.min_value }}"
+                    max="{{ value.max_value }}"
+                    required
+                >
+            </label>
+
+            <label>
+                <span>
+                    Change Reason
+                </span>
+                <input
+                    type="text"
+                    name="change_reason"
+                    placeholder="Reason for parameter update"
+                    required
+                >
+            </label>
+
+            <div class="form-action-row">
+
+                <button
+                    class="crs-btn crs-btn-primary"
+                    type="submit"
+                    {% if is_current_released_edit %}
+                    onclick="return confirm('You are changing the CURRENT RELEASED production recipe. Old value, new value, user, role, timestamp, and reason will be audited. Continue?');"
+                    {% endif %}
+                >
+                    Save Parameter
+                </button>
+
+                <button
+                    class="crs-btn crs-btn-soft"
+                    type="submit"
+                    formmethod="POST"
+                    formaction="/recipe-editor/edit/{{ value.id }}/cancel"
+                    formnovalidate
+                >
+                    Cancel / Release Lock
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+{% endblock %}

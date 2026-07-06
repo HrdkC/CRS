@@ -1,6 +1,10 @@
+import os
+from datetime import timedelta
+
 from flask import Flask, render_template, session
 
-from config.settings import SECRET_KEY
+from config.settings import SECRET_KEY, SESSION_TIMEOUT_MINUTES
+from flask_app.security.security_headers import secure_cookie_enabled
 
 
 def create_app():
@@ -10,12 +14,46 @@ def create_app():
         static_folder="static"
     )
 
+    if (
+        os.getenv("CRS_DEPLOYMENT_MODE", "").strip().lower() == "production"
+        and SECRET_KEY == "crs_secret_key"
+    ):
+        raise RuntimeError(
+            "CRS_SECRET_KEY must be configured before production deployment."
+        )
+
     app.secret_key = SECRET_KEY
+
+    try:
+        max_upload_mb = int(os.getenv("CRS_MAX_UPLOAD_MB", "25"))
+    except (TypeError, ValueError):
+        max_upload_mb = 25
 
     app.config.update(
         SESSION_COOKIE_HTTPONLY=True,
-        SESSION_COOKIE_SAMESITE="Lax"
+        SESSION_COOKIE_SAMESITE=os.getenv("CRS_SESSION_COOKIE_SAMESITE", "Strict"),
+        SESSION_COOKIE_SECURE=secure_cookie_enabled(),
+        PERMANENT_SESSION_LIFETIME=timedelta(minutes=SESSION_TIMEOUT_MINUTES),
+        MAX_CONTENT_LENGTH=max(1, max_upload_mb) * 1024 * 1024
     )
+
+    if SECRET_KEY == "crs_secret_key":
+        print(
+            "WARNING: CRS_SECRET_KEY is using the development fallback. "
+            "Set CRS_SECRET_KEY before plant deployment."
+        )
+
+    try:
+        from flask_app.security.security_headers import register_security_headers
+        register_security_headers(app)
+    except Exception as exc:
+        print("Security headers registration failed:", exc)
+
+    try:
+        from flask_app.security.csrf import register_csrf_protection
+        register_csrf_protection(app)
+    except Exception as exc:
+        print("CSRF protection registration failed:", exc)
 
     try:
         from database.upgrade_user_management_priority11 import (

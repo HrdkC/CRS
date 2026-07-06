@@ -144,19 +144,15 @@ PLC Registry
                                 </a>
                                 {% endif %}
                                 {% if plc.active == 1 %}
-                                <a
-                                    href="/plcs/disable/{{ plc.id }}"
-                                    class="row-action danger"
-                                >
-                                    Disable
-                                </a>
+                                <form method="POST" action="/plcs/disable/{{ plc.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action danger">Disable</button>
+                                </form>
                                 {% else %}
-                                <a
-                                    href="/plcs/enable/{{ plc.id }}"
-                                    class="row-action success"
-                                >
-                                    Enable
-                                </a>
+                                <form method="POST" action="/plcs/enable/{{ plc.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action success">Enable</button>
+                                </form>
                                 {% endif %}
                             </div>
                         </td>

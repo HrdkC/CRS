@@ -1,0 +1,34 @@
+CRS V6.5.3 - PLC Array Import Preview Direct Read
+=================================================
+
+Purpose
+-------
+Fix /plc-array-import/P15/SS Preview PLC Array when the CLI diagnostic confirms
+CRS_Recipe_Data and CRS_Test_Recipe_Data exist and read OK, but the browser preview
+still shows a PLC tag read error.
+
+Change
+------
+- Preview action now calls PLC1DArrayRecipeBuilder.read_array_values() directly.
+- Preview is pure PLC read only: no DB create path, no build validation path.
+- Build action still calls build_from_plc_array() and remains protected.
+- The PLC read engine included is the robust V6.5.2 engine:
+  - fresh LogixDriver connection
+  - online tag-list match first
+  - tries TAG{count}, TAG[start]{count}, then per-index fallback
+  - reports diagnostics on the page
+
+Expected Test
+-------------
+1. Fully stop Flask server.
+2. Apply patch ZIP from project root.
+3. Start python app.py again.
+4. Open /plc-array-import/P15/SS.
+5. Use CRS_Test_Recipe_Data, indexes 0 to 149.
+6. Click Preview PLC Array.
+
+Expected result:
+- Page shows PLC Array Preview OK.
+- Diagnostics should show active PLC P15_SS_PLC and read expression such as
+  CRS_Test_Recipe_Data{150} or CRS_Test_Recipe_Data[0]{150}.
+- No DB rows are created by Preview.
