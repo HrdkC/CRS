@@ -164,16 +164,23 @@
 }
 
 .compact-corporate-login-panel {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) auto minmax(8px, .7fr) auto !important;
     padding: 18px 26px !important;
-    gap: 9px !important;
-    align-content: center !important;
+    gap: 0 !important;
+    align-content: stretch !important;
+}
+.compact-corporate-login-panel .login-panel-main {
+    grid-row: 2 !important;
+    display: grid !important;
+    gap: 12px !important;
 }
 .compact-login-panel-head {
-    grid-template-columns: 78px 1fr !important;
-    gap: 10px !important;
+    grid-template-columns: 92px 1fr !important;
+    gap: 12px !important;
 }
 .compact-login-panel-head .login-panel-logo {
-    width: 78px !important;
+    width: 86px !important;
 }
 .compact-login-panel-head .login-system-title {
     font-size: 23px !important;
@@ -211,20 +218,20 @@
 .compact-values-panel {
     width: min(520px, 100%);
     justify-self: center;
-    gap: 7px !important;
+    gap: 9px !important;
 }
 .compact-values-panel .corporate-value-card {
-    min-height: 45px !important;
-    padding: 8px 10px !important;
+    min-height: 56px !important;
+    padding: 10px 12px !important;
 }
 .compact-values-panel .corporate-value-card.value-wide {
-    min-height: 42px !important;
+    min-height: 54px !important;
 }
 .compact-values-panel .corporate-value-card span {
-    font-size: 9.5px !important;
+    font-size: 10.4px !important;
 }
 .compact-values-panel .corporate-value-card strong {
-    font-size: 11.3px !important;
+    font-size: 12.4px !important;
 }
 .leadership-large-panel {
     width: min(520px, 100%);
@@ -232,23 +239,27 @@
     gap: 9px !important;
 }
 .leadership-large-panel .leader-mini-card {
-    grid-template-columns: 60px 1fr !important;
-    min-height: 72px !important;
-    padding: 8px !important;
+    grid-template-columns: 64px 1fr !important;
+    min-height: 80px !important;
+    padding: 9px 10px !important;
 }
 .leadership-large-panel .leader-mini-card img {
-    width: 60px !important;
-    height: 60px !important;
+    width: 64px !important;
+    height: 64px !important;
     border-radius: 13px !important;
 }
 .leadership-large-panel .leader-mini-card strong {
-    font-size: 11.6px !important;
+    font-size: 12.4px !important;
 }
 .leadership-large-panel .leader-mini-card span {
-    font-size: 10.2px !important;
+    font-size: 10.8px !important;
 }
 .corporate-login-footer {
-    font-size: 10px !important;
+    grid-row: 4 !important;
+    align-self: end !important;
+    font-size: 10.5px !important;
+    line-height: 1.45 !important;
+    padding-top: 8px !important;
 }
 
 @media (max-height: 760px) {
@@ -257,10 +268,10 @@
     }
     .campaign-logo-lockup { width: 148px; min-height: 54px; left: 18px; top: 16px; }
     .campaign-logo-lockup img { max-width: 128px; max-height: 44px; }
-    .compact-corporate-login-panel { padding: 13px 22px !important; gap: 7px !important; }
+    .compact-corporate-login-panel { padding: 13px 22px !important; }
     .leadership-large-panel .leader-mini-card { min-height: 64px !important; grid-template-columns: 52px 1fr !important; }
     .leadership-large-panel .leader-mini-card img { width: 52px !important; height: 52px !important; }
-    .corporate-login-footer { display: none !important; }
+    .corporate-login-footer { font-size: 9px !important; padding-top: 4px !important; }
 }
 @media (max-width: 1100px) {
     .corporate-login-v6 {
@@ -510,18 +521,22 @@
 .compact-corporate-login-panel .login-panel-head,
 .compact-corporate-login-panel .compact-login-form,
 .compact-corporate-login-panel .compact-values-panel,
-.compact-corporate-login-panel .leadership-large-panel,
-.compact-corporate-login-panel .corporate-login-footer {
+.compact-corporate-login-panel .leadership-large-panel {
     width: min(430px, 100%) !important;
     justify-self: center !important;
     align-self: center !important;
+}
+.compact-corporate-login-panel .corporate-login-footer {
+    width: min(430px, 100%) !important;
+    justify-self: center !important;
+    align-self: end !important;
 }
 
 /* Header row aligned with form left edge */
 .compact-corporate-login-panel .login-panel-head,
 .compact-login-panel-head {
     display: grid !important;
-    grid-template-columns: 84px minmax(0, 1fr) !important;
+    grid-template-columns: 92px minmax(0, 1fr) !important;
     align-items: center !important;
     justify-items: start !important;
     column-gap: 14px !important;
@@ -531,8 +546,8 @@
 /* Apollo logo inside header row */
 .compact-corporate-login-panel .login-panel-logo,
 .compact-login-panel-head .login-panel-logo {
-    width: 78px !important;
-    max-width: 78px !important;
+    width: 86px !important;
+    max-width: 86px !important;
     height: auto !important;
     justify-self: start !important;
     object-fit: contain !important;
@@ -603,4 +618,3 @@
     font-weight: 750;
     color: var(--ink-500);
 }
-

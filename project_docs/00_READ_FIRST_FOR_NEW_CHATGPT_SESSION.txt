@@ -37,6 +37,12 @@ Current UI CSS Architecture:
 - Keep main.css import order unchanged unless all major pages are visually checked.
 - Read project_docs/78_CSS_MODULE_SPLIT_V1.txt before changing CRS styling.
 
+System Bootstrap / Workstation Recovery:
+
+- Use scripts/bootstrap_crs_system.py for grouped database/workstation setup.
+- scripts/create_database.py is a compatibility wrapper for the same bootstrap.
+- Read project_docs/80_SYSTEM_BOOTSTRAP_INITIALIZATION_V1.txt before changing setup or migration logic.
+
 Project Philosophy
 ------------------
 

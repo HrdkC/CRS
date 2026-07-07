@@ -264,15 +264,21 @@ button, .btn, .crs-btn, .action-btn { font-size: 12px !important; }
     min-height: 0;
     overflow: hidden;
     display: grid;
-    align-content: center;
-    gap: 11px;
+    grid-template-rows: minmax(0, 1fr) auto minmax(8px, .75fr) auto;
+    align-content: stretch;
+    gap: 0;
     padding: 22px 28px;
     background:
         radial-gradient(circle at top right, rgba(111,45,168,.10), transparent 34%),
         linear-gradient(180deg, rgba(255,255,255,.98), rgba(250,247,254,.98));
 }
-.login-panel-head { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 13px; }
-.login-panel-logo { width: 92px; height: auto; object-fit: contain; }
+.login-panel-main {
+    grid-row: 2;
+    display: grid;
+    gap: 12px;
+}
+.login-panel-head { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 13px; }
+.login-panel-logo { width: 96px; height: auto; object-fit: contain; }
 .login-system-title { color: var(--apollo-violet); font-size: 26px; line-height: 1.04; font-weight: 950; letter-spacing: -.2px; }
 .login-system-subtitle { margin-top: 4px; color: var(--ink-500); font-size: 11.5px; font-weight: 700; }
 .corporate-login-form {
@@ -306,43 +312,53 @@ button, .btn, .crs-btn, .action-btn { font-size: 12px !important; }
 .corporate-values-panel {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 9px;
 }
 .corporate-value-card {
-    min-height: 52px;
+    min-height: 58px;
     display: grid;
     align-content: center;
-    gap: 3px;
-    padding: 9px 10px;
+    gap: 4px;
+    padding: 11px 12px;
     border-radius: 13px;
     border: 1px solid var(--line-200);
     background: #fff;
     box-shadow: 0 8px 16px rgba(15,23,42,.04);
 }
-.corporate-value-card.value-wide { grid-column: 1 / -1; min-height: 48px; }
+.corporate-value-card.value-wide { grid-column: 1 / -1; min-height: 54px; }
 .corporate-value-card.value-primary { border-color: rgba(111,45,168,.22); background: #faf5ff; }
-.corporate-value-card span { color: var(--ink-500); font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
-.corporate-value-card strong { color: var(--ink-900); font-size: 12px; line-height: 1.2; }
+.corporate-value-card span { color: var(--ink-500); font-size: 10.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
+.corporate-value-card strong { color: var(--ink-900); font-size: 12.6px; line-height: 1.2; }
 .leadership-mini-panel {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 9px;
 }
 .leader-mini-card {
     display: grid;
-    grid-template-columns: 46px 1fr;
-    gap: 8px;
+    grid-template-columns: 54px 1fr;
+    gap: 10px;
     align-items: center;
-    min-height: 58px;
-    padding: 7px;
+    min-height: 70px;
+    padding: 8px 9px;
     border-radius: 13px;
     border: 1px solid var(--line-200);
     background: #fff;
 }
-.leader-mini-card img { width: 46px; height: 46px; object-fit: cover; border-radius: 11px; object-position: top center; }
-.leader-mini-card strong { display: block; color: var(--ink-900); font-size: 11.5px; line-height: 1.15; }
-.leader-mini-card span { display: block; margin-top: 2px; color: var(--ink-500); font-size: 10.5px; line-height: 1.2; font-weight: 750; }
-.corporate-login-footer {display: grid; gap: 3px; text-align: center; color: var(--ink-500); font-size: 10.5px; line-height: 1.5; }
+.leader-mini-card img { width: 54px; height: 54px; object-fit: cover; border-radius: 12px; object-position: top center; }
+.leader-mini-card strong { display: block; color: var(--ink-900); font-size: 12.2px; line-height: 1.12; }
+.leader-mini-card span { display: block; margin-top: 2px; color: var(--ink-500); font-size: 11px; line-height: 1.15; font-weight: 750; }
+.corporate-login-footer {
+    grid-row: 4;
+    align-self: end;
+    display: grid;
+    gap: 3px;
+    padding-top: 8px;
+    text-align: center;
+    color: var(--ink-500);
+    font-size: 10.5px;
+    line-height: 1.45;
+}
 .corporate-login-footer strong { color: var(--apollo-violet); }
 .login-error-message { margin: 0; padding: 9px 11px; }
 
@@ -460,4 +476,3 @@ button:disabled,
     .user-info { justify-self: center; text-align: center; }
     .brand-campaign-mini { display: none; }
 }
-

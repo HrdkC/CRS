@@ -1,0 +1,173 @@
+CRS SYSTEM BOOTSTRAP INITIALIZATION V1
+======================================
+
+Purpose
+-------
+
+This document defines the recovery-safe CRS workstation/database bootstrap
+procedure.
+
+Use this when:
+
+- A new engineering workstation is prepared.
+- The local SQLite database file is missing.
+- Existing database tables must be verified and repaired.
+- A failed workstation is replaced and CRS must be brought back in a controlled
+  step-by-step way.
+
+Important Boundary
+------------------
+
+Current CRS runtime still uses several sqlite3 managers. Therefore the new
+bootstrap is production-safe for SQLite and validates non-SQLite connectivity,
+but full MySQL/MSSQL table creation requires the planned SQLAlchemy/Alembic
+migration completion.
+
+Do not claim MySQL production bootstrap is complete until the legacy sqlite3
+managers are migrated to the central SQLAlchemy database layer.
+
+Main Program
+------------
+
+Preferred command:
+
+    python scripts/bootstrap_crs_system.py
+
+Legacy-compatible command:
+
+    python scripts/create_database.py
+
+Both commands run the same grouped initializer:
+
+    database/system_bootstrap_manager.py
+
+Configuration
+-------------
+
+Primary configuration file:
+
+    config/settings.py
+
+SQLite development default:
+
+    database/recipe.db
+
+Environment override:
+
+    CRS_DATABASE_URL
+
+Examples:
+
+    sqlite:///C:/CRS/database/recipe.db
+    mysql+pymysql://crs_user:password@server-ip:3306/crs_database
+
+Security note:
+
+Never hardcode production database passwords into project files. Use environment
+variables or a protected deployment configuration.
+
+What The Bootstrap Does
+-----------------------
+
+1. Creates required project folders.
+2. Validates the configured database target.
+3. Creates a local backup before touching an existing SQLite database.
+4. Creates core tables.
+5. Creates machine/stage/PLC/template tables.
+6. Creates phase-control tables.
+7. Creates recipe, audit, session, upload/download, and PLC operation tables.
+8. Runs safe column/index upgrades.
+9. Seeds required recovery users unless disabled.
+10. Verifies all required tables exist.
+11. Writes a JSON report.
+12. Writes a bootstrap history record into the database.
+
+Safety Rules
+------------
+
+The bootstrap must not:
+
+- Drop production tables.
+- Delete recipe data.
+- Delete audit history.
+- Rebuild parameter master tables destructively.
+- Hide failed required setup steps.
+
+Known destructive scripts are not called by the bootstrap path.
+
+Progress Display
+----------------
+
+The script displays installer-style progress:
+
+    [01/54] 01 Configuration / Project folders ... OK (0.01s, elapsed 00:00, remaining 00:35)
+
+Each step displays:
+
+- Current step number
+- Total steps
+- Functional group
+- Step name
+- OK/FAILED status
+- Step duration
+- Elapsed time
+- Estimated remaining time
+
+Reports
+-------
+
+Reports are written to:
+
+    reports/bootstrap/
+
+Example:
+
+    reports/bootstrap/bootstrap_20260707153001.json
+
+SQLite pre-bootstrap backups are written to:
+
+    _local_backups/bootstrap/
+
+Default Users
+-------------
+
+By default, the bootstrap runs existing CRS recovery-user seed helpers. Existing
+passwords are not overwritten by those helpers.
+
+To skip default user seeding:
+
+    python scripts/bootstrap_crs_system.py --no-seed-users
+
+To force default user seeding:
+
+    python scripts/bootstrap_crs_system.py --seed-users
+
+Production rule:
+
+All default or recovery passwords must be changed before plant use.
+
+Future MySQL/MSSQL Work
+-----------------------
+
+Required before production MySQL/MSSQL bootstrap:
+
+1. Move all active sqlite3 managers to SQLAlchemy session helpers.
+2. Create complete ORM models or Alembic migration scripts for every table.
+3. Add database-specific smoke tests.
+4. Validate table creation on an empty MySQL database.
+5. Validate backup/restore and migration rollback.
+6. Update this document after successful MySQL dry run.
+
+Troubleshooting
+---------------
+
+If a step fails:
+
+1. Read the failed step name in console output.
+2. Open the matching JSON report in reports/bootstrap.
+3. Check the traceback for the exact module/function.
+4. Fix the missing dependency or schema issue.
+5. Run the bootstrap again.
+
+The bootstrap is idempotent. Running it again should repair missing tables or
+columns without deleting data.
