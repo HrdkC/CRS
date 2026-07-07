@@ -44,21 +44,36 @@ Create Machine
         </div>
         {% else %}
         <form method="POST" class="parameter-edit-form">
+            {{ csrf_input() }}
             <label>
                 <span>Machine Code</span>
-                <input type="text" name="machine_code" required>
+                <input
+                    type="text"
+                    name="machine_code"
+                    value="{{ machine_code or '' }}"
+                    required
+                >
             </label>
             <label>
                 <span>TBM Family</span>
                 <select name="family_id" required>
                     {% for family in families %}
-                    <option value="{{ family.id }}">{{ family.family_name }}</option>
+                    <option
+                        value="{{ family.id }}"
+                        {% if family_id|string == family.id|string %}selected{% endif %}
+                    >
+                        {{ family.family_name }}
+                    </option>
                     {% endfor %}
                 </select>
             </label>
             <label>
                 <span>Description</span>
-                <input type="text" name="description">
+                <input
+                    type="text"
+                    name="description"
+                    value="{{ description or '' }}"
+                >
             </label>
             <div class="form-action-row">
                 <button type="submit" class="crs-btn crs-btn-primary">Create Machine</button>

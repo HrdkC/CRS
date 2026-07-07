@@ -26,6 +26,56 @@ class StagePLCTagRequirementManager:
         "BT_PHASE_POSITION_STRING",
     }
 
+    ALL_PHASE_PURPOSES = (
+        GENERIC_PHASE_PURPOSES
+        |
+        SECOND_STAGE_PHASE_PURPOSES
+    )
+
+    @staticmethod
+    def normalize_stage_type(stage_type):
+        return str(stage_type or "").strip().upper()
+
+    @staticmethod
+    def stage_phase_purposes(stage_type):
+        stage = StagePLCTagRequirementManager.normalize_stage_type(stage_type)
+        if stage == "FIRST_STAGE":
+            return set(StagePLCTagRequirementManager.GENERIC_PHASE_PURPOSES)
+        if stage == "SECOND_STAGE":
+            return set(StagePLCTagRequirementManager.SECOND_STAGE_PHASE_PURPOSES)
+        return set(StagePLCTagRequirementManager.ALL_PHASE_PURPOSES)
+
+    @staticmethod
+    def is_purpose_allowed_for_stage(purpose, stage_type):
+        purpose_key = str(purpose or "").strip().upper()
+        if purpose_key not in StagePLCTagRequirementManager.ALL_PHASE_PURPOSES:
+            return True
+        return purpose_key in StagePLCTagRequirementManager.stage_phase_purposes(
+            stage_type
+        )
+
+    @staticmethod
+    def filter_stage_compatible_rules(rows, stage_type):
+        return [
+            row for row in rows
+            if StagePLCTagRequirementManager.is_purpose_allowed_for_stage(
+                row.get("purpose"),
+                stage_type,
+            )
+        ]
+
+    @staticmethod
+    def get_stage_type(machine_id, stage_id):
+        conn = get_connection()
+        cur = conn.cursor()
+        stage_type = StagePLCTagRequirementManager._get_stage_type(
+            cur,
+            machine_id,
+            stage_id,
+        )
+        conn.close()
+        return stage_type
+
     DEFAULT_RULES = [
         {
             "purpose": "RECIPE_DATA",
@@ -405,6 +455,11 @@ class StagePLCTagRequirementManager:
         cur = conn.cursor()
         stage_type = StagePLCTagRequirementManager._get_stage_type(cur, machine_id, stage_id)
         for default_rule in StagePLCTagRequirementManager.DEFAULT_RULES:
+            if not StagePLCTagRequirementManager.is_purpose_allowed_for_stage(
+                default_rule.get("purpose"),
+                stage_type,
+            ):
+                continue
             rule = StagePLCTagRequirementManager._default_rule_for_stage(default_rule, stage_type)
             purpose = str(rule["purpose"] or "").strip().upper()
             cur.execute(
@@ -492,6 +547,15 @@ class StagePLCTagRequirementManager:
             tuple(params),
         )
         rows = [dict(row) for row in cur.fetchall()]
+        stage_type = StagePLCTagRequirementManager._get_stage_type(
+            cur,
+            machine_id,
+            stage_id,
+        )
+        rows = StagePLCTagRequirementManager.filter_stage_compatible_rules(
+            rows,
+            stage_type,
+        )
         conn.close()
         return rows
 
@@ -500,6 +564,17 @@ class StagePLCTagRequirementManager:
         StagePLCTagRequirementManager.seed_stage_defaults(machine_id, stage_id)
         conn = get_connection()
         cur = conn.cursor()
+        stage_type = StagePLCTagRequirementManager._get_stage_type(
+            cur,
+            machine_id,
+            stage_id,
+        )
+        if not StagePLCTagRequirementManager.is_purpose_allowed_for_stage(
+            purpose,
+            stage_type,
+        ):
+            conn.close()
+            return None
         row = cur.execute(
             """
             SELECT *
@@ -561,7 +636,7 @@ class StagePLCTagRequirementManager:
         }
 
     @staticmethod
-    def validate_rules(rows):
+    def validate_rules(rows, stage_type=None):
         errors = []
         purposes = set()
         for idx, raw in enumerate(rows, start=1):
@@ -569,6 +644,18 @@ class StagePLCTagRequirementManager:
             purpose = row["purpose"]
             if not purpose:
                 errors.append(f"Row {idx}: purpose is required.")
+                continue
+            if (
+                stage_type
+                and
+                not StagePLCTagRequirementManager.is_purpose_allowed_for_stage(
+                    purpose,
+                    stage_type,
+                )
+            ):
+                errors.append(
+                    f"{purpose}: this phase tag purpose is not valid for {stage_type}."
+                )
                 continue
             if purpose in purposes:
                 errors.append(f"Row {idx}: duplicate purpose {purpose}.")
@@ -592,7 +679,18 @@ class StagePLCTagRequirementManager:
     @staticmethod
     def save_stage_requirements(machine_id, stage_id, rows):
         StagePLCTagRequirementManager.seed_stage_defaults(machine_id, stage_id)
-        errors = StagePLCTagRequirementManager.validate_rules(rows)
+        stage_type = StagePLCTagRequirementManager.get_stage_type(
+            machine_id,
+            stage_id,
+        )
+        rows = StagePLCTagRequirementManager.filter_stage_compatible_rules(
+            rows,
+            stage_type,
+        )
+        errors = StagePLCTagRequirementManager.validate_rules(
+            rows,
+            stage_type=stage_type,
+        )
         if errors:
             return False, errors
         conn = get_connection()

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit TBM Family
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Master Registry</span>
+            <h1>Edit TBM Family</h1>
+            <p>Change family master details with audit. Machine links remain machine-owned.</p>
+        </div>
+
+        <div class="workbench-actions">
+            <a href="/families" class="crs-btn crs-btn-soft">Back To Families</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Family</span>
+            <strong class="metric-text">{{ family.family_name }}</strong>
+            <small>Master record ID {{ family.id }}</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Linked Machines</span>
+            <strong>{{ linked_machines|length }}</strong>
+            <small>Delete allowed only when zero</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong class="metric-text">
+                {% if family.active == 1 %}Active{% else %}Disabled{% endif %}
+            </strong>
+            <small>Controls future machine assignment</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Audit</span>
+            <strong class="metric-text">Required</strong>
+            <small>Reason is mandatory</small>
+        </div>
+    </div>
+
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Family Details</span>
+            <span class="status-badge status-info">Editable</span>
+        </div>
+
+        <form method="POST" class="parameter-edit-form">
+            {{ csrf_input() }}
+            <label>
+                <span>Family Name</span>
+                <input
+                    type="text"
+                    name="family_name"
+                    required
+                    value="{{ family_name if family_name is defined else family.family_name }}"
+                >
+            </label>
+
+            <label>
+                <span>Description</span>
+                <textarea
+                    name="description"
+                    rows="4"
+                >{{ description if description is defined else (family.description or '') }}</textarea>
+            </label>
+
+            <label>
+                <span>Change Reason</span>
+                <textarea
+                    name="reason"
+                    rows="3"
+                    required
+                    placeholder="Example: Correct family description after engineering review"
+                ></textarea>
+            </label>
+
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Save Family</button>
+                <a href="/families" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Linked Machines</span>
+                <p>Reassign these machines before deleting this family.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Machine</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for machine in linked_machines %}
+                    <tr>
+                        <td><span class="tag-pill">{{ machine.id }}</span></td>
+                        <td><strong>{{ machine.machine_code }}</strong></td>
+                        <td>{{ machine.description or '-' }}</td>
+                        <td>
+                            {% if machine.active == 1 %}
+                            <span class="status-badge status-success">Active</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a
+                                href="/machines/change-family/{{ machine.id }}"
+                                class="row-action edit"
+                            >
+                                Change Family
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            No machines are linked. This family can be deleted from the family list.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

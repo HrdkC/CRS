@@ -87,6 +87,7 @@ TBM Families
                         <th>ID</th>
                         <th>Family Name</th>
                         <th>Description</th>
+                        <th>Machines</th>
                         <th>Created By</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -104,7 +105,20 @@ TBM Families
                         <td>
                             <strong>{{ family.family_name }}</strong>
                         </td>
-                        <td>{{ family.description }}</td>
+                        <td>{{ family.description or '-' }}</td>
+                        <td>
+                            {% if family.machine_count %}
+                            <a
+                                href="/machines"
+                                class="tag-pill"
+                                title="Reassign linked machines before deleting this family."
+                            >
+                                {{ family.machine_count }} linked
+                            </a>
+                            {% else %}
+                            <span class="status-badge status-neutral">Unused</span>
+                            {% endif %}
+                        </td>
                         <td>{{ family.created_by }}</td>
                         <td>
                             {% if family.active == 1 %}
@@ -115,16 +129,65 @@ TBM Families
                         </td>
                         <td>
                             <div class="row-actions">
-                                {% if family.active == 1 %}
+                                <a
+                                    href="/families/edit/{{ family.id }}"
+                                    class="row-action edit"
+                                >
+                                    Edit
+                                </a>
+                                {% if family.active == 1 and family.machine_count == 0 %}
                                 <form method="POST" action="/families/disable/{{ family.id }}" class="row-action-form">
                                     {{ csrf_input() }}
                                     <button type="submit" class="row-action danger">Disable</button>
                                 </form>
+                                {% elif family.active == 1 %}
+                                <span
+                                    class="row-action neutral"
+                                    title="Disable blocked. Reassign linked machines first."
+                                >
+                                    Linked
+                                </span>
                                 {% else %}
                                 <form method="POST" action="/families/enable/{{ family.id }}" class="row-action-form">
                                     {{ csrf_input() }}
                                     <button type="submit" class="row-action success">Enable</button>
                                 </form>
+                                {% endif %}
+                                {% if family.machine_count == 0 %}
+                                <details class="delete-confirm">
+                                    <summary class="row-action delete">
+                                        Delete
+                                    </summary>
+                                    <form
+                                        method="POST"
+                                        action="/families/delete/{{ family.id }}"
+                                        class="delete-confirm-panel"
+                                    >
+                                        {{ csrf_input() }}
+                                        <label>
+                                            <span>Delete Reason</span>
+                                            <textarea
+                                                name="reason"
+                                                rows="2"
+                                                required
+                                                placeholder="Reason for deleting {{ family.family_name }}"
+                                            ></textarea>
+                                        </label>
+                                        <button
+                                            type="submit"
+                                            class="row-action delete"
+                                        >
+                                            Confirm Delete
+                                        </button>
+                                    </form>
+                                </details>
+                                {% else %}
+                                <span
+                                    class="row-action neutral"
+                                    title="Delete blocked. Reassign linked machines first."
+                                >
+                                    Reassign First
+                                </span>
                                 {% endif %}
                             </div>
                         </td>
@@ -133,7 +196,7 @@ TBM Families
                     {% else %}
 
                     <tr>
-                        <td colspan="6" class="empty-state">
+                        <td colspan="7" class="empty-state">
                             No TBM families configured.
                         </td>
                     </tr>

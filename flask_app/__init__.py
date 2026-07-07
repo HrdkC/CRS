@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from flask import Flask, render_template, session
 
-from config.settings import SECRET_KEY, SESSION_TIMEOUT_MINUTES
+from config.settings import APP_VERSION, SECRET_KEY, SESSION_TIMEOUT_MINUTES
 from flask_app.security.security_headers import secure_cookie_enabled
 
 
@@ -132,6 +132,7 @@ def create_app():
             "machine_stage_display": machine_stage_display,
             "machine_stage_path": machine_stage_path,
             "machine_stage_url": machine_stage_url,
+            "app_version": APP_VERSION,
         }
 
     @app.errorhandler(404)

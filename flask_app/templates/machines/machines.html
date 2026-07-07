@@ -105,8 +105,8 @@ Machine Registry
                         <td>
                             <strong>{{ machine.machine_code }}</strong>
                         </td>
-                        <td>{{ machine.family_name }}</td>
-                        <td>{{ machine.description }}</td>
+                        <td>{{ machine.family_name or '-' }}</td>
+                        <td>{{ machine.description or '-' }}</td>
                         <td>{{ machine.created_by }}</td>
                         <td>
                             {% if machine.active == 1 %}
@@ -117,6 +117,12 @@ Machine Registry
                         </td>
                         <td>
                             <div class="row-actions">
+                                <a
+                                    href="/machines/change-family/{{ machine.id }}"
+                                    class="row-action edit"
+                                >
+                                    Family
+                                </a>
                                 {% if machine.active == 1 %}
                                 <form method="POST" action="/machines/disable/{{ machine.id }}" class="row-action-form">
                                     {{ csrf_input() }}

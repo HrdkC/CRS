@@ -408,10 +408,10 @@
 /* Apollo logo */
 .site-header .header-logo-main {
     display: block !important;
-    width: 165px !important;
-    height: 66px !important;
-    max-width: 165px !important;
-    max-height: 66px !important;
+    width: 169px !important;
+    height: 70px !important;
+    max-width: 169px !important;
+    max-height: 70px !important;
     object-fit: contain !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -457,6 +457,17 @@
     text-align: center !important;
 }
 
+.site-header .brand-subtitle {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 1px !important;
+    width: 100% !important;
+    text-align: center !important;
+    line-height: 1.12 !important;
+}
+
 /* Navigation stays below logo/text block */
 .site-header .navbar {
     padding-top: 0 !important;
@@ -490,10 +501,10 @@
     }
 
     .site-header .header-logo-main {
-        width: 138px !important;
-        height: 58px !important;
-        max-width: 138px !important;
-        max-height: 58px !important;
+        width: 142px !important;
+        height: 62px !important;
+        max-width: 142px !important;
+        max-height: 62px !important;
     }
 
     .site-header .header-logo-bcci {
@@ -546,8 +557,8 @@
 /* Apollo logo inside header row */
 .compact-corporate-login-panel .login-panel-logo,
 .compact-login-panel-head .login-panel-logo {
-    width: 86px !important;
-    max-width: 86px !important;
+    width: 90px !important;
+    max-width: 90px !important;
     height: auto !important;
     justify-self: start !important;
     object-fit: contain !important;
@@ -556,8 +567,8 @@
 /* CRS title text aligned left */
 .compact-corporate-login-panel .login-system-title,
 .compact-login-panel-head .login-system-title {
-    text-align: left !important;
-    justify-self: start !important;
+    text-align: center !important;
+    justify-self: stretch !important;
     margin: 0 !important;
     font-size: 24px !important;
     line-height: 1.05 !important;
@@ -569,7 +580,7 @@
 /* Subtitle aligned with title */
 .compact-corporate-login-panel .login-system-subtitle,
 .compact-login-panel-head .login-system-subtitle {
-    text-align: left !important;
+    text-align: center !important;
     margin-top: 4px !important;
     font-size: 11px !important;
     font-weight: 800 !important;

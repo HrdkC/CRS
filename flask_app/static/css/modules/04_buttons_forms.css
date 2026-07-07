@@ -48,6 +48,43 @@ button:hover,
 .secondary-action:hover { color: var(--ink-900); background: #e8eef6; }
 .row-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .row-action-form { display: inline-flex; margin: 0; }
+.delete-confirm {
+    display: inline-flex;
+    margin: 0;
+}
+.delete-confirm[open] {
+    flex-basis: 100%;
+    display: grid;
+    gap: 9px;
+    justify-items: start;
+}
+.delete-confirm > summary {
+    list-style: none;
+}
+.delete-confirm > summary::-webkit-details-marker {
+    display: none;
+}
+.delete-confirm-panel {
+    display: grid;
+    gap: 9px;
+    min-width: min(330px, 100%);
+    padding: 11px;
+    border: 1px solid #fecaca;
+    border-left: 4px solid #dc2626;
+    border-radius: var(--radius-md);
+    background: #fff7f7;
+    box-shadow: var(--shadow-sm);
+}
+.delete-confirm-panel label {
+    display: grid;
+    gap: 6px;
+    width: 100%;
+    margin: 0;
+}
+.delete-confirm-panel textarea {
+    min-height: 58px;
+    background: #fff;
+}
 .inline-action-form { display: inline-flex; margin: 0; }
 .nav-post-form { display: block; margin: 0; }
 .nav-post-link {

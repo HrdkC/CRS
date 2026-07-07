@@ -24,7 +24,7 @@
 
     <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='css/main.css') }}?v=css-v93-phase-scope-20260705"
+        href="{{ url_for('static', filename='css/main.css') }}?v=css-v94-login-header-version-20260707"
     >
 
 </head>
@@ -62,7 +62,8 @@
                     Centralized Recipe System (CRS)
                 </div>
                 <div class="brand-subtitle">
-                    Apollo Tyres Ltd. | PCR Limda Plant
+                    <span>Industrial Recipe Control</span>
+                    <span>PCR Engineering &middot; Limda Plant</span>
                 </div>
             </div>
 
@@ -274,7 +275,7 @@
             <span class="footer-separator">|</span>
             <span>Centralized Recipe System (CRS)</span>
             <span class="footer-separator">|</span>
-            <span>Version 1.0 Beta</span>
+            <span>Version {{ app_version }}</span>
             <span class="footer-separator">|</span>
             <span>Developed by Hardik Chauhan</span>
             <span class="footer-separator">|</span>

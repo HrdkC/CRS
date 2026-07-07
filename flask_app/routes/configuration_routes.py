@@ -266,9 +266,17 @@ def register_configuration_routes(app):
             "Stage PLC tag requirement setup updated"
         )
         rows = []
+        skipped_purposes = []
+        stage_type = context.get("stage_type")
         for purpose in purposes:
             purpose_key = (purpose or "").strip().upper()
             if not purpose_key:
+                continue
+            if not StagePLCTagRequirementManager.is_purpose_allowed_for_stage(
+                purpose_key,
+                stage_type,
+            ):
+                skipped_purposes.append(purpose_key)
                 continue
             rows.append(
                 {
@@ -289,22 +297,28 @@ def register_configuration_routes(app):
 
         new_purpose = (request.form.get("new_purpose") or "").strip().upper()
         if new_purpose:
-            rows.append(
-                {
-                    "purpose": new_purpose,
-                    "label": request.form.get("new_label"),
-                    "requirement_level": request.form.get("new_requirement_level"),
-                    "expected_type": request.form.get("new_expected_type"),
-                    "array_required": request.form.get("new_array_required"),
-                    "minimum_array_size": request.form.get("new_minimum_array_size"),
-                    "array_start_index": request.form.get("new_array_start_index"),
-                    "array_end_index": request.form.get("new_array_end_index"),
-                    "default_tag_name": request.form.get("new_default_tag_name"),
-                    "search_hint": request.form.get("new_search_hint"),
-                    "active": request.form.get("new_active"),
-                    "display_order": request.form.get("new_display_order"),
-                }
-            )
+            if not StagePLCTagRequirementManager.is_purpose_allowed_for_stage(
+                new_purpose,
+                stage_type,
+            ):
+                skipped_purposes.append(new_purpose)
+            else:
+                rows.append(
+                    {
+                        "purpose": new_purpose,
+                        "label": request.form.get("new_label"),
+                        "requirement_level": request.form.get("new_requirement_level"),
+                        "expected_type": request.form.get("new_expected_type"),
+                        "array_required": request.form.get("new_array_required"),
+                        "minimum_array_size": request.form.get("new_minimum_array_size"),
+                        "array_start_index": request.form.get("new_array_start_index"),
+                        "array_end_index": request.form.get("new_array_end_index"),
+                        "default_tag_name": request.form.get("new_default_tag_name"),
+                        "search_hint": request.form.get("new_search_hint"),
+                        "active": request.form.get("new_active"),
+                        "display_order": request.form.get("new_display_order"),
+                    }
+                )
 
         old_rows = StagePLCTagRequirementManager.get_stage_requirements(
             context["machine_id"],
@@ -351,6 +365,12 @@ def register_configuration_routes(app):
         except Exception:
             pass
 
+        if skipped_purposes:
+            flash(
+                "Skipped wrong-stage phase purpose(s): "
+                + ", ".join(sorted(set(skipped_purposes))),
+                "warning",
+            )
         flash("PLC tag setup rules saved for this machine/stage.", "success")
         return redirect(machine_stage_url("/configuration", context=context))
 
@@ -380,11 +400,28 @@ def register_configuration_routes(app):
             return redirect(machine_stage_url("/configuration", context=context))
 
         rows = []
+        skipped_purposes = []
+        stage_type = context.get("stage_type")
         for tag_id in tag_ids:
             try:
                 tag_id_int = int(tag_id)
             except Exception:
                 continue
+            tag_purpose = (
+                request.form.get(f"tag_purpose_{tag_id}")
+                or
+                ""
+            ).strip().upper()
+            if (
+                tag_purpose
+                and
+                not StagePLCTagRequirementManager.is_purpose_allowed_for_stage(
+                    tag_purpose,
+                    stage_type,
+                )
+            ):
+                skipped_purposes.append(tag_purpose)
+                tag_purpose = ""
 
             rows.append({
                 "id": tag_id_int,
@@ -395,7 +432,7 @@ def register_configuration_routes(app):
                 "array_start_index": request.form.get(f"array_start_index_{tag_id}"),
                 "array_end_index": request.form.get(f"array_end_index_{tag_id}"),
                 "description": request.form.get(f"description_{tag_id}"),
-                "tag_purpose": request.form.get(f"tag_purpose_{tag_id}"),
+                "tag_purpose": tag_purpose,
             })
 
         result = PLCTagManager.bulk_update_stage_tags(
@@ -431,6 +468,12 @@ def register_configuration_routes(app):
         except Exception:
             pass
 
+        if skipped_purposes:
+            flash(
+                "Cleared wrong-stage phase purpose assignment(s): "
+                + ", ".join(sorted(set(skipped_purposes))),
+                "warning",
+            )
         flash(result.get("message") or "PLC tag configuration saved.", "success")
         return redirect(machine_stage_url("/configuration", context=context))
 

@@ -50,6 +50,7 @@ Create TBM Family
         </div>
 
         <form method="POST" class="parameter-edit-form">
+            {{ csrf_input() }}
             <label>
                 <span>Family Name</span>
                 <input
@@ -57,6 +58,7 @@ Create TBM Family
                     name="family_name"
                     required
                     placeholder="Example: CATL_14_20"
+                    value="{{ family_name or '' }}"
                 >
             </label>
 
@@ -66,7 +68,7 @@ Create TBM Family
                     name="description"
                     rows="4"
                     placeholder="Example: CATL make 14 inch to 20 inch PCR TBM"
-                ></textarea>
+                >{{ description or '' }}</textarea>
             </label>
 
             <div class="form-action-row">

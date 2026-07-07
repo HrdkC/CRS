@@ -226,7 +226,8 @@ class ConfigurationReadinessManager:
                 context["stage_id"],
             ),
             "tag_purpose_options": ConfigurationReadinessManager.get_tag_purpose_options(
-                tag_requirements
+                tag_requirements,
+                context.get("stage_type"),
             ),
             "blocking_count": 0,
             "warning_count": 0,
@@ -268,30 +269,14 @@ class ConfigurationReadinessManager:
         return rows
 
     @staticmethod
-    def get_tag_purpose_options(tag_requirements=None):
+    def get_tag_purpose_options(tag_requirements=None, stage_type=None):
         standard_purposes = [
-            "RECIPE_DATA",
-            "TEST_RECIPE_DATA",
-            "RECIPE_CODE",
-            "DOWNLOAD_ENABLE",
-            "MACHINE_IN_MANUAL",
-            "DOWNLOAD_REQUEST",
-            "DOWNLOAD_COMPLETE",
-            "PHASE_CONTROL_STRING",
-            "PHASE_STOP_STRING",
-            "PHASE_POSITION_STRING",
-            "CAP_STRIP_PHASE_CONTROL_STRING",
-            "CAP_STRIP_PHASE_STOP_STRING",
-            "BT_PHASE_CONTROL_STRING",
-            "BT_PHASE_STOP_STRING",
-            "BT_PHASE_POSITION_STRING",
-            "DOWNLOAD_ACK",
-            "DOWNLOAD_BUSY",
-            "DOWNLOAD_ERROR",
-            "DOWNLOAD_RESULT",
-            "DOWNLOAD_OS",
-            "LAST_DOWNLOAD_TIME",
-            "LAST_DOWNLOAD_USER",
+            row["purpose"]
+            for row in StagePLCTagRequirementManager.DEFAULT_RULES
+            if StagePLCTagRequirementManager.is_purpose_allowed_for_stage(
+                row.get("purpose"),
+                stage_type,
+            )
         ]
         for row in tag_requirements or []:
             purpose = (row.get("purpose") or "").strip().upper()

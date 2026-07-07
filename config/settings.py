@@ -18,6 +18,11 @@ RECIPE_IMPORT_FOLDER = PROJECT_ROOT / "recipe_imports"
 
 DEFAULT_RECIPE_VERSION = 1
 
+APP_VERSION = os.getenv(
+    "CRS_APP_VERSION",
+    "1.0 Beta"
+)
+
 # Priority 11: security/session configuration
 # For plant operator terminals, keep this practical but finite.
 SESSION_TIMEOUT_MINUTES = int(
