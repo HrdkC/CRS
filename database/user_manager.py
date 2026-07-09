@@ -40,7 +40,7 @@ class UserManager:
             """
             SELECT id
             FROM users
-            WHERE username = ?
+            WHERE username = ? COLLATE NOCASE
             """,
             (username,)
         )
@@ -122,7 +122,7 @@ class UserManager:
                 role_updated_by,
                 remarks
             FROM users
-            WHERE username = ?
+            WHERE username = ? COLLATE NOCASE
             """,
             (username,)
         )
@@ -190,7 +190,7 @@ class UserManager:
             SET active = 0,
                 disabled_at = CURRENT_TIMESTAMP,
                 disabled_by = ?
-            WHERE username = ?
+            WHERE username = ? COLLATE NOCASE
             """,
             (disabled_by, username)
         )
@@ -211,7 +211,7 @@ class UserManager:
             SET active = 1,
                 disabled_at = NULL,
                 disabled_by = NULL
-            WHERE username = ?
+            WHERE username = ? COLLATE NOCASE
             """,
             (username,)
         )
@@ -238,7 +238,7 @@ class UserManager:
             SET password_hash = ?,
                 password_changed_at = CURRENT_TIMESTAMP,
                 password_reset_required = ?
-            WHERE username = ?
+            WHERE username = ? COLLATE NOCASE
             """,
             (
                 password_hash,
@@ -264,7 +264,7 @@ class UserManager:
             """
             UPDATE users
             SET password_reset_required = ?
-            WHERE username = ?
+            WHERE username = ? COLLATE NOCASE
             """,
             (1 if required else 0, username)
         )
@@ -293,7 +293,7 @@ class UserManager:
             SET role = ?,
                 role_updated_at = CURRENT_TIMESTAMP,
                 role_updated_by = ?
-            WHERE username = ?
+            WHERE username = ? COLLATE NOCASE
             """,
             (role, updated_by, username)
         )
@@ -316,7 +316,7 @@ class UserManager:
             """
             UPDATE users
             SET last_login = CURRENT_TIMESTAMP
-            WHERE username = ?
+            WHERE username = ? COLLATE NOCASE
             """,
             (username,)
         )

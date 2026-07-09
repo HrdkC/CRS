@@ -2,6 +2,10 @@ import re
 
 from database.database import get_connection
 from database.audit_manager import AuditManager
+from database.plc_connection_errors import (
+    format_plc_connection_failure,
+    is_plc_connection_error,
+)
 
 
 class PLC1DArrayRecipeBuilder:
@@ -409,7 +413,16 @@ class PLC1DArrayRecipeBuilder:
             result["values"] = rows
             result["ok"] = True
         except Exception as ex:
-            result["errors"].append(f"PLC array read failed: {ex}")
+            if is_plc_connection_error(str(ex)):
+                result["errors"].append(
+                    format_plc_connection_failure(
+                        plc=plc,
+                        detail=ex,
+                        action="PLC array preview/import",
+                    )
+                )
+            else:
+                result["errors"].append(f"PLC array read failed: {ex}")
 
         return result
 

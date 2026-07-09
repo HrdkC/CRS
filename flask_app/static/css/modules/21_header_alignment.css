@@ -1,0 +1,98 @@
+/*
+ * Final authenticated header alignment.
+ * Keeps the Apollo/BCCI lockup and the Dashboard navigation button on the same
+ * left edge, including compact browser widths that previously re-centered it.
+ */
+
+:root {
+    --crs-header-left-edge: 26px;
+}
+
+.site-header .header-top,
+.site-header .navbar {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.site-header .header-top {
+    display: grid !important;
+    grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+    justify-content: start !important;
+    justify-items: start !important;
+    align-items: center !important;
+    text-align: left !important;
+    padding: 2px var(--crs-header-left-edge) 2px !important;
+}
+
+.site-header .header-logo-panel {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    justify-self: start !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+}
+
+.site-header .header-brand-lockup {
+    display: grid !important;
+    justify-content: start !important;
+    justify-items: start !important;
+    justify-self: start !important;
+    width: max-content !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+}
+
+.site-header .header-brand-logo-row {
+    display: grid !important;
+    grid-template-columns: max-content max-content !important;
+    align-items: center !important;
+    justify-content: start !important;
+    justify-items: start !important;
+    justify-self: start !important;
+    column-gap: 10px !important;
+    width: max-content !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+}
+
+.site-header .header-campaign-caption {
+    width: 100% !important;
+    max-width: none !important;
+    text-align: left !important;
+}
+
+.site-header .navbar {
+    padding-left: var(--crs-header-left-edge) !important;
+    padding-right: var(--crs-header-left-edge) !important;
+}
+
+.site-header .navbar ul {
+    justify-content: flex-start !important;
+    margin-left: 0 !important;
+}
+
+@media (max-width: 720px) {
+    .site-header .header-top {
+        grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+        text-align: left !important;
+    }
+
+    .site-header .header-logo-panel {
+        justify-content: flex-start !important;
+    }
+}

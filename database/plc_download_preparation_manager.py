@@ -25,6 +25,10 @@ from database.stage_plc_tag_requirement_manager import (
     StagePLCTagRequirementManager
 )
 
+from database.plc_connection_errors import (
+    format_plc_connection_failure,
+)
+
 from database.database import (
     get_connection
 )
@@ -642,7 +646,11 @@ class PLCDownloadPreparationManager:
         except Exception as ex:
 
             result["errors"].append(
-                f"PLC manual mode read failed: {ex}"
+                format_plc_connection_failure(
+                    plc=plc,
+                    detail=ex,
+                    action="PLC manual mode read",
+                )
             )
 
         return result

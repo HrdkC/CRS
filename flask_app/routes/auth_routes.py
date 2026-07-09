@@ -88,15 +88,16 @@ def register_auth_routes(app):
 
             if UserManager.verify_user(username, password):
                 user = UserManager.get_user(username)
+                canonical_username = user["username"]
                 forwarded_for = meta["forwarded_for"]
                 request_host = meta["request_host"]
                 user_agent = meta["user_agent"]
                 workstation_name = meta["workstation_name"]
 
-                active_session = UserSessionManager.get_live_active_session_for_username(username)
+                active_session = UserSessionManager.get_live_active_session_for_username(canonical_username)
                 if active_session:
                     UserSessionManager.record_blocked_login_attempt(
-                        username=username,
+                        username=canonical_username,
                         active_session=active_session,
                         attempted_client_ip=client_ip,
                         attempted_workstation_name=workstation_name,
@@ -107,7 +108,7 @@ def register_auth_routes(app):
                     )
 
                     AuditManager.log_event(
-                        username=username,
+                        username=canonical_username,
                         role=user["role"],
                         action="LOGIN_BLOCKED_ACTIVE_SESSION",
                         change_source="AUTH_ACTIVE_SESSION_GUARD",
@@ -132,13 +133,13 @@ def register_auth_routes(app):
                         )
                     )
 
-                record_login_success(username, client_ip)
-                UserManager.update_last_login(username)
-                user = UserManager.get_user(username)
+                record_login_success(canonical_username, client_ip)
+                UserManager.update_last_login(canonical_username)
+                user = UserManager.get_user(canonical_username)
                 last_login_ist = utc_to_ist(user["last_login"])
 
                 session_id, replaced_count = UserSessionManager.login(
-                    username=username,
+                    username=canonical_username,
                     role=user["role"],
                     client_ip=client_ip,
                     workstation_name=workstation_name,
@@ -152,7 +153,7 @@ def register_auth_routes(app):
 
                 session.clear()
                 session["logged_in"] = True
-                session["username"] = username
+                session["username"] = canonical_username
                 session["role"] = user["role"]
                 session["session_id"] = session_id
                 session["last_login_ist"] = last_login_ist
@@ -161,7 +162,7 @@ def register_auth_routes(app):
                 session["last_db_touch_epoch"] = now
 
                 AuditManager.log_event(
-                    username=username,
+                    username=canonical_username,
                     role=user["role"],
                     action="LOGIN_SUCCESS",
                     change_source="AUTH",

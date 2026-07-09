@@ -549,7 +549,12 @@ class CRSSystemBootstrapManager:
 
         completed_at = datetime.utcnow().isoformat(timespec="seconds")
         elapsed = time.monotonic() - self.started_at
-        status = "SUCCESS" if not failures else "FAILED"
+        required_failures = [
+            failure
+            for failure in failures
+            if failure.get("required", True)
+        ]
+        status = "SUCCESS" if not required_failures else "FAILED"
         report_path = self._write_report(
             status=status,
             completed_at=completed_at,
@@ -560,7 +565,7 @@ class CRSSystemBootstrapManager:
             completed_at=completed_at,
             elapsed=elapsed,
             report_path=report_path,
-            message=failures[0]["error"] if failures else "Bootstrap completed",
+            message=required_failures[0]["error"] if required_failures else "Bootstrap completed",
         )
 
         self._print("")

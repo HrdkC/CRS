@@ -90,6 +90,11 @@ class UploadHistoryManager:
             conn.close()
 
     @staticmethod
+    def ensure_table(cursor=None):
+
+        return UploadHistoryManager.ensure_schema(cursor)
+
+    @staticmethod
     def log_upload(
 
         plc_name,

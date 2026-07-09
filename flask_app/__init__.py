@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import timedelta
 
 from flask import Flask, render_template, session
@@ -105,6 +106,10 @@ def create_app():
                 session.get("role")
             )
 
+        def display_username(username):
+            parts = re.split(r"[\s._-]+", (username or "").strip())
+            return " ".join(part[:1].upper() + part[1:].lower() for part in parts if part)
+
         try:
             session_timeout_minutes = (
                 SystemSettingsManager.get_session_timeout_minutes()
@@ -124,6 +129,7 @@ def create_app():
             "role_can": can,
             "current_role_label": current_role_label,
             "is_admin": is_admin,
+            "display_username": display_username,
             "session_timeout_minutes": session_timeout_minutes,
             "session_timeout_seconds": session_timeout_minutes * 60,
             "current_epoch": int(time.time()),

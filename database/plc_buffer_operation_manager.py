@@ -21,6 +21,11 @@ from database.plc_download_tag_readiness_manager import (
     PLCDownloadTagReadinessManager
 )
 
+from database.plc_connection_errors import (
+    format_plc_connection_failure,
+    is_plc_connection_error as _is_plc_connection_error,
+)
+
 from database.plc_operation_job_manager import (
     PLCOperationJobManager
 )
@@ -519,25 +524,7 @@ class PLCBufferOperationManager:
 
     ):
 
-        normalized = (
-            message
-            or
-            ""
-        ).lower()
-
-        connection_markers = [
-            "failed to open a connection",
-            "connection refused",
-            "timed out",
-            "timeout",
-            "unreachable",
-            "no route to host"
-        ]
-
-        return any(
-            marker in normalized
-            for marker in connection_markers
-        )
+        return _is_plc_connection_error(message)
 
     @staticmethod
     def format_operation_exception(
@@ -568,11 +555,10 @@ class PLCBufferOperationManager:
             "unknown IP"
         )
 
-        return (
-            "PLC connection failed after database validation. "
-            f"CRS could not connect to {plc_name} ({plc_ip}). "
-            "Check PLC power, network path, controller mode, and selected "
-            f"PLC configuration, then retry. Technical detail: {message}"
+        return format_plc_connection_failure(
+            plc={"plc_name": plc_name, "ip_address": plc_ip},
+            detail=message,
+            action="PLC buffer operation",
         )
 
     @staticmethod
@@ -2462,7 +2448,11 @@ class PLCBufferOperationManager:
         except Exception as exc:
 
             result["status"] = "BLOCKED"
-            result["summary"] = f"PLC live status connection failed: {exc}"
+            result["summary"] = format_plc_connection_failure(
+                plc=plc,
+                detail=exc,
+                action="Live PLC status check",
+            )
             result["issues"].append(
                 result["summary"]
             )

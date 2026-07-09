@@ -6,6 +6,7 @@
     "use strict";
 
     document.addEventListener("DOMContentLoaded", function () {
+        CRS.preferences.init();
         CRS.security.init();
         CRS.flash.init();
         CRS.confirm.init();
@@ -36,6 +37,283 @@
             const minutes = Math.floor(safeTotal / 60);
             const seconds = safeTotal % 60;
             return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+        }
+    };
+
+    CRS.preferences = {
+        themeKey: "crs-theme",
+        fontKey: "crs-font-step",
+        themes: ["system", "light", "dark"],
+        minFontStep: -4,
+        maxFontStep: 4,
+        mediaQuery: null,
+        fontObserver: null,
+        fontExcludeSelector: [
+            "script",
+            "style",
+            "template",
+            "noscript",
+            "img",
+            "svg",
+            "path",
+            ".site-header",
+            ".site-header *",
+            ".site-footer",
+            ".site-footer *",
+            ".crs-accessibility-strip",
+            ".crs-accessibility-strip *"
+        ].join(","),
+
+        init() {
+            this.mediaQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+            this.applyStored();
+            this.bindControls();
+            this.bindSystemThemeWatcher();
+            this.bindFontObserver();
+        },
+
+        storageGet(key, fallback) {
+            try {
+                return localStorage.getItem(key) || fallback;
+            } catch (error) {
+                return fallback;
+            }
+        },
+
+        storageSet(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (error) {
+                // Preference still applies for the current page.
+            }
+        },
+
+        safeTheme(theme) {
+            return this.themes.indexOf(theme) === -1 ? "system" : theme;
+        },
+
+        safeFontStep(step) {
+            const parsed = parseInt(step, 10);
+            if (Number.isNaN(parsed)) return 0;
+            return Math.max(this.minFontStep, Math.min(this.maxFontStep, parsed));
+        },
+
+        resolvedTheme(theme) {
+            if (theme === "dark") return "dark";
+            if (theme === "light") return "light";
+            return this.mediaQuery && this.mediaQuery.matches ? "dark" : "light";
+        },
+
+        applyStored() {
+            const theme = this.safeTheme(this.storageGet(this.themeKey, "system"));
+            const fontStep = this.safeFontStep(this.storageGet(this.fontKey, "0"));
+            this.applyTheme(theme, false);
+            this.applyFontStep(fontStep, false);
+        },
+
+        applyTheme(theme, persist) {
+            const safeTheme = this.safeTheme(theme);
+            const root = document.documentElement;
+            root.setAttribute("data-crs-theme", safeTheme);
+            root.setAttribute("data-crs-resolved-theme", this.resolvedTheme(safeTheme));
+
+            if (persist !== false) {
+                this.storageSet(this.themeKey, safeTheme);
+            }
+
+            CRS.util.qsa("[data-crs-theme-choice]").forEach(function (button) {
+                const active = button.getAttribute("data-crs-theme-choice") === safeTheme;
+                button.classList.toggle("is-active", active);
+                button.setAttribute("aria-pressed", active ? "true" : "false");
+            });
+        },
+
+        applyFontStep(step, persist) {
+            const safeStep = this.safeFontStep(step);
+            const adjustPx = safeStep;
+            const root = document.documentElement;
+            const label = CRS.util.qs("#crs-font-step-label");
+            root.setAttribute("data-crs-font-step", String(safeStep));
+            this.applyDocumentFontAdjustment(safeStep);
+
+            if (label) {
+                label.textContent = adjustPx > 0 ? "+" + adjustPx + "px" : adjustPx + "px";
+            }
+
+            if (persist !== false) {
+                this.storageSet(this.fontKey, String(safeStep));
+            }
+
+            CRS.util.qsa("[data-crs-font-action='decrease']").forEach(function (button) {
+                button.disabled = safeStep <= CRS.preferences.minFontStep;
+            });
+            CRS.util.qsa("[data-crs-font-action='increase']").forEach(function (button) {
+                button.disabled = safeStep >= CRS.preferences.maxFontStep;
+            });
+            CRS.util.qsa("[data-crs-font-action]").forEach(function (button) {
+                const action = button.getAttribute("data-crs-font-action");
+                const active = action === "reset" && safeStep === 0;
+                button.classList.toggle("is-active", active);
+                button.setAttribute("aria-pressed", active ? "true" : "false");
+            });
+        },
+
+        applyDocumentFontAdjustment(step) {
+            const safeStep = this.safeFontStep(step);
+            const root = document.documentElement;
+            root.style.setProperty("--crs-font-adjust", "0px");
+
+            const targets = document.body
+                ? [document.body].concat(CRS.util.qsa("*", document.body))
+                : [];
+
+            targets.forEach(function (element) {
+                CRS.preferences.adjustFontElement(element, safeStep);
+            });
+
+            root.style.setProperty("--crs-font-adjust", String(safeStep) + "px");
+        },
+
+        adjustFontElement(element, step) {
+            if (!element || element.matches(this.fontExcludeSelector)) return;
+
+            if (!element.hasAttribute("data-crs-base-font-size")) {
+                const computedSize = parseFloat(window.getComputedStyle(element).fontSize || "0");
+                if (!computedSize) return;
+                element.setAttribute("data-crs-base-font-size", String(computedSize));
+                element.setAttribute(
+                    "data-crs-original-inline-font-size",
+                    element.style.getPropertyValue("font-size") || ""
+                );
+                element.setAttribute(
+                    "data-crs-original-font-priority",
+                    element.style.getPropertyPriority("font-size") || ""
+                );
+            }
+
+            if (step === 0) {
+                const original = element.getAttribute("data-crs-original-inline-font-size") || "";
+                const priority = element.getAttribute("data-crs-original-font-priority") || "";
+                if (original) {
+                    element.style.setProperty("font-size", original, priority);
+                } else {
+                    element.style.removeProperty("font-size");
+                }
+                return;
+            }
+
+            const baseSize = parseFloat(element.getAttribute("data-crs-base-font-size") || "0");
+            if (!baseSize) return;
+            element.style.setProperty(
+                "font-size",
+                Math.max(8, baseSize + step) + "px",
+                "important"
+            );
+        },
+
+        bindFontObserver() {
+            if (!document.body || this.fontObserver) return;
+
+            this.fontObserver = new MutationObserver(function () {
+                const currentStep = CRS.preferences.safeFontStep(
+                    document.documentElement.getAttribute("data-crs-font-step") || "0"
+                );
+                if (currentStep !== 0) {
+                    CRS.preferences.applyDocumentFontAdjustment(currentStep);
+                }
+            });
+
+            this.fontObserver.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        },
+
+        bindControls() {
+            const toggle = CRS.util.qs("#crs-settings-toggle");
+            const panel = CRS.util.qs("#crs-settings-panel");
+
+            document.addEventListener("click", function (event) {
+                const themeButton = event.target.closest("[data-crs-theme-choice]");
+                const fontButton = event.target.closest("[data-crs-font-action]");
+
+                if (themeButton) {
+                    CRS.preferences.applyTheme(themeButton.getAttribute("data-crs-theme-choice"));
+                    return;
+                }
+
+                if (fontButton) {
+                    const action = fontButton.getAttribute("data-crs-font-action");
+                    const currentStep = CRS.preferences.safeFontStep(
+                        document.documentElement.getAttribute("data-crs-font-step") || "0"
+                    );
+                    if (action === "increase") CRS.preferences.applyFontStep(currentStep + 1);
+                    if (action === "decrease") CRS.preferences.applyFontStep(currentStep - 1);
+                    if (action === "reset") CRS.preferences.applyFontStep(0);
+                }
+            });
+
+            if (!toggle || !panel) return;
+
+            toggle.addEventListener("click", function (event) {
+                event.stopPropagation();
+                const opening = panel.hidden;
+                panel.hidden = !opening;
+                toggle.setAttribute("aria-expanded", opening ? "true" : "false");
+            });
+
+            panel.addEventListener("click", function (event) {
+                const themeButton = event.target.closest("[data-crs-theme-choice]");
+                const fontButton = event.target.closest("[data-crs-font-action]");
+
+                if (themeButton) {
+                    CRS.preferences.applyTheme(themeButton.getAttribute("data-crs-theme-choice"));
+                    return;
+                }
+
+                if (fontButton) {
+                    const action = fontButton.getAttribute("data-crs-font-action");
+                    const currentStep = CRS.preferences.safeFontStep(
+                        document.documentElement.getAttribute("data-crs-font-step") || "0"
+                    );
+                    if (action === "increase") CRS.preferences.applyFontStep(currentStep + 1);
+                    if (action === "decrease") CRS.preferences.applyFontStep(currentStep - 1);
+                    if (action === "reset") CRS.preferences.applyFontStep(0);
+                }
+            });
+
+            document.addEventListener("click", function (event) {
+                if (panel.hidden || event.target.closest(".crs-display-settings")) return;
+                panel.hidden = true;
+                toggle.setAttribute("aria-expanded", "false");
+            });
+
+            document.addEventListener("keydown", function (event) {
+                if (event.key !== "Escape" || panel.hidden) return;
+                panel.hidden = true;
+                toggle.setAttribute("aria-expanded", "false");
+                toggle.focus();
+            });
+        },
+
+        bindSystemThemeWatcher() {
+            if (!this.mediaQuery) return;
+
+            const updateResolvedTheme = function () {
+                const theme = CRS.preferences.safeTheme(
+                    document.documentElement.getAttribute("data-crs-theme") || "system"
+                );
+                document.documentElement.setAttribute(
+                    "data-crs-resolved-theme",
+                    CRS.preferences.resolvedTheme(theme)
+                );
+            };
+
+            if (this.mediaQuery.addEventListener) {
+                this.mediaQuery.addEventListener("change", updateResolvedTheme);
+            } else if (this.mediaQuery.addListener) {
+                this.mediaQuery.addListener(updateResolvedTheme);
+            }
         }
     };
 

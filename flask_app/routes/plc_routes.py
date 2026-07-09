@@ -28,6 +28,10 @@ from database.plc_verification_manager import (
     PLCVerificationManager
 )
 
+from database.plc_connection_errors import (
+    format_plc_connection_failure,
+)
+
 from flask_app.security.role_guard import (
     role_can
 )
@@ -417,8 +421,11 @@ def register_plc_routes(app):
                 "verification_status": "OFFLINE",
 
                 "message": (
-                    "PLC verification could not connect: "
-                    f"{exc}"
+                    format_plc_connection_failure(
+                        plc=plc,
+                        detail=exc,
+                        action="PLC verification",
+                    )
                 )
 
             }

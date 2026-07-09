@@ -8,7 +8,7 @@
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=0.9"
+        content="width=device-width, initial-scale=1"
     >
 
     <meta
@@ -22,9 +22,32 @@
         {% endblock %}
     </title>
 
+    <script>
+        (function () {
+            try {
+                var root = document.documentElement;
+                var theme = localStorage.getItem("crs-theme") || "system";
+                var fontStep = parseInt(localStorage.getItem("crs-font-step") || "0", 10);
+                var systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+                if (["system", "light", "dark"].indexOf(theme) === -1) theme = "system";
+                if (isNaN(fontStep)) fontStep = 0;
+                fontStep = Math.max(-4, Math.min(4, fontStep));
+
+                root.setAttribute("data-crs-theme", theme);
+                root.setAttribute("data-crs-resolved-theme", theme === "dark" || (theme === "system" && systemDark) ? "dark" : "light");
+                root.setAttribute("data-crs-font-step", String(fontStep));
+                root.style.setProperty("--crs-font-adjust", String(fontStep) + "px");
+            } catch (error) {
+                document.documentElement.setAttribute("data-crs-theme", "system");
+                document.documentElement.setAttribute("data-crs-resolved-theme", "light");
+            }
+        })();
+    </script>
+
     <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='css/main.css') }}?v=css-v94-login-header-version-20260707"
+        href="{{ url_for('static', filename='css/main.css') }}?v=css-v104-header-fixed-fonts-20260709"
     >
 
 </head>
@@ -68,18 +91,19 @@
             </div>
 
             <div class="user-info">
-                <strong>User: {{ session["username"] }}</strong>
-                <br>
-                Role : {{ session["role"] }}
+                <div class="user-detail-line user-detail-name">
+                    <strong>User: {{ display_username(session.get("username")) }}</strong>
+                </div>
+                <div class="user-detail-line">Role : {{ session["role"] }}</div>
 
                 {% if session.get("password_reset_required") == 1 %}
-                <br>
-                <span class="status-badge status-warning">Password Reset Required</span>
+                <div class="user-detail-line">
+                    <span class="status-badge status-warning">Password Reset Required</span>
+                </div>
                 {% endif %}
 
                 {% if session.get("last_login_ist") %}
-                <br>
-                Last Login : {{ session["last_login_ist"] }}
+                <div class="user-detail-line">Last Login : {{ session["last_login_ist"] }}</div>
                 {% endif %}
 
                 <div
@@ -185,6 +209,45 @@
                     </form>
                 </li>
             </ul>
+            <div class="crs-accessibility-strip" aria-label="Display settings">
+                <button
+                    type="button"
+                    class="crs-access-button crs-font-button"
+                    data-crs-font-action="decrease"
+                    title="Decrease font size"
+                >A-</button>
+                <button
+                    type="button"
+                    class="crs-access-button crs-font-button crs-font-normal"
+                    data-crs-font-action="reset"
+                    title="Normal font size"
+                >A</button>
+                <button
+                    type="button"
+                    class="crs-access-button crs-font-button"
+                    data-crs-font-action="increase"
+                    title="Increase font size"
+                >A+</button>
+                <span class="crs-access-divider" aria-hidden="true"></span>
+                <button
+                    type="button"
+                    class="crs-access-button crs-theme-button crs-theme-system"
+                    data-crs-theme-choice="system"
+                    title="Use system theme"
+                >Sys</button>
+                <button
+                    type="button"
+                    class="crs-access-button crs-theme-button crs-theme-light"
+                    data-crs-theme-choice="light"
+                    title="Light theme"
+                >A</button>
+                <button
+                    type="button"
+                    class="crs-access-button crs-theme-button crs-theme-dark"
+                    data-crs-theme-choice="dark"
+                    title="Dark theme"
+                >A</button>
+            </div>
         </nav>
 
     </header>

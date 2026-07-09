@@ -85,20 +85,22 @@ def upgrade_recipe_download_history_table():
             "Added download_message"
         )
 
-    cursor.execute(
-        """
-        UPDATE
-            recipe_download_history
+    if "download_time" in columns:
 
-        SET
-            download_start_time =
-            download_time
+        cursor.execute(
+            """
+            UPDATE
+                recipe_download_history
 
-        WHERE
-            download_start_time
-            IS NULL
-        """
-    )
+            SET
+                download_start_time =
+                download_time
+
+            WHERE
+                download_start_time
+                IS NULL
+            """
+        )
 
     conn.commit()
 

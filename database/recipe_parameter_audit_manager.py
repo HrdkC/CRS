@@ -106,6 +106,11 @@ class RecipeParameterAuditManager:
             conn.close()
 
     @staticmethod
+    def ensure_table(cursor=None):
+
+        return RecipeParameterAuditManager.ensure_schema(cursor)
+
+    @staticmethod
     def log_change(
 
         recipe_id,

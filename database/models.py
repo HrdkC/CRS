@@ -358,13 +358,31 @@ def create_phase_control_index():
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-    CREATE INDEX IF NOT EXISTS idx_phase_control
-    ON recipe_phase_control (
-        recipe_code,
-        version
-    )
-    """)
+    cursor.execute("PRAGMA table_info(recipe_phase_control)")
+    columns = {
+        row["name"]
+        for row in cursor.fetchall()
+    }
+
+    if {"recipe_code", "version"}.issubset(columns):
+
+        cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_phase_control
+        ON recipe_phase_control (
+            recipe_code,
+            version
+        )
+        """)
+
+    elif {"recipe_id", "line_no"}.issubset(columns):
+
+        cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_phase_control
+        ON recipe_phase_control (
+            recipe_id,
+            line_no
+        )
+        """)
 
     conn.commit()
     conn.close()

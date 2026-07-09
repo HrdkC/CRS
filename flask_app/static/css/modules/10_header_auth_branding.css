@@ -357,8 +357,8 @@
 
 .site-header .header-top {
     grid-template-columns: 390px minmax(430px, 1fr) 280px !important;
-    min-height: 112px !important;
-    padding: 2px 2px 2px !important;
+    min-height: 72px !important;
+    padding: 4px 2px 2px !important;
     align-items: center !important;
     column-gap: 16px !important;
 }
@@ -378,14 +378,14 @@
 /* Parent lockup must be grid, not flex */
 .site-header .header-brand-lockup {
     display: grid !important;
-    grid-template-rows: 74px 18px !important;
+    grid-template-rows: 48px 14px !important;
     grid-template-columns: 1fr !important;
     align-items: center !important;
     justify-items: center !important;
     width: 370px !important;
     min-width: 370px !important;
     max-width: 370px !important;
-    row-gap: 2px !important;
+    row-gap: 1px !important;
     padding: 0 !important;
     margin: 0 !important;
     overflow: visible !important;
@@ -394,13 +394,13 @@
 /* Logo row */
 .site-header .header-brand-logo-row {
     display: grid !important;
-    grid-template-columns: 165px 155px !important;
+    grid-template-columns: 110px 104px !important;
     align-items: center !important;
     justify-items: center !important;
     justify-content: center !important;
     column-gap: 0px !important;
     width: 100% !important;
-    height: 74px !important;
+    height: 48px !important;
     margin: 0 !important;
     padding: 0 !important;
 }
@@ -408,10 +408,10 @@
 /* Apollo logo */
 .site-header .header-logo-main {
     display: block !important;
-    width: 169px !important;
-    height: 70px !important;
-    max-width: 169px !important;
-    max-height: 70px !important;
+    width: 112px !important;
+    height: 46px !important;
+    max-width: 112px !important;
+    max-height: 46px !important;
     object-fit: contain !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -420,10 +420,10 @@
 /* BCCI + Apollo lead sponsor logo */
 .site-header .header-logo-bcci {
     display: block !important;
-    width: 155px !important;
-    height: 66px !important;
-    max-width: 155px !important;
-    max-height: 66px !important;
+    width: 104px !important;
+    height: 44px !important;
+    max-width: 104px !important;
+    max-height: 44px !important;
     object-fit: contain !important;
     border-radius: 0 !important;
     background: transparent !important;
@@ -438,12 +438,12 @@
     grid-row: 2 !important;
     width: 100% !important;
     max-width: 370px !important;
-    height: 18px !important;
+    height: 14px !important;
     margin: 0 !important;
     padding: 0 !important;
     color: #5b21b6 !important;
-    font-size: 16px !important;
-    line-height: 14px !important;
+    font-size: 12px !important;
+    line-height: 12px !important;
     font-weight: 500 !important;
     letter-spacing: 0.035em !important;
     text-align: center !important;
@@ -477,7 +477,7 @@
 @media screen and (max-width: 1366px) {
     .site-header .header-top {
         grid-template-columns: 320px minmax(340px, 1fr) 230px !important;
-        min-height: 104px !important;
+        min-height: 66px !important;
         column-gap: 12px !important;
     }
 
@@ -491,34 +491,34 @@
         width: 310px !important;
         min-width: 310px !important;
         max-width: 310px !important;
-        grid-template-rows: 64px 16px !important;
+        grid-template-rows: 40px 13px !important;
     }
 
     .site-header .header-brand-logo-row {
-        grid-template-columns: 138px 128px !important;
+        grid-template-columns: 92px 86px !important;
         column-gap: 10px !important;
-        height: 64px !important;
+        height: 40px !important;
     }
 
     .site-header .header-logo-main {
-        width: 142px !important;
-        height: 62px !important;
-        max-width: 142px !important;
-        max-height: 62px !important;
+        width: 96px !important;
+        height: 40px !important;
+        max-width: 96px !important;
+        max-height: 40px !important;
     }
 
     .site-header .header-logo-bcci {
-        width: 128px !important;
-        height: 58px !important;
-        max-width: 128px !important;
-        max-height: 58px !important;
+        width: 86px !important;
+        height: 38px !important;
+        max-width: 86px !important;
+        max-height: 38px !important;
     }
 
     .site-header .header-campaign-caption {
         max-width: 310px !important;
-        height: 16px !important;
-        font-size: 12px !important;
-        line-height: 16px !important;
+        height: 13px !important;
+        font-size: 10px !important;
+        line-height: 13px !important;
     }
 }
 

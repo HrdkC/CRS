@@ -380,6 +380,7 @@ table td {
 
 .site-header .navbar ul {
     gap: 7px !important;
+    justify-content: flex-start !important;
 }
 
 .site-header .nav-post-form {
@@ -554,6 +555,42 @@ table td {
         padding-left: 16px !important;
         padding-right: 16px !important;
     }
+}
+
+/* Keep the authenticated header brand block and dashboard nav anchored left. */
+.site-header .header-top {
+    justify-content: start !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    max-width: none !important;
+}
+
+.site-header .header-logo-panel,
+.site-header .header-brand-lockup,
+.site-header .header-brand-logo-row {
+    justify-self: start !important;
+    justify-content: flex-start !important;
+}
+
+.site-header .header-logo-panel {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+}
+
+.site-header .header-brand-lockup {
+    text-align: left !important;
+    justify-items: start !important;
+}
+
+.site-header .header-campaign-caption {
+    text-align: left !important;
+}
+
+.site-header .navbar {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    max-width: none !important;
 }
 
 /* =====================================================

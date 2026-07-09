@@ -1,6 +1,10 @@
 from pycomm3 import LogixDriver
 
 from database.database import get_connection
+from database.plc_connection_errors import (
+    format_plc_connection_failure,
+    is_plc_connection_error,
+)
 
 
 class PLCOnlineTagBrowserManager:
@@ -208,7 +212,16 @@ class PLCOnlineTagBrowserManager:
                 )
 
         except Exception as ex:
-            result["errors"].append(f"PLC online tag search failed: {ex}")
+            if is_plc_connection_error(str(ex)):
+                result["errors"].append(
+                    format_plc_connection_failure(
+                        plc=plc,
+                        detail=ex,
+                        action="PLC online tag search",
+                    )
+                )
+            else:
+                result["errors"].append(f"PLC online tag search failed: {ex}")
 
         return result
 
