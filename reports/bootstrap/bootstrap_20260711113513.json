@@ -1,0 +1,436 @@
+{
+  "run_id": "20260711113513",
+  "status": "SUCCESS",
+  "project_root": "C:\\Users\\Administrator\\Desktop\\Centralized_Recipe_System",
+  "database_kind": "sqlite",
+  "database_url_redacted": "sqlite:///C:/Users/Administrator/Desktop/Centralized_Recipe_System/database/recipe.db",
+  "started_at_utc": "2026-07-11T11:35:13+00:00",
+  "completed_at_utc": "2026-07-11T11:35:13+00:00",
+  "elapsed_seconds": 0.542,
+  "steps": [
+    {
+      "group": "01 Configuration",
+      "name": "Project folders",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.000889900024048984
+    },
+    {
+      "group": "01 Configuration",
+      "name": "Database target",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.00047770002856850624
+    },
+    {
+      "group": "01 Configuration",
+      "name": "SQLite safety backup",
+      "required": true,
+      "status": "OK",
+      "detail": "C:\\Users\\Administrator\\Desktop\\Centralized_Recipe_System\\_local_backups\\bootstrap\\recipe_pre_bootstrap_20260711_170513.db",
+      "seconds": 0.002319799968972802
+    },
+    {
+      "group": "02 Core",
+      "name": "Schema version table",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0012793000787496567
+    },
+    {
+      "group": "02 Core",
+      "name": "Legacy PLC master",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0008861999958753586
+    },
+    {
+      "group": "02 Core",
+      "name": "Users table",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0005986000178381801
+    },
+    {
+      "group": "02 Core",
+      "name": "User sessions table",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0007720999419689178
+    },
+    {
+      "group": "02 Core",
+      "name": "Audit log table",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0008577000116929412
+    },
+    {
+      "group": "02 Core",
+      "name": "System settings table",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0013771000085398555
+    },
+    {
+      "group": "02 Core",
+      "name": "Engineering units table",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0010668000904843211
+    },
+    {
+      "group": "03 Machine Setup",
+      "name": "TBM families",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0012356999795883894
+    },
+    {
+      "group": "03 Machine Setup",
+      "name": "TBM machines",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0016204999992623925
+    },
+    {
+      "group": "03 Machine Setup",
+      "name": "Machine stages",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0010844999924302101
+    },
+    {
+      "group": "03 Machine Setup",
+      "name": "PLC registry",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0008451000321656466
+    },
+    {
+      "group": "03 Machine Setup",
+      "name": "PLC program history",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0011280999751761556
+    },
+    {
+      "group": "03 Machine Setup",
+      "name": "PLC tags",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0008584000170230865
+    },
+    {
+      "group": "04 Templates",
+      "name": "Template master",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0008490000618621707
+    },
+    {
+      "group": "04 Templates",
+      "name": "Template parameters",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0008242999901995063
+    },
+    {
+      "group": "04 Templates",
+      "name": "Parameter definitions safe create",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0006822999566793442
+    },
+    {
+      "group": "04 Templates",
+      "name": "Stage PLC tag requirements",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0010149999288842082
+    },
+    {
+      "group": "05 Phase Controls",
+      "name": "Phase group master",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.000548599986359477
+    },
+    {
+      "group": "05 Phase Controls",
+      "name": "Phase master",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0008945999434217811
+    },
+    {
+      "group": "05 Phase Controls",
+      "name": "Phase options",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0007993000326678157
+    },
+    {
+      "group": "05 Phase Controls",
+      "name": "Phase PLC mapping",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0008199999574571848
+    },
+    {
+      "group": "05 Phase Controls",
+      "name": "Recipe phase control",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0007579999510198832
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Legacy recipe master",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0005428999429568648
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Legacy recipe parameters",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.000560699962079525
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Legacy recipe phase control",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0005680000176653266
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Recipes table",
+      "required": true,
+      "status": "OK",
+      "detail": "{'__name__': '__main__', '__file__': 'C:\\\\Users\\\\Administrator\\\\Desktop\\\\Centralized_Recipe_System\\\\database\\\\create_recipes_table.py', '__cached__': 'C:\\\\Users\\\\Administrator\\\\Desktop\\\\Centralized_Recipe_System\\\\database\\\\__pycache__\\\\create_recipes_table.cpython-314.pyc', '__doc__': None, '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x00000195BB6CD8B0>, '__package__': 'database', '__spec__': ModuleSpec(name='database.create_recipes_table', loader=<_frozen_importlib_external.SourceFileLoader object at 0x00000195BB6CD8B0>, origin='C:\\\\Users\\\\Administrator\\\\Desktop\\\\Centralized_Recipe_System\\\\database\\\\create_recipes_table.py'), '__builtins__': {'__name__': 'builtins', '__doc__': \"Built-in functions, types, exceptions, and other objects.\\n\\nThis module provides direct access to all 'built-in'\\nidentifiers of Python; for example, builtins.len is\\nthe full name for the built-in function len().\\n\\nThis module is not normally accessed explicitly by most\\napplications, but can be useful in modules that provide\\nobjects with the same name as a built-in value, but in\\nwhich the built-in of that name is also needed.\", '__package__': '', '__loader__': <class '_frozen_importlib.BuiltinImporter'>, '__spec__': ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>, origin='built-in'), '__build_class__': <built-in function __build_class__>, '__import__': <built-in function __import__>, 'abs': <built-in function abs>, 'all': <built-in function all>, 'any': <built-in function any>, 'ascii': <built-in function ascii>, 'bin': <built-in function bin>, 'breakpoint': <built-in function breakpoint>, 'callable': <built-in function callable>, 'chr': <built-in function chr>, 'compile': <built-in function compile>, 'delattr': <built-in function delattr>, 'dir': <built-in function dir>, 'divmod': <built-in function divmod>, 'eval': <built-in function eval>, 'exec': <built-in function exec>, 'format': <built-in function format>, 'getattr': <built-in function getattr>, 'globals': <built-in function globals>, 'hasattr': <built-in function hasattr>, 'hash': <built-in function hash>, 'hex': <built-in function hex>, 'id': <built-in function id>, 'input': <built-in function input>, 'isinstance': <built-in function isinstance>, 'issubclass': <built-in function issubclass>, 'iter': <built-in function iter>, 'aiter': <built-in function aiter>, 'len': <built-in function len>, 'locals': <built-in function locals>, 'max': <built-in function max>, 'min': <built-in function min>, 'next': <built-in function next>, 'anext': <built-in function anext>, 'oct': <built-in function oct>, 'ord': <built-in function ord>, 'pow': <built-in function pow>, 'print': <built-in function print>, 'repr': <built-in function repr>, 'round': <built-in function round>, 'setattr': <built-in function setattr>, 'sorted': <built-in function sorted>, 'sum': <built-in function sum>, 'vars': <built-in function vars>, 'None': None, 'Ellipsis': Ellipsis, 'NotImplemented': NotImplemented, 'False': False, 'True': True, 'bool': <class 'bool'>, 'memoryview': <class 'memoryview'>, 'bytearray': <class 'bytearray'>, 'bytes': <class 'bytes'>, 'classmethod': <class 'classmethod'>, 'complex': <class 'complex'>, 'dict': <class 'dict'>, 'enumerate': <class 'enumerate'>, 'filter': <class 'filter'>, 'float': <class 'float'>, 'frozenset': <class 'frozenset'>, 'property': <class 'property'>, 'int': <class 'int'>, 'list': <class 'list'>, 'map': <class 'map'>, 'object': <class 'object'>, 'range': <class 'range'>, 'reversed': <class 'reversed'>, 'set': <class 'set'>, 'slice': <class 'slice'>, 'staticmethod': <class 'staticmethod'>, 'str': <class 'str'>, 'super': <class 'super'>, 'tuple': <class 'tuple'>, 'type': <class 'type'>, 'zip': <class 'zip'>, '__debug__': True, 'BaseException': <class 'BaseException'>, 'BaseExceptionGroup': <class 'BaseExceptionGroup'>, 'Exception': <class 'Exception'>, 'GeneratorExit': <class 'GeneratorExit'>, 'KeyboardInterrupt': <class 'KeyboardInterrupt'>, 'SystemExit': <class 'SystemExit'>, 'ArithmeticError': <class 'ArithmeticError'>, 'AssertionError': <class 'AssertionError'>, 'AttributeError': <class 'AttributeError'>, 'BufferError': <class 'BufferError'>, 'EOFError': <class 'EOFError'>, 'ImportError': <class 'ImportError'>, 'LookupError': <class 'LookupError'>, 'MemoryError': <class 'MemoryError'>, 'NameError': <class 'NameError'>, 'OSError': <class 'OSError'>, 'ReferenceError': <class 'ReferenceError'>, 'RuntimeError': <class 'RuntimeError'>, 'StopAsyncIteration': <class 'StopAsyncIteration'>, 'StopIteration': <class 'StopIteration'>, 'SyntaxError': <class 'SyntaxError'>, 'SystemError': <class 'SystemError'>, 'TypeError': <class 'TypeError'>, 'ValueError': <class 'ValueError'>, 'Warning': <class 'Warning'>, 'FloatingPointError': <class 'FloatingPointError'>, 'OverflowError': <class 'OverflowError'>, 'ZeroDivisionError': <class 'ZeroDivisionError'>, 'BytesWarning': <class 'BytesWarning'>, 'DeprecationWarning': <class 'DeprecationWarning'>, 'EncodingWarning': <class 'EncodingWarning'>, 'FutureWarning': <class 'FutureWarning'>, 'ImportWarning': <class 'ImportWarning'>, 'PendingDeprecationWarning': <class 'PendingDeprecationWarning'>, 'ResourceWarning': <class 'ResourceWarning'>, 'RuntimeWarning': <class 'RuntimeWarning'>, 'SyntaxWarning': <class 'SyntaxWarning'>, 'UnicodeWarning': <class 'UnicodeWarning'>, 'UserWarning': <class 'UserWarning'>, 'BlockingIOError': <class 'BlockingIOError'>, 'ChildProcessError': <class 'ChildProcessError'>, 'ConnectionError': <class 'ConnectionError'>, 'FileExistsError': <class 'FileExistsError'>, 'FileNotFoundError': <class 'FileNotFoundError'>, 'InterruptedError': <class 'InterruptedError'>, 'IsADirectoryError': <class 'IsADirectoryError'>, 'NotADirectoryError': <class 'NotADirectoryError'>, 'PermissionError': <class 'PermissionError'>, 'ProcessLookupError': <class 'ProcessLookupError'>, 'TimeoutError': <class 'TimeoutError'>, 'IndentationError': <class 'IndentationError'>, '_IncompleteInputError': <class '_IncompleteInputError'>, 'IndexError': <class 'IndexError'>, 'KeyError': <class 'KeyError'>, 'ModuleNotFoundError': <class 'ModuleNotFoundError'>, 'NotImplementedError': <class 'NotImplementedError'>, 'PythonFinalizationError': <class 'PythonFinalizationError'>, 'RecursionError': <class 'RecursionError'>, 'UnboundLocalError': <class 'UnboundLocalError'>, 'UnicodeError': <class 'UnicodeError'>, 'BrokenPipeError': <class 'BrokenPipeError'>, 'ConnectionAbortedError': <class 'ConnectionAbortedError'>, 'ConnectionRefusedError': <class 'ConnectionRefusedError'>, 'ConnectionResetError': <class 'ConnectionResetError'>, 'TabError': <class 'TabError'>, 'UnicodeDecodeError': <class 'UnicodeDecodeError'>, 'UnicodeEncodeError': <class 'UnicodeEncodeError'>, 'UnicodeTranslateError': <class 'UnicodeTranslateError'>, 'ExceptionGroup': <class 'ExceptionGroup'>, 'EnvironmentError': <class 'OSError'>, 'IOError': <class 'OSError'>, 'WindowsError': <class 'OSError'>, 'open': <built-in function open>, 'quit': Use quit() or Ctrl-Z plus Return to exit, 'exit': Use exit() or Ctrl-Z plus Return to exit, 'copyright': Copyright (c) 2001 Python Software Foundation.\nAll Rights Reserved.\n\nCopyright (c) 2000 BeOpen.com.\nAll Rights Reserved.\n\nCopyright (c) 1995-2001 Corporation for National Research Initiatives.\nAll Rights Reserved.\n\nCopyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam.\nAll Rights Reserved., 'credits': Thanks to CWI, CNRI, BeOpen, Zope Corporation, the Python Software\nFoundation, and a cast of thousands for supporting Python\ndevelopment.  See www.python.org for more information., 'license': Type license() to see the full license text, 'help': Type help() for interactive help, or help(object) for help about object.}, 'get_connection': <function get_connection at 0x00000195BB6A5B10>, 'conn': <sqlite3.Connection object at 0x00000195BB17BD30>, 'cursor': <sqlite3.Cursor object at 0x00000195BB6B43C0>}",
+      "seconds": 0.001604699995368719
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Recipe versions",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0009628999978303909
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Recipe version values",
+      "required": true,
+      "status": "OK",
+      "detail": "{'__name__': '__main__', '__file__': 'C:\\\\Users\\\\Administrator\\\\Desktop\\\\Centralized_Recipe_System\\\\database\\\\create_recipe_version_values_table.py', '__cached__': 'C:\\\\Users\\\\Administrator\\\\Desktop\\\\Centralized_Recipe_System\\\\database\\\\__pycache__\\\\create_recipe_version_values_table.cpython-314.pyc', '__doc__': None, '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x00000195BB6CD8B0>, '__package__': 'database', '__spec__': ModuleSpec(name='database.create_recipe_version_values_table', loader=<_frozen_importlib_external.SourceFileLoader object at 0x00000195BB6CD8B0>, origin='C:\\\\Users\\\\Administrator\\\\Desktop\\\\Centralized_Recipe_System\\\\database\\\\create_recipe_version_values_table.py'), '__builtins__': {'__name__': 'builtins', '__doc__': \"Built-in functions, types, exceptions, and other objects.\\n\\nThis module provides direct access to all 'built-in'\\nidentifiers of Python; for example, builtins.len is\\nthe full name for the built-in function len().\\n\\nThis module is not normally accessed explicitly by most\\napplications, but can be useful in modules that provide\\nobjects with the same name as a built-in value, but in\\nwhich the built-in of that name is also needed.\", '__package__': '', '__loader__': <class '_frozen_importlib.BuiltinImporter'>, '__spec__': ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>, origin='built-in'), '__build_class__': <built-in function __build_class__>, '__import__': <built-in function __import__>, 'abs': <built-in function abs>, 'all': <built-in function all>, 'any': <built-in function any>, 'ascii': <built-in function ascii>, 'bin': <built-in function bin>, 'breakpoint': <built-in function breakpoint>, 'callable': <built-in function callable>, 'chr': <built-in function chr>, 'compile': <built-in function compile>, 'delattr': <built-in function delattr>, 'dir': <built-in function dir>, 'divmod': <built-in function divmod>, 'eval': <built-in function eval>, 'exec': <built-in function exec>, 'format': <built-in function format>, 'getattr': <built-in function getattr>, 'globals': <built-in function globals>, 'hasattr': <built-in function hasattr>, 'hash': <built-in function hash>, 'hex': <built-in function hex>, 'id': <built-in function id>, 'input': <built-in function input>, 'isinstance': <built-in function isinstance>, 'issubclass': <built-in function issubclass>, 'iter': <built-in function iter>, 'aiter': <built-in function aiter>, 'len': <built-in function len>, 'locals': <built-in function locals>, 'max': <built-in function max>, 'min': <built-in function min>, 'next': <built-in function next>, 'anext': <built-in function anext>, 'oct': <built-in function oct>, 'ord': <built-in function ord>, 'pow': <built-in function pow>, 'print': <built-in function print>, 'repr': <built-in function repr>, 'round': <built-in function round>, 'setattr': <built-in function setattr>, 'sorted': <built-in function sorted>, 'sum': <built-in function sum>, 'vars': <built-in function vars>, 'None': None, 'Ellipsis': Ellipsis, 'NotImplemented': NotImplemented, 'False': False, 'True': True, 'bool': <class 'bool'>, 'memoryview': <class 'memoryview'>, 'bytearray': <class 'bytearray'>, 'bytes': <class 'bytes'>, 'classmethod': <class 'classmethod'>, 'complex': <class 'complex'>, 'dict': <class 'dict'>, 'enumerate': <class 'enumerate'>, 'filter': <class 'filter'>, 'float': <class 'float'>, 'frozenset': <class 'frozenset'>, 'property': <class 'property'>, 'int': <class 'int'>, 'list': <class 'list'>, 'map': <class 'map'>, 'object': <class 'object'>, 'range': <class 'range'>, 'reversed': <class 'reversed'>, 'set': <class 'set'>, 'slice': <class 'slice'>, 'staticmethod': <class 'staticmethod'>, 'str': <class 'str'>, 'super': <class 'super'>, 'tuple': <class 'tuple'>, 'type': <class 'type'>, 'zip': <class 'zip'>, '__debug__': True, 'BaseException': <class 'BaseException'>, 'BaseExceptionGroup': <class 'BaseExceptionGroup'>, 'Exception': <class 'Exception'>, 'GeneratorExit': <class 'GeneratorExit'>, 'KeyboardInterrupt': <class 'KeyboardInterrupt'>, 'SystemExit': <class 'SystemExit'>, 'ArithmeticError': <class 'ArithmeticError'>, 'AssertionError': <class 'AssertionError'>, 'AttributeError': <class 'AttributeError'>, 'BufferError': <class 'BufferError'>, 'EOFError': <class 'EOFError'>, 'ImportError': <class 'ImportError'>, 'LookupError': <class 'LookupError'>, 'MemoryError': <class 'MemoryError'>, 'NameError': <class 'NameError'>, 'OSError': <class 'OSError'>, 'ReferenceError': <class 'ReferenceError'>, 'RuntimeError': <class 'RuntimeError'>, 'StopAsyncIteration': <class 'StopAsyncIteration'>, 'StopIteration': <class 'StopIteration'>, 'SyntaxError': <class 'SyntaxError'>, 'SystemError': <class 'SystemError'>, 'TypeError': <class 'TypeError'>, 'ValueError': <class 'ValueError'>, 'Warning': <class 'Warning'>, 'FloatingPointError': <class 'FloatingPointError'>, 'OverflowError': <class 'OverflowError'>, 'ZeroDivisionError': <class 'ZeroDivisionError'>, 'BytesWarning': <class 'BytesWarning'>, 'DeprecationWarning': <class 'DeprecationWarning'>, 'EncodingWarning': <class 'EncodingWarning'>, 'FutureWarning': <class 'FutureWarning'>, 'ImportWarning': <class 'ImportWarning'>, 'PendingDeprecationWarning': <class 'PendingDeprecationWarning'>, 'ResourceWarning': <class 'ResourceWarning'>, 'RuntimeWarning': <class 'RuntimeWarning'>, 'SyntaxWarning': <class 'SyntaxWarning'>, 'UnicodeWarning': <class 'UnicodeWarning'>, 'UserWarning': <class 'UserWarning'>, 'BlockingIOError': <class 'BlockingIOError'>, 'ChildProcessError': <class 'ChildProcessError'>, 'ConnectionError': <class 'ConnectionError'>, 'FileExistsError': <class 'FileExistsError'>, 'FileNotFoundError': <class 'FileNotFoundError'>, 'InterruptedError': <class 'InterruptedError'>, 'IsADirectoryError': <class 'IsADirectoryError'>, 'NotADirectoryError': <class 'NotADirectoryError'>, 'PermissionError': <class 'PermissionError'>, 'ProcessLookupError': <class 'ProcessLookupError'>, 'TimeoutError': <class 'TimeoutError'>, 'IndentationError': <class 'IndentationError'>, '_IncompleteInputError': <class '_IncompleteInputError'>, 'IndexError': <class 'IndexError'>, 'KeyError': <class 'KeyError'>, 'ModuleNotFoundError': <class 'ModuleNotFoundError'>, 'NotImplementedError': <class 'NotImplementedError'>, 'PythonFinalizationError': <class 'PythonFinalizationError'>, 'RecursionError': <class 'RecursionError'>, 'UnboundLocalError': <class 'UnboundLocalError'>, 'UnicodeError': <class 'UnicodeError'>, 'BrokenPipeError': <class 'BrokenPipeError'>, 'ConnectionAbortedError': <class 'ConnectionAbortedError'>, 'ConnectionRefusedError': <class 'ConnectionRefusedError'>, 'ConnectionResetError': <class 'ConnectionResetError'>, 'TabError': <class 'TabError'>, 'UnicodeDecodeError': <class 'UnicodeDecodeError'>, 'UnicodeEncodeError': <class 'UnicodeEncodeError'>, 'UnicodeTranslateError': <class 'UnicodeTranslateError'>, 'ExceptionGroup': <class 'ExceptionGroup'>, 'EnvironmentError': <class 'OSError'>, 'IOError': <class 'OSError'>, 'WindowsError': <class 'OSError'>, 'open': <built-in function open>, 'quit': Use quit() or Ctrl-Z plus Return to exit, 'exit': Use exit() or Ctrl-Z plus Return to exit, 'copyright': Copyright (c) 2001 Python Software Foundation.\nAll Rights Reserved.\n\nCopyright (c) 2000 BeOpen.com.\nAll Rights Reserved.\n\nCopyright (c) 1995-2001 Corporation for National Research Initiatives.\nAll Rights Reserved.\n\nCopyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam.\nAll Rights Reserved., 'credits': Thanks to CWI, CNRI, BeOpen, Zope Corporation, the Python Software\nFoundation, and a cast of thousands for supporting Python\ndevelopment.  See www.python.org for more information., 'license': Type license() to see the full license text, 'help': Type help() for interactive help, or help(object) for help about object.}, 'get_connection': <function get_connection at 0x00000195BB6A5B10>, 'conn': <sqlite3.Connection object at 0x00000195BB17BD30>, 'cursor': <sqlite3.Cursor object at 0x00000195BB6B43C0>}",
+      "seconds": 0.0009654999012127519
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Recipe parameter values",
+      "required": true,
+      "status": "OK",
+      "detail": "{'__name__': '__main__', '__file__': 'C:\\\\Users\\\\Administrator\\\\Desktop\\\\Centralized_Recipe_System\\\\database\\\\create_recipe_parameter_values_table.py', '__cached__': 'C:\\\\Users\\\\Administrator\\\\Desktop\\\\Centralized_Recipe_System\\\\database\\\\__pycache__\\\\create_recipe_parameter_values_table.cpython-314.pyc', '__doc__': None, '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x00000195BB6CECF0>, '__package__': 'database', '__spec__': ModuleSpec(name='database.create_recipe_parameter_values_table', loader=<_frozen_importlib_external.SourceFileLoader object at 0x00000195BB6CECF0>, origin='C:\\\\Users\\\\Administrator\\\\Desktop\\\\Centralized_Recipe_System\\\\database\\\\create_recipe_parameter_values_table.py'), '__builtins__': {'__name__': 'builtins', '__doc__': \"Built-in functions, types, exceptions, and other objects.\\n\\nThis module provides direct access to all 'built-in'\\nidentifiers of Python; for example, builtins.len is\\nthe full name for the built-in function len().\\n\\nThis module is not normally accessed explicitly by most\\napplications, but can be useful in modules that provide\\nobjects with the same name as a built-in value, but in\\nwhich the built-in of that name is also needed.\", '__package__': '', '__loader__': <class '_frozen_importlib.BuiltinImporter'>, '__spec__': ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>, origin='built-in'), '__build_class__': <built-in function __build_class__>, '__import__': <built-in function __import__>, 'abs': <built-in function abs>, 'all': <built-in function all>, 'any': <built-in function any>, 'ascii': <built-in function ascii>, 'bin': <built-in function bin>, 'breakpoint': <built-in function breakpoint>, 'callable': <built-in function callable>, 'chr': <built-in function chr>, 'compile': <built-in function compile>, 'delattr': <built-in function delattr>, 'dir': <built-in function dir>, 'divmod': <built-in function divmod>, 'eval': <built-in function eval>, 'exec': <built-in function exec>, 'format': <built-in function format>, 'getattr': <built-in function getattr>, 'globals': <built-in function globals>, 'hasattr': <built-in function hasattr>, 'hash': <built-in function hash>, 'hex': <built-in function hex>, 'id': <built-in function id>, 'input': <built-in function input>, 'isinstance': <built-in function isinstance>, 'issubclass': <built-in function issubclass>, 'iter': <built-in function iter>, 'aiter': <built-in function aiter>, 'len': <built-in function len>, 'locals': <built-in function locals>, 'max': <built-in function max>, 'min': <built-in function min>, 'next': <built-in function next>, 'anext': <built-in function anext>, 'oct': <built-in function oct>, 'ord': <built-in function ord>, 'pow': <built-in function pow>, 'print': <built-in function print>, 'repr': <built-in function repr>, 'round': <built-in function round>, 'setattr': <built-in function setattr>, 'sorted': <built-in function sorted>, 'sum': <built-in function sum>, 'vars': <built-in function vars>, 'None': None, 'Ellipsis': Ellipsis, 'NotImplemented': NotImplemented, 'False': False, 'True': True, 'bool': <class 'bool'>, 'memoryview': <class 'memoryview'>, 'bytearray': <class 'bytearray'>, 'bytes': <class 'bytes'>, 'classmethod': <class 'classmethod'>, 'complex': <class 'complex'>, 'dict': <class 'dict'>, 'enumerate': <class 'enumerate'>, 'filter': <class 'filter'>, 'float': <class 'float'>, 'frozenset': <class 'frozenset'>, 'property': <class 'property'>, 'int': <class 'int'>, 'list': <class 'list'>, 'map': <class 'map'>, 'object': <class 'object'>, 'range': <class 'range'>, 'reversed': <class 'reversed'>, 'set': <class 'set'>, 'slice': <class 'slice'>, 'staticmethod': <class 'staticmethod'>, 'str': <class 'str'>, 'super': <class 'super'>, 'tuple': <class 'tuple'>, 'type': <class 'type'>, 'zip': <class 'zip'>, '__debug__': True, 'BaseException': <class 'BaseException'>, 'BaseExceptionGroup': <class 'BaseExceptionGroup'>, 'Exception': <class 'Exception'>, 'GeneratorExit': <class 'GeneratorExit'>, 'KeyboardInterrupt': <class 'KeyboardInterrupt'>, 'SystemExit': <class 'SystemExit'>, 'ArithmeticError': <class 'ArithmeticError'>, 'AssertionError': <class 'AssertionError'>, 'AttributeError': <class 'AttributeError'>, 'BufferError': <class 'BufferError'>, 'EOFError': <class 'EOFError'>, 'ImportError': <class 'ImportError'>, 'LookupError': <class 'LookupError'>, 'MemoryError': <class 'MemoryError'>, 'NameError': <class 'NameError'>, 'OSError': <class 'OSError'>, 'ReferenceError': <class 'ReferenceError'>, 'RuntimeError': <class 'RuntimeError'>, 'StopAsyncIteration': <class 'StopAsyncIteration'>, 'StopIteration': <class 'StopIteration'>, 'SyntaxError': <class 'SyntaxError'>, 'SystemError': <class 'SystemError'>, 'TypeError': <class 'TypeError'>, 'ValueError': <class 'ValueError'>, 'Warning': <class 'Warning'>, 'FloatingPointError': <class 'FloatingPointError'>, 'OverflowError': <class 'OverflowError'>, 'ZeroDivisionError': <class 'ZeroDivisionError'>, 'BytesWarning': <class 'BytesWarning'>, 'DeprecationWarning': <class 'DeprecationWarning'>, 'EncodingWarning': <class 'EncodingWarning'>, 'FutureWarning': <class 'FutureWarning'>, 'ImportWarning': <class 'ImportWarning'>, 'PendingDeprecationWarning': <class 'PendingDeprecationWarning'>, 'ResourceWarning': <class 'ResourceWarning'>, 'RuntimeWarning': <class 'RuntimeWarning'>, 'SyntaxWarning': <class 'SyntaxWarning'>, 'UnicodeWarning': <class 'UnicodeWarning'>, 'UserWarning': <class 'UserWarning'>, 'BlockingIOError': <class 'BlockingIOError'>, 'ChildProcessError': <class 'ChildProcessError'>, 'ConnectionError': <class 'ConnectionError'>, 'FileExistsError': <class 'FileExistsError'>, 'FileNotFoundError': <class 'FileNotFoundError'>, 'InterruptedError': <class 'InterruptedError'>, 'IsADirectoryError': <class 'IsADirectoryError'>, 'NotADirectoryError': <class 'NotADirectoryError'>, 'PermissionError': <class 'PermissionError'>, 'ProcessLookupError': <class 'ProcessLookupError'>, 'TimeoutError': <class 'TimeoutError'>, 'IndentationError': <class 'IndentationError'>, '_IncompleteInputError': <class '_IncompleteInputError'>, 'IndexError': <class 'IndexError'>, 'KeyError': <class 'KeyError'>, 'ModuleNotFoundError': <class 'ModuleNotFoundError'>, 'NotImplementedError': <class 'NotImplementedError'>, 'PythonFinalizationError': <class 'PythonFinalizationError'>, 'RecursionError': <class 'RecursionError'>, 'UnboundLocalError': <class 'UnboundLocalError'>, 'UnicodeError': <class 'UnicodeError'>, 'BrokenPipeError': <class 'BrokenPipeError'>, 'ConnectionAbortedError': <class 'ConnectionAbortedError'>, 'ConnectionRefusedError': <class 'ConnectionRefusedError'>, 'ConnectionResetError': <class 'ConnectionResetError'>, 'TabError': <class 'TabError'>, 'UnicodeDecodeError': <class 'UnicodeDecodeError'>, 'UnicodeEncodeError': <class 'UnicodeEncodeError'>, 'UnicodeTranslateError': <class 'UnicodeTranslateError'>, 'ExceptionGroup': <class 'ExceptionGroup'>, 'EnvironmentError': <class 'OSError'>, 'IOError': <class 'OSError'>, 'WindowsError': <class 'OSError'>, 'open': <built-in function open>, 'quit': Use quit() or Ctrl-Z plus Return to exit, 'exit': Use exit() or Ctrl-Z plus Return to exit, 'copyright': Copyright (c) 2001 Python Software Foundation.\nAll Rights Reserved.\n\nCopyright (c) 2000 BeOpen.com.\nAll Rights Reserved.\n\nCopyright (c) 1995-2001 Corporation for National Research Initiatives.\nAll Rights Reserved.\n\nCopyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam.\nAll Rights Reserved., 'credits': Thanks to CWI, CNRI, BeOpen, Zope Corporation, the Python Software\nFoundation, and a cast of thousands for supporting Python\ndevelopment.  See www.python.org for more information., 'license': Type license() to see the full license text, 'help': Type help() for interactive help, or help(object) for help about object.}, 'get_connection': <function get_connection at 0x00000195BB6A5B10>, 'conn': <sqlite3.Connection object at 0x00000195BB17BE20>, 'cursor': <sqlite3.Cursor object at 0x00000195BB6B74C0>}",
+      "seconds": 0.0009629999985918403
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Recipe status history",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0009264000691473484
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Recipe upload history",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0009820000268518925
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Recipe download history",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0008840999798849225
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Recipe PLC mapping",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0005851000314578414
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Legacy recipe indexes",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.000588199938647449
+    },
+    {
+      "group": "06 Recipes",
+      "name": "Legacy phase indexes",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0006660999497398734
+    },
+    {
+      "group": "07 PLC Mapping",
+      "name": "PLC parameter mapping",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0005946999881416559
+    },
+    {
+      "group": "07 PLC Mapping",
+      "name": "SQLAlchemy managed tables",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.39610260003246367
+    },
+    {
+      "group": "08 Audit/Security",
+      "name": "Recipe parameter audit",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0013187999138608575
+    },
+    {
+      "group": "08 Audit/Security",
+      "name": "Recipe resource locks",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0028571999864652753
+    },
+    {
+      "group": "08 Audit/Security",
+      "name": "User/session/archive schema",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.09572930005379021
+    },
+    {
+      "group": "09 Upgrades",
+      "name": "PLC tags upgrade",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0015113999834284186
+    },
+    {
+      "group": "09 Upgrades",
+      "name": "Recipe status history upgrade",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0012214999878779054
+    },
+    {
+      "group": "09 Upgrades",
+      "name": "Recipe phase control upgrade",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0009341000113636255
+    },
+    {
+      "group": "09 Upgrades",
+      "name": "Recipe phase recipe-id upgrade",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0009379999246448278
+    },
+    {
+      "group": "09 Upgrades",
+      "name": "Recipe download history upgrade",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0010086999973282218
+    },
+    {
+      "group": "09 Upgrades",
+      "name": "Recipe test-only flag upgrade",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0009512000251561403
+    },
+    {
+      "group": "10 Defaults",
+      "name": "Schema version bootstrap record",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0006546999793499708
+    },
+    {
+      "group": "10 Defaults",
+      "name": "Default recovery users",
+      "required": true,
+      "status": "OK",
+      "detail": "skipped",
+      "seconds": 3.500026650726795e-06
+    },
+    {
+      "group": "11 Verification",
+      "name": "Bootstrap history table",
+      "required": true,
+      "status": "OK",
+      "detail": "",
+      "seconds": 0.0006377999670803547
+    },
+    {
+      "group": "11 Verification",
+      "name": "Required table verification",
+      "required": true,
+      "status": "OK",
+      "detail": "{'table_count': 41, 'verified_tables': 40}",
+      "seconds": 0.0006570999976247549
+    }
+  ]
+}

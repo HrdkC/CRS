@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ action }} PLC
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">PLC Action</span>
+            <h1>{{ action }} PLC</h1>
+            <p>{{ plc.plc_name }}</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/plcs" class="crs-btn crs-btn-soft">Cancel</a>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="workbench-card">
+        <div class="panel-heading">
+            <span>Action Blocked</span>
+            <span class="status-badge status-danger">Error</span>
+        </div>
+        <p>{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Reason Required</span>
+            <span class="status-badge status-info">Audit</span>
+        </div>
+
+        <form method="POST" action="{{ post_url }}" class="parameter-edit-form">
+            <label>
+                <span>Reason</span>
+                <input
+                    type="text"
+                    name="reason"
+                    required
+                    placeholder="Reason for {{ action|lower }} PLC"
+                >
+            </label>
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">
+                    {{ action }} PLC
+                </button>
+                <a href="/plcs" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</section>
+
+{% endblock %}

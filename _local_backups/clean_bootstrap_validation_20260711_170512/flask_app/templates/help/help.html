@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}
+CRS Help
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench help-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Documentation</span>
+            <h1>CRS Help Center</h1>
+            <p>User manual, operator guidance, engineering configuration notes, and system information in one place.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/help/user-manual" class="crs-btn crs-btn-primary">User Manual</a>
+            <a href="/help/operator-guide" class="crs-btn crs-btn-soft">Operator Guide</a>
+        </div>
+    </div>
+
+    <div class="help-layout">
+        <aside class="workbench-card help-sidebar">
+            <div class="panel-heading">
+                <span>Help Topics</span>
+                <span class="status-badge status-info">CRS</span>
+            </div>
+
+            <div class="help-topic-list">
+                {% for topic_key, topic in topics.items() %}
+                <a
+                    href="/help/{{ topic_key }}"
+                    class="help-topic-link {% if selected_topic_key is defined and selected_topic_key == topic_key %}active{% endif %}"
+                >
+                    <span>{{ topic.title }}</span>
+                    <small>{{ topic.kicker }}</small>
+                </a>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <div class="help-main">
+            {% if selected_topic %}
+            <div class="workbench-card help-topic-card">
+                <span class="section-kicker">{{ selected_topic.kicker }}</span>
+                <h2>{{ selected_topic.title }}</h2>
+                <p>{{ selected_topic.summary }}</p>
+
+                <div class="help-section-grid">
+                    {% for section in selected_topic.sections %}
+                    <section class="help-section">
+                        <h3>{{ section.title }}</h3>
+                        <ul>
+                            {% for item in section["items"] %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="metric-grid help-topic-grid">
+                {% for topic_key, topic in topics.items() %}
+                <a href="/help/{{ topic_key }}" class="metric-card metric-link help-topic-tile">
+                    <span class="metric-label">{{ topic.kicker }}</span>
+                    <strong class="metric-text">{{ topic.title }}</strong>
+                    <small>{{ topic.summary }}</small>
+                </a>
+                {% endfor %}
+            </div>
+
+            <div class="workbench-card compact-summary">
+                <div class="panel-heading">
+                    <span>Quick Reference</span>
+                    <span class="status-badge status-success">Professional SOP Area</span>
+                </div>
+                <div class="summary-list">
+                    <div><span>Recipe source</span><strong>Database Master</strong></div>
+                    <div><span>PLC download</span><strong>Validated Full Set</strong></div>
+                    <div><span>Change control</span><strong>Audit Required</strong></div>
+                    <div><span>Support model</span><strong>Role Based</strong></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

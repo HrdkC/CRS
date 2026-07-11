@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
+
+    <title>
+        {% block title %}
+        Apollo CRS
+        {% endblock %}
+    </title>
+
+    <script>
+        (function () {
+            try {
+                var root = document.documentElement;
+                var theme = localStorage.getItem("crs-theme") || "system";
+                var fontStep = parseInt(localStorage.getItem("crs-font-step") || "0", 10);
+                var systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+                if (["system", "light", "dark"].indexOf(theme) === -1) theme = "system";
+                if (isNaN(fontStep)) fontStep = 0;
+                fontStep = Math.max(-4, Math.min(4, fontStep));
+
+                root.setAttribute("data-crs-theme", theme);
+                root.setAttribute("data-crs-resolved-theme", theme === "dark" || (theme === "system" && systemDark) ? "dark" : "light");
+                root.setAttribute("data-crs-font-step", String(fontStep));
+                root.style.setProperty("--crs-font-adjust", String(fontStep) + "px");
+            } catch (error) {
+                document.documentElement.setAttribute("data-crs-theme", "system");
+                document.documentElement.setAttribute("data-crs-resolved-theme", "light");
+            }
+        })();
+    </script>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/main.css') }}?v=css-v113-import-export-polish-20260711"
+    >
+
+</head>
+
+<body class="{% if session.get('logged_in') %}authenticated-layout{% else %}login-layout{% endif %}">
+
+    {% if session.get("logged_in") %}
+
+    <header class="site-header">
+
+        <div class="header-top">
+
+            <div class="header-logo-panel">
+                <div class="header-brand-lockup" aria-label="Apollo Tyres and BCCI campaign branding">
+                    <div class="header-brand-logo-row">
+                        <img
+                            src="{{ url_for('static', filename='images/apollo_logo.png') }}"
+                            alt="Apollo Tyres Ltd."
+                            class="logo header-logo-main"
+                        >
+                        <img
+                            src="{{ url_for('static', filename='images/branding/apollo_bcci_lead_sponsor.webp') }}"
+                            alt="BCCI"
+                            class="header-logo-bcci"
+                        >
+                    </div>
+                    <div class="header-campaign-caption">
+                        Har Safar Mein Dum Hai
+                    </div>
+                </div>
+            </div>
+
+            <div class="brand-area">
+                <div class="brand-title">
+                    Centralized Recipe System (CRS)
+                </div>
+                <div class="brand-subtitle">
+                    <span>Industrial Recipe Control</span>
+                    <span>PCR Engineering &middot; Limda Plant</span>
+                </div>
+            </div>
+
+            <div class="user-info">
+                <div class="user-detail-line user-detail-name">
+                    <strong>User: {{ display_username(session.get("username")) }}</strong>
+                </div>
+                <div class="user-detail-line">Role : {{ session["role"] }}</div>
+
+                {% if session.get("password_reset_required") == 1 %}
+                <div class="user-detail-line">
+                    <span class="status-badge status-warning">Password Reset Required</span>
+                </div>
+                {% endif %}
+
+                {% if session.get("last_login_ist") %}
+                <div class="user-detail-line">Last Login : {{ session["last_login_ist"] }}</div>
+                {% endif %}
+
+                <div
+                    id="session-countdown"
+                    class="session-countdown"
+                    data-timeout-seconds="{{ session.get('session_timeout_seconds', session_timeout_seconds|default(1800)) }}"
+                    data-last-activity-epoch="{{ session.get('last_activity_epoch', current_epoch|default(0)) }}"
+                >
+                    <span class="session-countdown-icon"> ⏱ </span>
+                    <span class="session-countdown-label">Auto Logout</span>
+                    <strong id="session-countdown-value">--:--</strong>
+                </div>
+            </div>
+
+        </div>
+
+        <nav class="navbar">
+            <ul>
+                <li class="menu-item">
+                    <a href="/">Dashboard</a>
+                </li>
+
+                {% if role_can("recipe_view") %}
+                <li class="dropdown menu-item">
+                    <a href="#">Production ▼</a>
+                    <div class="dropdown-menu">
+                        <a href="/recipes">Recipe Workspace</a>
+                        <a href="/recipes/import-export">Recipe Import / Export</a>
+                    </div>
+                </li>
+                {% endif %}
+
+                {% if role_can("engineering_config") %}
+                <li class="dropdown menu-item">
+                    <a href="#">Engineering ▼</a>
+                    <div class="dropdown-menu">
+                        <a href="/configuration">Configuration Center</a>
+                        <a href="/families">TBM Families</a>
+                        <a href="/machines">Machines</a>
+                        <a href="/stages">Stages</a>
+                        <a href="/phase-controls">Phase Option Master</a>
+                        <a href="/engineering-units">Engineering Units</a>
+                    </div>
+                </li>
+                {% endif %}
+
+                {% if role_can("engineering_config") %}
+                <li class="dropdown menu-item">
+                    <a href="#">PLC & Tags ▼</a>
+                    <div class="dropdown-menu">
+                        <a href="/plcs">PLC Registry</a>
+                        <a href="/configuration">Machine / Stage Readiness</a>
+                        <a href="/recipes">Parameter / Tag Setup</a>
+                    </div>
+                </li>
+                {% endif %}
+
+                {% if role_can("user_manage") or role_can("session_manage") or role_can("audit_view") or is_admin() %}
+                <li class="dropdown menu-item">
+                    <a href="#">Administration ▼</a>
+                    <div class="dropdown-menu">
+                        {% if role_can("user_manage") %}
+                        <a href="/users">Users</a>
+                        {% endif %}
+
+                        {% if role_can("audit_view") %}
+                        <a href="/audit-history">Audit History</a>
+                        {% endif %}
+
+                        {% if is_admin() %}
+                        <a href="/audit-archive">Audit Archive / Export</a>
+                        <a href="/auto-logout-settings">Auto Logout Settings</a>
+                        {% endif %}
+
+                        {% if role_can("session_manage") %}
+                        <a href="/active-sessions">Active Sessions</a>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endif %}
+
+                <li class="menu-item">
+                    <a href="/my-password">My Password</a>
+                </li>
+
+                <li class="dropdown menu-item">
+                    <a href="#">Help ▼</a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a href="/help">Help Center</a>
+                        <a href="/help/user-manual">User Manual</a>
+                        <a href="/help/operator-guide">Operator Guide</a>
+                        {% if role_can("engineering_config") %}
+                        <a href="/help/engineering-manual">Engineering Manual</a>
+                        {% endif %}
+                        <a href="/help/system-info">System Information</a>
+                    </div>
+                </li>
+
+                <li class="menu-item">
+                    <form method="POST" action="/logout" class="nav-post-form">
+                        {{ csrf_input() }}
+                        <button type="submit" class="nav-post-link">Logout</button>
+                    </form>
+                </li>
+            </ul>
+            <div class="crs-accessibility-strip" aria-label="Display settings">
+                <button
+                    type="button"
+                    class="crs-access-button crs-font-button"
+                    data-crs-font-action="decrease"
+                    title="Decrease font size"
+                >A-</button>
+                <button
+                    type="button"
+                    class="crs-access-button crs-font-button crs-font-normal"
+                    data-crs-font-action="reset"
+                    title="Normal font size"
+                >A</button>
+                <button
+                    type="button"
+                    class="crs-access-button crs-font-button"
+                    data-crs-font-action="increase"
+                    title="Increase font size"
+                >A+</button>
+                <span class="crs-access-divider" aria-hidden="true"></span>
+                <button
+                    type="button"
+                    class="crs-access-button crs-theme-button crs-theme-system"
+                    data-crs-theme-choice="system"
+                    title="Use system theme"
+                >Sys</button>
+                <button
+                    type="button"
+                    class="crs-access-button crs-theme-button crs-theme-light"
+                    data-crs-theme-choice="light"
+                    title="Light theme"
+                >A</button>
+                <button
+                    type="button"
+                    class="crs-access-button crs-theme-button crs-theme-dark"
+                    data-crs-theme-choice="dark"
+                    title="Dark theme"
+                >A</button>
+            </div>
+        </nav>
+
+    </header>
+
+    {% endif %}
+
+    <div class="main-container">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-stack">
+                {% for category, message in messages %}
+                    {% set flash_category = (category or "message")|lower %}
+
+                    {% if flash_category in ["error", "danger"] %}
+                        {% set flash_class = "flash-danger" %}
+                        {% set flash_icon = "⚠" %}
+                        {% set flash_title = "Error" %}
+                    {% elif flash_category in ["warning", "warn"] %}
+                        {% set flash_class = "flash-warning" %}
+                        {% set flash_icon = "!" %}
+                        {% set flash_title = "Warning" %}
+                    {% elif flash_category in ["success", "ok"] %}
+                        {% set flash_class = "flash-success" %}
+                        {% set flash_icon = "✓" %}
+                        {% set flash_title = "Success" %}
+                    {% elif flash_category in ["info", "notice"] %}
+                        {% set flash_class = "flash-info" %}
+                        {% set flash_icon = "i" %}
+                        {% set flash_title = "Info" %}
+                    {% else %}
+                        {% set flash_class = "flash-message-neutral" %}
+                        {% set flash_icon = "•" %}
+                        {% set flash_title = "Message" %}
+                    {% endif %}
+
+                    <div class="flash-message {{ flash_class }}" role="alert">
+                        <span class="flash-icon" aria-hidden="true">{{ flash_icon }}</span>
+                        <div class="flash-content">
+                            <div class="flash-title">{{ flash_title }}</div>
+                            <div class="flash-text">{{ message }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+
+        {% if g is defined and g.login_attempt_alerts %}
+        <div class="login-attempt-alert-stack">
+            {% for alert in g.login_attempt_alerts %}
+            <div class="login-attempt-alert" role="alert" data-login-alert-id="{{ alert.id }}">
+                <div class="login-attempt-alert-icon">⚠</div>
+                <div class="login-attempt-alert-body">
+                    <strong>Another workstation tried to login as {{ session.get("username") }}</strong>
+                    <div>
+                        Attempted from
+                        <b>{{ alert.attempted_workstation_name or "Unknown workstation" }}</b>
+                        / IP <b>{{ alert.attempted_client_ip or "-" }}</b>
+                        at {{ alert.last_attempted_at or alert.attempted_at }}.
+                        {% if alert.attempt_count and alert.attempt_count|int > 1 %}
+                        <span class="status-badge status-warning">{{ alert.attempt_count }} attempts</span>
+                        {% endif %}
+                    </div>
+                    <div class="login-attempt-alert-meta">
+                        Current active session remains protected. Finish your work and logout when ready.
+                    </div>
+                </div>
+                <form method="POST" action="/login-attempt-alerts/{{ alert.id }}/ack" class="login-attempt-alert-form">
+                    <button type="submit" class="btn btn-secondary btn-sm">Acknowledge</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+    {% if session.get("logged_in") %}
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <span>© 2026 Apollo Tyres Ltd.</span>
+            <span class="footer-separator">|</span>
+            <span>Centralized Recipe System (CRS)</span>
+            <span class="footer-separator">|</span>
+            <span>Version {{ app_version }}</span>
+            <span class="footer-separator">|</span>
+            <span>Developed by Hardik Chauhan</span>
+            <span class="footer-separator">|</span>
+            <a href="/help" class="footer-link">Help / SOP</a>
+        </div>
+    </footer>
+
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,5574 @@
+{
+  "database": {
+    "columns": {
+      "audit_archive_exports": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "export_type",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "export_path",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "file_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "row_count",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "exported_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "remarks",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "audit_log": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "timestamp",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "username",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "role",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "workstation_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "client_ip",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "plc_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_version",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "record_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "parameter_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "old_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "new_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "action",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "change_source",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "reason",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "user_agent",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "forwarded_for",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "request_host",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "audit_log_archive": [
+        {
+          "name": "archive_id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "original_audit_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "username",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "role",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "workstation_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "client_ip",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "plc_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_version",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "record_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "parameter_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "old_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "new_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "action",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "change_source",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "reason",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "user_agent",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "request_host",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "forwarded_for",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "timestamp",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "archived_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "archived_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "archive_batch_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "engineering_units": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "unit_code",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "is_active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        }
+      ],
+      "machine_stages": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "machine_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "stage_type",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "parameter_definitions": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "machine_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "stage_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "tag_index",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_array_index",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "parameter_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "parameter_class",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "unit",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "min_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "max_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "default_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "datatype",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "english_memo",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "used",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "phase_control_group_master": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "machine_stage_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "stage_type",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "phase_group_code",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "phase_group_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "display_order",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "slot_count",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        }
+      ],
+      "phase_control_mapping": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "machine_stage_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "phase_control_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_tag",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "array_index",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_data_type",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "phase_control_master": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "stage_type",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "phase_control_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "display_order",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "machine_stage_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "phase_group_code",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "phase_group_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "phase_control_key",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "plc_phase_code",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        }
+      ],
+      "phase_control_options": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "phase_control_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "option_code",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "display_order",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "plc_master": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "ip_address",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "recipe_data_tag",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "phase_data_tag",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "download_request_tag",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "download_complete_tag",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "upload_request_tag",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "upload_complete_tag",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "plc_operation_jobs": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "operation",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "title",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "status",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "success",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "progress_percent",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "current_step",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "started_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "user_role",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "result_json",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "completed_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "plc_parameter_mapping": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "parameter_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "plc_array_index",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        }
+      ],
+      "plc_program_history": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_registry_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "old_program_revision",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "new_program_revision",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "old_firmware_revision",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "new_firmware_revision",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "change_reason",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "changed_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "changed_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "plc_registry": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "machine_stage_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "ip_address",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "controller_type",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "firmware_revision",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "program_revision",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "processor_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "plc_software",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "last_verified_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "created_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "actual_processor_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "actual_firmware_revision",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "actual_serial_number",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "actual_program_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "verification_status",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "plc_tags": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "machine_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "stage_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "tag_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "tag_type",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "is_array",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "array_size",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "array_start_index",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "array_end_index",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "tag_purpose",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "recipe_download_history": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_version",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "download_status",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "downloaded_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "download_time",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "download_start_time",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "download_end_time",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "download_message",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "recipe_master": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "current_version",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_status",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "last_modified_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "last_modified_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        }
+      ],
+      "recipe_parameter_audit": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_parameter_value_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "parameter_definition_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "old_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "new_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "changed_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "changed_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_version",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "parameter_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "tag_index",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "change_source",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "change_reason",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "user_role",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "client_ip",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "workstation_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "recipe_parameter_values": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "parameter_definition_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "parameter_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "is_modified",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "recipe_parameters": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "version",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "display_order",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_array_index",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "category",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "parameter_group",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "parameter_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_parameter_description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "plc_tag_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "parameter_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "data_type",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "unit",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "min_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "max_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        }
+      ],
+      "recipe_phase_control": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "line_no",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "phase_control_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "stop_option",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "position_option",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "sequence_no",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "phase_group_code",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "phase_group_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "used",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "position_flag",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "recipe_plc_mapping": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "plc_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        }
+      ],
+      "recipe_resource_locks": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "resource_type",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "resource_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "operation_type",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "locked_by",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "user_role",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "session_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "workstation_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "client_ip",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "user_agent",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "status",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "expires_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "released_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "release_reason",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "notes",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "recipe_status_history": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "old_status",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "new_status",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "changed_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "changed_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "remarks",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "recipe_upload_history": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "plc_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_version",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "uploaded_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "uploaded_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "status",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "remarks",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "user_role",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "plc_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "source_tag",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "destination_tag",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "candidate_change_count",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "validated_parameters",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "payload_mismatch_count",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        }
+      ],
+      "recipe_version_values": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_version_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "parameter_definition_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "parameter_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "recipe_versions": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "version",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "recipe_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "version_comment",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "recipes": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "machine_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "stage_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "recipe_code",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "recipe_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "version",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "status",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "is_test_only",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        }
+      ],
+      "schema_version": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "version",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "applied_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "stage_plc_tag_requirements": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "machine_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "stage_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "purpose",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "label",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "requirement_level",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "expected_type",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "array_required",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "minimum_array_size",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "array_start_index",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "array_end_index",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "default_tag_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "search_hint",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "display_order",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "updated_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "system_bootstrap_history": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "run_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "status",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "database_kind",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "database_url_hash",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "started_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "completed_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "elapsed_seconds",
+          "not_null": false,
+          "primary_key": false,
+          "type": "REAL"
+        },
+        {
+          "name": "total_steps",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "successful_steps",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "failed_steps",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "report_path",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "message",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "system_settings": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "setting_key",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "setting_value",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "updated_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "tbm_families": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "family_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "created_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "tbm_machines": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "machine_code",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "family_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "created_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ],
+      "template_master": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "machine_stage_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "template_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "template_version",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "template_parameters": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "template_id",
+          "not_null": true,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "parameter_name",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "parameter_description",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "plc_tag",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "array_index",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "data_type",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "engineering_unit_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "minimum_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "maximum_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "default_value",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "required_flag",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "validation_required",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "critical_parameter",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "change_reason_required",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "display_order",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TIMESTAMP"
+        }
+      ],
+      "user_login_attempt_alerts": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "username",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active_session_id",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "attempted_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "attempted_client_ip",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "attempted_workstation_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "attempted_user_agent",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "attempted_forwarded_for",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "attempted_request_host",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active_client_ip",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active_workstation_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active_login_time",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "login_source",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "status",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "acknowledged_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "acknowledged_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "attempt_count",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "last_attempted_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        }
+      ],
+      "user_sessions": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "username",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "login_time",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "logout_time",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "client_ip",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "workstation_name",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "role",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "last_activity",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "logout_reason",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "auto_logged_out",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "user_agent",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "forwarded_for",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "request_host",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "login_source",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "replaced_existing_sessions",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "heartbeat_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        }
+      ],
+      "users": [
+        {
+          "name": "id",
+          "not_null": false,
+          "primary_key": true,
+          "type": "INTEGER"
+        },
+        {
+          "name": "username",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "password_hash",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "role",
+          "not_null": true,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "active",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "created_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "last_login",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "created_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "password_reset_required",
+          "not_null": false,
+          "primary_key": false,
+          "type": "INTEGER"
+        },
+        {
+          "name": "password_changed_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "disabled_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "disabled_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "role_updated_at",
+          "not_null": false,
+          "primary_key": false,
+          "type": "DATETIME"
+        },
+        {
+          "name": "role_updated_by",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        },
+        {
+          "name": "remarks",
+          "not_null": false,
+          "primary_key": false,
+          "type": "TEXT"
+        }
+      ]
+    },
+    "exists": true,
+    "indexes": [
+      "idx_family_name_unique",
+      "idx_machine_code_unique",
+      "idx_machine_stage_unique",
+      "idx_parameter_definition_name",
+      "idx_parameter_definition_plc_array",
+      "idx_parameter_definition_tag_index",
+      "idx_phase_control",
+      "idx_plc_name_unique",
+      "idx_plc_tag_unique",
+      "idx_recipe_parameter_unique",
+      "idx_recipe_parameters",
+      "idx_recipe_resource_locks_active",
+      "idx_recipe_resource_locks_session",
+      "idx_recipe_unique",
+      "idx_user_login_attempt_alerts_dedupe",
+      "idx_user_login_attempt_alerts_username_status"
+    ],
+    "path": "database/recipe.db",
+    "tables": [
+      "audit_archive_exports",
+      "audit_log",
+      "audit_log_archive",
+      "engineering_units",
+      "machine_stages",
+      "parameter_definitions",
+      "phase_control_group_master",
+      "phase_control_mapping",
+      "phase_control_master",
+      "phase_control_options",
+      "plc_master",
+      "plc_operation_jobs",
+      "plc_parameter_mapping",
+      "plc_program_history",
+      "plc_registry",
+      "plc_tags",
+      "recipe_download_history",
+      "recipe_master",
+      "recipe_parameter_audit",
+      "recipe_parameter_values",
+      "recipe_parameters",
+      "recipe_phase_control",
+      "recipe_plc_mapping",
+      "recipe_resource_locks",
+      "recipe_status_history",
+      "recipe_upload_history",
+      "recipe_version_values",
+      "recipe_versions",
+      "recipes",
+      "schema_version",
+      "stage_plc_tag_requirements",
+      "system_bootstrap_history",
+      "system_settings",
+      "tbm_families",
+      "tbm_machines",
+      "template_master",
+      "template_parameters",
+      "user_login_attempt_alerts",
+      "user_sessions",
+      "users"
+    ]
+  },
+  "files": {
+    "by_suffix": {
+      ".bat": 2,
+      ".css": 30,
+      ".csv": 2,
+      ".db": 11,
+      ".html": 337,
+      ".js": 7,
+      ".json": 16,
+      ".l5x": 1,
+      ".log": 9,
+      ".md": 34,
+      ".png": 7,
+      ".py": 2006,
+      ".tag": 4,
+      ".txt": 250,
+      ".webp": 10,
+      ".xlsx": 23,
+      ".zip": 26,
+      "<none>": 18
+    },
+    "extra_database_artifacts": [
+      "database/crs.db",
+      "database/recipe_before_import_test_280626.db",
+      "database/recipe_before_p15ss_recipe_data_remap.db",
+      "database/recipe_before_plc_tag_remap_290626.db",
+      "local_backups/CRS_backup_20260621_191559/database/recipe.db",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/database/recipe.db",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/database/recipe.db",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/database/recipe.db",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/database/recipe.db",
+      "study_exports/latest_local_backup/database/recipe.db"
+    ],
+    "possible_debug_artifacts": [
+      "database/template_import_manager.py",
+      "database/template_manager.py",
+      "database/template_parameter_manager.py",
+      "debug.log",
+      "flask_app/templates/admin/create_engineering_unit.html",
+      "flask_app/templates/admin/edit_engineering_unit.html",
+      "flask_app/templates/admin/engineering_units.html",
+      "flask_app/templates/audit/audit_archive.html",
+      "flask_app/templates/audit/audit_history.html",
+      "flask_app/templates/auth/login.html",
+      "flask_app/templates/auth/my_password.html",
+      "flask_app/templates/base.html",
+      "flask_app/templates/configuration/index.html",
+      "flask_app/templates/configuration/stage_readiness.html",
+      "flask_app/templates/dashboard/dashboard.html",
+      "flask_app/templates/errors/error.html",
+      "flask_app/templates/families/create_family.html",
+      "flask_app/templates/families/edit_family.html",
+      "flask_app/templates/families/families.html",
+      "flask_app/templates/help/help.html",
+      "flask_app/templates/machines/change_family.html",
+      "flask_app/templates/machines/create_machine.html",
+      "flask_app/templates/machines/machines.html",
+      "flask_app/templates/parameters/add_parameter.html",
+      "flask_app/templates/parameters/edit_parameter.html",
+      "flask_app/templates/parameters/parameters.html",
+      "flask_app/templates/phase_controls/master.html",
+      "flask_app/templates/phase_controls/stage_master.html",
+      "flask_app/templates/plc_array_import/import_1d_array.html",
+      "flask_app/templates/plc_tags/array_browser.html",
+      "flask_app/templates/plc_tags/browser.html",
+      "flask_app/templates/plc_tags/create_parameter.html",
+      "flask_app/templates/plcs/check_plc.html",
+      "flask_app/templates/plcs/create_plc.html",
+      "flask_app/templates/plcs/edit_plc.html",
+      "flask_app/templates/plcs/import_plcs.html",
+      "flask_app/templates/plcs/plc_reason.html",
+      "flask_app/templates/plcs/plcs.html",
+      "flask_app/templates/plcs/test_connection.html",
+      "flask_app/templates/plcs/verify_plc.html",
+      "flask_app/templates/recipes/bulk_edit_parameters.html",
+      "flask_app/templates/recipes/compare_versions.html",
+      "flask_app/templates/recipes/copy_recipe.html",
+      "flask_app/templates/recipes/create_recipe.html",
+      "flask_app/templates/recipes/create_version.html",
+      "flask_app/templates/recipes/download_preparation.html",
+      "flask_app/templates/recipes/edit_parameter_metadata.html",
+      "flask_app/templates/recipes/edit_parameter_value.html",
+      "flask_app/templates/recipes/edit_value.html",
+      "flask_app/templates/recipes/editor.html",
+      "flask_app/templates/recipes/parameter_history.html",
+      "flask_app/templates/recipes/recipe_details.html",
+      "flask_app/templates/recipes/recipe_import_export.html",
+      "flask_app/templates/recipes/recipe_parameters.html",
+      "flask_app/templates/recipes/recipe_phase_control.html",
+      "flask_app/templates/recipes/recipes.html",
+      "flask_app/templates/recipes/status_history.html",
+      "flask_app/templates/recipes/value_history.html",
+      "flask_app/templates/recipes/versions.html",
+      "flask_app/templates/sessions/active_sessions.html",
+      "flask_app/templates/sessions/auto_logout_settings.html",
+      "flask_app/templates/stages/stages.html",
+      "flask_app/templates/users/change_password.html",
+      "flask_app/templates/users/create_user.html",
+      "flask_app/templates/users/users.html",
+      "local_backups/CRS_backup_20260621_191559/database/template_import_manager.py",
+      "local_backups/CRS_backup_20260621_191559/database/template_manager.py",
+      "local_backups/CRS_backup_20260621_191559/database/template_parameter_manager.py",
+      "local_backups/CRS_backup_20260621_191559/debug.log",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/admin/create_engineering_unit.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/admin/edit_engineering_unit.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/admin/engineering_units.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/audit/audit_history.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/auth/login.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/base.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/dashboard/dashboard.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/families/create_family.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/families/families.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/machines/create_machine.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/machines/machines.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/parameters/add_parameter.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/parameters/edit_parameter.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/parameters/parameters.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plc_tags/array_browser.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plc_tags/browser.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plc_tags/create_parameter.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plcs/check_plc.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plcs/create_plc.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plcs/edit_plc.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plcs/import_plcs.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plcs/plc_reason.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plcs/plcs.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plcs/test_connection.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/plcs/verify_plc.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/compare_versions.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/copy_recipe.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/create_recipe.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/create_version.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/edit_parameter_metadata.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/edit_parameter_value.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/edit_value.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/editor.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/parameter_history.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/recipe_details.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/recipe_parameters.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/recipe_phase_control.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/recipes.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/status_history.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/value_history.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/recipes/versions.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/sessions/active_sessions.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/stages/stages.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/users/change_password.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/users/create_user.html",
+      "local_backups/CRS_backup_20260621_191559/flask_app/templates/users/users.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/database/template_import_manager.py",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/database/template_manager.py",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/database/template_parameter_manager.py",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/debug.log",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/admin/create_engineering_unit.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/admin/edit_engineering_unit.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/admin/engineering_units.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/audit/audit_history.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/auth/login.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/base.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/dashboard/dashboard.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/families/create_family.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/families/families.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/machines/create_machine.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/machines/machines.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/parameters/add_parameter.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/parameters/edit_parameter.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/parameters/parameters.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plc_tags/array_browser.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plc_tags/browser.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plc_tags/create_parameter.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plcs/check_plc.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plcs/create_plc.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plcs/edit_plc.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plcs/import_plcs.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plcs/plc_reason.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plcs/plcs.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plcs/test_connection.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/plcs/verify_plc.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/compare_versions.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/copy_recipe.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/create_recipe.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/create_version.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/edit_parameter_metadata.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/edit_parameter_value.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/edit_value.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/editor.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/parameter_history.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/recipe_details.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/recipe_parameters.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/recipe_phase_control.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/recipes.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/status_history.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/value_history.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/recipes/versions.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/sessions/active_sessions.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/stages/stages.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/users/change_password.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/users/create_user.html",
+      "local_backups/CRS_backup_before_env_fix_20260621_192624/flask_app/templates/users/users.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/database/template_import_manager.py",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/database/template_manager.py",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/database/template_parameter_manager.py",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/debug.log",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/admin/create_engineering_unit.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/admin/edit_engineering_unit.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/admin/engineering_units.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/audit/audit_history.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/auth/login.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/base.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/dashboard/dashboard.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/families/create_family.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/families/families.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/machines/create_machine.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/machines/machines.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/parameters/add_parameter.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/parameters/edit_parameter.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/parameters/parameters.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plc_tags/array_browser.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plc_tags/browser.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plc_tags/create_parameter.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plcs/check_plc.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plcs/create_plc.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plcs/edit_plc.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plcs/import_plcs.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plcs/plc_reason.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plcs/plcs.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plcs/test_connection.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/plcs/verify_plc.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/compare_versions.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/copy_recipe.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/create_recipe.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/create_version.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/edit_parameter_metadata.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/edit_parameter_value.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/edit_value.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/editor.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/parameter_history.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/recipe_details.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/recipe_parameters.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/recipe_phase_control.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/recipes.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/status_history.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/value_history.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/recipes/versions.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/sessions/active_sessions.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/stages/stages.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/users/change_password.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/users/create_user.html",
+      "local_backups/CRS_backup_before_released_recipe_protection_20260621_202001/flask_app/templates/users/users.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/database/template_import_manager.py",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/database/template_manager.py",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/database/template_parameter_manager.py",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/debug.log",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/admin/create_engineering_unit.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/admin/edit_engineering_unit.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/admin/engineering_units.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/audit/audit_history.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/auth/login.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/base.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/dashboard/dashboard.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/families/create_family.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/families/families.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/machines/create_machine.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/machines/machines.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/parameters/add_parameter.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/parameters/edit_parameter.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/parameters/parameters.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plc_tags/array_browser.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plc_tags/browser.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plc_tags/create_parameter.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plcs/check_plc.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plcs/create_plc.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plcs/edit_plc.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plcs/import_plcs.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plcs/plc_reason.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plcs/plcs.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plcs/test_connection.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/plcs/verify_plc.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/compare_versions.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/copy_recipe.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/create_recipe.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/create_version.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/edit_parameter_metadata.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/edit_parameter_value.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/edit_value.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/editor.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/parameter_history.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/recipe_details.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/recipe_parameters.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/recipe_phase_control.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/recipes.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/status_history.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/value_history.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/recipes/versions.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/sessions/active_sessions.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/stages/stages.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/users/change_password.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/users/create_user.html",
+      "local_backups/CRS_backup_before_workflow_fix_20260621_195310/flask_app/templates/users/users.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/database/template_import_manager.py",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/database/template_manager.py",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/database/template_parameter_manager.py",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/debug.log",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/admin/create_engineering_unit.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/admin/edit_engineering_unit.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/admin/engineering_units.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/audit/audit_history.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/auth/login.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/base.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/dashboard/dashboard.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/families/create_family.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/families/families.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/machines/create_machine.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/machines/machines.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/parameters/add_parameter.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/parameters/edit_parameter.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/parameters/parameters.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plc_tags/array_browser.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plc_tags/browser.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plc_tags/create_parameter.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plcs/check_plc.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plcs/create_plc.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plcs/edit_plc.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plcs/import_plcs.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plcs/plc_reason.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plcs/plcs.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plcs/test_connection.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/plcs/verify_plc.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/compare_versions.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/copy_recipe.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/create_recipe.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/create_version.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/edit_parameter_metadata.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/edit_parameter_value.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/edit_value.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/editor.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/parameter_history.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/recipe_details.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/recipe_parameters.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/recipe_phase_control.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/recipes.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/status_history.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/value_history.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/recipes/versions.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/sessions/active_sessions.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/stages/stages.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/users/change_password.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/users/create_user.html",
+      "local_backups/CRS_backup_before_workflow_observation_fix_20260621_200733/flask_app/templates/users/users.html",
+      "study_exports/latest_local_backup/database/template_import_manager.py",
+      "study_exports/latest_local_backup/database/template_manager.py",
+      "study_exports/latest_local_backup/database/template_parameter_manager.py",
+      "study_exports/latest_local_backup/debug.log",
+      "study_exports/latest_local_backup/flask_app/templates/admin/create_engineering_unit.html",
+      "study_exports/latest_local_backup/flask_app/templates/admin/edit_engineering_unit.html",
+      "study_exports/latest_local_backup/flask_app/templates/admin/engineering_units.html",
+      "study_exports/latest_local_backup/flask_app/templates/audit/audit_history.html",
+      "study_exports/latest_local_backup/flask_app/templates/auth/login.html",
+      "study_exports/latest_local_backup/flask_app/templates/base.html",
+      "study_exports/latest_local_backup/flask_app/templates/dashboard/dashboard.html",
+      "study_exports/latest_local_backup/flask_app/templates/families/create_family.html",
+      "study_exports/latest_local_backup/flask_app/templates/families/families.html",
+      "study_exports/latest_local_backup/flask_app/templates/machines/create_machine.html",
+      "study_exports/latest_local_backup/flask_app/templates/machines/machines.html",
+      "study_exports/latest_local_backup/flask_app/templates/parameters/add_parameter.html",
+      "study_exports/latest_local_backup/flask_app/templates/parameters/edit_parameter.html",
+      "study_exports/latest_local_backup/flask_app/templates/parameters/parameters.html",
+      "study_exports/latest_local_backup/flask_app/templates/plc_tags/array_browser.html",
+      "study_exports/latest_local_backup/flask_app/templates/plc_tags/browser.html",
+      "study_exports/latest_local_backup/flask_app/templates/plc_tags/create_parameter.html",
+      "study_exports/latest_local_backup/flask_app/templates/plcs/check_plc.html",
+      "study_exports/latest_local_backup/flask_app/templates/plcs/create_plc.html",
+      "study_exports/latest_local_backup/flask_app/templates/plcs/edit_plc.html",
+      "study_exports/latest_local_backup/flask_app/templates/plcs/import_plcs.html",
+      "study_exports/latest_local_backup/flask_app/templates/plcs/plc_reason.html",
+      "study_exports/latest_local_backup/flask_app/templates/plcs/plcs.html",
+      "study_exports/latest_local_backup/flask_app/templates/plcs/test_connection.html",
+      "study_exports/latest_local_backup/flask_app/templates/plcs/verify_plc.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/compare_versions.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/copy_recipe.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/create_recipe.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/create_version.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/edit_parameter_metadata.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/edit_parameter_value.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/edit_value.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/editor.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/parameter_history.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/recipe_details.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/recipe_parameters.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/recipe_phase_control.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/recipes.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/status_history.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/value_history.html",
+      "study_exports/latest_local_backup/flask_app/templates/recipes/versions.html",
+      "study_exports/latest_local_backup/flask_app/templates/sessions/active_sessions.html",
+      "study_exports/latest_local_backup/flask_app/templates/stages/stages.html",
+      "study_exports/latest_local_backup/flask_app/templates/users/change_password.html",
+      "study_exports/latest_local_backup/flask_app/templates/users/create_user.html",
+      "study_exports/latest_local_backup/flask_app/templates/users/users.html"
+    ],
+    "scripts": [
+      "flask_app/static/js/main.js"
+    ],
+    "stylesheets": [
+      "flask_app/static/css/main.css",
+      "flask_app/static/css/modules/01_base.css",
+      "flask_app/static/css/modules/02_auth.css",
+      "flask_app/static/css/modules/03_dashboard.css",
+      "flask_app/static/css/modules/04_buttons_forms.css",
+      "flask_app/static/css/modules/05_tables.css",
+      "flask_app/static/css/modules/06_status_messages.css",
+      "flask_app/static/css/modules/07_audit_help.css",
+      "flask_app/static/css/modules/08_responsive_compact.css",
+      "flask_app/static/css/modules/09_configuration.css",
+      "flask_app/static/css/modules/10_header_auth_branding.css",
+      "flask_app/static/css/modules/11_phase_control.css",
+      "flask_app/static/css/modules/12_recipes.css",
+      "flask_app/static/css/modules/13_plc.css",
+      "flask_app/static/css/modules/14_dashboard_import_export.css",
+      "flask_app/static/css/modules/15_ui_hardening.css",
+      "flask_app/static/css/modules/16_phase_master.css",
+      "flask_app/static/css/modules/17_plc_setup_tables.css",
+      "flask_app/static/css/modules/18_phase_master_tables.css",
+      "flask_app/static/css/modules/19_users.css",
+      "flask_app/static/css/modules/20_audit_tables.css",
+      "flask_app/static/css/modules/21_header_alignment.css",
+      "flask_app/static/css/modules/22_accessibility_preferences.css",
+      "flask_app/static/css/modules/23_modern_professional_polish.css"
+    ],
+    "templates": [
+      "flask_app/templates/admin/create_engineering_unit.html",
+      "flask_app/templates/admin/edit_engineering_unit.html",
+      "flask_app/templates/admin/engineering_units.html",
+      "flask_app/templates/audit/audit_archive.html",
+      "flask_app/templates/audit/audit_history.html",
+      "flask_app/templates/auth/login.html",
+      "flask_app/templates/auth/my_password.html",
+      "flask_app/templates/base.html",
+      "flask_app/templates/configuration/index.html",
+      "flask_app/templates/configuration/stage_readiness.html",
+      "flask_app/templates/dashboard/dashboard.html",
+      "flask_app/templates/errors/error.html",
+      "flask_app/templates/families/create_family.html",
+      "flask_app/templates/families/edit_family.html",
+      "flask_app/templates/families/families.html",
+      "flask_app/templates/help/help.html",
+      "flask_app/templates/machines/change_family.html",
+      "flask_app/templates/machines/create_machine.html",
+      "flask_app/templates/machines/machines.html",
+      "flask_app/templates/parameters/add_parameter.html",
+      "flask_app/templates/parameters/edit_parameter.html",
+      "flask_app/templates/parameters/parameters.html",
+      "flask_app/templates/phase_controls/master.html",
+      "flask_app/templates/phase_controls/stage_master.html",
+      "flask_app/templates/plc_array_import/import_1d_array.html",
+      "flask_app/templates/plc_tags/array_browser.html",
+      "flask_app/templates/plc_tags/browser.html",
+      "flask_app/templates/plc_tags/create_parameter.html",
+      "flask_app/templates/plcs/check_plc.html",
+      "flask_app/templates/plcs/create_plc.html",
+      "flask_app/templates/plcs/edit_plc.html",
+      "flask_app/templates/plcs/import_plcs.html",
+      "flask_app/templates/plcs/plc_reason.html",
+      "flask_app/templates/plcs/plcs.html",
+      "flask_app/templates/plcs/test_connection.html",
+      "flask_app/templates/plcs/verify_plc.html",
+      "flask_app/templates/recipes/bulk_edit_parameters.html",
+      "flask_app/templates/recipes/compare_versions.html",
+      "flask_app/templates/recipes/copy_recipe.html",
+      "flask_app/templates/recipes/create_recipe.html",
+      "flask_app/templates/recipes/create_version.html",
+      "flask_app/templates/recipes/download_preparation.html",
+      "flask_app/templates/recipes/edit_parameter_metadata.html",
+      "flask_app/templates/recipes/edit_parameter_value.html",
+      "flask_app/templates/recipes/edit_value.html",
+      "flask_app/templates/recipes/editor.html",
+      "flask_app/templates/recipes/parameter_history.html",
+      "flask_app/templates/recipes/recipe_details.html",
+      "flask_app/templates/recipes/recipe_import_export.html",
+      "flask_app/templates/recipes/recipe_parameters.html",
+      "flask_app/templates/recipes/recipe_phase_control.html",
+      "flask_app/templates/recipes/recipes.html",
+      "flask_app/templates/recipes/status_history.html",
+      "flask_app/templates/recipes/value_history.html",
+      "flask_app/templates/recipes/versions.html",
+      "flask_app/templates/sessions/active_sessions.html",
+      "flask_app/templates/sessions/auto_logout_settings.html",
+      "flask_app/templates/stages/stages.html",
+      "flask_app/templates/users/change_password.html",
+      "flask_app/templates/users/create_user.html",
+      "flask_app/templates/users/users.html"
+    ],
+    "tests": [
+      "tests/__init__.py",
+      "tests/add_engineering_unit_active_flag.py",
+      "tests/cleanup_phase_rows.py",
+      "tests/conftest.py",
+      "tests/create_family_unique_index.py",
+      "tests/create_machine_unique_index.py",
+      "tests/create_missing_p01_stages.py",
+      "tests/create_plc_unique_index.py",
+      "tests/create_stage_unique_index.py",
+      "tests/delete_duplicate_p01_stages.py",
+      "tests/delete_duplicate_p03.py",
+      "tests/delete_orphan_stages.py",
+      "tests/delete_test_parameter.py",
+      "tests/fix_machine_codes_uppercase.py",
+      "tests/migrate_existing_versions.py",
+      "tests/migrate_machine_created_by.py",
+      "tests/migrate_plc_registry_fields.py",
+      "tests/migrate_tbm_family_created_by.py",
+      "tests/safe/conftest.py",
+      "tests/safe/test_bootstrap_cli.py",
+      "tests/safe/test_health_routes.py",
+      "tests/safe/test_plc_registry_validation.py",
+      "tests/safe/test_security_baseline.py",
+      "tests/seed_engineering_units.py",
+      "tests/seed_phase_controls.py",
+      "tests/seed_system_settings.py",
+      "tests/test.py",
+      "tests/test_add_family.py",
+      "tests/test_add_parameter.py",
+      "tests/test_add_plc.py",
+      "tests/test_audit.py",
+      "tests/test_audit_actions.py",
+      "tests/test_audit_columns.py",
+      "tests/test_audit_history.py",
+      "tests/test_auto_stage_creation.py",
+      "tests/test_build_array.py",
+      "tests/test_close_all_sessions.py",
+      "tests/test_convert_recipe.py",
+      "tests/test_copy_recipe.py",
+      "tests/test_create_admin.py",
+      "tests/test_create_gt7107.py",
+      "tests/test_create_import_recipe.py",
+      "tests/test_create_machine.py",
+      "tests/test_create_plc.py",
+      "tests/test_create_recipe.py",
+      "tests/test_create_recipe_version.py",
+      "tests/test_crs_array.py",
+      "tests/test_delete_fake_uploads.py",
+      "tests/test_download_crs_recipe.py",
+      "tests/test_download_history.py",
+      "tests/test_download_history_table.py",
+      "tests/test_download_individual.py",
+      "tests/test_download_recipe.py",
+      "tests/test_duplicate_machine.py",
+      "tests/test_empty_phase.py",
+      "tests/test_engineering_units.py",
+      "tests/test_engineering_units_active.py",
+      "tests/test_excel_import.py",
+      "tests/test_export_recipe.py",
+      "tests/test_family_manager.py",
+      "tests/test_get_plc.py",
+      "tests/test_get_recipe.py",
+      "tests/test_import_recipe.py",
+      "tests/test_latest_upload.py",
+      "tests/test_list_mappings.py",
+      "tests/test_list_plcs.py",
+      "tests/test_list_recipes.py",
+      "tests/test_list_users.py",
+      "tests/test_login.py",
+      "tests/test_machine_ids.py",
+      "tests/test_machine_manager.py",
+      "tests/test_machine_stage_structure.py",
+      "tests/test_machine_tables.py",
+      "tests/test_manager.py",
+      "tests/test_manager_imports.py",
+      "tests/test_mapping.py",
+      "tests/test_migrations.py",
+      "tests/test_new_architecture.py",
+      "tests/test_orphan_stages.py",
+      "tests/test_p15_connection.py",
+      "tests/test_p15_read_crs_tags.py",
+      "tests/test_p15_read_full_recipe_snapshot.py",
+      "tests/test_p15_read_recipe_array.py",
+      "tests/test_p15_write_recipe_array.py",
+      "tests/test_parameter_audit.py",
+      "tests/test_parameter_definition_manager.py",
+      "tests/test_parameter_definitions_structure.py",
+      "tests/test_parameter_import_manager.py",
+      "tests/test_phase_control_master.py",
+      "tests/test_phase_control_plc.py",
+      "tests/test_phase_row_creation.py",
+      "tests/test_plc_connection.py",
+      "tests/test_plc_connectivity_checker.py",
+      "tests/test_plc_history.py",
+      "tests/test_plc_program_history.py",
+      "tests/test_plc_program_history_structure.py",
+      "tests/test_plc_registry_import_preview.py",
+      "tests/test_plc_registry_manager.py",
+      "tests/test_plc_registry_structure.py",
+      "tests/test_plc_registry_table.py",
+      "tests/test_plc_revisions.py",
+      "tests/test_plc_tag_manager.py",
+      "tests/test_plc_tags.py",
+      "tests/test_plc_write.py",
+      "tests/test_process_sheet_structure.py",
+      "tests/test_read_crs_array.py",
+      "tests/test_read_recipe_array.py",
+      "tests/test_readback.py",
+      "tests/test_readback_array.py",
+      "tests/test_recipe_array.py",
+      "tests/test_recipe_compare.py",
+      "tests/test_recipe_parameter_audit.py",
+      "tests/test_recipe_parameter_audit_table.py",
+      "tests/test_recipe_parameter_value_manager.py",
+      "tests/test_recipe_parameter_values_table.py",
+      "tests/test_recipe_parameters_columns.py",
+      "tests/test_recipe_phase_control_data.py",
+      "tests/test_recipe_phase_control_table.py",
+      "tests/test_recipe_status.py",
+      "tests/test_recipe_tables.py",
+      "tests/test_recipe_tables_structure.py",
+      "tests/test_recipe_validation.py",
+      "tests/test_recipe_version_manager.py",
+      "tests/test_recipe_version_values_table.py",
+      "tests/test_recipe_versions.py",
+      "tests/test_recipe_versions_table.py",
+      "tests/test_recipe_workflow.py",
+      "tests/test_recipes_table.py",
+      "tests/test_reverse_mapping.py",
+      "tests/test_save_snapshot.py",
+      "tests/test_show_mappings.py",
+      "tests/test_show_recipe.py",
+      "tests/test_show_recipes.py",
+      "tests/test_show_snapshot.py",
+      "tests/test_single_element_write.py",
+      "tests/test_snapshot_code.py",
+      "tests/test_stage_dropdown.py",
+      "tests/test_stage_manager.py",
+      "tests/test_table_structures.py",
+      "tests/test_template_preview.py",
+      "tests/test_time.py",
+      "tests/test_update_parameter.py",
+      "tests/test_update_plc.py",
+      "tests/test_upload_history.py",
+      "tests/test_user_sessions.py",
+      "tests/test_user_sessions_table.py",
+      "tests/test_users_columns.py",
+      "tests/test_verify_import.py",
+      "tests/test_version_2.py",
+      "tests/test_versions.py",
+      "tests/test_write_array.py",
+      "tests/tests/test_plc_tags.py"
+    ],
+    "total_files": 2793
+  },
+  "generated_at_utc": "2026-07-11T11:41:04+00:00",
+  "project_root": "C:\\Users\\Administrator\\Desktop\\Centralized_Recipe_System",
+  "review_queues": {
+    "possible_state_change_get_routes": [
+      {
+        "auth_markers": [
+          "_engineering_config_allowed"
+        ],
+        "endpoint_function": "plc_array_import_by_plc",
+        "file": "flask_app/routes/plc_array_import_routes.py",
+        "has_auth_indicator": true,
+        "line": 23,
+        "methods": [
+          "GET"
+        ],
+        "path": "/plc-array-import/plc/<int:plc_id>",
+        "possible_state_change_on_get": true,
+        "state_changing_methods": []
+      },
+      {
+        "auth_markers": [],
+        "endpoint_function": "recipe_download_preparation_job_status",
+        "file": "flask_app/routes/recipe_editor_routes.py",
+        "has_auth_indicator": false,
+        "line": 3281,
+        "methods": [
+          "GET"
+        ],
+        "path": "/recipe-editor/download-preparation/job/<job_id>",
+        "possible_state_change_on_get": true,
+        "state_changing_methods": []
+      },
+      {
+        "auth_markers": [
+          "session.get(\"logged_in\")",
+          "role_can("
+        ],
+        "endpoint_function": "recipe_import_export_page",
+        "file": "flask_app/routes/recipe_routes.py",
+        "has_auth_indicator": true,
+        "line": 339,
+        "methods": [
+          "GET"
+        ],
+        "path": "/recipes/import-export",
+        "possible_state_change_on_get": true,
+        "state_changing_methods": []
+      },
+      {
+        "auth_markers": [
+          "session.get(\"logged_in\")",
+          "role_can("
+        ],
+        "endpoint_function": "recipe_import_template_excel",
+        "file": "flask_app/routes/recipe_routes.py",
+        "has_auth_indicator": true,
+        "line": 410,
+        "methods": [
+          "GET"
+        ],
+        "path": "/recipes/import-template-excel",
+        "possible_state_change_on_get": true,
+        "state_changing_methods": []
+      },
+      {
+        "auth_markers": [
+          "_admin_required"
+        ],
+        "endpoint_function": "auto_logout_settings",
+        "file": "flask_app/routes/session_routes.py",
+        "has_auth_indicator": true,
+        "line": 45,
+        "methods": [
+          "GET"
+        ],
+        "path": "/auto-logout-settings",
+        "possible_state_change_on_get": true,
+        "state_changing_methods": []
+      }
+    ],
+    "state_routes_without_local_auth_indicator": [
+      {
+        "auth_markers": [],
+        "endpoint_function": "login",
+        "file": "flask_app/routes/auth_routes.py",
+        "has_auth_indicator": false,
+        "line": 59,
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "path": "/login",
+        "possible_state_change_on_get": false,
+        "state_changing_methods": [
+          "POST"
+        ]
+      },
+      {
+        "auth_markers": [],
+        "endpoint_function": "add_parameter_named",
+        "file": "flask_app/routes/parameter_routes.py",
+        "has_auth_indicator": false,
+        "line": 201,
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "path": "/parameters/add/<machine_code>/<stage_code>",
+        "possible_state_change_on_get": false,
+        "state_changing_methods": [
+          "POST"
+        ]
+      },
+      {
+        "auth_markers": [],
+        "endpoint_function": "plc_tag_create_named",
+        "file": "flask_app/routes/plc_tag_routes.py",
+        "has_auth_indicator": false,
+        "line": 866,
+        "methods": [
+          "POST"
+        ],
+        "path": "/plc-tags/create/<machine_code>/<stage_code>",
+        "possible_state_change_on_get": false,
+        "state_changing_methods": [
+          "POST"
+        ]
+      },
+      {
+        "auth_markers": [],
+        "endpoint_function": "plc_tag_select_online_named",
+        "file": "flask_app/routes/plc_tag_routes.py",
+        "has_auth_indicator": false,
+        "line": 895,
+        "methods": [
+          "POST"
+        ],
+        "path": "/plc-tags/select-online/<machine_code>/<stage_code>",
+        "possible_state_change_on_get": false,
+        "state_changing_methods": [
+          "POST"
+        ]
+      },
+      {
+        "auth_markers": [],
+        "endpoint_function": "cancel_recipe_value_edit",
+        "file": "flask_app/routes/recipe_editor_routes.py",
+        "has_auth_indicator": false,
+        "line": 2018,
+        "methods": [
+          "POST"
+        ],
+        "path": "/recipe-editor/edit/<int:value_id>/cancel",
+        "possible_state_change_on_get": false,
+        "state_changing_methods": [
+          "POST"
+        ]
+      },
+      {
+        "auth_markers": [],
+        "endpoint_function": "release_recipe_value_edit_lock",
+        "file": "flask_app/routes/recipe_editor_routes.py",
+        "has_auth_indicator": false,
+        "line": 2043,
+        "methods": [
+          "POST"
+        ],
+        "path": "/recipe-editor/edit/<int:value_id>/release-lock",
+        "possible_state_change_on_get": false,
+        "state_changing_methods": [
+          "POST"
+        ]
+      },
+      {
+        "auth_markers": [],
+        "endpoint_function": "update_auto_logout_config_legacy",
+        "file": "flask_app/routes/session_routes.py",
+        "has_auth_indicator": false,
+        "line": 136,
+        "methods": [
+          "POST"
+        ],
+        "path": "/active-sessions/auto-logout-config",
+        "possible_state_change_on_get": false,
+        "state_changing_methods": [
+          "POST"
+        ]
+      }
+    ]
+  },
+  "route_parse_errors": [],
+  "routes": [
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "role_can("
+      ],
+      "endpoint_function": "audit_history",
+      "file": "flask_app/routes/audit_routes.py",
+      "has_auth_indicator": true,
+      "line": 90,
+      "methods": [
+        "GET"
+      ],
+      "path": "/audit-history",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "audit_archive",
+      "file": "flask_app/routes/audit_routes.py",
+      "has_auth_indicator": true,
+      "line": 175,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/audit-archive",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "login",
+      "file": "flask_app/routes/auth_routes.py",
+      "has_auth_indicator": false,
+      "line": 59,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/login",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "logout",
+      "file": "flask_app/routes/auth_routes.py",
+      "has_auth_indicator": true,
+      "line": 206,
+      "methods": [
+        "POST"
+      ],
+      "path": "/logout",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "my_password",
+      "file": "flask_app/routes/auth_routes.py",
+      "has_auth_indicator": true,
+      "line": 229,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/my-password",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "configuration_center",
+      "file": "flask_app/routes/configuration_routes.py",
+      "has_auth_indicator": true,
+      "line": 197,
+      "methods": [
+        "GET"
+      ],
+      "path": "/configuration",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "configuration_stage_phase_defaults",
+      "file": "flask_app/routes/configuration_routes.py",
+      "has_auth_indicator": true,
+      "line": 221,
+      "methods": [
+        "POST"
+      ],
+      "path": "/configuration/<machine_code>/<stage_code>/phase-defaults",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "configuration_stage_tag_requirements_save",
+      "file": "flask_app/routes/configuration_routes.py",
+      "has_auth_indicator": true,
+      "line": 249,
+      "methods": [
+        "POST"
+      ],
+      "path": "/configuration/<machine_code>/<stage_code>/tag-requirements",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "configuration_stage_tag_purpose_remap",
+      "file": "flask_app/routes/configuration_routes.py",
+      "has_auth_indicator": true,
+      "line": 378,
+      "methods": [
+        "POST"
+      ],
+      "path": "/configuration/<machine_code>/<stage_code>/tag-purpose-remap",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "configuration_stage",
+      "file": "flask_app/routes/configuration_routes.py",
+      "has_auth_indicator": true,
+      "line": 482,
+      "methods": [
+        "GET"
+      ],
+      "path": "/configuration/<machine_code>/<stage_code>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "dashboard",
+      "file": "flask_app/routes/dashboard_routes.py",
+      "has_auth_indicator": true,
+      "line": 356,
+      "methods": [
+        "GET"
+      ],
+      "path": "/",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "families",
+      "file": "flask_app/routes/family_routes.py",
+      "has_auth_indicator": true,
+      "line": 47,
+      "methods": [
+        "GET"
+      ],
+      "path": "/families",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "create_family",
+      "file": "flask_app/routes/family_routes.py",
+      "has_auth_indicator": true,
+      "line": 69,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/families/create",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "edit_family",
+      "file": "flask_app/routes/family_routes.py",
+      "has_auth_indicator": true,
+      "line": 144,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/families/edit/<int:family_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "disable_family",
+      "file": "flask_app/routes/family_routes.py",
+      "has_auth_indicator": true,
+      "line": 267,
+      "methods": [
+        "POST"
+      ],
+      "path": "/families/disable/<int:family_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "enable_family",
+      "file": "flask_app/routes/family_routes.py",
+      "has_auth_indicator": true,
+      "line": 326,
+      "methods": [
+        "POST"
+      ],
+      "path": "/families/enable/<int:family_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "delete_family",
+      "file": "flask_app/routes/family_routes.py",
+      "has_auth_indicator": true,
+      "line": 385,
+      "methods": [
+        "POST"
+      ],
+      "path": "/families/delete/<int:family_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "help_home",
+      "file": "flask_app/routes/help_routes.py",
+      "has_auth_indicator": true,
+      "line": 115,
+      "methods": [
+        "GET"
+      ],
+      "path": "/help",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "help_topic",
+      "file": "flask_app/routes/help_routes.py",
+      "has_auth_indicator": true,
+      "line": 127,
+      "methods": [
+        "GET"
+      ],
+      "path": "/help/<topic_key>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "machines",
+      "file": "flask_app/routes/machine_routes.py",
+      "has_auth_indicator": true,
+      "line": 41,
+      "methods": [
+        "GET"
+      ],
+      "path": "/machines",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "create_machine",
+      "file": "flask_app/routes/machine_routes.py",
+      "has_auth_indicator": true,
+      "line": 63,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/machines/create",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "change_machine_family",
+      "file": "flask_app/routes/machine_routes.py",
+      "has_auth_indicator": true,
+      "line": 192,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/machines/change-family/<int:machine_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "disable_machine",
+      "file": "flask_app/routes/machine_routes.py",
+      "has_auth_indicator": true,
+      "line": 316,
+      "methods": [
+        "POST"
+      ],
+      "path": "/machines/disable/<int:machine_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "enable_machine",
+      "file": "flask_app/routes/machine_routes.py",
+      "has_auth_indicator": true,
+      "line": 387,
+      "methods": [
+        "POST"
+      ],
+      "path": "/machines/enable/<int:machine_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "parameters_named",
+      "file": "flask_app/routes/parameter_routes.py",
+      "has_auth_indicator": false,
+      "line": 132,
+      "methods": [
+        "GET"
+      ],
+      "path": "/parameters/<machine_code>/<stage_code>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "parameters",
+      "file": "flask_app/routes/parameter_routes.py",
+      "has_auth_indicator": true,
+      "line": 166,
+      "methods": [
+        "GET"
+      ],
+      "path": "/parameters/<int:machine_id>/<int:stage_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "add_parameter_named",
+      "file": "flask_app/routes/parameter_routes.py",
+      "has_auth_indicator": false,
+      "line": 201,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/parameters/add/<machine_code>/<stage_code>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "add_parameter",
+      "file": "flask_app/routes/parameter_routes.py",
+      "has_auth_indicator": true,
+      "line": 230,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/parameters/add/<int:machine_id>/<int:stage_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "edit_parameter",
+      "file": "flask_app/routes/parameter_routes.py",
+      "has_auth_indicator": true,
+      "line": 365,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/parameters/edit/<int:parameter_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "disable_parameter",
+      "file": "flask_app/routes/parameter_routes.py",
+      "has_auth_indicator": true,
+      "line": 488,
+      "methods": [
+        "POST"
+      ],
+      "path": "/parameters/disable/<int:parameter_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "enable_parameter",
+      "file": "flask_app/routes/parameter_routes.py",
+      "has_auth_indicator": true,
+      "line": 557,
+      "methods": [
+        "POST"
+      ],
+      "path": "/parameters/enable/<int:parameter_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "phase_control_master",
+      "file": "flask_app/routes/phase_control_routes.py",
+      "has_auth_indicator": true,
+      "line": 668,
+      "methods": [
+        "GET"
+      ],
+      "path": "/phase-controls",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "phase_control_master_stage",
+      "file": "flask_app/routes/phase_control_routes.py",
+      "has_auth_indicator": true,
+      "line": 681,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/phase-controls/<machine_code>/<stage_code>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "plc_array_import_by_plc",
+      "file": "flask_app/routes/plc_array_import_routes.py",
+      "has_auth_indicator": true,
+      "line": 23,
+      "methods": [
+        "GET"
+      ],
+      "path": "/plc-array-import/plc/<int:plc_id>",
+      "possible_state_change_on_get": true,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "plc_array_import_named",
+      "file": "flask_app/routes/plc_array_import_routes.py",
+      "has_auth_indicator": true,
+      "line": 38,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/plc-array-import/<machine_code>/<stage_code>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "plc_array_import",
+      "file": "flask_app/routes/plc_array_import_routes.py",
+      "has_auth_indicator": true,
+      "line": 63,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/plc-array-import/<int:machine_id>/<int:stage_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "plcs",
+      "file": "flask_app/routes/plc_routes.py",
+      "has_auth_indicator": true,
+      "line": 84,
+      "methods": [
+        "GET"
+      ],
+      "path": "/plcs",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "create_plc",
+      "file": "flask_app/routes/plc_routes.py",
+      "has_auth_indicator": true,
+      "line": 106,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/plcs/create",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "edit_plc",
+      "file": "flask_app/routes/plc_routes.py",
+      "has_auth_indicator": true,
+      "line": 194,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/plcs/edit/<int:plc_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "test_connection",
+      "file": "flask_app/routes/plc_routes.py",
+      "has_auth_indicator": true,
+      "line": 334,
+      "methods": [
+        "GET"
+      ],
+      "path": "/plcs/test_connection/<int:plc_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed",
+        "_plc_expected_sync_allowed"
+      ],
+      "endpoint_function": "verify_plc",
+      "file": "flask_app/routes/plc_routes.py",
+      "has_auth_indicator": true,
+      "line": 395,
+      "methods": [
+        "GET"
+      ],
+      "path": "/plcs/verify/<int:plc_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_plc_expected_sync_allowed"
+      ],
+      "endpoint_function": "sync_expected_plc_identity",
+      "file": "flask_app/routes/plc_routes.py",
+      "has_auth_indicator": true,
+      "line": 480,
+      "methods": [
+        "POST"
+      ],
+      "path": "/plcs/verify/<int:plc_id>/sync-expected",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "disable_plc",
+      "file": "flask_app/routes/plc_routes.py",
+      "has_auth_indicator": true,
+      "line": 536,
+      "methods": [
+        "POST"
+      ],
+      "path": "/plcs/disable/<int:plc_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "enable_plc",
+      "file": "flask_app/routes/plc_routes.py",
+      "has_auth_indicator": true,
+      "line": 555,
+      "methods": [
+        "POST"
+      ],
+      "path": "/plcs/enable/<int:plc_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "plc_tag_browser_named",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": true,
+      "line": 306,
+      "methods": [
+        "GET"
+      ],
+      "path": "/plc-tags/<machine_code>/<stage_code>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "plc_tag_browser",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": true,
+      "line": 348,
+      "methods": [
+        "GET"
+      ],
+      "path": "/plc-tags/<int:machine_id>/<int:stage_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "plc_tag_update",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": true,
+      "line": 386,
+      "methods": [
+        "POST"
+      ],
+      "path": "/plc-tags/update/<int:tag_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "plc_tag_set_purpose",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": true,
+      "line": 508,
+      "methods": [
+        "POST"
+      ],
+      "path": "/plc-tags/set-purpose/<int:tag_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "plc_tag_create",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": true,
+      "line": 571,
+      "methods": [
+        "POST"
+      ],
+      "path": "/plc-tags/create/<int:machine_id>/<int:stage_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "plc_tag_select_online",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": true,
+      "line": 710,
+      "methods": [
+        "POST"
+      ],
+      "path": "/plc-tags/select-online/<int:machine_id>/<int:stage_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "plc_tag_create_named",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": false,
+      "line": 866,
+      "methods": [
+        "POST"
+      ],
+      "path": "/plc-tags/create/<machine_code>/<stage_code>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "plc_tag_select_online_named",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": false,
+      "line": 895,
+      "methods": [
+        "POST"
+      ],
+      "path": "/plc-tags/select-online/<machine_code>/<stage_code>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "array_browser",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": true,
+      "line": 923,
+      "methods": [
+        "GET"
+      ],
+      "path": "/plc-tags/array/<int:tag_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "create_parameter_from_array",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": true,
+      "line": 1103,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/parameters/create-from-array/<int:tag_id>/<int:array_index>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "next_available_index",
+      "file": "flask_app/routes/plc_tag_routes.py",
+      "has_auth_indicator": true,
+      "line": 1205,
+      "methods": [
+        "GET"
+      ],
+      "path": "/plc-tags/next-available/<int:tag_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "recipe_editor",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 542,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipe-editor/<int:recipe_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "bulk_edit_recipe_parameters",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 994,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipe-editor/<int:recipe_id>/parameters/bulk-edit",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "edit_recipe_value",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 1724,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipe-editor/edit/<int:value_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "cancel_recipe_value_edit",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": false,
+      "line": 2018,
+      "methods": [
+        "POST"
+      ],
+      "path": "/recipe-editor/edit/<int:value_id>/cancel",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "release_recipe_value_edit_lock",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": false,
+      "line": 2043,
+      "methods": [
+        "POST"
+      ],
+      "path": "/recipe-editor/edit/<int:value_id>/release-lock",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "recipe_value_history",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": false,
+      "line": 2065,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipe-editor/history/<int:value_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "recipe_editor_versions",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 2112,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipe-editor/versions/<int:recipe_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "recipe_editor_create_version",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 2178,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipe-editor/create-version/<int:recipe_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "recipe_editor_production_revision",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 2270,
+      "methods": [
+        "POST"
+      ],
+      "path": "/recipe-editor/production-revision/<int:recipe_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "recipe_editor_release_production_revision",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 2350,
+      "methods": [
+        "POST"
+      ],
+      "path": "/recipe-editor/release-production-revision/<int:recipe_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "recipe_editor_restore_version",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 2424,
+      "methods": [
+        "POST"
+      ],
+      "path": "/recipe-editor/restore-version/<int:version_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "recipe_status_change",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 2514,
+      "methods": [
+        "POST"
+      ],
+      "path": "/recipe-editor/status/<int:recipe_id>/<status>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "recipe_status_history",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": false,
+      "line": 2669,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipe-editor/status-history/<int:recipe_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "recipe_download_preparation",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 2708,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipe-editor/download-preparation/<int:recipe_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "recipe_download_preparation_start",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": true,
+      "line": 2967,
+      "methods": [
+        "POST"
+      ],
+      "path": "/recipe-editor/download-preparation/<int:recipe_id>/start",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "recipe_download_preparation_job_status",
+      "file": "flask_app/routes/recipe_editor_routes.py",
+      "has_auth_indicator": false,
+      "line": 3281,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipe-editor/download-preparation/job/<job_id>",
+      "possible_state_change_on_get": true,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "recipes",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 319,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipes",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "role_can("
+      ],
+      "endpoint_function": "recipe_import_export_page",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 339,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipes/import-export",
+      "possible_state_change_on_get": true,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "role_can("
+      ],
+      "endpoint_function": "recipe_export_excel",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 365,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipes/<int:recipe_id>/export-excel",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "role_can("
+      ],
+      "endpoint_function": "recipe_import_template_excel",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 410,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipes/import-template-excel",
+      "possible_state_change_on_get": true,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "role_can("
+      ],
+      "endpoint_function": "recipe_import_preview",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 460,
+      "methods": [
+        "POST"
+      ],
+      "path": "/recipes/import-preview",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "role_can("
+      ],
+      "endpoint_function": "recipe_import_confirm",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 512,
+      "methods": [
+        "POST"
+      ],
+      "path": "/recipes/import-confirm",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "role_can("
+      ],
+      "endpoint_function": "create_recipe",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 578,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipes/create/<int:machine_id>/<int:stage_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "role_can("
+      ],
+      "endpoint_function": "create_recipe_named",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 604,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipes/create/<machine_code>/<stage_path>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "recipe_details",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 629,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipes/<recipe_code>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "role_can("
+      ],
+      "endpoint_function": "create_recipe_version",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 656,
+      "methods": [
+        "POST"
+      ],
+      "path": "/recipes/<recipe_code>/create-version",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "recipe_parameters",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 698,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipes/<recipe_code>/parameters",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "role_can("
+      ],
+      "endpoint_function": "edit_parameter_value",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 775,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipes/<recipe_code>/parameters/<parameter_name>/edit",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "edit_parameter_metadata",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 890,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipes/<recipe_code>/parameters/<parameter_name>/metadata",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "recipe_phase_control",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1008,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipes/<int:recipe_id>/phase-control",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "parameter_history",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1324,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipes/<recipe_code>/parameters/<parameter_name>/history",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "compare_recipe_versions",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1362,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipes/<recipe_code>/compare",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "engineering_units",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1412,
+      "methods": [
+        "GET"
+      ],
+      "path": "/engineering-units",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "create_engineering_unit",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1434,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/engineering-units/create",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "edit_engineering_unit",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1489,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/engineering-units/<int:unit_id>/edit",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "disable_engineering_unit",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1558,
+      "methods": [
+        "POST"
+      ],
+      "path": "/engineering-units/<int:unit_id>/disable",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")",
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "enable_engineering_unit",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1597,
+      "methods": [
+        "POST"
+      ],
+      "path": "/engineering-units/<int:unit_id>/enable",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "recipe_list_named",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1635,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipes/<machine_code>/<stage_path>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "recipe_list",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1656,
+      "methods": [
+        "GET"
+      ],
+      "path": "/recipes/<int:machine_id>/<int:stage_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "role_can("
+      ],
+      "endpoint_function": "copy_recipe",
+      "file": "flask_app/routes/recipe_routes.py",
+      "has_auth_indicator": true,
+      "line": 1672,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/recipes/<int:recipe_id>/copy",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "active_sessions",
+      "file": "flask_app/routes/session_routes.py",
+      "has_auth_indicator": true,
+      "line": 26,
+      "methods": [
+        "GET"
+      ],
+      "path": "/active-sessions",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "auto_logout_settings",
+      "file": "flask_app/routes/session_routes.py",
+      "has_auth_indicator": true,
+      "line": 45,
+      "methods": [
+        "GET"
+      ],
+      "path": "/auto-logout-settings",
+      "possible_state_change_on_get": true,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "update_auto_logout_settings",
+      "file": "flask_app/routes/session_routes.py",
+      "has_auth_indicator": true,
+      "line": 72,
+      "methods": [
+        "POST"
+      ],
+      "path": "/auto-logout-settings/update",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [],
+      "endpoint_function": "update_auto_logout_config_legacy",
+      "file": "flask_app/routes/session_routes.py",
+      "has_auth_indicator": false,
+      "line": 136,
+      "methods": [
+        "POST"
+      ],
+      "path": "/active-sessions/auto-logout-config",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "force_logout_session",
+      "file": "flask_app/routes/session_routes.py",
+      "has_auth_indicator": true,
+      "line": 140,
+      "methods": [
+        "POST"
+      ],
+      "path": "/active-sessions/logout/<int:session_id>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "session_heartbeat",
+      "file": "flask_app/routes/session_routes.py",
+      "has_auth_indicator": true,
+      "line": 171,
+      "methods": [
+        "POST"
+      ],
+      "path": "/session-heartbeat",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "acknowledge_login_attempt_alert",
+      "file": "flask_app/routes/session_routes.py",
+      "has_auth_indicator": true,
+      "line": 245,
+      "methods": [
+        "POST"
+      ],
+      "path": "/login-attempt-alerts/<int:alert_id>/ack",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "session.get(\"logged_in\")"
+      ],
+      "endpoint_function": "session_auto_expire",
+      "file": "flask_app/routes/session_routes.py",
+      "has_auth_indicator": true,
+      "line": 283,
+      "methods": [
+        "POST"
+      ],
+      "path": "/session-auto-expire",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_engineering_config_allowed"
+      ],
+      "endpoint_function": "stages",
+      "file": "flask_app/routes/stage_routes.py",
+      "has_auth_indicator": true,
+      "line": 31,
+      "methods": [
+        "GET"
+      ],
+      "path": "/stages",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "users",
+      "file": "flask_app/routes/user_routes.py",
+      "has_auth_indicator": true,
+      "line": 36,
+      "methods": [
+        "GET"
+      ],
+      "path": "/users",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "create_user",
+      "file": "flask_app/routes/user_routes.py",
+      "has_auth_indicator": true,
+      "line": 59,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/users/create",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "disable_user",
+      "file": "flask_app/routes/user_routes.py",
+      "has_auth_indicator": true,
+      "line": 124,
+      "methods": [
+        "POST"
+      ],
+      "path": "/users/disable/<username>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "enable_user",
+      "file": "flask_app/routes/user_routes.py",
+      "has_auth_indicator": true,
+      "line": 158,
+      "methods": [
+        "POST"
+      ],
+      "path": "/users/enable/<username>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "update_user_role",
+      "file": "flask_app/routes/user_routes.py",
+      "has_auth_indicator": true,
+      "line": 176,
+      "methods": [
+        "POST"
+      ],
+      "path": "/users/update_role/<username>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "change_password",
+      "file": "flask_app/routes/user_routes.py",
+      "has_auth_indicator": true,
+      "line": 221,
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "path": "/users/change_password/<username>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "require_password_reset",
+      "file": "flask_app/routes/user_routes.py",
+      "has_auth_indicator": true,
+      "line": 272,
+      "methods": [
+        "POST"
+      ],
+      "path": "/users/require_password_reset/<username>",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    }
+  ],
+  "summary": {
+    "possible_state_change_get_routes": 5,
+    "route_count": 111,
+    "route_parse_errors": 0,
+    "state_routes_without_local_auth_indicator": 7
+  }
+}

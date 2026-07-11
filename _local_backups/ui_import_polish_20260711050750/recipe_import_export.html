@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Import / Export
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench recipe-import-export-page">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Recipe Excel Control</span>
+            <h1>Recipe Import / Export</h1>
+            <p>Create or update recipe parameters from approved Excel files. Preview validates every change before CRS writes to the database.</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipes" class="crs-btn crs-btn-soft">Recipe List</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Export Includes</span>
+            <strong class="metric-text">Full Recipe</strong>
+            <small>Recipe identity, parameters, and phase reference</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Create Import</span>
+            <strong class="metric-text">New Draft</strong>
+            <small>Builds a safe draft from the current template</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Update Import</span>
+            <strong class="metric-text">Partial Allowed</strong>
+            <small>Updates only rows present in the Excel file</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Safety</span>
+            <strong class="metric-text">Audited</strong>
+            <small>Preview, validation, and audit remain mandatory</small>
+        </div>
+    </div>
+
+    <div class="import-export-layout">
+
+        <div class="workbench-card import-export-card">
+            <div class="panel-heading table-heading">
+                <div>
+                    <span>Download Blank Import Template</span>
+                    <p>Select a machine and stage to export the current approved template.</p>
+                </div>
+                <span class="status-badge status-info">Template</span>
+            </div>
+
+            <form method="GET" action="/recipes/import-template-excel" class="template-download-form">
+                <label class="import-field">
+                    <span>Machine / Stage</span>
+                    <select name="target" required onchange="if(this.value){const p=this.value.split('|'); this.form.machine_id.value=p[0]; this.form.stage_id.value=p[1];}">
+                        <option value="">Select target</option>
+                        {% for target in targets %}
+                        <option value="{{ target.machine_id }}|{{ target.stage_id }}">
+                            {{ target.machine_code }} / {{ target.stage_type }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <input type="hidden" name="machine_id">
+                <input type="hidden" name="stage_id">
+                <button type="submit" class="crs-btn crs-btn-primary import-form-button">Download Template</button>
+            </form>
+        </div>
+
+        <div class="workbench-card import-export-card">
+            <div class="panel-heading table-heading">
+                <div>
+                    <span>Import Recipe From Excel</span>
+                    <p>Upload, preview, then confirm. CRS protects PLC mapping fields.</p>
+                </div>
+                <span class="status-badge status-warning">Preview First</span>
+            </div>
+
+            <form
+                method="POST"
+                action="/recipes/import-preview"
+                enctype="multipart/form-data"
+                class="template-upload-form"
+                id="recipe-import-mode-form"
+                onsubmit="const s=this.querySelector('select[name=target]'); if(s && s.value){const p=s.value.split('|'); this.machine_id.value=p[0]; this.stage_id.value=p[1];}"
+            >
+                <label class="import-field import-field-full import-file-field">
+                    <span>Recipe Excel File</span>
+                    <div class="file-drop-zone">
+                        <div>
+                            <strong>Select approved CRS Excel file</strong>
+                            <small>Use .xlsx generated from CRS template/export.</small>
+                        </div>
+                        <input type="file" name="recipe_file" accept=".xlsx" required>
+                    </div>
+                </label>
+
+                <div class="import-process-strip" aria-label="Recipe import flow">
+                    <span>1. Select File</span>
+                    <span>2. Preview</span>
+                    <span>3. Confirm Save</span>
+                </div>
+
+                <div class="import-mode-choice import-field import-field-full">
+                    <span>Import Mode</span>
+                    <div class="import-mode-options">
+                        <label class="import-mode-card">
+                            <input type="radio" name="import_mode" value="create_new" checked>
+                            <span>
+                                <strong>Create New Draft</strong>
+                                <small>New GT recipe. Missing rows use master defaults.</small>
+                            </span>
+                        </label>
+                        <label class="import-mode-card">
+                            <input type="radio" name="import_mode" value="update_existing">
+                            <span>
+                                <strong>Update Existing</strong>
+                                <small>Full or partial update. Missing rows remain unchanged.</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="import-create-fields" data-import-fields="create_new">
+                    <div class="import-form-two-column">
+                        <label class="import-field">
+                            <span>New Recipe Code / GT Code</span>
+                            <input
+                                type="text"
+                                name="recipe_code"
+                                placeholder="Example: GT_P15_SS_IMPORT_TEST_001"
+                            >
+                            <small>Required for Create New Draft Recipe. Must not already exist for the selected target/version.</small>
+                        </label>
+
+                        <label class="import-field">
+                            <span>New Recipe Name</span>
+                            <input
+                                type="text"
+                                name="recipe_name"
+                                placeholder="Example: P15 Second Stage Import Test 001"
+                            >
+                            <small>Required for Create New Draft Recipe.</small>
+                        </label>
+                    </div>
+
+                    <label class="import-field import-field-full">
+                        <span>Target Machine / Stage</span>
+                        <select
+                            name="target"
+                            onchange="if(this.value){const p=this.value.split('|'); this.form.machine_id.value=p[0]; this.form.stage_id.value=p[1];}"
+                        >
+                            <option value="">Select target for new recipe import</option>
+                            {% for target in targets %}
+                            <option value="{{ target.machine_id }}|{{ target.stage_id }}">
+                                {{ target.machine_code }} / {{ target.stage_type }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    <small>Target selection overrides Excel machine/stage IDs.</small>
+                    </label>
+                </div>
+
+                <div class="import-update-fields" data-import-fields="update_existing" style="display:none;">
+                    <label class="import-field import-field-full">
+                        <span>Existing Recipe To Update</span>
+                        <select name="existing_recipe_id">
+                            <option value="">Select existing recipe</option>
+                            {% for recipe_option in recipe_options|default([]) %}
+                            <option value="{{ recipe_option.id }}">
+                                {{ recipe_option.machine_code }} / {{ recipe_option.stage_type }} - {{ recipe_option.recipe_code }} V{{ recipe_option.version }} - {{ recipe_option.recipe_name }} [{{ recipe_option.version_usage_status or recipe_option.status }}]
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small>Historical released recipes remain locked. Current released and draft recipes update with audit.</small>
+                    </label>
+                </div>
+
+                <label class="import-field import-field-full import-master-detail-option">
+                    <span>Parameter Master Details</span>
+                    <label class="inline-check-option">
+                        <input type="checkbox" name="update_master_details" value="1" checked>
+                        <strong>Update safe non-PLC details from Excel</strong>
+                    </label>
+                    <small>Updates safe name/unit/range details. PLC indexes and phase-control mappings stay protected.</small>
+                </label>
+
+                <label class="import-field import-field-full import-master-detail-option">
+                    <span>Missing Excel Parameters</span>
+                    <label class="inline-check-option">
+                        <input type="checkbox" name="mark_missing_parameters_not_used" value="1">
+                        <strong>Mark missing template parameters as Not Used</strong>
+                    </label>
+                    <small>Use for template cleanup only. Otherwise, missing rows stay unchanged.</small>
+                </label>
+
+                <input type="hidden" name="machine_id">
+                <input type="hidden" name="stage_id">
+
+                <button type="submit" class="crs-btn crs-btn-primary import-form-button">Preview Import</button>
+            </form>
+        </div>
+
+    </div>
+
+    <details class="workbench-card import-guide-card smart-help-card">
+        <summary>
+            <span>Template rules and protected fields</span>
+            <small>Open only when needed</small>
+        </summary>
+
+        <div class="import-rules-grid">
+            <div>
+                <strong>Create New</strong>
+                <span>Creates DRAFT recipe. Missing Excel parameter rows are inserted with current master defaults.</span>
+            </div>
+            <div>
+                <strong>Update Existing</strong>
+                <span>Full or partial Excel allowed. Only listed parameter rows are updated; other rows remain unchanged.</span>
+            </div>
+            <div>
+                <strong>Protected Mapping</strong>
+                <span>Tag Index and PLC Array Index are fixed PLC mapping data and are never edited by this import.</span>
+            </div>
+            <div>
+                <strong>Phase_Control</strong>
+                <span>Exported for reference only. Import ignores phase text/IDs; select phase controls manually in CRS.</span>
+            </div>
+        </div>
+    </details>
+
+    {% if preview %}
+    <div class="workbench-card import-preview-card">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Import Preview</span>
+                <p>Review validation result before saving to database.</p>
+            </div>
+            {% if preview.ok %}
+            <span class="status-badge status-success">Ready To Import</span>
+            {% else %}
+            <span class="status-badge status-danger">Blocked</span>
+            {% endif %}
+        </div>
+
+        <div class="metric-grid compact-preview-metrics">
+            <div class="metric-card">
+                <span class="metric-label">Mode</span>
+                <strong class="metric-text">{{ preview.summary.mode_label or 'Create New Draft Recipe' }}</strong>
+                <small>{% if preview.summary.import_mode == 'update_existing' %}Existing recipe update{% else %}New draft recipe{% endif %}</small>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">GT Code</span>
+                <strong class="metric-text">{{ preview.summary.recipe_code }}</strong>
+                <small>{{ preview.summary.recipe_name }}</small>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Target</span>
+                <strong class="metric-text">{{ preview.summary.machine_code }}</strong>
+                <small>{{ preview.summary.stage_type }}{% if preview.summary.import_format %} | {{ preview.summary.import_format }}{% endif %}</small>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Parameters</span>
+                <strong>{{ preview.summary.parameter_count }}</strong>
+                <small>{% if preview.summary.import_mode == 'update_existing' %}Excel rows to process; {{ preview.summary.changed_value_count }} value change(s){% else %}Validated recipe parameter rows{% endif %}</small>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Master Details</span>
+                <strong>{{ preview.summary.master_detail_change_count or 0 }}</strong>
+                <small>{% if preview.summary.update_master_details %}safe detail change(s) detected{% else %}master detail update is OFF{% endif %}</small>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Phase Setup</span>
+                <strong>{% if preview.summary.import_mode == 'update_existing' %}Keep{% else %}{{ preview.summary.phase_count }}{% endif %}</strong>
+                <small>{% if preview.summary.import_mode == 'update_existing' %}existing phase selections unchanged{% else %}default Empty Phase rows inserted; select manually{% endif %}</small>
+            </div>
+        </div>
+
+        {% if preview.errors %}
+        <div class="import-message-block import-errors">
+            <strong>Errors</strong>
+            <ul>
+                {% for error in preview.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if preview.warnings %}
+        <div class="import-message-block import-warnings">
+            <strong>Warnings</strong>
+            <ul>
+                {% for warning in preview.warnings[:16] %}
+                <li>{{ warning }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if preview.ok %}
+        <form method="POST" action="/recipes/import-confirm" class="import-confirm-form" data-confirm="This will save the Excel parameter import/update with audit. PLC Index and Phase_Control will not be changed. Continue?">
+            <input type="hidden" name="token" value="{{ token }}">
+            <input type="hidden" name="machine_id" value="{{ preview.summary.machine_id }}">
+            <input type="hidden" name="stage_id" value="{{ preview.summary.stage_id }}">
+            <input type="hidden" name="recipe_code" value="{{ preview.summary.recipe_code }}">
+            <input type="hidden" name="recipe_name" value="{{ preview.summary.recipe_name }}">
+            <input type="hidden" name="import_mode" value="{{ preview.summary.import_mode or 'create_new' }}">
+            <input type="hidden" name="existing_recipe_id" value="{{ preview.summary.existing_recipe_id }}">
+            {% if preview.summary.update_master_details %}
+            <input type="hidden" name="update_master_details" value="1">
+            {% endif %}
+            {% if preview.summary.mark_missing_parameters_not_used %}
+            <input type="hidden" name="mark_missing_parameters_not_used" value="1">
+            {% endif %}
+            <label>
+                <span>Import Reason / Remarks</span>
+                <input type="text" name="reason" placeholder="Example: Excel parameter update after Technology review" required>
+            </label>
+            <button type="submit" class="crs-btn crs-btn-primary">
+                {% if preview.summary.import_mode == 'update_existing' %}
+                Confirm Update Existing Recipe
+                {% else %}
+                Confirm Import As Draft
+                {% endif %}
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</section>
+
+<script>
+(function () {
+    const form = document.getElementById('recipe-import-mode-form');
+    if (!form) return;
+
+    const createFields = form.querySelector('[data-import-fields="create_new"]');
+    const updateFields = form.querySelector('[data-import-fields="update_existing"]');
+    const recipeCode = form.querySelector('input[name="recipe_code"]');
+    const recipeName = form.querySelector('input[name="recipe_name"]');
+    const target = form.querySelector('select[name="target"]');
+    const existingRecipe = form.querySelector('select[name="existing_recipe_id"]');
+
+    function selectedMode() {
+        const checked = form.querySelector('input[name="import_mode"]:checked');
+        return checked ? checked.value : 'create_new';
+    }
+
+    function syncMode() {
+        const mode = selectedMode();
+        const isUpdate = mode === 'update_existing';
+        if (createFields) createFields.style.display = isUpdate ? 'none' : '';
+        if (updateFields) updateFields.style.display = isUpdate ? '' : 'none';
+        if (recipeCode) recipeCode.required = !isUpdate;
+        if (recipeName) recipeName.required = !isUpdate;
+        if (target) target.required = !isUpdate;
+        if (existingRecipe) existingRecipe.required = isUpdate;
+    }
+
+    form.querySelectorAll('input[name="import_mode"]').forEach(function (input) {
+        input.addEventListener('change', syncMode);
+    });
+    syncMode();
+})();
+</script>
+
+{% endblock %}

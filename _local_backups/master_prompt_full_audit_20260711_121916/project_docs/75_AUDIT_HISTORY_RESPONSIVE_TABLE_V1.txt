@@ -1,0 +1,23 @@
+CRS Audit History Responsive Table - Full Replacement Patch
+Date: 2026-07-05
+
+Files:
+- flask_app/static/css/main.css
+- flask_app/templates/audit/audit_history.html
+
+Changes:
+1. Removes older forced 1280/1580/1700px audit table widths on normal desktop.
+2. Fits all nine audit columns into the available Full-HD page width.
+3. Uses balanced percentage column widths.
+4. Uses compact sticky headers with readable labels and fixed sort arrows.
+5. Prevents character-by-character header wrapping.
+6. Shows action, parameter, source and reason as two-line previews.
+7. Keeps complete values available through existing title tooltips.
+8. Keeps controlled horizontal scrolling below 1250px.
+9. Preserves existing routes, filters, server-side sorting and audit data logic.
+
+Apply:
+Expand-Archive -Path .\CRS_Audit_History_Responsive_Table_FULL_REPLACE_PATCH_050726.zip -DestinationPath . -Force
+
+Refresh:
+Ctrl + F5

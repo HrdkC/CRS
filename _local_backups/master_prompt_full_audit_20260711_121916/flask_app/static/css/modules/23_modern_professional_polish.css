@@ -1,0 +1,1155 @@
+/*
+ * 23_modern_professional_polish.css
+ * Final cross-page visual normalization for the Apollo CRS interface.
+ * Keep this file shared: page-specific fixes belong in the matching module.
+ */
+
+:root {
+    --crs-violet-900: #4c1d95;
+    --crs-violet-800: #5b21b6;
+    --crs-violet-700: #6d28d9;
+    --crs-violet-600: #7c3aed;
+    --crs-blue-700: #2563eb;
+    --crs-teal-700: #0f766e;
+    --crs-panel: rgba(255, 255, 255, .98);
+    --crs-panel-muted: #f8fafc;
+    --crs-page: #fbfaff;
+    --crs-border: #d9e2ef;
+    --crs-border-strong: #c8d3e3;
+    --crs-table-head: #243247;
+    --crs-table-head-accent: #2f3f59;
+    --crs-shadow-card: 0 10px 26px rgba(15, 23, 42, .07);
+    --crs-shadow-float: 0 16px 36px rgba(76, 29, 149, .14);
+    --radius-lg: 8px;
+    --radius-md: 8px;
+    --radius-sm: 7px;
+}
+
+/* CRS V1.12 shared action and table normalization */
+body .row-action,
+body .table-action,
+body .btn,
+body .crs-btn,
+body a.btn,
+body button.btn {
+    width: auto;
+    height: auto !important;
+    max-width: 100%;
+    min-width: 74px;
+    min-height: 32px;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    border-radius: 9px !important;
+    padding: 7px 12px !important;
+    font-size: 13px !important;
+    font-weight: 850 !important;
+    letter-spacing: 0 !important;
+    line-height: 1.08 !important;
+    text-align: center;
+    white-space: normal !important;
+}
+
+body .row-action,
+body .table-action,
+body .btn,
+body .crs-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+body .row-action-danger,
+body .danger,
+body .btn-danger {
+    border-color: #dc2626 !important;
+    background: #dc2626 !important;
+    color: #fff !important;
+}
+
+body .data-table,
+body .professional-table,
+body .table,
+body .crs-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+body .data-table th,
+body .professional-table th,
+body .table th,
+body .crs-table th {
+    line-height: 1.15;
+    white-space: normal;
+}
+
+body .data-table td,
+body .professional-table td,
+body .table td,
+body .crs-table td {
+    overflow-wrap: anywhere;
+    line-height: 1.25;
+    vertical-align: middle;
+}
+
+body .plc-registry-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    padding: 8px 10px 12px;
+}
+
+body table.plc-registry-table {
+    width: 100%;
+    min-width: 980px;
+    table-layout: fixed;
+}
+
+body table.plc-registry-table th:nth-child(1),
+body table.plc-registry-table td:nth-child(1) {
+    width: 7%;
+}
+
+body table.plc-registry-table th:nth-child(2),
+body table.plc-registry-table td:nth-child(2) {
+    width: 18%;
+}
+
+body table.plc-registry-table th:nth-child(3),
+body table.plc-registry-table td:nth-child(3) {
+    width: 16%;
+}
+
+body table.plc-registry-table th:nth-child(4),
+body table.plc-registry-table td:nth-child(4) {
+    width: 14%;
+}
+
+body table.plc-registry-table th:nth-child(5),
+body table.plc-registry-table td:nth-child(5) {
+    width: 12%;
+}
+
+body table.plc-registry-table th:nth-child(6),
+body table.plc-registry-table td:nth-child(6) {
+    width: 33%;
+}
+
+body .plc-registry-actions-cell {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+body .plc-registry-table .plc-registry-actions,
+body .plc-registry-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    max-width: 100%;
+}
+
+body .plc-registry-actions .row-action,
+body .plc-registry-actions .btn,
+body .plc-registry-actions a,
+body .plc-registry-actions button {
+    width: auto !important;
+    height: auto !important;
+    min-width: 64px !important;
+    max-width: 132px !important;
+    min-height: 32px !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    border-radius: 9px !important;
+    padding: 7px 10px !important;
+    overflow-wrap: normal !important;
+    font-size: 12px !important;
+    line-height: 1.08 !important;
+    white-space: normal !important;
+    word-break: normal !important;
+}
+
+body .plc-registry-actions .row-action-import,
+body .plc-registry-actions a[href*="1d-array"],
+body .plc-registry-actions a[href*="array"] {
+    min-width: 112px !important;
+}
+
+/* CRS V1.13 final PLC registry and dense table action sizing guard */
+html body .professional-table .plc-registry-actions-cell,
+html body .table-shell .plc-registry-actions-cell,
+html body .plc-registry-actions-cell {
+    width: auto !important;
+    min-width: 360px !important;
+    max-width: 560px !important;
+    overflow: visible !important;
+}
+
+html body .professional-table .plc-registry-actions,
+html body .table-shell .plc-registry-actions,
+html body .plc-registry-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 7px !important;
+    max-width: 100% !important;
+}
+
+html body .professional-table .plc-registry-actions .row-action,
+html body .professional-table .plc-registry-actions a.row-action,
+html body .professional-table .plc-registry-actions button.row-action,
+html body .table-shell .plc-registry-actions .row-action,
+html body .table-shell .plc-registry-actions a.row-action,
+html body .table-shell .plc-registry-actions button.row-action,
+html body .plc-registry-actions .row-action,
+html body .plc-registry-actions a,
+html body .plc-registry-actions button {
+    display: inline-flex !important;
+    flex: 0 1 auto !important;
+    inline-size: auto !important;
+    block-size: auto !important;
+    width: auto !important;
+    height: auto !important;
+    min-inline-size: 62px !important;
+    max-inline-size: 132px !important;
+    min-block-size: 31px !important;
+    max-block-size: 38px !important;
+    aspect-ratio: auto !important;
+    border-radius: 8px !important;
+    padding: 7px 10px !important;
+    font-size: 12px !important;
+    line-height: 1.05 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+    transform: none !important;
+}
+
+html body .professional-table .plc-registry-actions .plc-action-array-import,
+html body .table-shell .plc-registry-actions .plc-action-array-import,
+html body .plc-registry-actions a[href*="1d-array"],
+html body .plc-registry-actions a[href*="array"] {
+    min-inline-size: 108px !important;
+    max-inline-size: 142px !important;
+}
+
+html body .professional-table .plc-registry-actions .danger,
+html body .table-shell .plc-registry-actions .danger,
+html body .plc-registry-actions .danger,
+html body .plc-registry-actions .btn-danger {
+    min-inline-size: 76px !important;
+    max-inline-size: 88px !important;
+}
+
+@media (max-width: 1180px) {
+    body table.plc-registry-table {
+        min-width: 860px;
+    }
+
+    body .plc-registry-actions .row-action,
+    body .plc-registry-actions .btn,
+    body .plc-registry-actions a,
+    body .plc-registry-actions button {
+        min-width: 58px !important;
+        max-width: 118px !important;
+        padding-inline: 8px !important;
+    }
+}
+
+html {
+    min-width: 360px;
+}
+
+body {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfaff 42%, #f7f3ff 100%) !important;
+    color: var(--ink-800);
+    letter-spacing: 0;
+}
+
+.login-layout::before {
+    background: linear-gradient(120deg, rgba(255,255,255,.94), rgba(247,243,255,.92)) !important;
+}
+
+.login-layout::after {
+    display: none !important;
+}
+
+.main-container {
+    padding-top: 12px;
+}
+
+/* Recipe import/export: compact enterprise workflow */
+.recipe-workbench.recipe-import-export-page {
+    max-width: none !important;
+}
+
+.recipe-workbench.recipe-import-export-page .workbench-hero {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 14px 18px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .workbench-title p,
+.recipe-workbench.recipe-import-export-page .panel-heading p,
+.recipe-workbench.recipe-import-export-page .metric-card small,
+.recipe-workbench.recipe-import-export-page .import-field small,
+.recipe-workbench.recipe-import-export-page .smart-help-card small {
+    color: var(--ink-600) !important;
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+}
+
+.recipe-workbench.recipe-import-export-page .metric-grid {
+    grid-template-columns: repeat(4, minmax(180px, 1fr)) !important;
+    gap: 10px !important;
+    margin: 12px 0 !important;
+}
+
+.recipe-workbench.recipe-import-export-page .metric-card {
+    min-height: 72px !important;
+    padding: 12px 14px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-export-layout {
+    display: grid !important;
+    grid-template-columns: minmax(340px, .82fr) minmax(520px, 1.18fr) !important;
+    gap: 14px !important;
+    align-items: start !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-export-card {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.recipe-workbench.recipe-import-export-page .panel-heading.table-heading {
+    min-height: auto !important;
+    padding: 14px 16px !important;
+    border-bottom: 1px solid var(--crs-border) !important;
+    background: linear-gradient(180deg, #ffffff, #f8fafc) !important;
+}
+
+.recipe-workbench.recipe-import-export-page .template-download-form,
+.recipe-workbench.recipe-import-export-page .template-upload-form {
+    padding: 16px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .template-download-form {
+    display: grid !important;
+    grid-template-columns: minmax(240px, 1fr) auto !important;
+    align-items: end !important;
+    gap: 12px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .template-upload-form {
+    display: grid !important;
+    gap: 13px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-field {
+    display: grid !important;
+    gap: 7px !important;
+    margin: 0 !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-field > span,
+.recipe-workbench.recipe-import-export-page .import-mode-choice > span {
+    color: var(--ink-700) !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    letter-spacing: .02em !important;
+    text-transform: uppercase !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-field input[type="text"],
+.recipe-workbench.recipe-import-export-page .import-field input[type="file"],
+.recipe-workbench.recipe-import-export-page .import-field select {
+    width: 100% !important;
+    min-height: 40px !important;
+    border: 1px solid var(--crs-border-strong) !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: var(--ink-800) !important;
+    font-size: 14px !important;
+    font-weight: 650 !important;
+    box-shadow: none !important;
+}
+
+.recipe-workbench.recipe-import-export-page .file-drop-zone {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-height: 74px !important;
+    padding: 12px !important;
+    border: 1px dashed #a78bfa !important;
+    border-radius: 8px !important;
+    background: linear-gradient(135deg, #fbfaff, #f8fafc) !important;
+}
+
+.recipe-workbench.recipe-import-export-page .file-drop-zone strong {
+    display: block !important;
+    color: var(--ink-900) !important;
+    font-size: 14px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .file-drop-zone input[type="file"] {
+    max-width: 330px !important;
+    padding: 7px !important;
+}
+
+.recipe-workbench.recipe-import-export-page input[type="file"]::file-selector-button {
+    min-height: 30px !important;
+    margin-right: 10px !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: var(--apollo-violet) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    padding: 6px 12px !important;
+    cursor: pointer !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-process-strip {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-process-strip span {
+    min-height: 34px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid #ddd6fe !important;
+    border-radius: 8px !important;
+    background: #f5f3ff !important;
+    color: var(--crs-violet-800) !important;
+    font-size: 13px !important;
+    font-weight: 850 !important;
+    text-align: center !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-mode-options {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-mode-card {
+    display: grid !important;
+    grid-template-columns: 20px minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 9px !important;
+    min-height: 78px !important;
+    padding: 12px !important;
+    border: 1px solid var(--crs-border) !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    cursor: pointer !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-mode-card:has(input:checked) {
+    border-color: #8b5cf6 !important;
+    background: linear-gradient(180deg, #ffffff, #f5f3ff) !important;
+    box-shadow: 0 10px 22px rgba(124, 58, 237, .10) !important;
+}
+
+.recipe-workbench.recipe-import-export-page input[type="radio"],
+.recipe-workbench.recipe-import-export-page input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    accent-color: var(--apollo-violet) !important;
+    margin: 1px 0 0 !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-mode-card strong {
+    display: block !important;
+    color: var(--ink-900) !important;
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-form-two-column {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .inline-check-option {
+    display: inline-grid !important;
+    grid-template-columns: 18px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: fit-content !important;
+    min-height: 34px !important;
+    padding: 8px 10px !important;
+    border: 1px solid #ddd6fe !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-form-button {
+    width: fit-content !important;
+    min-width: 150px !important;
+    justify-self: start !important;
+}
+
+.recipe-workbench.recipe-import-export-page .template-download-form .import-form-button {
+    justify-self: end !important;
+}
+
+.recipe-workbench.recipe-import-export-page .smart-help-card {
+    margin-top: 14px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.recipe-workbench.recipe-import-export-page .smart-help-card > summary {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+    cursor: pointer !important;
+    list-style: none !important;
+    border-bottom: 1px solid transparent !important;
+}
+
+.recipe-workbench.recipe-import-export-page .smart-help-card[open] > summary {
+    border-bottom-color: var(--crs-border) !important;
+}
+
+.recipe-workbench.recipe-import-export-page .smart-help-card > summary::-webkit-details-marker {
+    display: none !important;
+}
+
+.recipe-workbench.recipe-import-export-page .smart-help-card > summary span {
+    color: var(--ink-900) !important;
+    font-size: 16px !important;
+    font-weight: 900 !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-rules-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(160px, 1fr)) !important;
+    gap: 10px !important;
+    padding: 14px 16px 16px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-rules-grid > div {
+    display: grid !important;
+    gap: 5px !important;
+    min-height: 78px !important;
+    border: 1px solid var(--crs-border) !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    padding: 11px !important;
+}
+
+.recipe-workbench.recipe-import-export-page .import-preview-card .alert-box,
+.recipe-workbench.recipe-import-export-page .import-preview-card .errors,
+.recipe-workbench.recipe-import-export-page .import-preview-card .warnings {
+    max-height: 220px !important;
+    overflow: auto !important;
+}
+
+@media (max-width: 1260px) {
+    .recipe-workbench.recipe-import-export-page .metric-grid {
+        grid-template-columns: repeat(2, minmax(180px, 1fr)) !important;
+    }
+
+    .recipe-workbench.recipe-import-export-page .import-export-layout {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 820px) {
+    .recipe-workbench.recipe-import-export-page .workbench-hero,
+    .recipe-workbench.recipe-import-export-page .template-download-form,
+    .recipe-workbench.recipe-import-export-page .import-form-two-column,
+    .recipe-workbench.recipe-import-export-page .import-mode-options,
+    .recipe-workbench.recipe-import-export-page .import-process-strip,
+    .recipe-workbench.recipe-import-export-page .import-rules-grid,
+    .recipe-workbench.recipe-import-export-page .file-drop-zone {
+        grid-template-columns: 1fr !important;
+    }
+
+    .recipe-workbench.recipe-import-export-page .workbench-actions,
+    .recipe-workbench.recipe-import-export-page .template-download-form .import-form-button,
+    .recipe-workbench.recipe-import-export-page .file-drop-zone input[type="file"] {
+        justify-self: stretch !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+}
+
+.site-header {
+    background: rgba(255,255,255,.985) !important;
+    border-bottom: 2px solid var(--apollo-violet) !important;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .06) !important;
+}
+
+.site-header .header-top {
+    min-height: 66px !important;
+    gap: 12px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.site-header .header-brand-logo-row {
+    column-gap: 8px !important;
+}
+
+.site-header .brand-area {
+    align-self: center !important;
+    text-align: center !important;
+}
+
+.site-header .brand-title {
+    color: var(--apollo-violet) !important;
+    font-size: 27px !important;
+    line-height: 1 !important;
+    letter-spacing: 0 !important;
+}
+
+.site-header .brand-subtitle {
+    display: grid;
+    justify-items: center;
+    gap: 0;
+    margin-top: 2px !important;
+    color: var(--ink-600) !important;
+    line-height: 1.14 !important;
+}
+
+.site-header .user-info {
+    border-color: var(--crs-border) !important;
+    border-radius: 8px !important;
+    background: #f8fafc !important;
+    box-shadow: none !important;
+}
+
+.site-header .navbar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    padding-top: 3px !important;
+    padding-bottom: 5px !important;
+}
+
+.site-header .navbar ul {
+    min-width: 0;
+    gap: 7px !important;
+}
+
+.site-header .menu-item {
+    border-radius: 8px !important;
+    box-shadow: 0 8px 18px rgba(111, 45, 168, .13) !important;
+    transform: none !important;
+}
+
+.site-header .navbar a,
+.site-header .nav-post-link {
+    min-height: 31px !important;
+    padding: 7px 14px !important;
+    border-radius: 8px !important;
+    line-height: 16px !important;
+    white-space: nowrap !important;
+}
+
+.site-header .nav-post-link {
+    width: auto !important;
+    min-width: 78px !important;
+}
+
+.site-header .dropdown-menu {
+    border-radius: 8px !important;
+    border-color: var(--crs-border) !important;
+    box-shadow: var(--crs-shadow-float) !important;
+}
+
+.site-header .dropdown-menu a {
+    min-height: 30px !important;
+    border-radius: 7px !important;
+    padding: 8px 10px !important;
+}
+
+.crs-accessibility-strip {
+    border: 1px solid #c4b5fd !important;
+    border-radius: 8px !important;
+    background: linear-gradient(180deg, var(--crs-violet-700), var(--crs-violet-900)) !important;
+    box-shadow: 0 10px 22px rgba(76, 29, 149, .18) !important;
+}
+
+.crs-access-button {
+    border-radius: 7px !important;
+}
+
+.page-header,
+.workbench-hero,
+.workbench-card,
+.metric-card,
+.dashboard-card,
+.quick-card,
+.form-card,
+.content-panel,
+.table-panel,
+.audit-archive-card,
+.audit-filter-card-pro,
+.compact-corporate-login-panel,
+.login-card {
+    border: 1px solid var(--crs-border) !important;
+    border-radius: 8px !important;
+    background: var(--crs-panel) !important;
+    box-shadow: var(--crs-shadow-card) !important;
+}
+
+.page-header,
+.workbench-hero {
+    padding: 16px 18px !important;
+}
+
+.workbench-card,
+.form-card,
+.table-panel,
+.content-panel {
+    padding: 14px !important;
+}
+
+.metric-card {
+    min-height: 76px !important;
+    padding: 13px 15px !important;
+}
+
+.metric-card strong {
+    letter-spacing: 0 !important;
+}
+
+.page-header h1,
+.workbench-hero h1,
+.workbench-title h1,
+.section-title,
+.card-title {
+    letter-spacing: 0 !important;
+}
+
+.section-kicker,
+.kicker,
+.eyebrow,
+.status-badge,
+.tag-pill,
+.tag-chip {
+    border-radius: 999px;
+    letter-spacing: 0 !important;
+}
+
+button,
+.btn,
+.crs-btn,
+.primary-action,
+.secondary-action,
+.action-btn,
+.row-action {
+    border-radius: 8px !important;
+    min-height: 32px !important;
+    padding: 7px 14px !important;
+    line-height: 1.15 !important;
+    white-space: normal !important;
+    text-align: center !important;
+    letter-spacing: 0 !important;
+}
+
+.row-action {
+    min-width: 66px;
+    max-width: 150px;
+    box-shadow: none !important;
+}
+
+.row-action.primary,
+.row-action.edit,
+.row-action.open,
+.row-action.info {
+    background: var(--crs-blue-700) !important;
+}
+
+.row-action.buffer,
+.row-action.violet,
+.primary-action,
+.btn-primary,
+.crs-btn-primary {
+    background: var(--apollo-violet) !important;
+}
+
+.row-action.history,
+.row-action.audit,
+.row-action.warning {
+    background: #d97706 !important;
+}
+
+.row-action.danger,
+.row-action.disable,
+.row-action.delete {
+    background: #dc2626 !important;
+}
+
+.row-actions,
+.plc-registry-actions {
+    gap: 7px !important;
+    align-items: center !important;
+}
+
+.plc-registry-actions-cell {
+    min-width: 390px;
+    width: 390px;
+    max-width: 430px;
+}
+
+.plc-registry-actions .row-action {
+    width: auto !important;
+    min-width: 66px !important;
+    max-width: 132px !important;
+    min-height: 32px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    border-radius: 8px !important;
+    white-space: normal !important;
+    line-height: 1.05 !important;
+}
+
+.plc-registry-actions .plc-action-array-import {
+    min-width: 112px !important;
+    max-width: 132px !important;
+}
+
+input,
+select,
+textarea {
+    border-radius: 8px !important;
+    border-color: var(--crs-border-strong) !important;
+    background: #fff !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--apollo-violet) !important;
+    box-shadow: 0 0 0 3px rgba(111, 45, 168, .14) !important;
+}
+
+.table-container,
+.registry-table-wrap,
+.audit-table-wrap-pro,
+.professional-table-wrap,
+.data-table-wrap,
+.audit-table-scroll-pro,
+.plc-registry-table-wrap {
+    border: 1px solid var(--crs-border) !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+table,
+.professional-table,
+.registry-table,
+.data-table,
+.plc-registry-table {
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    background: #fff !important;
+}
+
+th,
+.professional-table th,
+.registry-table th,
+.data-table th,
+.plc-registry-table th {
+    background: linear-gradient(180deg, var(--crs-table-head-accent), var(--crs-table-head)) !important;
+    color: #fff !important;
+    padding: 10px 12px !important;
+    font-size: 11.5px !important;
+    font-weight: 850 !important;
+    letter-spacing: 0 !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+    box-shadow: none !important;
+}
+
+td,
+.professional-table td,
+.registry-table td,
+.data-table td,
+.plc-registry-table td {
+    padding: 10px 12px !important;
+    border-bottom: 1px solid var(--line-100) !important;
+    color: var(--ink-800) !important;
+    vertical-align: middle !important;
+    line-height: 1.28 !important;
+}
+
+tbody tr:nth-child(even) td {
+    background: #fbfdff;
+}
+
+tbody tr:hover td {
+    background: #f7f2ff !important;
+}
+
+.professional-table thead th,
+.registry-table thead th,
+.data-table thead th,
+.plc-registry-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.sortable-header,
+th a,
+th button {
+    color: inherit !important;
+}
+
+.audit-table-pro {
+    table-layout: fixed !important;
+}
+
+.audit-table-pro th,
+.audit-table-pro td {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+}
+
+.audit-table-pro .audit-action-pill,
+.audit-table-pro .status-badge,
+.audit-table-pro .tag-pill {
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+}
+
+.audit-table-pro th:nth-child(1),
+.audit-table-pro td:nth-child(1) { width: 116px; }
+.audit-table-pro th:nth-child(2),
+.audit-table-pro td:nth-child(2) { width: 92px; }
+.audit-table-pro th:nth-child(3),
+.audit-table-pro td:nth-child(3) { width: 82px; }
+.audit-table-pro th:nth-child(4),
+.audit-table-pro td:nth-child(4) { width: 160px; }
+.audit-table-pro th:nth-child(5),
+.audit-table-pro td:nth-child(5) { width: 178px; }
+.audit-table-pro th:nth-child(6),
+.audit-table-pro td:nth-child(6) { width: 170px; }
+.audit-table-pro th:nth-child(7),
+.audit-table-pro td:nth-child(7) { width: 220px; }
+.audit-table-pro th:nth-child(8),
+.audit-table-pro td:nth-child(8) { width: 150px; }
+.audit-table-pro th:nth-child(9),
+.audit-table-pro td:nth-child(9) { width: auto; }
+
+.summary-list div,
+.flow-node,
+.empty-state-card {
+    border-radius: 8px !important;
+}
+
+.site-footer {
+    background: rgba(255,255,255,.96) !important;
+    backdrop-filter: blur(8px);
+}
+
+html[data-crs-resolved-theme="dark"] body {
+    background: linear-gradient(180deg, #020617 0%, #0f172a 100%) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .page-header,
+html[data-crs-resolved-theme="dark"] .workbench-hero,
+html[data-crs-resolved-theme="dark"] .workbench-card,
+html[data-crs-resolved-theme="dark"] .metric-card,
+html[data-crs-resolved-theme="dark"] .dashboard-card,
+html[data-crs-resolved-theme="dark"] .quick-card,
+html[data-crs-resolved-theme="dark"] .form-card,
+html[data-crs-resolved-theme="dark"] .content-panel,
+html[data-crs-resolved-theme="dark"] .table-panel,
+html[data-crs-resolved-theme="dark"] .audit-archive-card,
+html[data-crs-resolved-theme="dark"] .audit-filter-card-pro,
+html[data-crs-resolved-theme="dark"] .compact-corporate-login-panel,
+html[data-crs-resolved-theme="dark"] .login-card,
+html[data-crs-resolved-theme="dark"] .table-container,
+html[data-crs-resolved-theme="dark"] .registry-table-wrap,
+html[data-crs-resolved-theme="dark"] .audit-table-wrap-pro,
+html[data-crs-resolved-theme="dark"] .professional-table-wrap,
+html[data-crs-resolved-theme="dark"] .data-table-wrap,
+html[data-crs-resolved-theme="dark"] .audit-table-scroll-pro,
+html[data-crs-resolved-theme="dark"] .plc-registry-table-wrap {
+    background: var(--crs-readable-surface) !important;
+    border-color: var(--line-200) !important;
+}
+
+html[data-crs-resolved-theme="dark"] tbody tr:hover td {
+    background: #1f1633 !important;
+}
+
+html[data-crs-resolved-theme="dark"] th,
+html[data-crs-resolved-theme="dark"] .professional-table th,
+html[data-crs-resolved-theme="dark"] .registry-table th,
+html[data-crs-resolved-theme="dark"] .data-table th,
+html[data-crs-resolved-theme="dark"] .plc-registry-table th {
+    background: linear-gradient(180deg, #312e81, #1e1b4b) !important;
+}
+
+@media (max-width: 1280px) {
+    .site-header .header-top {
+        grid-template-columns: max-content minmax(280px, 1fr) max-content !important;
+    }
+
+    .site-header .brand-title {
+        font-size: 23px !important;
+    }
+
+    .site-header .navbar {
+        flex-wrap: wrap !important;
+    }
+
+    .crs-accessibility-strip {
+        margin-left: auto !important;
+    }
+}
+
+@media (max-width: 980px) {
+    .site-header .header-top {
+        grid-template-columns: 1fr !important;
+        justify-items: start !important;
+        gap: 6px !important;
+        padding: 6px 18px 4px !important;
+    }
+
+    .site-header .brand-area {
+        text-align: left !important;
+        justify-self: start !important;
+    }
+
+    .site-header .brand-subtitle {
+        justify-items: start !important;
+    }
+
+    .site-header .user-info {
+        justify-self: stretch !important;
+        max-width: none !important;
+        text-align: left !important;
+    }
+
+    .site-header .navbar {
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+        overflow-x: auto !important;
+        align-items: flex-start !important;
+    }
+
+    .site-header .navbar ul {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding-bottom: 3px !important;
+    }
+
+    .site-header .menu-item {
+        flex: 0 0 auto !important;
+    }
+
+    .site-header .dropdown-menu {
+        position: fixed !important;
+        left: 18px !important;
+        right: 18px !important;
+        top: auto !important;
+        min-width: 0 !important;
+        width: auto !important;
+    }
+
+    .main-container {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .workbench-hero,
+    .page-header {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 720px) {
+    .site-header .brand-title {
+        font-size: 20px !important;
+        white-space: normal !important;
+    }
+
+    .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .row-actions,
+    .plc-registry-actions {
+        align-items: stretch !important;
+    }
+
+    .plc-registry-actions-cell {
+        min-width: 320px;
+        width: 320px;
+        max-width: 360px;
+    }
+
+    .row-action {
+        min-width: 86px;
+    }
+
+    .plc-registry-actions .row-action {
+        min-width: 72px !important;
+        max-width: 122px !important;
+    }
+}
+
+/* CRS V1.12 final registry-action guard */
+body .plc-registry-actions-cell {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+body .plc-registry-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 7px !important;
+}
+
+body .plc-registry-actions .row-action,
+body .plc-registry-actions .btn,
+body .plc-registry-actions a,
+body .plc-registry-actions button {
+    width: auto !important;
+    height: auto !important;
+    min-width: 64px !important;
+    max-width: 132px !important;
+    min-height: 32px !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    border-radius: 9px !important;
+    padding: 7px 10px !important;
+    font-size: 12px !important;
+    line-height: 1.08 !important;
+    white-space: normal !important;
+}
+
+body .plc-registry-actions a[href*="1d-array"],
+body .plc-registry-actions a[href*="array"] {
+    min-width: 112px !important;
+}

@@ -1,0 +1,27 @@
+# CRS V6.15 - Recipe Import Parameter Master Details From Excel
+
+Patch type: PATCH-ONLY replacement files.
+
+Purpose:
+- Keep Phase_Control optional/ignored during Excel import.
+- Import recipe parameter value from Excel.
+- Also update safe non-PLC parameter master details from Excel:
+  - Parameter Name
+  - Parameter Class
+  - Unit
+  - Data Type
+  - Min Value
+  - Max Value
+  - Default Value
+  - English Memo
+  - Used flag
+
+Protected fields:
+- Tag Index is not changed by import.
+- PLC Array Index is not changed by import.
+- Parameter Definition ID is used only as a lookup aid. If stale, Tag Index mapping is used.
+- Phase_Control sheet is exported for reference but ignored during import. Default Empty Phase rows are created and must be selected manually before PLC download.
+
+Changed files:
+- database/recipe_excel_import_export_manager.py
+- flask_app/templates/recipes/recipe_import_export.html

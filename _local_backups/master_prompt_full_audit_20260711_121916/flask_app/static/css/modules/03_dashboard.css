@@ -1,0 +1,68 @@
+/*
+ * 03_dashboard.css
+ * Dashboard cards and summary visuals.
+ * Cascade order is controlled by flask_app/static/css/main.css.
+ */
+
+/* 06. Hero, cards, dashboards */
+.recipe-workbench { display: grid; gap: 13px; }
+.workbench-hero,
+.page-header,
+.workbench-card,
+.metric-card,
+.audit-archive-card,
+.audit-filter-card-pro,
+.dashboard-card,
+.quick-card {
+    background: var(--surface);
+    border: 1px solid var(--line-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+.workbench-hero { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 14px; padding: 15px 18px; }
+.workbench-title h1,
+.page-header h1 { margin: 5px 0 4px; color: var(--ink-900); font-size: 24px; line-height: 1.1; font-weight: 850; letter-spacing: -0.15px; }
+.workbench-title p,
+.page-header p { margin: 0; color: var(--ink-500); font-size: 12.5px; }
+.section-kicker,
+.kicker,
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    color: #0f766e;
+    background: #e6f7f4;
+    border: 1px solid #bfe9e2;
+    font-size: 10.5px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.workbench-actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; }
+.workbench-card { padding: 13px; }
+.panel-heading,
+.table-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
+.table-heading { margin: -13px -13px 11px; padding: 12px 15px; border-bottom: 1px solid var(--line-200); border-radius: var(--radius-lg) var(--radius-lg) 0 0; background: rgba(248,250,252,0.86); }
+.panel-heading span:first-child { color: var(--ink-900); font-size: 14px; font-weight: 850; }
+.panel-heading p { margin: 2px 0 0; color: var(--ink-500); font-size: 11.5px; }
+.metric-grid { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 11px; }
+.metric-card { display: grid; gap: 5px; min-height: 84px; padding: 14px 16px; }
+.metric-label { color: var(--ink-500); font-size: 10.5px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.03em; }
+.metric-card strong { color: var(--ink-900); font-size: 24px; line-height: 1; font-weight: 850; }
+.metric-card .metric-text { font-size: 16px; line-height: 1.12; }
+.metric-card small { color: var(--ink-600); font-size: 12px; }
+.metric-link { transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease; }
+.metric-link:hover { transform: translateY(-2px); border-color: #c4b5fd; box-shadow: 0 14px 30px rgba(111,45,168,0.10); }
+.insight-layout { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(320px,.75fr); gap: 13px; }
+.summary-list { display: grid; gap: 4px; }
+.summary-list div { display: grid; grid-template-columns: minmax(120px,.65fr) minmax(140px,1fr); gap: 12px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line-100); }
+.summary-list div:last-child { border-bottom: 0; }
+.summary-list span { color: var(--ink-500); font-weight: 750; }
+.summary-list strong { color: var(--ink-900); font-size: 15px; }
+.flow-map { display: grid; gap: 7px; }
+.flow-row { display: grid; grid-template-columns: 1fr 26px 1fr; gap: 8px; align-items: center; }
+.flow-node { min-height: 34px; display: flex; align-items: center; padding: 8px 11px; background: #f8fafc; border: 1px solid var(--line-200); border-radius: var(--radius-sm); font-weight: 750; }
+.flow-arrow { color: var(--apollo-violet); font-weight: 900; text-align: center; }
+

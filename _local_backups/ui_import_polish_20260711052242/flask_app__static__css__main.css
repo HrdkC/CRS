@@ -1,0 +1,32 @@
+/*
+ * Centralized Recipe System (CRS) CSS entry point.
+ *
+ * Keep this file small. Do not add page-specific rules here.
+ * Add rules to the matching file under ./modules and keep the import order unchanged unless visual regression is verified.
+ *
+ * This split is cascade-preserving: the imported modules follow the same order as the earlier monolithic main.css.
+ */
+
+@import url("./modules/01_base.css");
+@import url("./modules/02_auth.css");
+@import url("./modules/03_dashboard.css");
+@import url("./modules/04_buttons_forms.css");
+@import url("./modules/05_tables.css");
+@import url("./modules/06_status_messages.css");
+@import url("./modules/07_audit_help.css");
+@import url("./modules/08_responsive_compact.css");
+@import url("./modules/09_configuration.css");
+@import url("./modules/10_header_auth_branding.css");
+@import url("./modules/11_phase_control.css");
+@import url("./modules/12_recipes.css");
+@import url("./modules/13_plc.css?v=css-v108-plc-registry-table-polish-20260710");
+@import url("./modules/14_dashboard_import_export.css");
+@import url("./modules/15_ui_hardening.css");
+@import url("./modules/16_phase_master.css");
+@import url("./modules/17_plc_setup_tables.css");
+@import url("./modules/18_phase_master_tables.css");
+@import url("./modules/19_users.css");
+@import url("./modules/20_audit_tables.css");
+@import url("./modules/21_header_alignment.css");
+@import url("./modules/22_accessibility_preferences.css?v=css-v108-plc-registry-table-polish-20260710");
+@import url("./modules/23_modern_professional_polish.css?v=css-v111-import-flow-polish-20260710");

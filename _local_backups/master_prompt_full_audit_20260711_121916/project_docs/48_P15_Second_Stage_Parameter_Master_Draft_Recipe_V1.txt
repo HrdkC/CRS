@@ -1,0 +1,60 @@
+P15 Second Stage Parameter Master + Draft Recipe V1
+===================================================
+
+Purpose
+-------
+This package adds a safe build script for creating P15 SECOND_STAGE parameter master data and a first DRAFT recipe from Excel input.
+
+Confirmed prior milestone
+-------------------------
+SUPERSEDED UPDATE 2026-07-05:
+Only CAP_STRIP_SIDE and BT_SIDE are recipe-controlled for P15 SECOND_STAGE.
+SHAPING_SIDE is PLC-fixed and must not be generated as recipe phase rows.
+
+P15 SECOND_STAGE phase-control group masters and phase-control master rows were created:
+- CAP_STRIP_SIDE: Apply CapStrip, Apply Tread
+- BT_SIDE: Apply Belt 1, Apply Belt 2, Turn Table, Apply Tread, Remove Belt Package
+- SHAPING_SIDE: Carcass Loader, Preshaping, Stitching Cycle, Remove Cycle
+
+This package
+------------
+File:
+- database/build_p15_second_stage_parameter_master_draft_recipe_v1.py
+
+The script:
+1. Reads Excel input from data_imports/P15_Second_Stage_Foundation_Input_Template_V3_PhaseOnly.xlsx by default.
+2. Validates Parameters sheet.
+3. Inserts/updates parameter_definitions for machine_id=5, stage_id=12.
+4. Ensures the second-stage recipe-controlled phase-control groups exist.
+5. Creates a DRAFT recipe only.
+6. Creates recipe_parameter_values using default_value from Excel.
+7. Creates recipe_phase_control rows using group-wise phase masters.
+8. Does not release recipe and does not write PLC.
+
+Required Excel data
+-------------------
+Parameters sheet must contain actual P15 second-stage parameters from SCADA/PLC:
+- tag_index
+- plc_array_index
+- parameter_name
+- parameter_class
+- unit
+- min_value
+- max_value
+- default_value
+- datatype
+- english_memo
+- used
+
+Phase_Control sheet is optional for first draft because default second-stage group masters already exist. If filled, it overrides/extends phase rows for the draft recipe.
+
+Safety
+------
+- Duplicate recipe_code + version + machine_id + stage_id is blocked.
+- Recipe is created as DRAFT only.
+- Existing production/released recipes are not modified.
+- PLC download is not touched.
+
+Next after this package
+-----------------------
+After successful DB creation, CRS UI must be patched to display SECOND_STAGE phase control in three groups instead of one first-stage style list.

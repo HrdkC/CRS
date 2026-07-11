@@ -1,0 +1,235 @@
+/*
+ * 09_configuration.css
+ * Configuration center.
+ * Cascade order is controlled by flask_app/static/css/main.css.
+ */
+
+/* Configuration Center */
+.configuration-workbench {
+    gap: 14px;
+}
+
+.configuration-metric-grid .metric-card strong {
+    color: var(--apollo-violet-dark);
+}
+
+.configuration-stage-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.configuration-stage-card {
+    display: grid;
+    gap: 10px;
+    min-height: 162px;
+    padding: 14px;
+    border: 1px solid var(--line-200);
+    border-left: 4px solid var(--neutral);
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+.configuration-stage-card-ready {
+    border-left-color: var(--success);
+}
+
+.configuration-stage-card-warning {
+    border-left-color: var(--warning);
+}
+
+.configuration-stage-card-blocked {
+    border-left-color: var(--danger);
+}
+
+.configuration-stage-head,
+.configuration-stage-meta,
+.configuration-stage-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.configuration-stage-head h2 {
+    margin: 3px 0 0;
+    color: var(--ink-900);
+    font-size: 18px;
+    line-height: 1.15;
+}
+
+.readiness-score {
+    color: var(--apollo-violet-dark);
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.configuration-progress {
+    height: 9px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e9e2f1;
+}
+
+.configuration-progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #14b8a6, var(--apollo-violet));
+}
+
+.configuration-stage-meta {
+    justify-content: flex-start;
+    color: var(--ink-500);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.configuration-action-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.configuration-action {
+    display: grid;
+    gap: 5px;
+    min-height: 72px;
+    padding: 12px;
+    color: var(--ink-800);
+    border: 1px solid var(--line-200);
+    border-radius: var(--radius-md);
+    background: #f8fafc;
+}
+
+.configuration-action:hover {
+    color: var(--apollo-violet-dark);
+    border-color: #d8c6ed;
+    background: var(--apollo-violet-soft);
+}
+
+.configuration-action span {
+    color: var(--ink-500);
+    font-size: 10.5px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.configuration-action strong {
+    color: var(--ink-900);
+    font-size: 16px;
+}
+
+.configuration-section-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.readiness-section {
+    padding-bottom: 13px;
+}
+
+.readiness-section-ok {
+    border-left: 4px solid var(--success);
+}
+
+.readiness-section-warning {
+    border-left: 4px solid var(--warning);
+}
+
+.readiness-section-blocked {
+    border-left: 4px solid var(--danger);
+}
+
+.readiness-check-list {
+    display: grid;
+    gap: 7px;
+}
+
+.readiness-check {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 8px 10px;
+    border: 1px solid var(--line-200);
+    border-radius: var(--radius-md);
+    background: #fff;
+}
+
+.readiness-check-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink-600);
+    font-size: 11px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--neutral);
+}
+
+.status-dot-ok {
+    background: var(--success);
+}
+
+.status-dot-warning {
+    background: var(--warning);
+}
+
+.status-dot-blocked {
+    background: var(--danger);
+}
+
+.readiness-check-body {
+    display: grid;
+    min-width: 0;
+}
+
+.readiness-check-body strong {
+    color: var(--ink-900);
+    font-size: 13px;
+}
+
+.readiness-check-body span {
+    color: var(--ink-500);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 1180px) {
+    .configuration-stage-grid,
+    .configuration-section-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .configuration-action-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .configuration-action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .readiness-check {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =====================================================
+   Priority 11 FIX6 - Apollo campaign login and compact header branding
+   Uses supplied campaign assets in an industrial, resource-friendly layout.
+   ===================================================== */
+

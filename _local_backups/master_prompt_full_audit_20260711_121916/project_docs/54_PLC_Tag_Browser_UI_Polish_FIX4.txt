@@ -1,0 +1,19 @@
+PLC Tag Browser UI Polish FIX4
+==============================
+
+Purpose
+-------
+Improve usability of PLC Tag Browser after online browsing was restored.
+
+Changes
+-------
+1. Redesigned PLC Tag Browser into compact professional CRS layout.
+2. Fixed search/filter alignment.
+3. Added metric cards for controller/matched/returned counts.
+4. Added sticky-header scrollable results table.
+5. Added compact badges for data type and array status.
+6. Kept Add/Select and Use For 1D Import actions.
+7. Collapsed Manual Add Fallback into a details panel.
+8. Improved saved tag table layout.
+
+No backend logic changes are included.

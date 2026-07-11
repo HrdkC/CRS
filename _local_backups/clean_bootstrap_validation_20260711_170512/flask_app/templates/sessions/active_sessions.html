@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}
+Active Sessions
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Security</span>
+            <h1>Active Sessions</h1>
+            <p>Currently logged-in CRS users, workstation source, last activity, and ADMIN force logout control.</p>
+        </div>
+        <div class="workbench-actions">
+            <a class="secondary-action" href="/auto-logout-settings">Auto Logout Settings</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Active Sessions</span>
+            <strong>{{ sessions|length }}</strong>
+            <small>Currently open logins</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Auto Logout</span>
+            <strong>{{ timeout_minutes }} min</strong>
+            <small>Configured on separate settings page</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Scope</span>
+            <strong class="metric-text">Plant LAN</strong>
+            <small>Client workstation visibility</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Action</span>
+            <strong class="metric-text">Force Logout</strong>
+            <small>Admin controlled</small>
+        </div>
+    </div>
+
+    <div class="workbench-card data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Session Records</span>
+                <p>Use this page to check active login activity before maintenance.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+            <table class="professional-table registry-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Login Time</th>
+                        <th>Last Activity</th>
+                        <th>Active Minutes</th>
+                        <th>Client IP</th>
+                        <th>Workstation</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in sessions %}
+                    <tr>
+                        <td><strong>{{ row.username }}</strong></td>
+                        <td><span class="status-badge status-info">{{ row.role }}</span></td>
+                        <td>{{ row.login_time_ist }}</td>
+                        <td>{{ row.last_activity_ist }}</td>
+                        <td>{{ row.active_minutes }}</td>
+                        <td>{{ row.client_ip }}</td>
+                        <td>{{ row.workstation_name }}</td>
+                        <td>
+                            {% if row.id == session.get("session_id") %}
+                            <span class="status-badge status-neutral">Current</span>
+                            {% else %}
+                            <form method="POST" action="/active-sessions/logout/{{ row.id }}" data-confirm="Force logout this user session?">
+                                <button type="submit" class="row-action danger">Force Logout</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="empty-state">No active sessions.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

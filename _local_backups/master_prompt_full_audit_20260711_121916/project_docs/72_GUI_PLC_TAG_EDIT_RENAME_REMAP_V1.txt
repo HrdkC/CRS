@@ -1,0 +1,56 @@
+CRS V6.19 - GUI PLC Tag Edit / Rename / Remap
+================================================
+
+Purpose
+-------
+This patch removes the need for manual SQLite commands for normal PLC tag correction.
+Engineering users can correct PLC tag name, data type, array/scalar setup, array size/window,
+description, and CRS purpose mapping from GUI.
+
+Main Screens
+------------
+1. Configuration -> <Machine>/<Stage>
+   Section: PLC Tag Edit / Rename / Remap
+
+2. PLC Tag Browser -> Saved PLC Tags
+   Inline row edit is available for every saved tag.
+
+Supported GUI Actions
+---------------------
+- Rename saved PLC tag.
+- Change data type text such as REAL, BOOL, DINT, STRING.
+- Change scalar/array selection.
+- Change array start/end/size.
+- Edit tag description.
+- Assign, clear, or remap CRS purpose.
+- Save with mandatory reason.
+- Audit all changed fields.
+
+Purpose Rules
+-------------
+RECIPE_DATA means CRS system buffer purpose.
+TEST_RECIPE_DATA means PLC destination / test / running recipe tag purpose.
+
+Example current testing setup:
+CRS_Recipe_Data       -> RECIPE_DATA
+CRS_Test_Recipe_Data  -> TEST_RECIPE_DATA
+
+Example future plant setup:
+CRS_Recipe_Data       -> RECIPE_DATA
+Running_Recipe_Data   -> TEST_RECIPE_DATA
+
+Validation
+----------
+- Duplicate tag names for same machine/stage are blocked.
+- Duplicate purpose mapping for same machine/stage is blocked in bulk edit.
+- Purpose mapping validates against stage PLC tag requirement rules:
+  datatype, array/scalar, and minimum array size/window.
+
+Touched Files
+-------------
+database/plc_tag_manager.py
+flask_app/routes/plc_tag_routes.py
+flask_app/routes/configuration_routes.py
+flask_app/templates/plc_tags/browser.html
+flask_app/templates/configuration/stage_readiness.html
+flask_app/static/css/main.css

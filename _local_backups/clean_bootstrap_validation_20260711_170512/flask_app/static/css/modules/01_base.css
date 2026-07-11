@@ -1,0 +1,163 @@
+/*
+ * 01_base.css
+ * Design tokens, reset, base layout, primary header/navigation.
+ * Cascade order is controlled by flask_app/static/css/main.css.
+ */
+
+/* =====================================================
+   Apollo CRS - Compact Professional Industrial UI
+   Priority 11 UI Compact FIX4
+   Target: Full HD 1920x1080, browser 100% zoom
+   ===================================================== */
+
+/* 01. Design tokens */
+:root {
+    --apollo-violet: #6f2da8;
+    --apollo-violet-dark: #572187;
+    --apollo-violet-soft: #f4edfb;
+    --ink-900: #0f172a;
+    --ink-800: #1e293b;
+    --ink-700: #334155;
+    --ink-600: #475569;
+    --ink-500: #64748b;
+    --line-100: #eef2f7;
+    --line-200: #e2e8f0;
+    --line-300: #cbd5e1;
+    --surface: rgba(255,255,255,0.96);
+    --surface-soft: #f8fafc;
+    --page-bg: #f8fafc;
+    --success: #15803d;
+    --success-bg: #dcfce7;
+    --warning: #b45309;
+    --warning-bg: #fef3c7;
+    --danger: #b91c1c;
+    --danger-bg: #fee2e2;
+    --info: #1d4ed8;
+    --info-bg: #dbeafe;
+    --neutral: #475569;
+    --neutral-bg: #e5e7eb;
+    --shadow-sm: 0 6px 16px rgba(15,23,42,0.06);
+    --shadow-md: 0 14px 34px rgba(15,23,42,0.08);
+    --radius-lg: 12px;
+    --radius-md: 9px;
+    --radius-sm: 7px;
+    --content-width: 1820px;
+    --footer-height: 32px;
+    --font-sans: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 02. Reset + base */
+* { box-sizing: border-box; }
+html { min-height: 100%; font-size: 13px; }
+body {
+    min-height: 100%;
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.36;
+    color: var(--ink-800);
+    background:
+        radial-gradient(circle at 5% 0%, rgba(111,45,168,0.09), transparent 24%),
+        radial-gradient(circle at 96% 100%, rgba(111,45,168,0.08), transparent 26%),
+        linear-gradient(135deg, #ffffff 0%, #f7f3fc 100%);
+    background-attachment: fixed;
+}
+a { color: var(--apollo-violet); text-decoration: none; }
+a:hover { color: var(--apollo-violet-dark); }
+img { max-width: 100%; }
+strong { font-weight: 800; }
+
+/* 03. Application layout */
+.authenticated-layout { min-height: 100vh; padding-bottom: var(--footer-height); }
+.login-layout { min-height: 100vh; overflow: hidden; }
+.login-layout .main-container {
+    max-width: none;
+    min-height: 100vh;
+    padding: 0;
+    display: grid;
+    place-items: center;
+}
+.main-container {
+    width: 100%;
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 14px 26px calc(var(--footer-height) + 14px);
+}
+
+/* 04. Header + navigation */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 5000;
+    background: rgba(255,255,255,0.97);
+    border-bottom: 2px solid var(--apollo-violet);
+    box-shadow: 0 8px 22px rgba(15,23,42,0.06);
+    backdrop-filter: blur(8px);
+}
+.header-top {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 230px minmax(0,1fr) 260px;
+    align-items: center;
+    gap: 16px;
+    min-height: 78px;
+    padding: 12px 26px 6px;
+}
+.header-logo-panel { display: flex; align-items: center; min-width: 0; }
+.logo { height: 42px; width: auto; object-fit: contain; }
+.brand-area { min-width: 0; text-align: center; }
+.brand-title {
+    color: var(--apollo-violet);
+    font-size: 26px;
+    line-height: 1.08;
+    font-weight: 850;
+    letter-spacing: -0.15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.brand-subtitle { margin-top: 3px; color: var(--ink-500); font-size: 12px; }
+.user-info {
+    justify-self: end;
+    min-width: 230px;
+    max-width: 260px;
+    text-align: right;
+    color: var(--ink-700);
+    background: #f8fafc;
+    border: 1px solid var(--line-200);
+    border-radius: var(--radius-md);
+    padding: 6px 8px;
+    font-size: 11px;
+    line-height: 1.2;
+}
+.user-info strong { display: inline-block; color: var(--ink-900); font-size: 12px; margin-bottom: 1px; }
+.navbar { max-width: var(--content-width); margin: 0 auto; padding: 4px 26px 6px; }
+.navbar ul { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.menu-item { position: relative; border-radius: var(--radius-sm); background: linear-gradient(180deg, var(--apollo-violet), var(--apollo-violet-dark)); box-shadow: 0 7px 15px rgba(111,45,168,0.16); }
+.menu-item:hover { background: linear-gradient(180deg, var(--apollo-violet-dark), #45196f); transform: translateY(-1px); }
+.navbar a { display: block; min-height: 28px; padding: 5px 14px; color: #fff; font-size: 13px; font-weight: 800; line-height: 18px; }
+.dropdown::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 8px; }
+.dropdown-menu {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 8px);
+    z-index: 9000;
+    min-width: 220px;
+    padding: 6px;
+    background: #fff;
+    border: 1px solid var(--line-200);
+    border-radius: var(--radius-md);
+    box-shadow: 0 18px 38px rgba(15,23,42,0.14);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity .14s ease, transform .14s ease, visibility .14s ease;
+}
+.dropdown-menu a { min-height: 32px; padding: 9px 11px; color: var(--ink-800); border-radius: 7px; white-space: nowrap; }
+.dropdown-menu a:hover { color: var(--apollo-violet-dark); background: var(--apollo-violet-soft); }
+.dropdown:hover .dropdown-menu,
+.dropdown.dropdown-open .dropdown-menu { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0); }
+.dropdown-menu-right { left: auto; right: 0; }
+

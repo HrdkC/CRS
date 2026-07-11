@@ -1,0 +1,42 @@
+CRS Parameter Used / Not Used Template Policy V1
+================================================
+
+Date: 2026-06-29
+
+Purpose
+-------
+Machine/stage recipe templates can contain parameters that are stored for
+history or future use but are not active in the current module recipe.
+
+Final Rule
+----------
+1. parameter_definitions.used = 1 means the parameter is active for the
+   machine/stage module template.
+2. parameter_definitions.used = 0 means the parameter remains stored but is
+   excluded from normal recipe editor display, validation, and PLC download.
+3. Existing recipe_parameter_values are not deleted when a parameter is marked
+   Not Used.
+4. When a parameter is restored to Used, missing values are backfilled to all
+   existing recipes for that machine/stage using the configured default value.
+
+Import Rule
+-----------
+Excel import supports a Used column.
+
+- Used = 1: import and validate the parameter value.
+- Used = 0: keep/update the parameter definition but mark it Not Used.
+- Parameter definitions missing from the Excel file are marked Not Used for the
+  target machine/stage template.
+
+This allows partial recipe imports where only the required active parameters
+are present in the file.
+
+Audit Rule
+----------
+Marking a parameter Used or Not Used must create an audit_log entry. Bulk edit
+and Excel import changes also record the old/new parameter detail changes.
+
+Operator Impact
+---------------
+Normal recipe pages show Used parameters by default. Engineering/Admin can view
+Not Used or All Template Rows when maintaining the module template.

@@ -1,0 +1,631 @@
+/*
+ * 10_header_auth_branding.css
+ * Corporate header, campaign/login branding refinements.
+ * Cascade order is controlled by flask_app/static/css/main.css.
+ */
+
+/* Header: Apollo + BCCI side-by-side block */
+.header-top {
+    grid-template-columns: 360px minmax(460px, 1fr) 280px !important;
+    min-height: 76px !important;
+}
+.header-logo-panel {
+    align-self: center !important;
+}
+.header-brand-lockup {
+    display: inline-grid;
+    gap: 3px;
+    justify-items: center;
+    align-items: center;
+    width: 174px;
+}
+.header-brand-logo-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: center;
+    justify-items: center;
+    width: 100%;
+}
+.header-logo-main,
+.header-logo-bcci {
+    width: 52px !important;
+    height: 38px !important;
+    object-fit: contain !important;
+    display: block;
+}
+.header-logo-bcci {
+    border-radius: 50%;
+    background: #fff;
+    padding: 2px;
+}
+.header-campaign-caption {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 340px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #5b21b6 !important;
+    font-size: 15px !important;
+    line-height: 1.15 !important;
+    font-weight: 950 !important;
+    letter-spacing: 0.035em !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+}
+.brand-campaign-mini { display: none !important; }
+
+/* Login: corporate campaign carousel, compact form */
+.corporate-login-v6 {
+    width: min(1360px, 95vw) !important;
+    height: min(680px, calc(100svh - 24px)) !important;
+    grid-template-columns: minmax(0, 1.18fr) minmax(405px, .82fr) !important;
+    border-radius: 24px !important;
+}
+.campaign-carousel-panel {
+    isolation: isolate;
+}
+.campaign-carousel-viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+}
+.campaign-carousel-track {
+    width: 200%;
+    height: 100%;
+    display: flex;
+    animation: apolloCampaignSlideX 16s ease-in-out infinite;
+    will-change: transform;
+}
+.campaign-carousel-slide {
+    width: 50%;
+    height: 100%;
+    flex: 0 0 50%;
+
+    overflow: hidden;
+    background:
+        radial-gradient(circle at center, rgba(111,45,168,0.10), transparent 45%),
+        #f7f3fc;
+}
+.campaign-carousel-slide img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    object-position: center center;
+
+    /* object-position: center 42%; */
+
+    /* transform: scale(1.02); */
+    background: #f7f3fc;
+}
+@keyframes apolloCampaignSlideX {
+    0%, 45% { transform: translateX(0); }
+    55%, 95% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+.campaign-logo-lockup {
+    position: absolute;
+    z-index: 3;
+    left: 24px;
+    top: 22px;
+    width: 174px;
+    min-height: 64px;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 10px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.92);
+    box-shadow: 0 16px 34px rgba(15,23,42,.14);
+    display: none;
+}
+.campaign-logo-lockup img {
+    max-width: 150px;
+    max-height: 54px;
+    object-fit: contain;
+    display: none;
+}
+.campaign-carousel-panel .corporate-login-hero-overlay {
+    z-index: 1;
+    background:
+        linear-gradient(90deg, rgba(15,23,42,.10), rgba(15,23,42,.03) 46%, rgba(111,45,168,.18)),
+        linear-gradient(0deg, rgba(15,23,42,.62), transparent 58%);
+}
+.campaign-carousel-panel .corporate-login-hero-content {
+    z-index: 2;
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+    gap: 7px;
+    max-width: 800px;
+}
+.campaign-carousel-panel .campaign-kicker {
+    font-size: 10px !important;
+    letter-spacing: .09em;
+}
+.campaign-carousel-panel h1 {
+    font-size: clamp(30px, 3.1vw, 44px) !important;
+    line-height: .98 !important;
+}
+.campaign-carousel-panel p {
+    max-width: 520px;
+    font-size: 12px !important;
+}
+.campaign-film-link {
+    min-height: 34px !important;
+    padding: 8px 18px !important;
+    border-radius: 999px !important;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.compact-corporate-login-panel {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) auto minmax(8px, .7fr) auto !important;
+    padding: 18px 26px !important;
+    gap: 0 !important;
+    align-content: stretch !important;
+}
+.compact-corporate-login-panel .login-panel-main {
+    grid-row: 2 !important;
+    display: grid !important;
+    gap: 12px !important;
+}
+.compact-login-panel-head {
+    grid-template-columns: 92px 1fr !important;
+    gap: 12px !important;
+}
+.compact-login-panel-head .login-panel-logo {
+    width: 86px !important;
+}
+.compact-login-panel-head .login-system-title {
+    font-size: 23px !important;
+    line-height: 1.04 !important;
+}
+.compact-login-panel-head .login-system-subtitle {
+    font-size: 10.5px !important;
+}
+.compact-login-form {
+    width: min(388px, 100%) !important;
+    justify-self: center;
+    padding: 13px 16px 14px !important;
+    border-radius: 15px !important;
+}
+.login-field-stack {
+    width: min(338px, 100%);
+    margin: 0 auto;
+}
+.compact-login-form label {
+    font-size: 11.2px !important;
+    margin-bottom: 4px !important;
+}
+.compact-login-form input {
+    height: 34px !important;
+    min-height: 34px !important;
+    margin-bottom: 9px !important;
+    padding: 7px 10px !important;
+    font-size: 12px !important;
+}
+.compact-login-form .login-submit-button {
+    width: 158px !important;
+    min-height: 35px !important;
+    margin-top: 8px !important;
+}
+.compact-values-panel {
+    width: min(520px, 100%);
+    justify-self: center;
+    gap: 9px !important;
+}
+.compact-values-panel .corporate-value-card {
+    min-height: 56px !important;
+    padding: 10px 12px !important;
+}
+.compact-values-panel .corporate-value-card.value-wide {
+    min-height: 54px !important;
+}
+.compact-values-panel .corporate-value-card span {
+    font-size: 10.4px !important;
+}
+.compact-values-panel .corporate-value-card strong {
+    font-size: 12.4px !important;
+}
+.leadership-large-panel {
+    width: min(520px, 100%);
+    justify-self: center;
+    gap: 9px !important;
+}
+.leadership-large-panel .leader-mini-card {
+    grid-template-columns: 64px 1fr !important;
+    min-height: 80px !important;
+    padding: 9px 10px !important;
+}
+.leadership-large-panel .leader-mini-card img {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 13px !important;
+}
+.leadership-large-panel .leader-mini-card strong {
+    font-size: 12.4px !important;
+}
+.leadership-large-panel .leader-mini-card span {
+    font-size: 10.8px !important;
+}
+.corporate-login-footer {
+    grid-row: 4 !important;
+    align-self: end !important;
+    font-size: 10.5px !important;
+    line-height: 1.45 !important;
+    padding-top: 8px !important;
+}
+
+@media (max-height: 760px) {
+    .corporate-login-v6 {
+        height: calc(100svh - 12px) !important;
+    }
+    .campaign-logo-lockup { width: 148px; min-height: 54px; left: 18px; top: 16px; }
+    .campaign-logo-lockup img { max-width: 128px; max-height: 44px; }
+    .compact-corporate-login-panel { padding: 13px 22px !important; }
+    .leadership-large-panel .leader-mini-card { min-height: 64px !important; grid-template-columns: 52px 1fr !important; }
+    .leadership-large-panel .leader-mini-card img { width: 52px !important; height: 52px !important; }
+    .corporate-login-footer { font-size: 9px !important; padding-top: 4px !important; }
+}
+@media (max-width: 1100px) {
+    .corporate-login-v6 {
+        width: min(620px, 94vw) !important;
+        grid-template-columns: 1fr !important;
+    }
+    .campaign-carousel-panel { display: none !important; }
+}
+@media (max-width: 1280px) {
+    .header-top {
+        grid-template-columns: 165px minmax(250px, 1fr) 220px !important;
+    }
+    .header-brand-lockup { width: 152px; }
+    .header-logo-main, .header-logo-bcci { width: 44px !important; height: 34px !important; }
+    .header-campaign-caption { font-size: 8.8px; }
+}
+
+/* =====================================================
+   FIX: Header Apollo + BCCI logo size and spacing
+   ===================================================== */
+
+.header-logo-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    min-width: 300px !important;
+}
+
+.header-brand-lockup,
+.header-logo-row,
+.header-brand-logos {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;          /* reduce/increase this for logo spacing */
+}
+
+.header-logo-panel img,
+.header-brand-lockup img,
+.header-logo-row img,
+.header-brand-logos img {
+    height: 88px !important;      /* increase logo size */
+    width: auto !important;
+    max-width: 300px !important;
+    object-fit: contain !important;
+}
+
+.header-logo-panel .logo {
+    height: 68px !important;
+    max-height: 78px !important;
+    max-width: 300px !important;
+}
+
+.header-bcci-logo,
+.apollo-bcci-logo,
+.campaign-bcci-logo {
+    height: 78px !important;
+    width: auto !important;
+    max-width: 300px !important;
+    object-fit: contain !important;
+}
+
+.header-campaign-title,
+.header-brand-caption,
+.campaign-caption {
+    margin-top: 3px !important;
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.02em !important;
+    color: #5b21b6 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+/* =====================================================
+   FINAL HEADER LOGO LOCKUP FIX
+   Apollo logo + BCCI sponsor logo in row
+   Campaign text below, no overlap
+   ===================================================== */
+
+.site-header .header-top {
+    grid-template-columns: 390px minmax(430px, 1fr) 280px !important;
+    min-height: 72px !important;
+    padding: 4px 2px 2px !important;
+    align-items: center !important;
+    column-gap: 16px !important;
+}
+
+/* Left branding block */
+.site-header .header-logo-panel {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    min-width: 350px !important;
+    width: 350px !important;
+    max-width: 390px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Parent lockup must be grid, not flex */
+.site-header .header-brand-lockup {
+    display: grid !important;
+    grid-template-rows: 48px 14px !important;
+    grid-template-columns: 1fr !important;
+    align-items: center !important;
+    justify-items: center !important;
+    width: 370px !important;
+    min-width: 370px !important;
+    max-width: 370px !important;
+    row-gap: 1px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+}
+
+/* Logo row */
+.site-header .header-brand-logo-row {
+    display: grid !important;
+    grid-template-columns: 110px 104px !important;
+    align-items: center !important;
+    justify-items: center !important;
+    justify-content: center !important;
+    column-gap: 0px !important;
+    width: 100% !important;
+    height: 48px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Apollo logo */
+.site-header .header-logo-main {
+    display: block !important;
+    width: 112px !important;
+    height: 46px !important;
+    max-width: 112px !important;
+    max-height: 46px !important;
+    object-fit: contain !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* BCCI + Apollo lead sponsor logo */
+.site-header .header-logo-bcci {
+    display: block !important;
+    width: 104px !important;
+    height: 44px !important;
+    max-width: 104px !important;
+    max-height: 44px !important;
+    object-fit: contain !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Campaign text below both logos */
+.site-header .header-campaign-caption {
+    display: block !important;
+    position: static !important;
+    grid-row: 2 !important;
+    width: 100% !important;
+    max-width: 370px !important;
+    height: 14px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #5b21b6 !important;
+    font-size: 12px !important;
+    line-height: 12px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.035em !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+}
+
+/* Keep CRS title centered */
+.site-header .brand-area {
+    justify-self: center !important;
+    text-align: center !important;
+}
+
+.site-header .brand-subtitle {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 1px !important;
+    width: 100% !important;
+    text-align: center !important;
+    line-height: 1.12 !important;
+}
+
+/* Navigation stays below logo/text block */
+.site-header .navbar {
+    padding-top: 0 !important;
+}
+
+/* Laptop fallback */
+@media screen and (max-width: 1366px) {
+    .site-header .header-top {
+        grid-template-columns: 320px minmax(340px, 1fr) 230px !important;
+        min-height: 66px !important;
+        column-gap: 12px !important;
+    }
+
+    .site-header .header-logo-panel {
+        min-width: 320px !important;
+        width: 320px !important;
+        max-width: 320px !important;
+    }
+
+    .site-header .header-brand-lockup {
+        width: 310px !important;
+        min-width: 310px !important;
+        max-width: 310px !important;
+        grid-template-rows: 40px 13px !important;
+    }
+
+    .site-header .header-brand-logo-row {
+        grid-template-columns: 92px 86px !important;
+        column-gap: 10px !important;
+        height: 40px !important;
+    }
+
+    .site-header .header-logo-main {
+        width: 96px !important;
+        height: 40px !important;
+        max-width: 96px !important;
+        max-height: 40px !important;
+    }
+
+    .site-header .header-logo-bcci {
+        width: 86px !important;
+        height: 38px !important;
+        max-width: 86px !important;
+        max-height: 38px !important;
+    }
+
+    .site-header .header-campaign-caption {
+        max-width: 310px !important;
+        height: 13px !important;
+        font-size: 10px !important;
+        line-height: 13px !important;
+    }
+}
+
+
+/* =====================================================
+   LOGIN HEADER ALIGNMENT FIX
+   Align Apollo logo + CRS title with login form left edge
+   ===================================================== */
+
+/* Same width for title row, form block, values, leadership, footer */
+.compact-corporate-login-panel .login-panel-head,
+.compact-corporate-login-panel .compact-login-form,
+.compact-corporate-login-panel .compact-values-panel,
+.compact-corporate-login-panel .leadership-large-panel {
+    width: min(430px, 100%) !important;
+    justify-self: center !important;
+    align-self: center !important;
+}
+.compact-corporate-login-panel .corporate-login-footer {
+    width: min(430px, 100%) !important;
+    justify-self: center !important;
+    align-self: end !important;
+}
+
+/* Header row aligned with form left edge */
+.compact-corporate-login-panel .login-panel-head,
+.compact-login-panel-head {
+    display: grid !important;
+    grid-template-columns: 92px minmax(0, 1fr) !important;
+    align-items: center !important;
+    justify-items: start !important;
+    column-gap: 14px !important;
+    margin: 0 auto 8px auto !important;
+}
+
+/* Apollo logo inside header row */
+.compact-corporate-login-panel .login-panel-logo,
+.compact-login-panel-head .login-panel-logo {
+    width: 90px !important;
+    max-width: 90px !important;
+    height: auto !important;
+    justify-self: start !important;
+    object-fit: contain !important;
+}
+
+/* CRS title text aligned left */
+.compact-corporate-login-panel .login-system-title,
+.compact-login-panel-head .login-system-title {
+    text-align: center !important;
+    justify-self: stretch !important;
+    margin: 0 !important;
+    font-size: 24px !important;
+    line-height: 1.05 !important;
+    font-weight: 950 !important;
+    color: #6f2da8 !important;
+    white-space: nowrap !important;
+}
+
+/* Subtitle aligned with title */
+.compact-corporate-login-panel .login-system-subtitle,
+.compact-login-panel-head .login-system-subtitle {
+    text-align: center !important;
+    margin-top: 4px !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    color: #475569 !important;
+}
+
+/* Form block uses same left/right width */
+.compact-corporate-login-panel .compact-login-form {
+    width: min(430px, 100%) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Inputs remain compact inside form */
+.compact-corporate-login-panel .login-field-stack {
+    width: min(350px, 100%) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* =====================================================
+   RECIPE EDITOR - PHASE CONTROL PROFESSIONAL VIEW
+   Makes phase-control rows compact, readable and aligned
+   ===================================================== */
+
+.phase-workbench {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.phase-workbench .panel-heading {
+    margin: 0 !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid var(--line-200);
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+}
+
+.phase-workbench .panel-heading span:first-child {
+    color: var(--ink-900);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.phase-workbench .muted-text {
+    font-size: 11.5px;
+    font-weight: 750;
+    color: var(--ink-500);
+}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Details
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Recipe Details</span>
+            <h1>{{ recipe.recipe_code }}</h1>
+            <p>{{ recipe.recipe_name }}</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="/recipes/{{ recipe.recipe_code }}/parameters" class="crs-btn crs-btn-primary">
+                Parameters
+            </a>
+            <a href="/recipes/{{ recipe.recipe_code }}/compare" class="crs-btn crs-btn-soft">
+                Compare
+            </a>
+            <form method="POST" action="/recipes/{{ recipe.recipe_code }}/create-version" class="inline-action-form">
+                {{ csrf_input() }}
+                <button type="submit" class="crs-btn crs-btn-soft">
+                    New Version
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Recipe Code</span>
+            <strong class="metric-text">{{ recipe.recipe_code }}</strong>
+            <small>Unique recipe identity</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Version</span>
+            <strong>V{{ recipe.current_version }}</strong>
+            <small>Current version number</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong class="metric-text">{{ recipe.recipe_status }}</strong>
+            <small>Recipe lifecycle state</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Trace</span>
+            <strong class="metric-text">Versioned</strong>
+            <small>Changes are tracked</small>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

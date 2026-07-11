@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}
+Machine Registry
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+
+        <div class="workbench-title">
+
+            <span class="section-kicker">
+                Production Registry
+            </span>
+
+            <h1>
+                Machine Registry
+            </h1>
+
+            <p>
+                Machine identity, TBM family assignment, and active production availability.
+            </p>
+
+        </div>
+
+        <div class="workbench-actions">
+
+            {% if role_can("engineering_config") %}
+            <a
+                href="/machines/create"
+                class="crs-btn crs-btn-primary"
+            >
+                Create Machine
+            </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="metric-grid">
+
+        <div class="metric-card">
+            <span class="metric-label">Machines</span>
+            <strong>{{ machines|length }}</strong>
+            <small>Total registered machines</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Active</span>
+            <strong>{{ machines|selectattr("active", "equalto", 1)|list|length }}</strong>
+            <small>Visible for production setup</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Disabled</span>
+            <strong>{{ machines|rejectattr("active", "equalto", 1)|list|length }}</strong>
+            <small>Retained for traceability</small>
+        </div>
+
+        <div class="metric-card">
+            <span class="metric-label">Stages</span>
+            <strong class="metric-text">Auto</strong>
+            <small>First and second stage created by rule</small>
+        </div>
+
+    </div>
+
+    <div class="workbench-card data-workbench">
+
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Machine Records</span>
+                <p>Machine code stays unique and case-insensitive across CRS.</p>
+            </div>
+        </div>
+
+        <div class="professional-table-wrap registry-table-wrap">
+
+            <table class="professional-table registry-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Machine</th>
+                        <th>TBM Family</th>
+                        <th>Description</th>
+                        <th>Created By</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for machine in machines %}
+
+                    <tr>
+                        <td>
+                            <span class="tag-pill">{{ machine.id }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ machine.machine_code }}</strong>
+                        </td>
+                        <td>{{ machine.family_name or '-' }}</td>
+                        <td>{{ machine.description or '-' }}</td>
+                        <td>{{ machine.created_by }}</td>
+                        <td>
+                            {% if machine.active == 1 %}
+                            <span class="status-badge status-success">Active</span>
+                            {% else %}
+                            <span class="status-badge status-neutral">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <a
+                                    href="/machines/change-family/{{ machine.id }}"
+                                    class="row-action edit"
+                                >
+                                    Family
+                                </a>
+                                {% if machine.active == 1 %}
+                                <form method="POST" action="/machines/disable/{{ machine.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action danger">Disable</button>
+                                </form>
+                                {% else %}
+                                <form method="POST" action="/machines/enable/{{ machine.id }}" class="row-action-form">
+                                    {{ csrf_input() }}
+                                    <button type="submit" class="row-action success">Enable</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            No machines configured.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

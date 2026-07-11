@@ -1,0 +1,35 @@
+# Priority 10 - PLC Upload Audit Flow
+
+## Goal
+Make PLC Upload safe and traceable without silently changing the recipe database.
+
+## Final Behavior
+
+Upload From PLC:
+1. Reads the PLC destination/source buffer, normally CRS_Test_Recipe_Data[500].
+2. Validates uploaded PLC values against parameter min/max limits.
+3. Compares uploaded PLC values with the selected database recipe.
+4. Shows candidate database changes count.
+5. Copies uploaded PLC values into CRS_Recipe_Data[500].
+6. Reads CRS_Recipe_Data[500] back and verifies it matches the PLC source buffer.
+7. Logs recipe_upload_history with user, role, PLC, source tag, destination tag, candidate change count, validated parameter count, and mismatch count.
+8. Logs audit_log action PLC_UPLOAD_FROM_PLC with source PLC_UPLOAD_TO_CRS_BUFFER.
+
+Important:
+- Upload From PLC does not silently update database recipe values.
+- Recipe Save is required to commit CRS_Recipe_Data values into the selected recipe.
+- Recipe Save creates parameter-level audit rows for every changed value.
+- Historical released recipes remain blocked from buffer/database operations.
+- Test-only recipes remain blocked from PLC download/upload/save operations.
+
+## Recipe Save Audit Source
+Recipe Save now uses change_source:
+
+CRS_BUFFER_SAVE_TO_RECIPE
+
+This makes parameter-level audit records clearly different from manual editor changes.
+
+## Operator Safety
+The UI confirmation explains:
+- Upload From PLC copies PLC values to CRS buffer only.
+- Recipe Save is required to update database values with audit.

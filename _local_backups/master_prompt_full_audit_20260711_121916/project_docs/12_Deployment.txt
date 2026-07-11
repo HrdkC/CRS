@@ -1,0 +1,76 @@
+DEPLOYMENT ARCHITECTURE
+=======================
+
+Deployment Target
+-----------------
+
+Windows 10
+
+Windows 11
+
+Engineering Workstation
+
+Network
+-------
+
+Connected to plant intranet.
+
+Accessible through browser.
+
+Technology Stack
+----------------
+
+Python
+
+Flask
+
+Waitress
+
+SQLite (Development)
+
+MySQL (Production)
+
+Future MSSQL support
+
+Automatic Startup
+-----------------
+
+Application startup should:
+
+- Create missing tables
+- Create missing columns
+- Create default settings
+- Create default records
+
+Minimal manual configuration required.
+
+Recovery Philosophy
+-------------------
+
+New workstation deployment should require:
+
+1. Install required software
+2. Configure database credentials
+3. Start application
+
+Everything else should be automatic.
+
+PLC Connectivity
+----------------
+
+All PLCs reachable through plant intranet.
+
+Application workstation should communicate with PLCs using EtherNet/IP.
+
+Documentation
+-------------
+
+Deployment guide required.
+
+Recovery guide required.
+
+Backup guide required.
+
+Operator guide required.
+
+Engineering guide required.

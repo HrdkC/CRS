@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}
+Change Machine Family
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Machine Registry</span>
+            <h1>Change Machine Family</h1>
+            <p>Reassign the machine to another active TBM family with full audit trail.</p>
+        </div>
+
+        <div class="workbench-actions">
+            <a href="/machines" class="crs-btn crs-btn-soft">Back To Machines</a>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Machine</span>
+            <strong class="metric-text">{{ machine.machine_code }}</strong>
+            <small>Machine ID {{ machine.id }}</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Current Family</span>
+            <strong class="metric-text">{{ machine.family_name }}</strong>
+            <small>Current family ID {{ machine.family_id }}</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Linked Data</span>
+            <strong class="metric-text">Machine-owned</strong>
+            <small>Stages, PLCs, recipes, and templates stay linked</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Audit</span>
+            <strong class="metric-text">Required</strong>
+            <small>Old and new family are stored</small>
+        </div>
+    </div>
+
+    <div class="workbench-card edit-parameter-panel">
+        <div class="panel-heading">
+            <span>Family Assignment</span>
+            <span class="status-badge status-info">Editable</span>
+        </div>
+
+        {% if not families %}
+        <div class="empty-state-card">
+            <div>
+                <strong>No active TBM families are available.</strong>
+                <p class="muted-text">
+                    Create or enable a TBM family before reassigning this machine.
+                </p>
+            </div>
+            <a href="/families/create" class="crs-btn crs-btn-primary">Create Family</a>
+        </div>
+        {% else %}
+        <form method="POST" class="parameter-edit-form">
+            {{ csrf_input() }}
+
+            <label>
+                <span>New TBM Family</span>
+                <select name="family_id" required>
+                    {% for family in families %}
+                    <option
+                        value="{{ family.id }}"
+                        {% if family_id|string == family.id|string %}selected{% elif family_id is not defined and machine.family_id|string == family.id|string %}selected{% endif %}
+                    >
+                        {{ family.family_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>
+                <span>Change Reason</span>
+                <textarea
+                    name="reason"
+                    rows="3"
+                    required
+                    placeholder="Example: Move machine to updated CATL family after engineering review"
+                ></textarea>
+            </label>
+
+            <div class="form-action-row">
+                <button type="submit" class="crs-btn crs-btn-primary">Save Family Assignment</button>
+                <a href="/machines" class="crs-btn crs-btn-soft">Cancel</a>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+
+</section>
+
+{% endblock %}

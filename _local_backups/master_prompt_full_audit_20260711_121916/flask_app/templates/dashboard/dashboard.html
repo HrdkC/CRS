@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}
+Apollo CRS Dashboard
+{% endblock %}
+
+{% block content %}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Plant Overview</span>
+            <h1>CRS Dashboard</h1>
+            <p>
+                Apollo Tyres Ltd. | PCR Limda Plant | Centralized Recipe System
+                <span
+                    class="info-hint"
+                    title="Machine-first CRS flow: machine/stage selection, recipe validation, PLC buffer operation, and full audit traceability."
+                >?</span>
+            </p>
+        </div>
+
+        {% if role_can("engineering_config") %}
+        <div class="workbench-actions">
+            <a href="/machines" class="crs-btn crs-btn-primary">Machines</a>
+            <a href="/plcs" class="crs-btn crs-btn-soft">PLC Registry</a>
+            <a href="/stages" class="crs-btn crs-btn-soft">Stages</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="metric-grid">
+        {% if role_can("recipe_view") %}
+        <a href="/recipes" class="metric-card metric-link">
+            <span class="metric-label">Recipes</span>
+            <strong>{{ recipe_count if recipe_count is defined else "-" }}</strong>
+            <small>Recipe master records</small>
+        </a>
+        <a href="/recipes" class="metric-card metric-link">
+            <span class="metric-label">Current Production</span>
+            <strong>{{ current_released_count if current_released_count is defined else "-" }}</strong>
+            <small>Released recipes available</small>
+        </a>
+        {% endif %}
+
+        {% if role_can("engineering_config") %}
+        <a href="/families" class="metric-card metric-link">
+            <span class="metric-label">TBM Families</span>
+            <strong>{{ family_count if family_count is defined else "-" }}</strong>
+            <small>Machine family groups</small>
+        </a>
+        <a href="/machines" class="metric-card metric-link">
+            <span class="metric-label">Machines</span>
+            <strong>{{ machine_count }}</strong>
+            <small>Registered TBMs</small>
+        </a>
+        <a href="/plcs" class="metric-card metric-link">
+            <span class="metric-label">Plant PLCs</span>
+            <strong>{{ plc_count }}</strong>
+            <small>PLC records</small>
+        </a>
+        <a href="/plcs" class="metric-card metric-link">
+            <span class="metric-label">Configured PLCs</span>
+            <strong>{{ configured_plc_count }}</strong>
+            <small>Machine-stage assigned</small>
+        </a>
+        <a href="/stages" class="metric-card metric-link">
+            <span class="metric-label">Stages</span>
+            <strong>{{ stage_count }}</strong>
+            <small>First and second stage records</small>
+        </a>
+        <a href="/engineering-units" class="metric-card metric-link">
+            <span class="metric-label">Units</span>
+            <strong class="metric-text">Master</strong>
+            <small>Engineering unit setup</small>
+        </a>
+        {% endif %}
+
+        {% if role_can("user_manage") %}
+        <a href="/users" class="metric-card metric-link">
+            <span class="metric-label">Users</span>
+            <strong>{{ user_count }}</strong>
+            <small>CRS user accounts</small>
+        </a>
+        {% endif %}
+
+        {% if role_can("audit_view") %}
+        <a href="/audit-history" class="metric-card metric-link">
+            <span class="metric-label">Audit</span>
+            <strong class="metric-text">Trace</strong>
+            <small>System change history</small>
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="data-workbench">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Role Action Alerts</span>
+                <p>Priority items for {{ session.get("role") }} login.</p>
+            </div>
+        </div>
+
+        <div class="metric-grid">
+            {% for alert in dashboard_alerts %}
+            <a href="{{ alert.href }}" class="metric-card metric-link">
+                <span class="metric-label">{{ alert.label }}</span>
+                <strong>{{ alert.count }}</strong>
+                <small>{{ alert.detail }}</small>
+                <span class="status-badge {{ alert.status_class }}">
+                    {% if alert.count > 0 %}
+                        {% if alert.status_class == "status-danger" %}
+                            ⚠ Action
+                        {% elif alert.status_class == "status-warning" %}
+                            ! Action
+                        {% elif alert.status_class == "status-info" %}
+                            ℹ Action
+                        {% else %}
+                            Action
+                        {% endif %}
+                    {% else %}
+                        ✓ OK
+                    {% endif %}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="dashboard-insight-grid">
+        <section class="workbench-card dashboard-insight-card">
+            <div class="panel-heading table-heading">
+                <div>
+                    <span>Recipe Lifecycle</span>
+                    <p>Current recipe workload by approval state.</p>
+                </div>
+                <a href="/recipes" class="secondary-action">Open Recipes</a>
+            </div>
+            <div class="lifecycle-stack">
+                {% for item in recipe_lifecycle %}
+                <div class="lifecycle-row">
+                    <div class="lifecycle-label">
+                        <span class="status-badge {{ item.status_class }}">{{ item.label }}</span>
+                        <strong>{{ item.count }}</strong>
+                    </div>
+                    <div class="lifecycle-bar" title="{{ item.label }}: {{ item.count }}">
+                        <span style="width: {{ item.percent }}%;"></span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="workbench-card dashboard-insight-card">
+            <div class="panel-heading table-heading">
+                <div>
+                    <span>Recent Activity</span>
+                    <p>Latest audited CRS changes in IST.</p>
+                </div>
+                {% if role_can("audit_view") %}
+                <a href="/audit-history" class="secondary-action">Audit</a>
+                {% endif %}
+            </div>
+            <div class="activity-feed">
+                {% for item in recent_activity %}
+                <a href="/audit-history" class="activity-item">
+                    <span>{{ item.timestamp_ist or "-" }}</span>
+                    <strong title="{{ item.action }}">{{ item.action }}</strong>
+                    <small>{{ item.username or "-" }} | {{ item.record_label }}</small>
+                </a>
+                {% else %}
+                <div class="empty-state">No recent audit records.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <section class="workbench-card dashboard-insight-card">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>Machine / Stage Readiness</span>
+                <p>Configuration status for active machine-stage templates.</p>
+            </div>
+            {% if role_can("engineering_config") %}
+            <a href="/configuration" class="secondary-action">Configuration</a>
+            {% endif %}
+        </div>
+
+        <div class="stage-readiness-grid">
+            {% for row in stage_readiness %}
+            <div class="stage-readiness-card">
+                <div class="stage-readiness-head">
+                    <div>
+                        <strong>{{ row.machine_code }} / {{ row.stage_code }}</strong>
+                        <span>{{ row.stage_type }}</span>
+                    </div>
+                    <span class="status-badge {{ row.status_class }}">{{ row.status }}</span>
+                </div>
+                <div class="stage-readiness-metrics">
+                    <span><b>{{ row.active_plcs }}</b> PLC</span>
+                    <span><b>{{ row.used_parameters }}</b> Used</span>
+                    <span><b>{{ row.unused_parameters }}</b> Not Used</span>
+                    <span><b>{{ row.phase_groups }}</b> Groups</span>
+                    <span><b>{{ row.phase_options }}</b> Phases</span>
+                    <span><b>{{ row.released_recipes }}</b> Released</span>
+                </div>
+                <div class="stage-readiness-actions">
+                    <a href="{{ row.recipe_url }}" class="secondary-action">Recipes</a>
+                    {% if role_can("engineering_config") %}
+                    <a href="{{ row.configuration_url }}" class="secondary-action">Configure</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">No active machine-stage records found.</div>
+            {% endfor %}
+        </div>
+    </section>
+
+</section>
+
+{% endblock %}

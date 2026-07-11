@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}
+Configuration Center
+{% endblock %}
+
+{% block content %}
+
+<div class="recipe-workbench configuration-workbench">
+
+    <section class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Machine / Stage Setup</span>
+            <h1>Configuration Center</h1>
+            <p>Readiness view for GUI-based setup of templates, phase controls, PLC tags, and recipes.</p>
+        </div>
+        <div class="workbench-actions">
+            <a class="crs-btn crs-btn-soft" href="/machines/create" title="Create a TBM. First Stage and Second Stage are created automatically.">Create Machine</a>
+            <a class="crs-btn crs-btn-soft" href="/plcs/create" title="Register PLC details for a machine/stage.">Create PLC</a>
+            <a class="crs-btn crs-btn-primary" href="/recipes/import-export" title="Download or import approved CRS Excel recipe templates.">Recipe Excel</a>
+        </div>
+    </section>
+
+    <section class="metric-grid configuration-metric-grid">
+        <div class="metric-card">
+            <span class="metric-label">Stages</span>
+            <strong>{{ reports|length }}</strong>
+            <small>Configured machine/stage records</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Ready</span>
+            <strong>{{ status_counts.ready }}</strong>
+            <small>No blocking issue</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Warnings</span>
+            <strong>{{ status_counts.warning }}</strong>
+            <small>Usable with open recommendations</small>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Blocked</span>
+            <strong>{{ status_counts.blocked }}</strong>
+            <small>Missing required setup</small>
+        </div>
+    </section>
+
+    <section class="workbench-card">
+        <div class="table-heading">
+            <div>
+                <strong>Machine / Stage Readiness</strong>
+                <p>Open a stage to see required configuration and direct repair links.</p>
+            </div>
+            <span class="status-badge status-info">{{ reports|length }} stage(s)</span>
+        </div>
+
+        <div class="configuration-stage-grid">
+            {% for report in reports %}
+            {% set context = report.context %}
+            <article class="configuration-stage-card configuration-stage-card-{{ report.status_class }}">
+                <div class="configuration-stage-head">
+                    <div>
+                        <span class="metric-label">{{ context.stage_display_name }}</span>
+                        <h2>{{ context.machine_stage_display }}</h2>
+                    </div>
+                    <span class="readiness-score">{{ report.score }}%</span>
+                </div>
+                <div class="configuration-progress">
+                    <span style="width: {{ report.score }}%"></span>
+                </div>
+                <div class="configuration-stage-meta">
+                    <span class="status-badge status-{{ report.status_class }}">{{ report.status }}</span>
+                    <span>{{ report.blocking_count }} blocked</span>
+                    <span>{{ report.warning_count }} warning</span>
+                </div>
+                <div class="configuration-stage-actions">
+                    <a class="crs-btn crs-btn-primary" href="{{ report.setup_url }}">Open Setup</a>
+                    <a class="crs-btn crs-btn-soft" href="{{ report.recipes_url }}">Recipes</a>
+                    <a class="crs-btn crs-btn-soft" href="{{ report.parameters_url }}">Parameters</a>
+                </div>
+            </article>
+            {% else %}
+            <div class="empty-state-card">
+                <strong>No machine/stage records found.</strong>
+                <span>Create a TBM machine first. The system will create First Stage and Second Stage records automatically.</span>
+                <a class="crs-btn crs-btn-primary" href="/machines/create">Create Machine</a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+
+{% endblock %}

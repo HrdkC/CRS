@@ -1,0 +1,48 @@
+47 - P15 Second Stage Phase-Control Master
+
+Decision:
+SUPERSEDED UPDATE 2026-07-05:
+P15 SECOND_STAGE recipe-controlled groups are now CAP_STRIP_SIDE and BT_SIDE only.
+SHAPING_SIDE remains PLC-fixed and must not create recipe phase rows.
+
+P15 SECOND_STAGE phase control shall be created as proper master data, not only simple mapping.
+It follows the first-stage concept, but with three independent phase groups:
+
+1. CAP_STRIP_SIDE - Cap Strip Side
+2. BT_SIDE - B&T Side
+3. SHAPING_SIDE - Shaping Side
+
+Master phase options:
+
+CAP_STRIP_SIDE:
+1. Apply CapStrip
+2. Apply Tread
+
+BT_SIDE:
+1. Apply Belt 1
+2. Apply Belt 2
+3. Turn Table
+4. Apply Tread
+5. Remove Belt Package
+
+SHAPING_SIDE:
+1. Carcass Loader
+2. Preshaping
+3. Stitching Cycle
+4. Remove Cycle
+
+Not recipe data:
+- AUTO START / AUTO STOP
+- Machine status colors
+- Live running status
+- Sec timing / live cycle time
+- Stop / Position options for this second-stage screen unless later confirmed
+
+Implementation:
+- New table: phase_control_group_master
+- Existing phase_control_master gets machine_stage_id, phase_group_code, phase_group_name
+- Existing recipe_phase_control gets phase_group_code, phase_group_name, used
+- Existing first-stage rows are backfilled as MAIN / Phase Control.
+
+Next step after this patch:
+Create P15 SECOND_STAGE DRAFT recipe after actual second-stage parameter definitions are available.

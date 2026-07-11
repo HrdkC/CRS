@@ -1,0 +1,36 @@
+P15 Second Stage PLC 1D Array Import V1
+=======================================
+
+Purpose
+-------
+Build P15 SECOND_STAGE parameter master and first DRAFT recipe from an online PLC 1D array.
+
+Scope
+-----
+- Browse/read a PLC 1D array by tag name.
+- Preview array index/value rows.
+- Create placeholder parameter_definitions for machine_id=5, stage_id=12 or any selected route machine/stage.
+- Create one DRAFT recipe and recipe_parameter_values from current PLC values.
+- Attach existing P15 second-stage 3-group phase-control master rows.
+- Audit action P15_SECOND_STAGE_RECIPE_IMPORTED_FROM_PLC_ARRAY.
+
+Safety
+------
+- Does not write to PLC.
+- Does not release recipe.
+- Refuses to overwrite an existing parameter master for the machine/stage.
+- Parameter names are placeholders and must be renamed before release.
+- Engineering limits must be reviewed before release.
+
+Required prerequisite
+---------------------
+Run P15 second-stage phase master upgrade first:
+python database\upgrade_p15_second_stage_phase_master.py
+
+Main page
+---------
+/plc-array-import/5/12
+
+Notes
+-----
+This is a bridge workflow. PLC array can give array index/value, but it cannot provide professional parameter names or engineering limits. After import, rename placeholders and update min/max/unit before any release.

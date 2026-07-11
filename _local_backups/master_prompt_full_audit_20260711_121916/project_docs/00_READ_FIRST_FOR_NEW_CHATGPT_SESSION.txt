@@ -1,0 +1,326 @@
+READ FIRST FOR NEW CHATGPT SESSION
+==================================
+
+Purpose
+-------
+
+This document is intended for future ChatGPT, Codex, engineers, developers, and future project sessions.
+
+Before working on this project, read:
+
+1. Project ZIP
+2. project_docs folder
+3. This document
+
+Current Project
+---------------
+
+Centralized Recipe Management System
+
+Industry:
+PCR Tyre Building Machines (TBM)
+
+Technology:
+Python
+Flask
+SQLite
+MySQL
+MSSQL (Future)
+pycomm3
+Allen Bradley ControlLogix
+
+Current UI CSS Architecture:
+
+- flask_app/static/css/main.css is only the CSS entry point.
+- Do not add page-specific rules directly to main.css.
+- CSS modules live under flask_app/static/css/modules/.
+- Keep main.css import order unchanged unless all major pages are visually checked.
+- Read project_docs/78_CSS_MODULE_SPLIT_V1.txt before changing CRS styling.
+
+System Bootstrap / Workstation Recovery:
+
+- Use scripts/bootstrap_crs_system.py for grouped database/workstation setup.
+- scripts/create_database.py is a compatibility wrapper for the same bootstrap.
+- Read project_docs/80_SYSTEM_BOOTSTRAP_INITIALIZATION_V1.txt before changing setup or migration logic.
+
+Project Philosophy
+------------------
+
+The system should help operators.
+
+The system should reduce workload.
+
+The system should not create unnecessary operational burden.
+
+The system should provide strong traceability and audit capability.
+
+Core Architecture
+-----------------
+
+TBM Family
+    ↓
+
+Machine
+    ↓
+
+FIRST_STAGE
+
+SECOND_STAGE
+    ↓
+
+PLC
+    ↓
+
+Template
+    ↓
+
+Recipe
+
+Most Important Decisions
+------------------------
+
+Machine Codes
+
+- Globally unique
+- Case insensitive
+
+Examples:
+
+P03 = p03
+
+Only one machine record may exist.
+
+Family changes require editing the machine.
+
+Do not create duplicate machine records.
+
+--------------------------------------------------
+
+Stages
+
+Automatically created.
+
+FIRST_STAGE
+
+SECOND_STAGE
+
+No manual stage creation required.
+
+--------------------------------------------------
+
+Templates
+
+Templates belong to:
+
+Machine + Stage
+
+Not Family.
+
+Not Global.
+
+--------------------------------------------------
+
+Recipes
+
+Recipes store values.
+
+Templates define structure.
+
+--------------------------------------------------
+
+Current Released Recipe Editing
+
+Current RELEASED recipe values are editable with audit for operator ease of use.
+
+Historical released versions remain locked and read-only.
+
+Create Version is used for major revisions, trial work, or controlled recipe development, but it is not mandatory for every small current-production correction.
+
+Required controls:
+
+- Min/max validation
+- Old value / new value audit
+- Changed by
+- Changed at
+- Reason / remarks
+- Machine
+- Stage
+- Source
+
+--------------------------------------------------
+
+Validation
+
+No partial recipe download allowed.
+
+Entire stage recipe must pass validation before download.
+
+--------------------------------------------------
+
+Phase Controls
+
+FIRST_STAGE
+
+- One recipe-controlled phase block.
+- 12 selectable recipe rows.
+- Each row selects from the machine/stage eligible phase master.
+- PLC string case is machine/stage-specific and must be preserved exactly.
+
+SECOND_STAGE
+
+- Cap Strip Side is recipe-controlled.
+- B&T Side is recipe-controlled.
+- Shaping Side is PLC-fixed standard sequence and must not be written as recipe phase-control rows.
+- Do not include Shaping Side in recipe editor selections, template import/export, restore payload, save-from-PLC, comparison, download validation, or recipe audit changes.
+
+Dropdown selection only.
+
+Related note:
+
+- project_docs/79_P15_PHASE_SCOPE_AND_CSS_V93_RELEASE_CANDIDATE_NOTE.txt
+
+--------------------------------------------------
+
+Time Handling
+
+Store:
+UTC
+
+Display:
+IST
+
+--------------------------------------------------
+
+User Roles
+
+Developer/Master
+
+Admin
+
+Engineering
+
+Technology
+
+Production
+
+Operator
+
+Viewer
+
+Current Development Status
+--------------------------
+
+Completed
+
+✓ User Management
+
+✓ Audit Logging
+
+✓ Migration Framework
+
+✓ TBM Family Module
+
+✓ Machine Module
+
+✓ Auto Stage Creation
+
+✓ Documentation Framework
+
+✓ PLC Registry Foundation
+
+Pending
+
+□ PLC Program History
+
+□ PLC Registry Manager
+
+□ PLC Registry UI
+
+□ PLC Connectivity Test
+
+□ pycomm3 Integration
+
+□ PLC Tag Registry
+
+□ Template Management
+
+□ Recipe Management
+
+□ Approval Workflow
+
+□ Download Workflow
+
+□ Upload Workflow
+
+Most Valuable Documents
+-----------------------
+
+16_Pending_Implementation.txt
+
+Purpose:
+
+Explains what still needs to be developed.
+
+--------------------------------------------------
+
+17_Project_Decisions_Log.txt
+
+Purpose:
+
+Explains why architectural decisions were made.
+
+These two files should always be reviewed before starting development.
+
+Reason:
+
+They prevent future redesign mistakes and preserve project knowledge.
+
+Instructions For Future ChatGPT/Codex Sessions
+----------------------------------------------
+
+Read all project_docs files before suggesting architecture changes.
+
+Do not redesign core architecture without strong justification.
+
+Maintain compatibility with:
+
+Machine
++
+Stage
++
+PLC
++
+Template
++
+Recipe
+
+architecture.
+
+Prefer incremental improvements over large redesigns.
+
+Maintain focus on:
+
+Operator usability
+
+Traceability
+
+Industrial reliability
+
+Long-term maintainability
+
+Project Resume Point
+--------------------
+
+Next Planned Development Step:
+
+PLC Program History Table
+
+Then:
+
+PLC Registry Manager
+
+PLC Registry UI
+
+PLC Connectivity Testing
+
+pycomm3 Integration

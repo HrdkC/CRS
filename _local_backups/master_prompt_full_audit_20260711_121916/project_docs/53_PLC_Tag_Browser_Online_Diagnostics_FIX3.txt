@@ -1,0 +1,19 @@
+PLC Tag Browser Online Diagnostics FIX3
+======================================
+
+Purpose
+-------
+Fix PLC Tag Browser returning zero tags even when PLC verification works.
+
+Changes
+-------
+1. Adds robust online tag browsing using LogixDriver with init_tags=True and init_program_tags=True.
+2. Reads driver.tags first, then falls back to get_tag_list(cache=False).
+3. Attempts program-scoped tag browse using actual_program_name/program_revision when supported by pycomm3.
+4. Adds diagnostics and browse source to the browser page.
+5. Adds Diagnostic Browse All button.
+6. Preserves old manual add and 1D array import workflow.
+
+Important
+---------
+If PLC verification passes but total controller tags remains 0, the PLC/driver may not allow enumeration of tags. In that case, manually add the known recipe array tag name and then use it for 1D array import.

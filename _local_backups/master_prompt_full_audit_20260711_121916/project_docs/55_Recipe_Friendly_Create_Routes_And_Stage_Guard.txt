@@ -1,0 +1,35 @@
+CRS Patch 55 - Recipe Friendly Create Routes and Stage Guard
+Date: 2026-06-27
+
+Purpose
+- Replace manual/numeric recipe create URL preference with operator-friendly URLs.
+- Support /recipes/create/P15/Second_Stage and /recipes/P15/Second_Stage.
+- Keep old numeric routes working for backward compatibility by redirecting GET calls to friendly URLs.
+- Prevent unsafe/empty recipe creation when parameter master is missing.
+- Add direct buttons to PLC Tag Browser and PLC 1D Array Import when parameter master is not configured.
+- Improve second-stage recipe creation so grouped phase-control masters are used when present.
+
+Friendly URLs
+- /recipes/P15/Second_Stage
+- /recipes/create/P15/Second_Stage
+- /recipes/P15/First_Stage
+- /recipes/create/P15/First_Stage
+
+Safety Behavior
+- If parameter_definitions count is 0 for machine/stage, Create Recipe page shows a blocked state.
+- It provides buttons to PLC Tag Browser, PLC 1D Array Import, and Excel Import/Export.
+- It does not create an empty recipe.
+
+P15 Second Stage Behavior
+- Existing phase group masters are used when creating recipe phase rows:
+  CAP_STRIP_SIDE
+  BT_SIDE
+- SHAPING_SIDE is PLC-fixed as of 2026-07-05 and must not be created as recipe phase rows.
+- Normal first-stage behavior remains unchanged.
+
+Files Changed
+- flask_app/routes/recipe_routes.py
+- flask_app/templates/recipes/create_recipe.html
+- flask_app/templates/recipes/recipes.html
+- database/recipe_manager.py
+- database/recipe_phase_control_manager.py

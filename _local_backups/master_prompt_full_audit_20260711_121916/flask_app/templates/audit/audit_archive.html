@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}
+Audit Archive / Export
+{% endblock %}
+
+{% block content %}
+
+<section class="audit-archive-pro">
+
+    <div class="audit-archive-hero">
+        <div class="audit-archive-title">
+            <span class="audit-archive-kicker">Admin Archive</span>
+            <h1>Audit Archive / Excel Export</h1>
+            <p>
+                Keep active audit history fast, archive older records, and export traceability data through browser download or approved plant storage.
+            </p>
+        </div>
+        <div class="workbench-actions">
+            <a class="secondary-action" href="/audit-history">Active Audit</a>
+        </div>
+    </div>
+
+    <div class="audit-archive-metrics">
+        <div class="audit-archive-metric">
+            <span>Archived Records</span>
+            <strong>{{ archive_count }}</strong>
+            <small>Historical audit storage</small>
+        </div>
+        <div class="audit-archive-metric">
+            <span>Access</span>
+            <strong>ADMIN</strong>
+            <small>Super user only</small>
+        </div>
+        <div class="audit-archive-metric">
+            <span>Export</span>
+            <strong>Excel</strong>
+            <small>Browser or server path</small>
+        </div>
+        <div class="audit-archive-metric">
+            <span>Storage</span>
+            <strong>Controlled</strong>
+            <small>No uncontrolled app-folder growth</small>
+        </div>
+    </div>
+
+    <div class="audit-archive-main-grid">
+        <div class="audit-archive-card">
+            <div class="audit-archive-card-head">
+                <div>
+                    <h2>Archive / Export Controls</h2>
+                    <p>Select one action. Browser download lets the user choose location through browser settings.</p>
+                </div>
+            </div>
+
+            <form method="POST" action="/audit-archive" class="audit-archive-form" data-confirm="Archive/export may move audit records or create Excel files. Continue?">
+                <div class="audit-archive-form-grid">
+                    <div class="audit-archive-field">
+                        <label for="archive_action">Action</label>
+                        <select id="archive_action" name="archive_action" required>
+                            <option value="download_active_records">Download active audit Excel to this computer</option>
+                            <option value="export_active_records">Save active audit Excel to approved server path</option>
+                            <option value="download_archive_records">Download archived audit Excel to this computer</option>
+                            <option value="export_archive_records">Save archived audit Excel to approved server path</option>
+                            <option value="archive_old_records">Archive old audit records</option>
+                        </select>
+                        <small>Use download for browser Save As. Use server path for approved plant-controlled storage.</small>
+                    </div>
+
+                    <div class="audit-archive-field">
+                        <label for="retention_days">Retention Days</label>
+                        <input type="number" id="retention_days" name="retention_days" min="1" max="3650" value="90">
+                        <small>Used only for Archive old audit records.</small>
+                    </div>
+                </div>
+
+                <div class="audit-archive-form-grid secondary-grid">
+                    <div class="audit-archive-field">
+                        <label for="export_path">Approved Server Export Location</label>
+                        <select id="export_path" name="export_path">
+                            <option value="">Select approved location</option>
+                            {% for location in approved_export_locations %}
+                            <option value="{{ location }}">{{ location }}</option>
+                            {% endfor %}
+                        </select>
+                        <small>Required only for server-save actions or archive with Excel backup.</small>
+                    </div>
+
+                    <div class="audit-archive-field">
+                        <label for="export_excel">Export Excel During Archive</label>
+                        <select id="export_excel" name="export_excel">
+                            <option value="1">Yes - create Excel backup also</option>
+                            <option value="0">No - archive DB rows only</option>
+                        </select>
+                        <small>Used only when action is Archive old audit records.</small>
+                    </div>
+                </div>
+
+                <div class="audit-archive-field">
+                    <label for="reason">Reason / Remarks</label>
+                    <input type="text" id="reason" name="reason" placeholder="Example: Monthly audit archive / maintenance export">
+                    <small>Reason is captured in active audit history.</small>
+                </div>
+
+                <div class="audit-archive-actions">
+                    <button type="submit" class="primary-action">Run Archive / Export</button>
+                    <a class="secondary-action" href="/audit-history?action=AUDIT_EXPORTED">View Export Audit</a>
+                </div>
+            </form>
+        </div>
+
+        <aside class="audit-archive-card">
+            <div class="audit-archive-card-head">
+                <div>
+                    <h3>Operation Guide</h3>
+                    <p>Use the right action for the maintenance job.</p>
+                </div>
+            </div>
+            <div class="audit-archive-guide">
+                <div class="audit-archive-guide-item">
+                    <strong>Download active audit</strong>
+                    <span>Creates Excel and downloads through browser. User chooses save path in browser.</span>
+                </div>
+                <div class="audit-archive-guide-item">
+                    <strong>Save to approved server path</strong>
+                    <span>CRS writes Excel to a configured plant/server folder from the dropdown.</span>
+                </div>
+                <div class="audit-archive-guide-item">
+                    <strong>Archive old audit records</strong>
+                    <span>Moves old rows from active audit table to archive table. Active audit stays fast.</span>
+                </div>
+                <div class="audit-archive-guide-item">
+                    <strong>Export Excel during archive</strong>
+                    <span>Yes creates an Excel backup of archived rows. No only moves rows to archive.</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div class="audit-archive-card">
+        <div class="audit-archive-card-head">
+            <div>
+                <h2>Recent Archive Records</h2>
+                <p>Historical audit data viewable by ADMIN and exportable as Excel.</p>
+            </div>
+            <span class="status-badge status-neutral">{{ archived_history|length }} shown</span>
+        </div>
+        <div class="professional-table-wrap">
+            <table class="professional-table">
+                <thead>
+                    <tr>
+                        <th>Archived At</th>
+                        <th>Original Time</th>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                        <th>Source</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in archived_history %}
+                    <tr>
+                        <td>{{ row.archived_at_ist }}</td>
+                        <td>{{ row.timestamp_ist }}</td>
+                        <td>{{ row.username or '-' }}</td>
+                        <td><span class="status-badge status-neutral">{{ row.role or '-' }}</span></td>
+                        <td><span class="status-badge status-info">{{ row.action or '-' }}</span></td>
+                        <td>{{ row.change_source or '-' }}</td>
+                        <td>{{ row.reason or '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="empty-state">No archived audit records yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="audit-archive-card">
+        <div class="audit-archive-card-head">
+            <div>
+                <h2>Recent Export Jobs</h2>
+                <p>Shows latest Excel export operations and selected storage destination.</p>
+            </div>
+            <span class="status-badge status-neutral">{{ recent_exports|length }} shown</span>
+        </div>
+        <div class="professional-table-wrap">
+            <table class="professional-table">
+                <thead>
+                    <tr>
+                        <th>Created At</th>
+                        <th>Type</th>
+                        <th>Rows</th>
+                        <th>Exported By</th>
+                        <th>Path / File</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in recent_exports %}
+                    <tr>
+                        <td>{{ row.created_at }}</td>
+                        <td><span class="status-badge status-info">{{ row.export_type }}</span></td>
+                        <td>{{ row.row_count }}</td>
+                        <td>{{ row.exported_by }}</td>
+                        <td>{{ row.export_path or row.file_name }}</td>
+                        <td>{{ row.remarks or '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-state">No export jobs yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

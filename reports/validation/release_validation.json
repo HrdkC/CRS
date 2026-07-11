@@ -1,0 +1,188 @@
+{
+  "generated_at_utc": "2026-07-11T11:41:06+00:00",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "Python compilation",
+      "passed": true,
+      "detail": "compileall",
+      "severity": "required"
+    },
+    {
+      "name": "SQLite integrity",
+      "passed": true,
+      "detail": "ok",
+      "severity": "required"
+    },
+    {
+      "name": "SQLite foreign keys",
+      "passed": true,
+      "detail": "0 violation(s)",
+      "severity": "required"
+    },
+    {
+      "name": "CSS module imports",
+      "passed": true,
+      "detail": "all imports resolve",
+      "severity": "required"
+    },
+    {
+      "name": "CSS brace balance",
+      "passed": true,
+      "detail": "balanced",
+      "severity": "required"
+    },
+    {
+      "name": "Jinja template compilation",
+      "passed": true,
+      "detail": "0 error(s)",
+      "severity": "required"
+    },
+    {
+      "name": "Literal template links",
+      "passed": true,
+      "detail": "all literal links resolve",
+      "severity": "required"
+    },
+    {
+      "name": "Unauthenticated GET smoke",
+      "passed": true,
+      "detail": "26 route(s), 0 server error(s)",
+      "severity": "required"
+    },
+    {
+      "name": "Login page",
+      "passed": true,
+      "detail": "200",
+      "severity": "required"
+    },
+    {
+      "name": "CSRF rejection",
+      "passed": true,
+      "detail": "400",
+      "severity": "required"
+    },
+    {
+      "name": "Branded 404",
+      "passed": true,
+      "detail": "404",
+      "severity": "required"
+    },
+    {
+      "name": "Security headers",
+      "passed": true,
+      "detail": "required browser headers present",
+      "severity": "required"
+    }
+  ],
+  "tested_routes": [
+    {
+      "path": "/",
+      "status": 302
+    },
+    {
+      "path": "/active-sessions",
+      "status": 302
+    },
+    {
+      "path": "/audit-archive",
+      "status": 302
+    },
+    {
+      "path": "/audit-history",
+      "status": 302
+    },
+    {
+      "path": "/auto-logout-settings",
+      "status": 302
+    },
+    {
+      "path": "/configuration",
+      "status": 302
+    },
+    {
+      "path": "/engineering-units",
+      "status": 302
+    },
+    {
+      "path": "/engineering-units/create",
+      "status": 302
+    },
+    {
+      "path": "/families",
+      "status": 302
+    },
+    {
+      "path": "/families/create",
+      "status": 302
+    },
+    {
+      "path": "/health/live",
+      "status": 200
+    },
+    {
+      "path": "/health/ready",
+      "status": 200
+    },
+    {
+      "path": "/help",
+      "status": 302
+    },
+    {
+      "path": "/login",
+      "status": 200
+    },
+    {
+      "path": "/machines",
+      "status": 302
+    },
+    {
+      "path": "/machines/create",
+      "status": 302
+    },
+    {
+      "path": "/my-password",
+      "status": 302
+    },
+    {
+      "path": "/phase-controls",
+      "status": 302
+    },
+    {
+      "path": "/plcs",
+      "status": 302
+    },
+    {
+      "path": "/plcs/create",
+      "status": 302
+    },
+    {
+      "path": "/recipes",
+      "status": 302
+    },
+    {
+      "path": "/recipes/import-export",
+      "status": 302
+    },
+    {
+      "path": "/recipes/import-template-excel",
+      "status": 302
+    },
+    {
+      "path": "/stages",
+      "status": 302
+    },
+    {
+      "path": "/users",
+      "status": 302
+    },
+    {
+      "path": "/users/create",
+      "status": 302
+    }
+  ],
+  "template_errors": [],
+  "broken_literal_links": [],
+  "plc_calls_performed": false,
+  "browser_render_performed": false
+}

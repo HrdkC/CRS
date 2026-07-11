@@ -1,0 +1,958 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recipe Editor
+{% endblock %}
+
+{% block content %}
+
+{% set is_current_released =
+    recipe.status == "RELEASED"
+    and recipe.version_usage_status == "CURRENT_RELEASED"
+%}
+
+{% set is_historical =
+    recipe.version_usage_status == "HISTORY_RELEASED"
+%}
+
+<section class="recipe-workbench">
+
+    <div class="workbench-hero">
+
+        <div class="workbench-title">
+
+            <span class="section-kicker">
+                Recipe Workbench
+            </span>
+
+            <h1>
+                {{ recipe.recipe_code }}
+            </h1>
+
+            <p>
+                {{ recipe.recipe_name }}
+                <span>|</span>
+                Version V{{ recipe.version }}
+                <span>|</span>
+                {% if recipe.version_usage_status == "CURRENT_RELEASED" %}
+                    Current Production Version
+                {% elif recipe.version_usage_status == "HISTORY_RELEASED" %}
+                    Historical Released Version
+                {% elif recipe.version_usage_status == "DRAFT_REVISION" %}
+                    Draft Production Revision
+                {% else %}
+                    {{ recipe.version_usage_status }}
+                {% endif %}
+            </p>
+
+        </div>
+
+        <div class="workbench-actions">
+
+            <a
+                class="crs-btn crs-btn-soft"
+                href="{{ machine_stage_url('/recipes', context=recipe) }}"
+            >
+                Recipe List
+            </a>
+
+            {% if recipe.status != "RELEASED" and can_edit_values %}
+
+            <form
+                method="POST"
+                action="/recipe-editor/create-version/{{ recipe.id }}"
+                class="inline-action-form"
+            >
+                {{ csrf_input() }}
+                <button type="submit" class="crs-btn crs-btn-soft">
+                    Snapshot
+                </button>
+            </form>
+
+            {% endif %}
+
+            <a
+                class="crs-btn crs-btn-soft"
+                href="/recipe-editor/versions/{{ recipe.id }}"
+            >
+                Versions
+            </a>
+
+            <a
+                class="crs-btn crs-btn-soft"
+                href="/recipes/{{ recipe.id }}/export-excel"
+            >
+                Export Excel
+            </a>
+
+            <a
+                class="crs-btn crs-btn-soft"
+                href="/recipe-editor/status-history/{{ recipe.id }}"
+            >
+                Status History
+            </a>
+
+            <a
+                class="crs-btn crs-btn-soft"
+                href="/recipes/{{ recipe.id }}/phase-control"
+            >
+                Phase Control
+            </a>
+
+            {% if can_download_recipe %}
+            <a
+                class="crs-btn crs-btn-primary"
+                href="/recipe-editor/download-preparation/{{ recipe.id }}"
+            >
+                PLC Buffer
+            </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="workbench-status-grid">
+
+        <div class="workbench-card status-panel">
+
+            <div class="panel-heading">
+
+                <span>
+                    Recipe State
+                </span>
+
+                <span
+                    class="status-badge
+                    {% if recipe.status == 'RELEASED' %}
+                        status-success
+                    {% elif recipe.status == 'REVIEW' %}
+                        status-warning
+                    {% elif recipe.status == 'APPROVED' %}
+                        status-info
+                    {% else %}
+                        status-neutral
+                    {% endif %}"
+                >
+                    {{ recipe.status }}
+                </span>
+
+            </div>
+
+            {% if recipe.is_test_only is defined and recipe.is_test_only == 1 %}
+
+            <p>
+                This recipe is marked TEST ONLY. It is kept for audit/reference
+                but is blocked from PLC download.
+            </p>
+
+            {% elif is_current_released %}
+
+            <p>
+                {% if can_edit_values %}
+                    Current released recipe values are editable with audit.
+                    Historical versions remain locked.
+                {% else %}
+                    Current released recipe is available for viewing and PLC
+                    buffer operations. Your role cannot edit recipe values.
+                {% endif %}
+            </p>
+
+            {% elif is_historical %}
+
+            <p>
+                {{ edit_lock_reason }}
+            </p>
+
+            <a
+                class="compact-link"
+                href="/recipe-editor/{{ recipe.current_released_recipe_id }}"
+            >
+                Open current production version
+            </a>
+
+            {% elif recipe.status == "DRAFT" and production_revision_source and recipe.current_released_version and recipe.current_released_version > recipe.version %}
+
+            <p>
+                This draft is older than current released V{{ recipe.current_released_version }}.
+                Create changes from the current production version.
+            </p>
+
+            <a
+                class="compact-link"
+                href="/recipe-editor/{{ recipe.current_released_recipe_id }}"
+            >
+                Open current production version
+            </a>
+
+            {% elif recipe.status == "DRAFT" and production_revision_source %}
+
+            <p>
+                Production revision from V{{ production_revision_source.version }}.
+                Release after verifying changes.
+            </p>
+
+            {% if can_approve_recipe %}
+            <form
+                class="inline-action-form release-form"
+                method="POST"
+                action="/recipe-editor/release-production-revision/{{ recipe.id }}"
+            >
+                <input
+                    type="text"
+                    name="remarks"
+                    required
+                    placeholder="Production change reason"
+                >
+
+                <button
+                    class="crs-btn crs-btn-primary"
+                    type="submit"
+                >
+                    Release Change
+                </button>
+            </form>
+            {% endif %}
+
+            {% elif recipe.status == "DRAFT" %}
+
+            <p>
+                Draft recipe is editable. Submit it for review when ready.
+            </p>
+
+            {% if can_submit_review %}
+            <form
+                class="inline-action-form"
+                method="POST"
+                action="/recipe-editor/status/{{ recipe.id }}/REVIEW"
+            >
+                <button
+                    class="crs-btn crs-btn-primary"
+                    type="submit"
+                >
+                    Submit For Review
+                </button>
+            </form>
+            {% endif %}
+
+            {% elif recipe.status == "REVIEW" %}
+
+            <p>
+                Review pending. Approve or reject with remarks.
+            </p>
+
+            {% if can_approve_recipe %}
+            <div class="review-actions">
+
+                <form
+                    class="inline-action-form"
+                    method="POST"
+                    action="/recipe-editor/status/{{ recipe.id }}/APPROVED"
+                >
+                    <button
+                        class="crs-btn crs-btn-success"
+                        type="submit"
+                    >
+                        Approve
+                    </button>
+                </form>
+
+                <form
+                    class="inline-action-form reject-form"
+                    method="POST"
+                    action="/recipe-editor/status/{{ recipe.id }}/DRAFT"
+                >
+                    <input
+                        type="text"
+                        name="remarks"
+                        required
+                        placeholder="Rejection remarks"
+                    >
+
+                    <button
+                        class="crs-btn crs-btn-danger"
+                        type="submit"
+                    >
+                        Reject
+                    </button>
+                </form>
+
+            </div>
+            {% endif %}
+
+            {% endif %}
+
+        </div>
+
+        <div class="workbench-card readiness-panel">
+
+            <div class="panel-heading">
+
+                <span>
+                    PLC Download Readiness
+                </span>
+
+                <span
+                    class="status-badge
+                    {% if download_eligibility.eligible %}
+                        status-success
+                    {% else %}
+                        status-danger
+                    {% endif %}"
+                >
+                    {{ download_eligibility.status }}
+                </span>
+
+            </div>
+
+            {% if download_eligibility.eligible %}
+
+            <p>
+                {% if download_eligibility.warnings %}
+                    {{ download_eligibility.warnings[0] }}
+                {% else %}
+                    Recipe is ready for PLC buffer operations.
+                {% endif %}
+            </p>
+
+            {% else %}
+
+            <p>
+                {% if download_eligibility.errors %}
+                    {{ download_eligibility.errors[0] }}
+                {% else %}
+                    Download is blocked. Recheck recipe validation.
+                {% endif %}
+            </p>
+
+            {% if download_eligibility.errors|length > 1 %}
+
+            <details class="compact-details">
+
+                <summary>
+                    View {{ download_eligibility.errors|length - 1 }} more issue(s)
+                </summary>
+
+                <ul>
+                    {% for error in download_eligibility.errors[1:10] %}
+                    <li>
+                        {{ error }}
+                    </li>
+                    {% endfor %}
+                </ul>
+
+            </details>
+
+            {% endif %}
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="metric-grid">
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Parameters
+            </span>
+
+            <strong>
+                {{ editor_metrics.total }}
+            </strong>
+
+            <small>
+                {{ active_parameter_count }} used
+                {% if inactive_parameter_count %}
+                    | {{ inactive_parameter_count }} not used
+                {% endif %}
+            </small>
+
+        </div>
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Modified
+            </span>
+
+            <strong>
+                {{ editor_metrics.modified }}
+            </strong>
+
+            <div class="meter">
+                <span style="width: {{ editor_metrics.modified_percent }}%;"></span>
+            </div>
+
+            <small>
+                {{ editor_metrics.modified_percent }}% of recipe
+            </small>
+
+        </div>
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Range Health
+            </span>
+
+            <strong>
+                {{ editor_metrics.valid_percent }}%
+            </strong>
+
+            <div class="meter meter-good">
+                <span style="width: {{ editor_metrics.valid_percent }}%;"></span>
+            </div>
+
+            <small>
+                {{ editor_metrics.out_of_range }} out of range
+            </small>
+
+        </div>
+
+        <div class="metric-card">
+
+            <span class="metric-label">
+                Last Change
+            </span>
+
+            <strong class="metric-text">
+                {{ summary.last_changed_by }}
+            </strong>
+
+            <small>
+                {{ summary.last_changed_at }}
+                {% if summary.last_change_source and summary.last_change_source != '-' %}
+                    | {{ summary.last_change_source }}
+                {% endif %}
+            </small>
+
+        </div>
+
+    </div>
+
+    <div class="insight-layout">
+
+        <div class="workbench-card parameter-insights">
+
+            <div class="panel-heading">
+
+                <span>
+                    Parameter Groups
+                </span>
+
+                <span class="muted-text">
+                    Quick visual distribution
+                </span>
+
+            </div>
+
+            <div class="group-grid">
+
+                {% for group in editor_metrics.groups[:6] %}
+
+                <div class="group-card">
+
+                    <div class="group-topline">
+
+                        <strong>
+                            {{ group.name }}
+                        </strong>
+
+                        <span>
+                            {{ group.count }}
+                        </span>
+
+                    </div>
+
+                    <div class="group-meta">
+
+                        <span>
+                            Modified {{ group.modified }}
+                        </span>
+
+                        <span>
+                            Out {{ group.out_of_range }}
+                        </span>
+
+                    </div>
+
+                    <div class="meter meter-compact">
+                        <span style="width: {{ (group.count * 100 / editor_metrics.total) | round(0, 'floor') }}%;"></span>
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        <div class="workbench-card compact-summary">
+
+            <div class="panel-heading">
+
+                <span>
+                    Audit Snapshot
+                </span>
+
+            </div>
+
+            <div class="summary-list">
+
+                <div>
+                    <span>
+                        Below minimum
+                    </span>
+                    <strong>
+                        {{ editor_metrics.below_range }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>
+                        Above maximum
+                    </span>
+                    <strong>
+                        {{ editor_metrics.above_range }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>
+                        Zero values
+                    </span>
+                    <strong>
+                        {{ editor_metrics.zero_values }}
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <form
+        class="workbench-toolbar"
+        method="GET"
+    >
+
+        <label>
+            <span>
+                Search
+            </span>
+            <input
+                type="text"
+                name="search"
+                value="{{ search_text }}"
+                placeholder="Parameter name"
+            >
+        </label>
+
+        <label>
+            <span>
+                Scope
+            </span>
+            <select name="parameter_scope">
+                <option
+                    value="active"
+                    {% if parameter_scope == "active" %}
+                    selected
+                    {% endif %}
+                >
+                    Used Parameters
+                </option>
+                <option
+                    value="inactive"
+                    {% if parameter_scope == "inactive" %}
+                    selected
+                    {% endif %}
+                >
+                    Not Used
+                </option>
+                <option
+                    value="all"
+                    {% if parameter_scope == "all" %}
+                    selected
+                    {% endif %}
+                >
+                    All Template Rows
+                </option>
+            </select>
+        </label>
+
+        <label>
+            <span>
+                Show
+            </span>
+            <select name="modified_only">
+                <option
+                    value="0"
+                    {% if modified_only == "0" %}
+                    selected
+                    {% endif %}
+                >
+                    All Parameters
+                </option>
+                <option
+                    value="1"
+                    {% if modified_only == "1" %}
+                    selected
+                    {% endif %}
+                >
+                    Modified Only
+                </option>
+            </select>
+        </label>
+
+        <label>
+            <span>
+                Jump Tag
+            </span>
+            <input
+                type="number"
+                name="jump_tag"
+                value="{{ jump_tag }}"
+                placeholder="Tag"
+            >
+        </label>
+
+        <label>
+            <span>
+                Page Size
+            </span>
+            <select name="page_size">
+                <option
+                    value="25"
+                    {% if page_size == 25 %}
+                    selected
+                    {% endif %}
+                >
+                    25
+                </option>
+                <option
+                    value="50"
+                    {% if page_size == 50 %}
+                    selected
+                    {% endif %}
+                >
+                    50
+                </option>
+                <option
+                    value="100"
+                    {% if page_size == 100 %}
+                    selected
+                    {% endif %}
+                >
+                    100
+                </option>
+                <option
+                    value="9999"
+                    {% if page_size == 9999 %}
+                    selected
+                    {% endif %}
+                >
+                    All
+                </option>
+            </select>
+        </label>
+
+        <button
+            class="crs-btn crs-btn-primary"
+            type="submit"
+        >
+            Apply
+        </button>
+
+        <a
+            class="crs-btn crs-btn-soft"
+            href="/recipe-editor/{{ recipe.id }}"
+        >
+            Reset
+        </a>
+
+    </form>
+
+    <div class="workbench-card data-workbench">
+
+        <div class="panel-heading table-heading">
+
+            <div>
+
+                <span>
+                    Recipe Parameters
+                </span>
+
+                <p>
+                    Showing {{ shown_from }} to {{ shown_to }} of {{ filtered_parameters }}
+                    filtered parameter(s)
+                </p>
+
+            </div>
+
+            <div class="compact-actions">
+
+            {% if role_can("engineering_config") %}
+
+            <a
+                href="/recipe-editor/{{ recipe.id }}/parameters/bulk-edit"
+                class="crs-btn crs-btn-primary"
+                title="Edit selected recipe parameters in one screen with value and tag detail fields."
+            >
+                Edit All Parameters
+            </a>
+
+            {% endif %}
+
+            {% if can_edit_values %}
+
+            <span class="status-badge status-info">
+                Editable
+            </span>
+
+            {% else %}
+
+            <span class="status-badge status-neutral">
+                View Only
+            </span>
+
+            {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="professional-table-wrap">
+
+            <table class="professional-table parameter-table">
+
+                <thead>
+                    <tr>
+                        <th>Tag</th>
+                        <th>PLC Index</th>
+                        <th>Used</th>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                        <th>Range</th>
+                        <th>Unit</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for row in values %}
+
+                    {% set row_below =
+                        row.min_value is not none
+                        and row.parameter_value < row.min_value
+                    %}
+
+                    {% set row_above =
+                        row.max_value is not none
+                        and row.parameter_value > row.max_value
+                    %}
+
+                    {% set row_used = row.used if row.used is not none else 1 %}
+
+                    <tr
+                        class="{% if row_used|int != 1 %}row-inactive{% elif row_below or row_above %}row-alert{% endif %}"
+                    >
+
+                        <td>
+                            <span class="tag-pill">
+                                {{ row.tag_index }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if row.plc_array_index is not none %}
+                            <span class="tag-pill">
+                                {{ row.plc_array_index }}
+                            </span>
+                            {% else %}
+                            <span class="muted-text">-</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row_used|int == 1 %}
+                            <span class="status-badge status-success">
+                                Used
+                            </span>
+                            {% else %}
+                            <span class="status-badge status-neutral">
+                                Not Used
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <strong>
+                                {{ row.parameter_name }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            <span class="value-cell">
+                                {{ row.parameter_value }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ row.min_value }} to {{ row.max_value }}
+                        </td>
+
+                        <td>
+                            {{ row.unit }}
+                        </td>
+
+                        <td>
+                            {% if row_used|int != 1 %}
+                            <span class="status-badge status-neutral">
+                                Inactive
+                            </span>
+                            {% elif row_below %}
+                            <span class="status-badge status-danger">
+                                Below Min
+                            </span>
+                            {% elif row_above %}
+                            <span class="status-badge status-danger">
+                                Above Max
+                            </span>
+                            {% elif row.is_modified %}
+                            <span class="status-badge status-warning">
+                                Modified
+                            </span>
+                            {% else %}
+                            <span class="status-badge status-success">
+                                OK
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="row-actions">
+
+                                {% if can_edit_values %}
+
+                                <a
+                                    class="row-action open"
+                                    href="/recipe-editor/edit/{{ row.id }}"
+                                >
+                                    Edit
+                                </a>
+
+                                {% endif %}
+
+                                <a
+                                    class="row-action history"
+                                    href="/recipe-editor/history/{{ row.id }}"
+                                >
+                                    History
+                                </a>
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="pagination-bar">
+
+            {% if previous_url %}
+
+            <a
+                class="crs-btn crs-btn-soft"
+                href="{{ previous_url }}"
+            >
+                Previous
+            </a>
+
+            {% endif %}
+
+            <span>
+                Page {{ page }}
+            </span>
+
+            {% if next_url %}
+
+            <a
+                class="crs-btn crs-btn-soft"
+                href="{{ next_url }}"
+            >
+                Next
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="workbench-card phase-workbench">
+
+        <div class="panel-heading">
+
+            <span>
+                Phase Control
+            </span>
+
+            <div class="compact-actions">
+                <span class="muted-text">
+                    {{ phase_control|length }} configured line(s)
+                </span>
+
+                <a
+                    href="/recipes/{{ recipe.id }}/phase-control"
+                    class="crs-btn crs-btn-soft"
+                >
+                    View Phase Control
+                </a>
+            </div>
+
+        </div>
+
+        {% set editor_stage_upper = (recipe.stage_type or "")|upper|replace(" ", "_") %}
+        {% set editor_is_second_stage_phase = (editor_stage_upper in ["SECOND_STAGE", "SECONDSTAGE", "SS"]) or (phase_groups|length >= 3) %}
+        <div class="phase-control-board {% if editor_is_second_stage_phase %}phase-board-ss{% else %}phase-board-fs{% endif %}">
+
+            {% for group in phase_groups %}
+            <section class="phase-control-column">
+                <div class="phase-control-column-header">
+                    <strong>{{ group.name }}</strong>
+                </div>
+
+                {% for row in group.rows %}
+                {% set is_empty_phase = (row.phase_control_name or "")|upper == "EMPTY PHASE" %}
+                <div class="phase-control-display-cell {% if is_empty_phase %}phase-control-display-empty{% endif %}">
+                    <span class="phase-display-line">{{ row.line_no }}</span>
+                    <strong>{{ row.phase_control_name|upper }}</strong>
+                </div>
+                {% endfor %}
+            </section>
+            {% else %}
+            <div class="empty-state">
+                No phase-control rows configured for this recipe.
+            </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

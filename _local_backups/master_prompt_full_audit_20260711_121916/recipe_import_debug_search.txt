@@ -1,0 +1,197 @@
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\audit_archive_manager.py:137: "Recipe Code", "Recipe Version", "Record ID", "Parameter",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\build_p15_second_stage_parameter_master_draft_recipe_v1.py:23: Recipe_Info      optional but recommended
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\build_p15_second_stage_parameter_master_draft_recipe_v1.py:320: def read_recipe_info(wb) -> dict[str, Any]:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\build_p15_second_stage_parameter_master_draft_recipe_v1.py:327: if "Recipe_Info" not in wb.sheetnames:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\build_p15_second_stage_parameter_master_draft_recipe_v1.py:329: ws = wb["Recipe_Info"]
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\build_p15_second_stage_parameter_master_draft_recipe_v1.py:559: "Use a new recipe code/version."
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\build_p15_second_stage_parameter_master_draft_recipe_v1.py:707: parser.add_argument("--recipe-code", default=None, help="Override recipe code")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\build_p15_second_stage_parameter_master_draft_recipe_v1.py:708: parser.add_argument("--recipe-name", default=None, help="Override recipe name")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\build_p15_second_stage_parameter_master_draft_recipe_v1.py:721: info = read_recipe_info(wb)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\build_p15_second_stage_parameter_master_draft_recipe_v1.py:731: print(f"Recipe code      : {recipe_code}")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\build_p15_second_stage_parameter_master_draft_recipe_v1.py:732: print(f"Recipe name      : {recipe_name}")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_1d_array_recipe_builder.py:545: result["errors"].append("Recipe code is required.")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_1d_array_recipe_builder.py:549: result["errors"].append("Recipe name is required.")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_buffer_operation_manager.py:697: label="Write CRS recipe code",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_crs_test_tag_definitions.py:45: "description": "Selected CRS recipe code for operator/PLC visibility.",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_manager.py:362: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_manager.py:370: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_tag_readiness_manager.py:24: "label": "Recipe Code",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_tag_readiness_manager.py:384: "label": "Write recipe code",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\plc_download_tag_readiness_manager.py:387: "value_source": "Recipe code"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:23: RECIPE_INFO_SHEET = "Recipe_Info"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:165: ["Editable fields", "Recipe_Info: Recipe Code / GT Code, Recipe Name, Version, Is Test Only. Parameters: Parameter Value only. Phase_Control: Phase Control Name/ID, Stop Option, Position Option, Sequence No."],
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:176: def _write_recipe_info(wb, recipe=None, target=None, exported_by=None, blank=False):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:177: ws = wb.create_sheet(RecipeExcelImportExportManager.RECIPE_INFO_SHEET)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:186: ["Recipe Code / GT Code", source.get("recipe_code", "")],
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:187: ["Recipe Name", source.get("recipe_name", "")],
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:282: def get_template_targets():
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:435: RecipeExcelImportExportManager._write_recipe_info(wb, recipe=recipe, exported_by=exported_by)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:453: RecipeExcelImportExportManager._write_recipe_info(wb, target=target, exported_by=exported_by, blank=True)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:505: if RecipeExcelImportExportManager.RECIPE_INFO_SHEET not in wb.sheetnames:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:506: raise ValueError("Recipe_Info sheet missing.")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:507: ws = wb[RecipeExcelImportExportManager.RECIPE_INFO_SHEET]
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:582: if label == "recipe name" and next_value not in (None, ""):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:630: Recipe Name / Product Code in top rows, then columns:
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:927: def preview_import(file_path, machine_id=None, stage_id=None):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:942: recipe_code = str(RecipeExcelImportExportManager._info_value(info, "Recipe Code / GT Code", "GT Code", default="") or "").strip().upper()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:943: recipe_name = str(RecipeExcelImportExportManager._info_value(info, "Recipe Name", default="") or "").strip()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:950: errors.append("Recipe Code / GT Code is required in Recipe_Info sheet.")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:952: errors.append("Recipe Name is required in Recipe_Info sheet.")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:1002: errors.append(f"Recipe {recipe_code} V{version} already exists for selected machine/stage. Use a new GT code or version.")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:1166: def import_pending_file(token, imported_by, user_role, reason=None, request_obj=None, machine_id=None, stage_id=None):
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_excel_import_export_manager.py:1168: preview = RecipeExcelImportExportManager.preview_import(file_path, machine_id=machine_id, stage_id=stage_id)
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\database\recipe_manager.py:520: "Recipe Code Already Exists"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_routes.py:298: flash("Recipe code and recipe name are required.", "error")
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_routes.py:352: targets = RecipeExcelImportExportManager.get_template_targets()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_routes.py:456: @app.route("/recipes/import-preview", methods=["POST"])
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_routes.py:474: preview = RecipeExcelImportExportManager.preview_import(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_routes.py:483: targets = RecipeExcelImportExportManager.get_template_targets()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_routes.py:497: @app.route("/recipes/import-confirm", methods=["POST"])
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_routes.py:517: success, recipe_id, preview = RecipeExcelImportExportManager.import_pending_file(
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\routes\recipe_routes.py:532: targets = RecipeExcelImportExportManager.get_template_targets()
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\plc_array_import\import_1d_array.html:100: <strong>Recipe Code</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\plc_array_import\import_1d_array.html:104: <strong>Recipe Name</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\copy_recipe.html:36: <span>New Recipe Code</span>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\copy_recipe.html:40: <span>New Recipe Name</span>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\create_recipe.html:98: <span>Recipe Code</span>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\create_recipe.html:102: <span>Recipe Name</span>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\parameter_history.html:32: <small>Recipe code</small>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipe_details.html:32: <span class="metric-label">Recipe Code</span>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipe_import_export.html:26: <small>Name, GT code, version, parameters, phase control</small>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipe_import_export.html:83: <form method="POST" action="/recipes/import-preview" enctype="multipart/form-data" class="template-upload-form">
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipe_import_export.html:98: <small>Required for legacy plant Excel files that do not contain CRS Recipe_Info sheet.</small>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipe_import_export.html:118: <strong>Recipe_Info</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipe_import_export.html:119: <span>Recipe Code / GT Code, Recipe Name, Version, Is Test Only</span>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipe_import_export.html:137: <div class="workbench-card import-preview-card">
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipe_import_export.html:152: <span class="metric-label">GT Code</span>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipe_import_export.html:196: <form method="POST" action="/recipes/import-confirm" class="import-confirm-form" data-confirm="This will save the uploaded recipe as DRAFT in CRS database. Continue?">
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipes.html:192: <th>Recipe Code</th>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\flask_app\templates\recipes\recipes.html:193: <th>Recipe Name</th>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\database\plc_download_manager.py:244: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\database\plc_download_manager.py:252: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\database\recipe_manager.py:245: "Recipe Code Already Exists"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\copy_recipe.html:33: New Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\copy_recipe.html:47: New Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\create_recipe.html:15: <p>Recipe Code</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\create_recipe.html:23: <p>Recipe Name</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\create_version.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\create_version.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\editor.html:19: Recipe Code :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\editor.html:24: Recipe Name :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\recipe_details.html:16: <strong>Recipe Code:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\recipe_details.html:26: <strong>Recipe Name:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\recipe_phase_control.html:41: <b>Recipe Code</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\recipe_phase_control.html:57: <b>Recipe Name</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\recipes.html:37: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\recipes.html:41: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\versions.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\flask_app\templates\recipes\versions.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\tests\test_plc_write.py:44: "Writing Recipe Code..."
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_20260621_191559\tests\test_plc_write.py:98: "Recipe Code:",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\database\plc_download_manager.py:244: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\database\plc_download_manager.py:252: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\database\recipe_manager.py:245: "Recipe Code Already Exists"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\copy_recipe.html:33: New Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\copy_recipe.html:47: New Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\create_recipe.html:15: <p>Recipe Code</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\create_recipe.html:23: <p>Recipe Name</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\create_version.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\create_version.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\editor.html:19: Recipe Code :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\editor.html:24: Recipe Name :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\recipe_details.html:16: <strong>Recipe Code:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\recipe_details.html:26: <strong>Recipe Name:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\recipe_phase_control.html:41: <b>Recipe Code</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\recipe_phase_control.html:57: <b>Recipe Name</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\recipes.html:37: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\recipes.html:41: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\versions.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\flask_app\templates\recipes\versions.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\tests\test_plc_write.py:44: "Writing Recipe Code..."
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_env_fix_20260621_192624\tests\test_plc_write.py:98: "Recipe Code:",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\database\plc_download_manager.py:244: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\database\plc_download_manager.py:252: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\database\recipe_manager.py:245: "Recipe Code Already Exists"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\copy_recipe.html:33: New Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\copy_recipe.html:47: New Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\create_recipe.html:15: <p>Recipe Code</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\create_recipe.html:23: <p>Recipe Name</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\create_version.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\create_version.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\editor.html:19: Recipe Code :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\editor.html:24: Recipe Name :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\recipe_details.html:16: <strong>Recipe Code:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\recipe_details.html:26: <strong>Recipe Name:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\recipe_phase_control.html:41: <b>Recipe Code</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\recipe_phase_control.html:57: <b>Recipe Name</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\recipes.html:37: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\recipes.html:41: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\versions.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\flask_app\templates\recipes\versions.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\tests\test_plc_write.py:44: "Writing Recipe Code..."
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_released_recipe_protection_20260621_202001\tests\test_plc_write.py:98: "Recipe Code:",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\database\plc_download_manager.py:244: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\database\plc_download_manager.py:252: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\database\recipe_manager.py:245: "Recipe Code Already Exists"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\copy_recipe.html:33: New Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\copy_recipe.html:47: New Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\create_recipe.html:15: <p>Recipe Code</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\create_recipe.html:23: <p>Recipe Name</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\create_version.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\create_version.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\editor.html:19: Recipe Code :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\editor.html:24: Recipe Name :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\recipe_details.html:16: <strong>Recipe Code:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\recipe_details.html:26: <strong>Recipe Name:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\recipe_phase_control.html:41: <b>Recipe Code</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\recipe_phase_control.html:57: <b>Recipe Name</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\recipes.html:37: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\recipes.html:41: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\versions.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\flask_app\templates\recipes\versions.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\tests\test_plc_write.py:44: "Writing Recipe Code..."
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_fix_20260621_195310\tests\test_plc_write.py:98: "Recipe Code:",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\database\plc_download_manager.py:244: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\database\plc_download_manager.py:252: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\database\recipe_manager.py:245: "Recipe Code Already Exists"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\copy_recipe.html:33: New Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\copy_recipe.html:47: New Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\create_recipe.html:15: <p>Recipe Code</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\create_recipe.html:23: <p>Recipe Name</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\create_version.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\create_version.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\editor.html:19: Recipe Code :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\editor.html:24: Recipe Name :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\recipe_details.html:16: <strong>Recipe Code:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\recipe_details.html:26: <strong>Recipe Name:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\recipe_phase_control.html:41: <b>Recipe Code</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\recipe_phase_control.html:57: <b>Recipe Name</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\recipes.html:37: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\recipes.html:41: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\versions.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\flask_app\templates\recipes\versions.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\tests\test_plc_write.py:44: "Writing Recipe Code..."
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\local_backups\CRS_backup_before_workflow_observation_fix_20260621_200733\tests\test_plc_write.py:98: "Recipe Code:",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\database\plc_download_manager.py:244: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\database\plc_download_manager.py:252: "Recipe Code Write Failed"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\database\recipe_manager.py:245: "Recipe Code Already Exists"
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\copy_recipe.html:33: New Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\copy_recipe.html:47: New Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\create_recipe.html:15: <p>Recipe Code</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\create_recipe.html:23: <p>Recipe Name</p>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\create_version.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\create_version.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\editor.html:19: Recipe Code :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\editor.html:24: Recipe Name :
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\recipe_details.html:16: <strong>Recipe Code:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\recipe_details.html:26: <strong>Recipe Name:</strong>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\recipe_phase_control.html:41: <b>Recipe Code</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\recipe_phase_control.html:57: <b>Recipe Name</b>
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\recipes.html:37: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\recipes.html:41: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\versions.html:33: Recipe Code
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\flask_app\templates\recipes\versions.html:53: Recipe Name
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\tests\test_plc_write.py:44: "Writing Recipe Code..."
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\study_exports\latest_local_backup\tests\test_plc_write.py:98: "Recipe Code:",
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\tests\test_plc_write.py:44: "Writing Recipe Code..."
+C:\Users\Administrator\Desktop\Centralized_Recipe_System\tests\test_plc_write.py:98: "Recipe Code:",

@@ -1,0 +1,45 @@
+CRS V6.8 - Recipe Import + Bulk Parameter Edit Safety Fix
+=========================================================
+
+Scope
+-----
+Patch-only update for recipe Excel import and bulk parameter edit usability/safety.
+
+Changes
+-------
+1. Bulk Parameter Edit:
+   - PLC Array Index is now read-only on bulk edit screen.
+   - Backend ignores PLC index edits from the form to prevent duplicate PLC mapping.
+   - If user enters values but forgets to select rows, the page no longer redirects/clears entered values.
+   - If change reason is missing, entered values are preserved.
+   - Editing any row input auto-selects that row.
+
+2. Recipe Excel Import:
+   - CRS import preview now supports the legacy plant Excel format:
+     Name, Unit, Class, Old Value, Value, Max. Value, Min. Value, Default Value, Tag Index, Memo, Status.
+   - Legacy import maps by Tag Index only.
+   - PLC mapping fields are not edited by Excel import: tag_index, plc_array_index, parameter_definition_id.
+   - Non-PLC parameter details can be updated from Excel: parameter name, class, unit, datatype, min, max, default, memo, used.
+   - Upload form now has optional target machine/stage selection. It is required for legacy Excel files without Recipe_Info sheet.
+   - Stale Parameter Definition ID in Excel no longer overrides Tag Index mapping.
+   - Missing parameter rows are filled with master default values instead of blocking import, keeping the recipe PLC mapping complete.
+   - P15 Second Stage imports use 18 grouped phase-control rows when the Excel file has no valid grouped phase-control data.
+   - New blank import templates for Second Stage now contain the 18 grouped phase-control rows.
+
+Validation
+----------
+- Python compile check passed for changed Python files.
+- Jinja parse check passed for changed templates.
+- Tested uploaded legacy Import.xlsx against P15/SS target: preview passes and actual dry-run import creates 150 parameter values and 18 phase-control rows.
+
+Files
+-----
+- database/recipe_excel_import_export_manager.py
+- flask_app/routes/recipe_routes.py
+- flask_app/routes/recipe_editor_routes.py
+- flask_app/templates/recipes/recipe_import_export.html
+- flask_app/templates/recipes/bulk_edit_parameters.html
+
+Notes
+-----
+This patch does not include database, venv, .git, cache, logs, or unrelated files.
