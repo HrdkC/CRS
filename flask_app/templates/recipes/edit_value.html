@@ -202,7 +202,7 @@ Edit Recipe Parameter
                     class="crs-btn crs-btn-primary"
                     type="submit"
                     {% if is_current_released_edit %}
-                    onclick="return confirm('You are changing the CURRENT RELEASED production recipe. Old value, new value, user, role, timestamp, and reason will be audited. Continue?');"
+                    data-confirm="You are changing the CURRENT RELEASED production recipe. Old value, new value, user, role, timestamp, and reason will be audited. Continue?"
                     {% endif %}
                 >
                     Save Parameter

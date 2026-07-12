@@ -1,0 +1,59 @@
+/* Progressive enhancement and compact async feedback. */
+
+.crs-request-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 28px;
+    color: var(--ink-700);
+    font-size: 11px;
+    font-weight: 800;
+    opacity: 0;
+    transition: opacity 0.16s ease;
+}
+
+.crs-request-status::before {
+    width: 13px;
+    height: 13px;
+    border: 2px solid #d8c9f1;
+    border-top-color: var(--primary-700);
+    border-radius: 50%;
+    content: "";
+    animation: crs-request-spin 0.72s linear infinite;
+}
+
+.crs-request-status.htmx-request,
+.htmx-request .crs-request-status,
+.crs-request-status.is-visible {
+    opacity: 1;
+}
+
+.crs-request-status.is-complete::before {
+    border: 0;
+    color: #16834b;
+    content: "OK";
+    font-size: 9px;
+    animation: none;
+}
+
+.audit-history-workbench .audit-metric-grid-pro {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.audit-filter-header-pro .crs-request-status {
+    margin-left: auto;
+}
+
+@keyframes crs-request-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .crs-request-status::before { animation: none; }
+}
+
+@media (max-width: 760px) {
+    .audit-history-workbench .audit-metric-grid-pro {
+        grid-template-columns: 1fr;
+    }
+}

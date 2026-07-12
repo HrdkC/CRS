@@ -17,6 +17,9 @@ Configuration Center
         <div class="workbench-actions">
             <a class="crs-btn crs-btn-soft" href="/machines/create" title="Create a TBM. First Stage and Second Stage are created automatically.">Create Machine</a>
             <a class="crs-btn crs-btn-soft" href="/plcs/create" title="Register PLC details for a machine/stage.">Create PLC</a>
+            {% if is_admin() %}
+            <a class="crs-btn crs-btn-soft" href="/administration/database" title="Test and securely save MySQL deployment connectivity.">Database</a>
+            {% endif %}
             <a class="crs-btn crs-btn-primary" href="/recipes/import-export" title="Download or import approved CRS Excel recipe templates.">Recipe Excel</a>
         </div>
     </section>

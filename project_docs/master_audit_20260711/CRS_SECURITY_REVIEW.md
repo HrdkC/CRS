@@ -20,7 +20,7 @@ Review covered authentication, authorization indicators, sessions, CSRF, headers
 
 ## Remaining Risks
 
-- CSP still requires `unsafe-inline` because many templates contain inline code.
+- Script CSP no longer requires `unsafe-inline`; page behavior is loaded from same-origin static JavaScript modules. Inline style compatibility remains temporarily enabled while legacy page styles are modularized.
 - Process-local login throttling is weaker with multiple workers.
 - Security route inventory contains delegated wrappers requiring explicit role matrix tests.
 - No independent DAST, SAST or penetration test has been completed.

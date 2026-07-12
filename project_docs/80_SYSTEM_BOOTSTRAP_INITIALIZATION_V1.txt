@@ -149,6 +149,14 @@ All default or recovery passwords must be changed before plant use.
 Future MySQL/MSSQL Work
 -----------------------
 
+MySQL connectivity and protected profile storage are available from:
+
+    Administration -> Database Configuration
+
+See:
+
+    project_docs/81_MYSQL_DATABASE_CONFIGURATION_GUI_V1.txt
+
 Required before production MySQL/MSSQL bootstrap:
 
 1. Move all active sqlite3 managers to SQLAlchemy session helpers.

@@ -11,6 +11,7 @@ from config.settings import (
     SECRET_KEY_FALLBACKS,
     SESSION_TIMEOUT_MINUTES,
     TRUSTED_HOSTS,
+    USING_DEVELOPMENT_SECRET,
 )
 from flask_app.security.security_headers import secure_cookie_enabled
 
@@ -24,7 +25,7 @@ def create_app():
 
     if (
         DEPLOYMENT_MODE == "production"
-        and SECRET_KEY == "crs_secret_key"
+        and USING_DEVELOPMENT_SECRET
     ):
         raise RuntimeError(
             "CRS_SECRET_KEY must be configured before production deployment."
@@ -72,7 +73,7 @@ def create_app():
         PREFERRED_URL_SCHEME="https" if cookie_secure else "http",
     )
 
-    if SECRET_KEY == "crs_secret_key":
+    if USING_DEVELOPMENT_SECRET:
         print(
             "WARNING: CRS_SECRET_KEY is using the development fallback. "
             "Set CRS_SECRET_KEY before plant deployment."

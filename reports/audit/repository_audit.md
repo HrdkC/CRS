@@ -1,15 +1,15 @@
 # CRS Repository Audit
 
-Generated UTC: `2026-07-11T11:41:04+00:00`
+Generated UTC: `2026-07-11T12:19:11+00:00`
 
 ## Inventory
 
-- Repository files: 2793
-- Flask route declarations: 111
-- Templates: 61
-- CSS files: 24
+- Repository files: 2800
+- Flask route declarations: 115
+- Templates: 62
+- CSS files: 25
 - JavaScript files: 1
-- Test scripts: 152
+- Test scripts: 153
 - Database tables: 40
 - Database indexes: 16
 

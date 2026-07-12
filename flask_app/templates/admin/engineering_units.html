@@ -87,7 +87,7 @@ Engineering Units
                                     method="POST"
                                     action="/engineering-units/{{ unit.id }}/disable"
                                     class="row-action-form"
-                                    onsubmit="return confirm('Disable this engineering unit?')"
+                                    data-confirm="Disable this engineering unit?"
                                 >
                                     {{ csrf_input() }}
                                     <button type="submit" class="row-action disable">Disable</button>
@@ -97,7 +97,7 @@ Engineering Units
                                     method="POST"
                                     action="/engineering-units/{{ unit.id }}/enable"
                                     class="row-action-form"
-                                    onsubmit="return confirm('Enable this engineering unit?')"
+                                    data-confirm="Enable this engineering unit?"
                                 >
                                     {{ csrf_input() }}
                                     <button type="submit" class="row-action enable">Enable</button>

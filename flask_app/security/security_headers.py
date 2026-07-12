@@ -22,7 +22,7 @@ def register_security_headers(app):
             "form-action 'self'; "
             "img-src 'self' data:; "
             "style-src 'self' 'unsafe-inline'; "
-            "script-src 'self' 'unsafe-inline'; "
+            "script-src 'self'; "
             "connect-src 'self'"
         ),
     )

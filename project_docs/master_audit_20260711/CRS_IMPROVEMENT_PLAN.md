@@ -39,6 +39,8 @@ Exit: MySQL switch requires configuration and migration only, not feature code c
 
 ## Gate 5 - UI and Analytics
 
+- Treat `main.css` as the ordered source manifest and run `scripts/build_css_bundle.py` after CSS module changes.
+- Extend progressive HTML updates only after the Audit History pilot passes real-browser acceptance.
 - Complete browser evidence at 1920x1080, 1366x768, tablet and mobile widths.
 - Prioritize task status, exceptions and trend analysis over decorative visualization.
 - Add analytics only after outcome/quality labels are governed and traceable.

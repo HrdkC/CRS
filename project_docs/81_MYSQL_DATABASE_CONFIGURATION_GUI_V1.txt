@@ -1,0 +1,72 @@
+MYSQL DATABASE CONFIGURATION GUI V1
+===================================
+
+Purpose
+-------
+
+Provide an ADMIN-only page for testing MySQL connectivity and securely saving
+the connection profile needed during workstation replacement or deployment.
+
+Page
+----
+
+    Administration -> Database Configuration
+    /administration/database
+
+The page supports:
+
+1. MySQL host/IP and port.
+2. Existing database name.
+3. MySQL application username and password.
+4. Required, Verify Identity, or disabled TLS modes.
+5. Five-second connection/read/write timeouts.
+6. Test Connection without saving.
+7. Test and Save Securely with mandatory change reason.
+8. Re-test of the saved profile without re-entering the password.
+
+Secret Storage
+--------------
+
+The password is encrypted with Windows Data Protection API (DPAPI) for the
+Windows account that saves the profile. Plaintext passwords are not written to
+the profile, audit log, application log, HTML, or command output.
+
+Local profile path:
+
+    instance/database_profile.json
+
+This path is excluded from Git. On a replacement PC, enter the credentials
+again because Windows DPAPI ciphertext is intentionally not portable to another
+computer/account.
+
+CLI Test
+--------
+
+From the project root:
+
+    venv\Scripts\python.exe scripts\test_saved_database_profile.py
+
+Runtime Safety Gate
+-------------------
+
+The page tests the real MySQL server and database. It does not switch the live
+CRS runtime yet. The current project still contains managers that use the
+SQLite-only database/database.py adapter and SQLite SQL syntax.
+
+Automatic activation now would create a dangerous split state where some
+features write MySQL and other features continue writing database/recipe.db.
+Runtime activation therefore remains blocked until:
+
+1. All database managers use SQLAlchemy repositories/sessions.
+2. SQLite-specific SQL is replaced by database-independent expressions.
+3. Alembic migrations create and upgrade the complete schema.
+4. Empty MySQL bootstrap is validated.
+5. SQLite-to-MySQL data migration and row-count reconciliation pass.
+6. Recipe, audit, user, phase-control, and PLC operation acceptance tests pass.
+
+Audit
+-----
+
+Connection tests and profile saves write sanitized audit events to the current
+CRS audit database when it is available. Passwords are never included.
+

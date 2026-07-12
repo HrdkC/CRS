@@ -2890,19 +2890,19 @@
   "files": {
     "by_suffix": {
       ".bat": 2,
-      ".css": 30,
+      ".css": 31,
       ".csv": 2,
       ".db": 11,
-      ".html": 337,
+      ".html": 338,
       ".js": 7,
       ".json": 16,
       ".l5x": 1,
       ".log": 9,
       ".md": 34,
       ".png": 7,
-      ".py": 2006,
+      ".py": 2010,
       ".tag": 4,
-      ".txt": 250,
+      ".txt": 251,
       ".webp": 10,
       ".xlsx": 23,
       ".zip": 26,
@@ -2933,6 +2933,7 @@
       "flask_app/templates/auth/login.html",
       "flask_app/templates/auth/my_password.html",
       "flask_app/templates/base.html",
+      "flask_app/templates/configuration/database_configuration.html",
       "flask_app/templates/configuration/index.html",
       "flask_app/templates/configuration/stage_readiness.html",
       "flask_app/templates/dashboard/dashboard.html",
@@ -3314,7 +3315,8 @@
       "flask_app/static/css/modules/20_audit_tables.css",
       "flask_app/static/css/modules/21_header_alignment.css",
       "flask_app/static/css/modules/22_accessibility_preferences.css",
-      "flask_app/static/css/modules/23_modern_professional_polish.css"
+      "flask_app/static/css/modules/23_modern_professional_polish.css",
+      "flask_app/static/css/modules/24_database_configuration.css"
     ],
     "templates": [
       "flask_app/templates/admin/create_engineering_unit.html",
@@ -3325,6 +3327,7 @@
       "flask_app/templates/auth/login.html",
       "flask_app/templates/auth/my_password.html",
       "flask_app/templates/base.html",
+      "flask_app/templates/configuration/database_configuration.html",
       "flask_app/templates/configuration/index.html",
       "flask_app/templates/configuration/stage_readiness.html",
       "flask_app/templates/dashboard/dashboard.html",
@@ -3400,6 +3403,7 @@
       "tests/migrate_tbm_family_created_by.py",
       "tests/safe/conftest.py",
       "tests/safe/test_bootstrap_cli.py",
+      "tests/safe/test_database_configuration.py",
       "tests/safe/test_health_routes.py",
       "tests/safe/test_plc_registry_validation.py",
       "tests/safe/test_security_baseline.py",
@@ -3533,9 +3537,9 @@
       "tests/test_write_array.py",
       "tests/tests/test_plc_tags.py"
     ],
-    "total_files": 2793
+    "total_files": 2800
   },
-  "generated_at_utc": "2026-07-11T11:41:04+00:00",
+  "generated_at_utc": "2026-07-11T12:19:11+00:00",
   "project_root": "C:\\Users\\Administrator\\Desktop\\Centralized_Recipe_System",
   "review_queues": {
     "possible_state_change_get_routes": [
@@ -3907,6 +3911,72 @@
       "path": "/",
       "possible_state_change_on_get": false,
       "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "database_configuration",
+      "file": "flask_app/routes/database_configuration_routes.py",
+      "has_auth_indicator": true,
+      "line": 86,
+      "methods": [
+        "GET"
+      ],
+      "path": "/administration/database",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": []
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "database_configuration_test",
+      "file": "flask_app/routes/database_configuration_routes.py",
+      "has_auth_indicator": true,
+      "line": 101,
+      "methods": [
+        "POST"
+      ],
+      "path": "/administration/database/test",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "database_configuration_save",
+      "file": "flask_app/routes/database_configuration_routes.py",
+      "has_auth_indicator": true,
+      "line": 125,
+      "methods": [
+        "POST"
+      ],
+      "path": "/administration/database/save",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
+    },
+    {
+      "auth_markers": [
+        "_admin_required"
+      ],
+      "endpoint_function": "database_configuration_test_saved",
+      "file": "flask_app/routes/database_configuration_routes.py",
+      "has_auth_indicator": true,
+      "line": 171,
+      "methods": [
+        "POST"
+      ],
+      "path": "/administration/database/test-saved",
+      "possible_state_change_on_get": false,
+      "state_changing_methods": [
+        "POST"
+      ]
     },
     {
       "auth_markers": [
@@ -5567,7 +5637,7 @@
   ],
   "summary": {
     "possible_state_change_get_routes": 5,
-    "route_count": 111,
+    "route_count": 115,
     "route_parse_errors": 0,
     "state_routes_without_local_auth_indicator": 7
   }

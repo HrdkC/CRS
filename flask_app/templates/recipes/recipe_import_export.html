@@ -56,7 +56,7 @@ Recipe Import / Export
             <form method="GET" action="/recipes/import-template-excel" class="template-download-form">
                 <label class="import-field">
                     <span>Machine / Stage</span>
-                    <select name="target" required onchange="if(this.value){const p=this.value.split('|'); this.form.machine_id.value=p[0]; this.form.stage_id.value=p[1];}">
+                    <select name="target" required data-target-sync>
                         <option value="">Select target</option>
                         {% for target in targets %}
                         <option value="{{ target.machine_id }}|{{ target.stage_id }}">
@@ -86,7 +86,6 @@ Recipe Import / Export
                 enctype="multipart/form-data"
                 class="template-upload-form"
                 id="recipe-import-mode-form"
-                onsubmit="const s=this.querySelector('select[name=target]'); if(s && s.value){const p=s.value.split('|'); this.machine_id.value=p[0]; this.stage_id.value=p[1];}"
             >
                 <label class="import-field import-field-full import-file-field">
                     <span>Recipe Excel File</span>
@@ -152,7 +151,7 @@ Recipe Import / Export
                         <span>Target Machine / Stage</span>
                         <select
                             name="target"
-                            onchange="if(this.value){const p=this.value.split('|'); this.form.machine_id.value=p[0]; this.form.stage_id.value=p[1];}"
+                            data-target-sync
                         >
                             <option value="">Select target for new recipe import</option>
                             {% for target in targets %}
@@ -339,39 +338,8 @@ Recipe Import / Export
 
 </section>
 
-<script>
-(function () {
-    const form = document.getElementById('recipe-import-mode-form');
-    if (!form) return;
+{% endblock %}
 
-    const createFields = form.querySelector('[data-import-fields="create_new"]');
-    const updateFields = form.querySelector('[data-import-fields="update_existing"]');
-    const recipeCode = form.querySelector('input[name="recipe_code"]');
-    const recipeName = form.querySelector('input[name="recipe_name"]');
-    const target = form.querySelector('select[name="target"]');
-    const existingRecipe = form.querySelector('select[name="existing_recipe_id"]');
-
-    function selectedMode() {
-        const checked = form.querySelector('input[name="import_mode"]:checked');
-        return checked ? checked.value : 'create_new';
-    }
-
-    function syncMode() {
-        const mode = selectedMode();
-        const isUpdate = mode === 'update_existing';
-        if (createFields) createFields.style.display = isUpdate ? 'none' : '';
-        if (updateFields) updateFields.style.display = isUpdate ? '' : 'none';
-        if (recipeCode) recipeCode.required = !isUpdate;
-        if (recipeName) recipeName.required = !isUpdate;
-        if (target) target.required = !isUpdate;
-        if (existingRecipe) existingRecipe.required = isUpdate;
-    }
-
-    form.querySelectorAll('input[name="import_mode"]').forEach(function (input) {
-        input.addEventListener('change', syncMode);
-    });
-    syncMode();
-})();
-</script>
-
+{% block page_scripts %}
+<script src="{{ url_for('static', filename='js/pages/recipe-import-export.js') }}"></script>
 {% endblock %}

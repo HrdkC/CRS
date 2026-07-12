@@ -22,6 +22,7 @@ debug.log
 
 # Local backup folders
 local_backups/
+_local_backups/
 study_exports/latest_local_backup/
 
 # Python cache
@@ -38,3 +39,5 @@ database/recipe.db
 
 # Secrets
 .env
+instance/database_profile.json
+instance/crs_secret_key

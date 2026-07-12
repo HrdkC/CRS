@@ -32,11 +32,32 @@ SESSION_TIMEOUT_MINUTES = int(
     )
 )
 
-# Development fallback only. Production should set CRS_SECRET_KEY.
-SECRET_KEY = os.getenv(
-    "CRS_SECRET_KEY",
-    "crs_secret_key"
+SECRET_KEY_FILE = Path(
+    os.getenv(
+        "CRS_SECRET_KEY_FILE",
+        str(PROJECT_ROOT / "instance" / "crs_secret_key"),
+    )
 )
+
+
+def _load_secret_key():
+    environment_value = os.getenv("CRS_SECRET_KEY", "").strip()
+    if environment_value:
+        return environment_value, "environment"
+
+    try:
+        file_value = SECRET_KEY_FILE.read_text(encoding="utf-8").strip()
+    except OSError:
+        file_value = ""
+
+    if file_value:
+        return file_value, "file"
+
+    return "crs_secret_key", "development-fallback"
+
+
+SECRET_KEY, SECRET_KEY_SOURCE = _load_secret_key()
+USING_DEVELOPMENT_SECRET = SECRET_KEY_SOURCE == "development-fallback"
 
 
 def _csv_setting(name):

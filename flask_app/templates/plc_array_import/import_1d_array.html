@@ -89,7 +89,7 @@
             <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
                 <span class="muted-text"><strong>Quick select:</strong></span>
                 {% for tag in standard_array_tags %}
-                <button class="btn btn-secondary" type="button" onclick="document.getElementById('plc-array-tag-name').value='{{ tag }}'; document.getElementById('plc-array-start-index').value='0'; document.getElementById('plc-array-end-index').value='149';">
+                <button class="btn btn-secondary" type="button" data-plc-array-quick-select="{{ tag }}" data-start-index="0" data-end-index="149">
                     {{ tag }} REAL[150]
                 </button>
                 {% endfor %}
@@ -142,7 +142,7 @@
             <div style="display:flex; gap:10px; align-items:center;">
                 <button class="btn btn-primary" type="submit" name="action" value="preview">Preview PLC Array</button>
                 <button class="btn btn-warning" type="submit" name="action" value="build"
-                        onclick="return confirm('Create selected machine/stage parameter master and DRAFT recipe from this PLC array? This will be audited.');">
+                        data-confirm="Create selected machine/stage parameter master and DRAFT recipe from this PLC array? This will be audited.">
                     Build Parameter Master + Draft Recipe
                 </button>
             </div>

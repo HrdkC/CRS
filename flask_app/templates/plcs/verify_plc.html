@@ -90,7 +90,7 @@ PLC Verification
             <span class="status-badge status-warning">ADMIN / ENGINEERING</span>
         </div>
 
-        <form method="POST" action="/plcs/verify/{{ plc.id }}/sync-expected" class="professional-form" onsubmit="return confirm('Update CRS expected PLC details from the currently verified online PLC? This action will be audited.');">
+        <form method="POST" action="/plcs/verify/{{ plc.id }}/sync-expected" class="professional-form" data-confirm="Update CRS expected PLC details from the currently verified online PLC? This action will be audited.">
             <div class="summary-list result-summary">
                 <div><span>Processor will become</span><strong>{{ result.actual_processor or '-' }}</strong></div>
                 <div><span>Firmware will become</span><strong>{{ result.actual_firmware or '-' }}</strong></div>

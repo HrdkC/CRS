@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Database Configuration{% endblock %}
+
+{% block content %}
+<div class="recipe-workbench database-configuration-workbench">
+    <section class="workbench-hero database-configuration-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Administration</span>
+            <h1>Database Configuration</h1>
+            <p>Test MySQL connectivity and save a Windows-protected deployment profile.</p>
+        </div>
+        <div class="workbench-actions">
+            <a class="crs-btn crs-btn-soft" href="/configuration">Configuration Center</a>
+        </div>
+    </section>
+
+    <section class="database-status-grid">
+        <article class="metric-card">
+            <span class="metric-label">Current Runtime</span>
+            <strong>{{ runtime_status.current_driver|upper }}</strong>
+            <small>{{ runtime_status.current_database }}</small>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">MySQL Driver</span>
+            <strong>{{ "READY" if runtime_status.mysql_driver_available else "MISSING" }}</strong>
+            <small>PyMySQL connectivity provider</small>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Saved Profile</span>
+            <strong>{{ "SAVED" if profile and not profile.profile_error else "NOT SAVED" }}</strong>
+            <small>Windows user-bound DPAPI protection</small>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Runtime Activation</span>
+            <strong class="database-blocked-text">BLOCKED</strong>
+            <small>Pending complete SQLAlchemy migration</small>
+        </article>
+    </section>
+
+    {% if test_result %}
+    <section class="database-test-result database-test-result-{{ 'success' if test_result.ok else 'failed' }}" aria-live="polite">
+        <div>
+            <span class="status-badge status-{{ 'ready' if test_result.ok else 'blocked' }}">
+                {{ "CONNECTION PASSED" if test_result.ok else "CONNECTION FAILED" }}
+            </span>
+            <strong>{{ test_result.message if test_result.ok else test_result.errors|join(' ') }}</strong>
+        </div>
+        {% if test_result.ok %}
+        <dl class="database-result-details">
+            <div><dt>Server</dt><dd>{{ test_result.server_version }}</dd></div>
+            <div><dt>Database</dt><dd>{{ test_result.database_name }}</dd></div>
+            <div><dt>Account</dt><dd>{{ test_result.authenticated_user }}</dd></div>
+            <div><dt>Response</dt><dd>{{ test_result.elapsed_ms }} ms</dd></div>
+        </dl>
+        {% elif test_result.technical_detail %}
+        <details>
+            <summary>Technical detail</summary>
+            <pre>{{ test_result.technical_detail }}</pre>
+        </details>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <section class="database-configuration-grid">
+        <article class="workbench-card database-profile-card">
+            <div class="table-heading">
+                <div>
+                    <strong>MySQL Connection Profile</strong>
+                    <p>Password is encrypted locally and is never displayed after save.</p>
+                </div>
+                <span class="status-badge status-info">MYSQL 8+</span>
+            </div>
+
+            <form method="POST" class="database-profile-form">
+                {{ csrf_input() }}
+                <div class="database-form-grid">
+                    <label class="database-field database-field-wide">
+                        <span>Server Host or IP</span>
+                        <input name="host" value="{{ form_values.host|default('') }}" maxlength="253" required placeholder="Example: 172.20.10.25">
+                    </label>
+                    <label class="database-field">
+                        <span>Port</span>
+                        <input name="port" type="number" min="1" max="65535" value="{{ form_values.port|default(3306) }}" required>
+                    </label>
+                    <label class="database-field">
+                        <span>Database</span>
+                        <input name="database" value="{{ form_values.database|default('crs_production') }}" maxlength="64" pattern="[A-Za-z0-9_]+" required>
+                    </label>
+                    <label class="database-field">
+                        <span>Username</span>
+                        <input name="username" value="{{ form_values.username|default('') }}" maxlength="128" autocomplete="username" required>
+                    </label>
+                    <label class="database-field">
+                        <span>Password</span>
+                        <input name="password" type="password" autocomplete="new-password" placeholder="{{ 'Leave blank to reuse saved password' if profile and not profile.profile_error else 'Enter MySQL password' }}">
+                    </label>
+                    <label class="database-field">
+                        <span>TLS Mode</span>
+                        <select name="ssl_mode" required>
+                            {% set selected_ssl = form_values.ssl_mode|default('required') %}
+                            <option value="required" {% if selected_ssl == 'required' %}selected{% endif %}>Required</option>
+                            <option value="verify_identity" {% if selected_ssl == 'verify_identity' %}selected{% endif %}>Verify Identity</option>
+                            <option value="disabled" {% if selected_ssl == 'disabled' %}selected{% endif %}>Disabled - local trial only</option>
+                        </select>
+                    </label>
+                    <label class="database-field database-field-wide">
+                        <span>CA Certificate Path</span>
+                        <input name="ssl_ca_path" value="{{ form_values.ssl_ca_path|default('') }}" maxlength="500" placeholder="Required only for Verify Identity">
+                    </label>
+                    <label class="database-field database-field-full">
+                        <span>Change Reason</span>
+                        <input name="change_reason" maxlength="500" placeholder="Required only when saving the profile">
+                    </label>
+                </div>
+                <div class="database-form-actions">
+                    <button class="crs-btn crs-btn-soft" type="submit" formaction="/administration/database/test">Test Connection</button>
+                    <button class="crs-btn crs-btn-primary" type="submit" formaction="/administration/database/save">Test &amp; Save Securely</button>
+                </div>
+            </form>
+        </article>
+
+        <aside class="database-side-stack">
+            <article class="workbench-card database-saved-card">
+                <div class="table-heading">
+                    <div>
+                        <strong>Saved Deployment Profile</strong>
+                        <p>Reusable on this PC by the same Windows service account.</p>
+                    </div>
+                </div>
+                {% if profile and not profile.profile_error %}
+                <dl class="database-profile-summary">
+                    <div><dt>Endpoint</dt><dd>{{ profile.host }}:{{ profile.port }}</dd></div>
+                    <div><dt>Database</dt><dd>{{ profile.database }}</dd></div>
+                    <div><dt>Username</dt><dd>{{ profile.username }}</dd></div>
+                    <div><dt>TLS</dt><dd>{{ profile.ssl_mode|replace('_', ' ')|title }}</dd></div>
+                    <div><dt>Saved By</dt><dd>{{ profile.updated_by|default('-') }}</dd></div>
+                    <div><dt>Server Version</dt><dd>{{ profile.last_tested_server_version|default('-') or '-' }}</dd></div>
+                </dl>
+                <form method="POST" action="/administration/database/test-saved" class="database-saved-test-form">
+                    {{ csrf_input() }}
+                    <button class="crs-btn crs-btn-soft" type="submit">Test Saved Profile</button>
+                </form>
+                {% elif profile and profile.profile_error %}
+                <div class="inline-warning">{{ profile.profile_error }}</div>
+                {% else %}
+                <div class="empty-state-card database-empty-profile">
+                    <strong>No profile saved</strong>
+                    <span>Complete a successful test and save operation.</span>
+                </div>
+                {% endif %}
+            </article>
+
+            <article class="workbench-card database-migration-card">
+                <div class="table-heading">
+                    <div>
+                        <strong>Migration Safety Gate</strong>
+                        <p>Prevents a split SQLite/MySQL production state.</p>
+                    </div>
+                    <span class="status-badge status-blocked">BLOCKED</span>
+                </div>
+                <p>{{ runtime_status.activation_message }}</p>
+                <div class="database-gate-meta">
+                    <span>{{ runtime_status.legacy_sqlite_files }} database modules still require review</span>
+                    <span>No automatic runtime switch is performed</span>
+                </div>
+            </article>
+        </aside>
+    </section>
+</div>
+{% endblock %}

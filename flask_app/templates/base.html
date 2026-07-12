@@ -22,32 +22,11 @@
         {% endblock %}
     </title>
 
-    <script>
-        (function () {
-            try {
-                var root = document.documentElement;
-                var theme = localStorage.getItem("crs-theme") || "system";
-                var fontStep = parseInt(localStorage.getItem("crs-font-step") || "0", 10);
-                var systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-                if (["system", "light", "dark"].indexOf(theme) === -1) theme = "system";
-                if (isNaN(fontStep)) fontStep = 0;
-                fontStep = Math.max(-4, Math.min(4, fontStep));
-
-                root.setAttribute("data-crs-theme", theme);
-                root.setAttribute("data-crs-resolved-theme", theme === "dark" || (theme === "system" && systemDark) ? "dark" : "light");
-                root.setAttribute("data-crs-font-step", String(fontStep));
-                root.style.setProperty("--crs-font-adjust", String(fontStep) + "px");
-            } catch (error) {
-                document.documentElement.setAttribute("data-crs-theme", "system");
-                document.documentElement.setAttribute("data-crs-resolved-theme", "light");
-            }
-        })();
-    </script>
+    <script src="{{ url_for('static', filename='js/theme-bootstrap.js') }}"></script>
 
     <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='css/main.css') }}?v=css-v114-master-audit-20260711"
+        href="{{ url_for('static', filename='css/crs.bundle.css') }}?v=css-v116-progressive-ui-20260712"
     >
 
 </head>
@@ -188,6 +167,7 @@
                         {% if is_admin() %}
                         <a href="/audit-archive">Audit Archive / Export</a>
                         <a href="/auto-logout-settings">Auto Logout Settings</a>
+                        <a href="/administration/database">Database Configuration</a>
                         {% endif %}
 
                         {% if role_can("session_manage") %}
@@ -360,7 +340,12 @@
 
     {% endif %}
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script
+        src="{{ url_for('static', filename='js/vendor/htmx-2.0.10.min.js') }}"
+        integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V"
+    ></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=js-v116-progressive-ui-20260712"></script>
+    {% block page_scripts %}{% endblock %}
 
 </body>
 

@@ -1,5 +1,16 @@
 # CRS Changelog
 
+## 2026-07-12 Progressive UI and Asset Delivery
+
+- Replaced the browser CSS `@import` chain with a generated single-file production bundle while retaining modular source CSS.
+- Added bundle creation to workstation setup and stale-bundle detection to release validation.
+- Added locally hosted, integrity-verified HTMX 2.0.10 for progressive server-rendered interactions.
+- Modernized Audit History filtering and server sorting to update in place with accessible status feedback and normal GET fallback.
+- Externalized base theme bootstrap and recipe machine/stage selector JavaScript.
+- Reduced persistent Audit History explanation text and removed one non-actionable summary card.
+- Added safe progressive UI regression tests and implementation documentation.
+- Browser screenshots remain pending because the browser runtime was unavailable; no PLC call was performed.
+
 ## 2026-07-11 Post-Audit Authorization and Evidence Refresh
 
 - Enforced `engineering_config` on PLC array browser, parameter-from-array and next-available-index routes.

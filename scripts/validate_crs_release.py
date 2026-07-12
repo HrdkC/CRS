@@ -75,6 +75,21 @@ def _css_checks():
         )
     )
 
+    from scripts.build_css_bundle import OUTPUT_PATH, render_bundle
+
+    expected_bundle = render_bundle()
+    bundle_current = (
+        OUTPUT_PATH.is_file()
+        and OUTPUT_PATH.read_text(encoding="utf-8") == expected_bundle
+    )
+    checks.append(
+        _check(
+            "Production CSS bundle",
+            bundle_current,
+            "current" if bundle_current else "missing or stale; run scripts/build_css_bundle.py",
+        )
+    )
+
     brace_errors = []
     for path in CSS_ROOT.rglob("*.css"):
         source = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)

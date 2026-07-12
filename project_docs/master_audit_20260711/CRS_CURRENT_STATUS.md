@@ -11,11 +11,11 @@ No real PLC write was performed during this audit.
 | Area | Confirmed state |
 |---|---|
 | Flask routes | 111 statically inventoried declarations |
-| Templates | 61 |
-| CSS | 24 files, modular import structure |
-| JavaScript | 1 shared file |
+| Templates | 62 |
+| CSS | 25 source modules plus one generated production bundle |
+| JavaScript | Shared runtime, early theme bootstrap, and locally hosted HTMX |
 | SQLite schema | 40 tables, 16 indexes |
-| Safe tests | 18 tests after the post-audit authorization fix |
+| Safe tests | 28 tests after progressive UI, CSP, secret, and PLC polling coverage |
 | Password storage | Werkzeug password hashes |
 | CSRF | Enabled and tested for rejection |
 | Sessions | Server and client idle controls exist |
@@ -24,6 +24,11 @@ No real PLC write was performed during this audit.
 | PLC | pycomm3 integration exists; no live call in this audit |
 | Production server | Waitress launcher added; service installation not commissioned |
 | PLC array route authorization | Engineering capability enforced and regression tested |
+| Frontend delivery | One generated CSS request; no browser `@import` request chain |
+| Progressive UI | Audit filter/sort pilot with full GET fallback |
+| Script CSP | Same-origin external scripts only; no template inline JavaScript |
+| Session secret | Machine-local generated secret or approved environment override; fallback removed from active workstation |
+| PLC status UI | Terminal-aware polling with hidden-tab throttling and transient retry |
 
 ## Binding Recipe Rules
 

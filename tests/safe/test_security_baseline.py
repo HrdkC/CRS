@@ -14,6 +14,12 @@ def test_login_page_has_security_headers():
     assert response.headers["Cross-Origin-Opener-Policy"] == "same-origin"
     assert response.headers["Cross-Origin-Resource-Policy"] == "same-origin"
     assert "frame-ancestors 'none'" in response.headers["Content-Security-Policy"]
+    script_policy = next(
+        directive
+        for directive in response.headers["Content-Security-Policy"].split(";")
+        if directive.strip().startswith("script-src")
+    )
+    assert "'unsafe-inline'" not in script_policy
 
 
 def test_login_post_without_csrf_is_rejected():

@@ -8,12 +8,15 @@
     document.addEventListener("DOMContentLoaded", function () {
         CRS.preferences.init();
         CRS.security.init();
+        CRS.htmx.init();
         CRS.flash.init();
         CRS.confirm.init();
         CRS.dropdown.init();
         CRS.navigation.init();
         CRS.cards.init();
         CRS.tables.init();
+        CRS.recipeStageSelector.init();
+        CRS.plcArrayQuickSelect.init();
         CRS.loginAlerts.init();
         CRS.recipeEditLock.init();
         CRS.session.init();
@@ -388,6 +391,47 @@
         }
     };
 
+    CRS.htmx = {
+        init() {
+            if (!window.htmx || document.documentElement.dataset.htmxReady === "1") return;
+            document.documentElement.dataset.htmxReady = "1";
+
+            document.body.addEventListener("htmx:configRequest", function (event) {
+                const method = String(event.detail.verb || "GET").toUpperCase();
+                if (!CRS.security.isUnsafeMethod(method)) return;
+                const token = CRS.security.token();
+                if (token) event.detail.headers["X-CSRFToken"] = token;
+            });
+
+            document.body.addEventListener("htmx:beforeRequest", function () {
+                const status = CRS.util.qs("#audit-request-status");
+                if (!status) return;
+                status.textContent = "Updating audit records";
+                status.classList.add("is-visible");
+                status.classList.remove("is-complete");
+            });
+
+            document.body.addEventListener("htmx:afterSwap", function (event) {
+                CRS.tables.init(event.detail.target);
+                CRS.recipeStageSelector.init(event.detail.target);
+            });
+
+            document.body.addEventListener("htmx:afterRequest", function (event) {
+                const responseUrl = event.detail.xhr && event.detail.xhr.responseURL;
+                if (responseUrl && new URL(responseUrl).pathname === "/login") {
+                    window.location.href = "/login";
+                    return;
+                }
+
+                const status = CRS.util.qs("#audit-request-status");
+                if (!status) return;
+                status.textContent = event.detail.successful ? "Audit records updated" : "Audit update failed";
+                status.classList.add("is-visible", "is-complete");
+                setTimeout(function () { status.classList.remove("is-visible"); }, 1800);
+            });
+        }
+    };
+
     CRS.flash = {
         init() {
             CRS.util.qsa(".flash-message").forEach(function (message) {
@@ -535,8 +579,8 @@
     };
 
     CRS.tables = {
-        init() {
-            CRS.util.qsa("table").forEach(function (table) {
+        init(root) {
+            CRS.util.qsa("table", root || document).forEach(function (table) {
                 if (table.dataset.clientSortReady === "1" || table.classList.contains("no-client-sort")) return;
 
                 const headerRow = table.tHead ? table.tHead.rows[0] : table.querySelector("tr");
@@ -617,6 +661,64 @@
             button.setAttribute("data-sort-direction", nextDirection);
             const icon = button.querySelector("b");
             if (icon) icon.textContent = nextDirection === "asc" ? "↑" : "↓";
+        }
+    };
+
+    CRS.recipeStageSelector = {
+        init(root) {
+            const scope = root || document;
+            const machineSelect = CRS.util.qs("#recipeMachineSelect", scope);
+            const stageSelect = CRS.util.qs("#recipeStageSelect", scope);
+            const openButton = CRS.util.qs("#recipeOpenStageBtn", scope);
+
+            if (!machineSelect || !stageSelect || !openButton || openButton.dataset.selectorReady === "1") return;
+            openButton.dataset.selectorReady = "1";
+
+            function filterStages() {
+                const selectedMachineId = machineSelect.value;
+                let firstVisibleValue = "";
+
+                Array.from(stageSelect.options).forEach(function (option) {
+                    if (!option.value) {
+                        option.hidden = false;
+                        return;
+                    }
+                    const visible = !selectedMachineId || option.dataset.machineId === selectedMachineId;
+                    option.hidden = !visible;
+                    if (visible && !firstVisibleValue) firstVisibleValue = option.value;
+                });
+
+                const selectedOption = stageSelect.options[stageSelect.selectedIndex];
+                if (selectedOption && selectedOption.hidden) stageSelect.value = firstVisibleValue;
+            }
+
+            machineSelect.addEventListener("change", filterStages);
+            openButton.addEventListener("click", function () {
+                const targetUrl = stageSelect.value;
+                if (!machineSelect.value || !targetUrl) {
+                    window.alert("Please select machine and stage first.");
+                    return;
+                }
+                window.location.href = targetUrl;
+            });
+            filterStages();
+        }
+    };
+
+    CRS.plcArrayQuickSelect = {
+        init() {
+            document.addEventListener("click", function (event) {
+                const button = event.target.closest("[data-plc-array-quick-select]");
+                if (!button) return;
+
+                const tagName = CRS.util.qs("#plc-array-tag-name");
+                const startIndex = CRS.util.qs("#plc-array-start-index");
+                const endIndex = CRS.util.qs("#plc-array-end-index");
+
+                if (tagName) tagName.value = button.dataset.plcArrayQuickSelect || "";
+                if (startIndex) startIndex.value = button.dataset.startIndex || "0";
+                if (endIndex) endIndex.value = button.dataset.endIndex || "";
+            });
         }
     };
 

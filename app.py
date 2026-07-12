@@ -20,6 +20,9 @@ from flask_app.routes.help_routes import register_help_routes
 from flask_app.routes.phase_control_routes import register_phase_control_routes
 from flask_app.routes.configuration_routes import register_configuration_routes
 from flask_app.routes.health_routes import register_health_routes
+from flask_app.routes.database_configuration_routes import (
+    register_database_configuration_routes,
+)
 
 
 app = create_app()
@@ -42,6 +45,7 @@ register_help_routes(app)
 register_phase_control_routes(app)
 register_configuration_routes(app)
 register_health_routes(app)
+register_database_configuration_routes(app)
 
 
 if __name__ == "__main__":

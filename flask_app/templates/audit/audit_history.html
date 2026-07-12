@@ -12,12 +12,22 @@ Audit History
         <div class="workbench-title">
             <span class="section-kicker">Traceability</span>
             <h1>Audit History</h1>
-            <p>Professional filtered trail of user, role, action, source, old/new value, reason, and timestamp.</p>
+            <p>Search and verify every controlled CRS change.</p>
         </div>
         <div class="hero-actions compact-actions">
             <a href="/audit-history" class="secondary-action">Reset View</a>
         </div>
     </div>
+
+    <div
+        id="audit-results-region"
+        hx-boost="true"
+        hx-target="#audit-results-region"
+        hx-select="#audit-results-region"
+        hx-swap="outerHTML"
+        hx-push-url="true"
+        hx-indicator="#audit-request-status"
+    >
 
     <div class="metric-grid audit-metric-grid-pro">
         <div class="metric-card">
@@ -31,14 +41,9 @@ Audit History
             <small>{{ filters.sort_dir|upper }}</small>
         </div>
         <div class="metric-card">
-            <span class="metric-label">Limit</span>
+            <span class="metric-label">Rows</span>
             <strong>{{ limit }}</strong>
-            <small>Resource-friendly query cap</small>
-        </div>
-        <div class="metric-card">
-            <span class="metric-label">Retention</span>
-            <strong class="metric-text">Trace</strong>
-            <small>No delete path from UI</small>
+            <small>Maximum returned</small>
         </div>
     </div>
 
@@ -50,9 +55,9 @@ Audit History
             <div class="audit-filter-header-pro">
                 <div>
                     <span class="filter-title-pro">Audit Filters</span>
-                    <p>Compact filters keep the page clean. Use Advanced Filters for date, source, and large searches.</p>
                 </div>
                 <div class="audit-filter-actions-pro">
+                    <span id="audit-request-status" class="crs-request-status htmx-indicator" role="status" aria-live="polite"></span>
                     <button type="submit" class="primary-action">Apply</button>
                     <a href="/audit-history" class="secondary-action">Clear</a>
                 </div>
@@ -317,6 +322,8 @@ Audit History
                 </tbody>
             </table>
         </div>
+    </div>
+
     </div>
 
 </section>

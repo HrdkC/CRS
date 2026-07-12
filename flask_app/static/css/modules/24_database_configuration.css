@@ -1,0 +1,199 @@
+/* MySQL deployment configuration. */
+
+.database-configuration-workbench {
+    gap: 12px;
+}
+
+.database-status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.database-status-grid .metric-card {
+    min-height: 104px;
+}
+
+.database-blocked-text {
+    color: var(--danger) !important;
+}
+
+.database-test-result {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--line-200);
+    border-left: 4px solid var(--danger);
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+.database-test-result-success {
+    border-left-color: var(--success);
+}
+
+.database-test-result > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.database-result-details,
+.database-profile-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+}
+
+.database-result-details div,
+.database-profile-summary div {
+    min-width: 0;
+    padding: 9px 10px;
+    border: 1px solid var(--line-200);
+    border-radius: var(--radius-md);
+    background: #f8fafc;
+}
+
+.database-result-details dt,
+.database-profile-summary dt {
+    color: var(--ink-500);
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.database-result-details dd,
+.database-profile-summary dd {
+    margin: 3px 0 0;
+    overflow-wrap: anywhere;
+    color: var(--ink-900);
+    font-weight: 800;
+}
+
+.database-test-result details pre {
+    max-height: 120px;
+    margin: 8px 0 0;
+    padding: 10px;
+    overflow: auto;
+    border-radius: var(--radius-md);
+    background: #f8fafc;
+    color: var(--ink-700);
+    white-space: pre-wrap;
+}
+
+.database-configuration-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(320px, 0.85fr);
+    gap: 12px;
+    align-items: start;
+}
+
+.database-profile-form {
+    padding: 14px;
+}
+
+.database-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+}
+
+.database-field {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+
+.database-field span {
+    color: var(--ink-700);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.database-field input,
+.database-field select {
+    width: 100%;
+    min-height: 42px;
+}
+
+.database-field-full {
+    grid-column: 1 / -1;
+}
+
+.database-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 13px;
+    flex-wrap: wrap;
+}
+
+.database-side-stack {
+    display: grid;
+    gap: 12px;
+}
+
+.database-profile-summary {
+    grid-template-columns: 1fr 1fr;
+    padding: 12px;
+}
+
+.database-saved-test-form {
+    padding: 0 12px 12px;
+}
+
+.database-empty-profile {
+    margin: 12px;
+}
+
+.database-migration-card > p {
+    margin: 12px 14px 8px;
+    color: var(--ink-700);
+    line-height: 1.5;
+}
+
+.database-gate-meta {
+    display: grid;
+    gap: 6px;
+    padding: 0 14px 14px;
+    color: var(--ink-500);
+    font-size: 11px;
+    font-weight: 750;
+}
+
+@media (max-width: 1180px) {
+    .database-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .database-configuration-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .database-status-grid,
+    .database-form-grid,
+    .database-result-details,
+    .database-profile-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .database-form-actions {
+        justify-content: stretch;
+    }
+
+    .database-form-actions .crs-btn {
+        flex: 1 1 180px;
+    }
+}
+
+[data-crs-resolved-theme="dark"] .database-test-result,
+[data-crs-resolved-theme="dark"] .database-result-details div,
+[data-crs-resolved-theme="dark"] .database-profile-summary div {
+    background: var(--surface-900, #171923);
+}
+
