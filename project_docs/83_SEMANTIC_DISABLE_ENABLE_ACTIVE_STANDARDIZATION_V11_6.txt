@@ -1,0 +1,74 @@
+CRS V11.6 - Semantic Disable / Enable / Active Standardization
+Date: 2026-07-17
+
+Purpose
+-------
+Standardize semantic action and status colors across the complete CRS UI:
+
+- Disable / destructive action: RED background + WHITE text.
+- Disabled / blocked / failed status: RED background + WHITE text.
+- Enable / positive action: GREEN background + WHITE text.
+- Active / OK / Ready / Released status: GREEN background + WHITE text.
+- Primary / Edit / Open action: BLUE background + WHITE text.
+- Truly unavailable or locked controls: NEUTRAL SLATE background + readable LIGHT text.
+
+Important distinction
+---------------------
+A button labelled "Disable" is a destructive action and is red.
+A control that is disabled/unavailable because it cannot be clicked is neutral slate,
+not red. This avoids presenting a locked control as a destructive action while also
+preventing white-on-white text.
+
+Files
+-----
+CSS:
+- flask_app/static/css/modules/29_semantic_action_status_standardization.css
+- flask_app/static/css/main.css
+- flask_app/static/css/crs.bundle.css
+- flask_app/templates/base.html
+
+Templates standardized:
+- flask_app/templates/machines/machines.html
+- flask_app/templates/users/users.html
+- flask_app/templates/configuration/stage_readiness.html
+- flask_app/templates/families/families.html
+- flask_app/templates/families/edit_family.html
+- flask_app/templates/plcs/plcs.html
+- flask_app/templates/stages/stages.html
+- flask_app/templates/parameters/edit_parameter.html
+- flask_app/templates/parameters/parameters.html
+- flask_app/templates/admin/engineering_units.html
+- flask_app/templates/plc_tags/array_browser.html
+
+Validation:
+- scripts/check_semantic_action_status_standardization.py
+
+Implementation notes
+--------------------
+1. The final module is imported last to override earlier page/theme rules.
+2. Route-aware selectors cover /disable/ and /enable/ forms even if a future template
+   omits a semantic class.
+3. Template status classes now explicitly include status-active or status-disabled.
+4. Existing PLC, recipe, user, family, machine, engineering-unit and parameter actions
+   retain their routes and behavior; only semantic UI classes and styles were changed.
+5. The production CSS bundle is rebuilt and cache-busted to V1.20.
+
+Apply
+-----
+Expand-Archive `
+  -Path .\CRS_V11_6_Semantic_Disable_Enable_Active_Standardization_PATCH_ONLY_170726.zip `
+  -DestinationPath . `
+  -Force
+
+python scripts\clear_crs_pycache.py
+python scripts\build_css_bundle.py --check
+python scripts\check_semantic_action_status_standardization.py
+python app.py
+
+Browser refresh:
+Ctrl + F5
+
+Expected validation
+-------------------
+PASS: Disable actions/statuses are red with white text; Enable/Active are green with white text.
+PASS: Truly unavailable controls use neutral readable styling, not white-on-white.

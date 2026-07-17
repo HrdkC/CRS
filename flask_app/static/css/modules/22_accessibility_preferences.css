@@ -871,9 +871,9 @@ html[data-crs-resolved-theme="dark"] tbody tr:hover th {
 }
 
 .site-header .session-countdown-warning {
-    background: #fff7ed !important;
-    border-color: #fdba74 !important;
-    color: #7c2d12 !important;
+    background: var(--warning-bg) !important;
+    border-color: var(--warning-border) !important;
+    color: var(--warning-text) !important;
 }
 
 .site-header .session-countdown-danger {
@@ -1496,7 +1496,7 @@ html[data-crs-resolved-theme="light"] .site-footer {
     color: #334155 !important;
 }
 
-html[data-crs-resolved-theme="dark"] .status-badge:not(.status-success):not(.status-warning):not(.status-danger):not(.status-info),
+html[data-crs-resolved-theme="dark"] .status-badge:not(.status-success):not(.status-active):not(.status-ready):not(.status-released):not(.status-ok):not(.status-warning):not(.status-pending):not(.status-draft):not(.status-review):not(.status-danger):not(.status-disabled):not(.status-inactive):not(.status-blocked):not(.status-failed):not(.status-error):not(.status-info):not(.status-current):not(.status-running):not(.status-approved),
 html[data-crs-resolved-theme="dark"] .client-sort-button,
 html[data-crs-resolved-theme="dark"] .row-action,
 html[data-crs-resolved-theme="dark"] .secondary-action {

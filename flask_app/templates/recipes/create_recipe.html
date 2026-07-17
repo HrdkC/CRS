@@ -48,7 +48,7 @@ Create Recipe
         <div class="metric-card">
             <span class="metric-label">Status</span>
             {% if parameter_master_ready is defined and not parameter_master_ready %}
-            <strong class="metric-text">Blocked</strong>
+            <strong class="metric-text status-text-blocked">Blocked</strong>
             <small>Parameter master required</small>
             {% else %}
             <strong class="metric-text">Ready</strong>
@@ -61,7 +61,7 @@ Create Recipe
     <div class="workbench-card edit-parameter-panel" style="border-left: 5px solid #f59e0b;">
         <div class="panel-heading">
             <span>Parameter Master Required</span>
-            <span class="status-badge status-warning">Blocked</span>
+            <span class="status-badge status-blocked">Blocked</span>
         </div>
 
         <div style="padding: 16px;">

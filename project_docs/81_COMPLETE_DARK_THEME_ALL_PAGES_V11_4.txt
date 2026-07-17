@@ -1,0 +1,75 @@
+CRS V11.4 - Complete Dark Theme Across All Pages
+Date: 2026-07-17
+Patch type: Patch-only, replaceable files
+
+Purpose
+-------
+Eliminate remaining white/light objects when the CRS dark theme is active.
+This patch adds one final theme-completion CSS module that loads after every
+page-specific module and is included in the production CSS bundle.
+
+Files
+-----
+- flask_app/static/css/modules/27_dark_theme_complete.css
+- flask_app/static/css/main.css
+- flask_app/static/css/crs.bundle.css
+- flask_app/templates/base.html
+- scripts/check_dark_theme_coverage.py
+- project_docs/81_COMPLETE_DARK_THEME_ALL_PAGES_V11_4.txt
+
+Coverage
+--------
+1. Shared workbench heroes, cards, panels, headings and data surfaces.
+2. Dashboard Recent Activity, readiness metrics, lifecycle/progress objects,
+   secondary actions and disabled actions.
+3. Configuration Readiness, PLC assignment, PLC setup rules, saved PLC tags,
+   PLC registry, mapping guidance and switches.
+4. Recipe Import/Export card headers, file zone, native file button, process
+   steps, import mode cards, check options, fields and help cards.
+5. Tables and page-specific table cell backgrounds including users, audit,
+   PLC, phase master and recipe tables.
+6. Phase control, phase master and recipe editor special display objects.
+7. Audit old/new values, filters, chips and table surfaces.
+8. Forms, selects, options, read-only/disabled controls and browser autofill.
+9. Dark semantic success, warning, danger, info and neutral badges.
+10. Header accessibility/theme controls and disabled navigation objects.
+11. Database configuration, help, empty-state and code/preformatted objects.
+
+Intentional exception
+---------------------
+Header and login brand containers now follow dark mode. Only the individual
+transparent Apollo/BCCI logo artwork receives a small white plate so the official
+logos remain readable and brand-correct.
+
+Validation completed
+--------------------
+- Python files compiled: 354
+- Jinja templates compiled: 62
+- Route/method combinations checked: 152
+- Safe rendered GET pages: 56 HTTP 200
+- Expected redirects: 13
+- Expected synthetic-job HTTP 404: 1
+- Rendered links parsed: 2687
+- Rendered forms parsed: 406
+- Unique internal targets checked: 972
+- Broken internal links/forms: 0
+- Safe-page HTTP 500 errors: 0
+- SQLite integrity: PASS
+- SQLite foreign keys: PASS (0 violations)
+- CSS imports: PASS
+- CSS bundle current: PASS
+- CSS brace balance: PASS
+- Inline white template backgrounds: 0
+- Live PLC connection/read/write: NOT executed
+
+Apply
+-----
+Expand-Archive -Path .\CRS_V11_4_Complete_Dark_Theme_All_Pages_PATCH_ONLY_170726.zip -DestinationPath . -Force
+python scripts\clear_crs_pycache.py
+python scripts\build_css_bundle.py --check
+python scripts\check_dark_theme_coverage.py
+python app.py
+
+Browser refresh
+---------------
+Use Ctrl + F5 after restarting CRS.

@@ -1,0 +1,50 @@
+CRS V11.3 - Existing PLC Assignment Dropdown
+Date: 2026-07-17
+
+Purpose
+-------
+Configuration Readiness must not duplicate the PLC creation/edit form. This page
+now changes only the PLC assignment for the selected machine/stage.
+
+Changes
+-------
+1. Replaced the inline Create/Edit PLC communication form with an existing-PLC
+   dropdown.
+2. Shows current active PLC assignment(s), IP and controller.
+3. Keeps "Open Full PLC Registry" and "Create New PLC" links for registry work.
+4. Selecting a PLC assigned to another stage transfers that registry record to
+   the current stage and activates it.
+5. Any other active PLC records on the target stage are disabled so the stage
+   has one clear active PLC assignment.
+6. PLC name, IP, firmware, processor, software and description are not modified
+   by the assignment operation.
+7. Assignment changes and replaced active assignments are audited with reason.
+8. Added responsive dark/light-compatible UI styling.
+
+Files
+-----
+- database/plc_registry_manager.py
+- flask_app/routes/configuration_routes.py
+- flask_app/templates/configuration/stage_readiness.html
+- flask_app/static/css/modules/09_configuration.css
+
+Apply
+-----
+Expand-Archive -Path .\CRS_V11_3_Existing_PLC_Assignment_Dropdown_PATCH_ONLY_170726.zip -DestinationPath . -Force
+python scripts\clear_crs_pycache.py
+python app.py
+
+Test
+----
+1. Open /configuration/P01/FS.
+2. Select an existing PLC.
+3. Enter a change reason.
+4. Click Save PLC Assignment.
+5. Confirm PLC Registry readiness changes to OK.
+6. Confirm the assignment audit entry appears in Audit History.
+
+Important
+---------
+Moving a PLC from another stage can make its previous stage blocked until another
+PLC is assigned there. The dropdown shows the current stage assignment of each
+PLC before saving.

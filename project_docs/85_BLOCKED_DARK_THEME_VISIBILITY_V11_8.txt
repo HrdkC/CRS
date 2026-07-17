@@ -1,0 +1,42 @@
+CRS V11.8 - BLOCKED Dark Theme Visibility
+Date: 2026-07-17
+
+Problem
+-------
+The BLOCKED pill displayed correctly as red/white in light mode but could be
+washed out to a pale/white surface in dark/system mode on some Windows and
+browser theme combinations.
+
+Correction
+----------
+1. Added final CSS module 31_blocked_dark_theme_visibility.css.
+2. Uses accessible red/white semantic colors in both light and dark themes.
+3. Adds a solid inset paint layer so browser theme processing cannot wash out
+   the red background.
+4. Preserves the white alert icon and white BLOCKED text.
+5. Adds explicit forced-color protection to prevent white-on-white rendering.
+6. Keeps BLOCKED a status pill, distinct from neutral unavailable controls.
+7. Updated the production CSS bundle and cache version.
+
+Color Contract
+--------------
+Light BLOCKED background: #B91C1C
+Dark BLOCKED background:  #C62828
+Text:                     #FFFFFF
+
+Validation
+----------
+python scripts/build_css_bundle.py --check
+python scripts/check_blocked_dark_theme_visibility.py
+
+Apply
+-----
+Expand-Archive -Path .\CRS_V11_8_Blocked_Dark_Theme_Visibility_FIX_PATCH_ONLY_170726.zip -DestinationPath . -Force
+python scripts\clear_crs_pycache.py
+python scripts\build_css_bundle.py --check
+python scripts\check_blocked_dark_theme_visibility.py
+python app.py
+
+Browser
+-------
+Use Ctrl+F5 once after installation.

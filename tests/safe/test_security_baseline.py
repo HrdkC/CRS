@@ -1,6 +1,9 @@
 from flask import session
 
+import pytest
+
 from app import app
+import flask_app.routes.plc_tag_routes as plc_tag_routes
 
 
 def test_login_page_has_security_headers():
@@ -59,3 +62,36 @@ def test_operator_cannot_open_engineering_plc_array_routes():
             response = app.view_functions[endpoint](*arguments)
             assert response.status_code in {301, 302, 303, 307, 308}
             assert response.headers["Location"].endswith("/")
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    ("array_browser", "next_available_index"),
+)
+def test_array_routes_redirect_for_scalar_tag(monkeypatch, endpoint):
+    monkeypatch.setattr(
+        plc_tag_routes.PLCTagManager,
+        "get_tag_by_id",
+        staticmethod(
+            lambda _tag_id: {
+                "id": 2,
+                "machine_id": 5,
+                "stage_id": 11,
+                "is_array": 0,
+                "array_start_index": None,
+                "array_end_index": None,
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        plc_tag_routes,
+        "machine_stage_url",
+        lambda *_args, **_kwargs: "/plc-tags/P15/FS",
+    )
+
+    with app.test_request_context("/"):
+        session.update(logged_in=True, username="admin", role="ADMIN")
+        response = app.view_functions[endpoint](2)
+
+    assert response.status_code in {301, 302, 303, 307, 308}
+    assert response.headers["Location"].endswith("/plc-tags/P15/FS")

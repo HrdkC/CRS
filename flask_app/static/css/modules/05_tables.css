@@ -11,7 +11,7 @@
 .professional-table-wrap,
 .data-table-wrap { width: 100%; overflow: auto; border-radius: var(--radius-lg); border: 1px solid var(--line-200); }
 .professional-table-wrap { max-height: 62vh; }
-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; font-size: 12.5px; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface-elevated); font-size: 12.5px; }
 th { background: #243247; color: #fff; text-align: left; padding: 10px 11px; font-size: 11.5px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap; }
 td { padding: 9px 11px; border-bottom: 1px solid var(--line-100); color: var(--ink-800); vertical-align: middle; }
 tbody tr:nth-child(even) { background: #fbfdff; }
@@ -33,4 +33,3 @@ tbody tr:hover { background: #f7f3ff; }
 .tag-pill,
 .tag-chip { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; min-width: 32px; padding: 4px 8px; border-radius: 999px; background: #edf2f7; color: var(--ink-700); font-size: 11px; font-weight: 900; }
 .value-cell { color: var(--ink-900); font-weight: 850; }
-

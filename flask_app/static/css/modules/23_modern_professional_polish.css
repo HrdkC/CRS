@@ -371,7 +371,7 @@ body {
     min-height: 40px !important;
     border: 1px solid var(--crs-border-strong) !important;
     border-radius: 8px !important;
-    background: #ffffff !important;
+    background: var(--surface-elevated) !important;
     color: var(--ink-800) !important;
     font-size: 14px !important;
     font-weight: 650 !important;
@@ -448,7 +448,7 @@ body {
     padding: 12px !important;
     border: 1px solid var(--crs-border) !important;
     border-radius: 8px !important;
-    background: #ffffff !important;
+    background: var(--surface-elevated) !important;
     cursor: pointer !important;
 }
 
@@ -491,7 +491,7 @@ body {
     padding: 8px 10px !important;
     border: 1px solid #ddd6fe !important;
     border-radius: 8px !important;
-    background: #ffffff !important;
+    background: var(--surface-elevated) !important;
 }
 
 .recipe-workbench.recipe-import-export-page .import-form-button {
@@ -548,7 +548,7 @@ body {
     min-height: 78px !important;
     border: 1px solid var(--crs-border) !important;
     border-radius: 8px !important;
-    background: #ffffff !important;
+    background: var(--surface-elevated) !important;
     padding: 11px !important;
 }
 
@@ -866,7 +866,7 @@ select,
 textarea {
     border-radius: 8px !important;
     border-color: var(--crs-border-strong) !important;
-    background: #fff !important;
+    background: var(--surface-elevated) !important;
 }
 
 input:focus,
@@ -885,7 +885,7 @@ textarea:focus {
 .plc-registry-table-wrap {
     border: 1px solid var(--crs-border) !important;
     border-radius: 8px !important;
-    background: #fff !important;
+    background: var(--surface-elevated) !important;
     box-shadow: none !important;
 }
 
@@ -897,7 +897,7 @@ table,
     width: 100%;
     border-collapse: separate !important;
     border-spacing: 0 !important;
-    background: #fff !important;
+    background: var(--surface-elevated) !important;
 }
 
 th,
@@ -1116,7 +1116,7 @@ html[data-crs-resolved-theme="dark"] .plc-registry-table th {
         overflow-x: hidden !important;
         align-items: flex-start !important;
         border-top: 1px solid var(--crs-border);
-        background: #ffffff;
+        background: var(--surface-elevated);
     }
 
     .site-header.mobile-navigation-open .navbar {

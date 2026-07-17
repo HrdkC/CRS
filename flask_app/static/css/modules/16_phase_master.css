@@ -23,7 +23,7 @@
     overflow: hidden;
     border: 1px solid #d8c9ff;
     border-radius: var(--radius-lg);
-    background: #fff;
+    background: var(--surface-elevated);
 }
 
 .phase-option-master-group-header {
@@ -35,7 +35,7 @@
     padding: 10px 12px;
     background: #f6f0ff;
     border-bottom: 1px solid #d8c9ff;
-    color: var(--violet-800);
+    color: var(--apollo-violet-dark);
 }
 
 .phase-option-master-group-header strong {
@@ -57,7 +57,7 @@
 }
 
 .phase-option-master-table th {
-    background: #fff;
+    background: var(--surface-muted);
     color: var(--ink-600);
     font-size: 10.5px;
     font-weight: 900;
@@ -116,4 +116,3 @@
    Tablet / mobile:
    - Fully stacked layout
    ===================================================== */
-

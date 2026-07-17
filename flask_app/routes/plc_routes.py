@@ -171,7 +171,7 @@ def register_plc_routes(app):
                 ), 400
 
             return redirect(
-                "/plcs"
+                request.form.get("return_to") or "/plcs"
             )
 
         stages = (
@@ -183,7 +183,11 @@ def register_plc_routes(app):
 
             "plcs/create_plc.html",
 
-            stages=stages
+            stages=stages,
+            form={
+                "machine_stage_id": request.args.get("machine_stage_id", ""),
+                "return_to": request.args.get("return_to", ""),
+            }
 
         )
         
@@ -244,6 +248,14 @@ def register_plc_routes(app):
 
                     description=request.form.get(
                         "description"
+                    ),
+
+                    machine_stage_id=request.form.get(
+                        "machine_stage_id"
+                    ),
+
+                    plc_name=request.form.get(
+                        "plc_name"
                     )
 
                 )
@@ -259,7 +271,9 @@ def register_plc_routes(app):
                     plc={
                         **plc,
                         **request.form.to_dict()
-                    }
+                    },
+                    stages=StageManager.get_all_stages_with_machine(),
+                    form=request.form
                 ), 400
 
             if (
@@ -317,14 +331,18 @@ def register_plc_routes(app):
             )
 
             return redirect(
-                "/plcs"
+                request.form.get("return_to") or "/plcs"
             )
 
         return render_template(
 
             "plcs/edit_plc.html",
 
-            plc=plc
+            plc=plc,
+            stages=StageManager.get_all_stages_with_machine(),
+            form={
+                "return_to": request.args.get("return_to", ""),
+            }
 
         )
         
@@ -347,6 +365,15 @@ def register_plc_routes(app):
                 plc_id
             )
         )
+
+        if not plc:
+
+            flash(
+                "PLC record not found.",
+                "warning"
+            )
+
+            return redirect("/plcs")
 
         try:
 

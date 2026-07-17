@@ -172,11 +172,11 @@ def _build_stage_readiness(cursor):
         phase_options = int(row.get("phase_options") or 0)
         released_recipes = int(row.get("released_recipes") or 0)
 
-        status = "OK"
-        status_class = "status-success"
+        status = "Ready"
+        status_class = "status-ready"
         if active_plcs == 0 or used_parameters == 0 or phase_groups == 0 or phase_options == 0:
             status = "Blocked"
-            status_class = "status-danger"
+            status_class = "status-blocked"
         elif released_recipes == 0:
             status = "Warning"
             status_class = "status-warning"

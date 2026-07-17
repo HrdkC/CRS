@@ -11,3 +11,7 @@ recipe_master
 recipe_parameters
 recipe_versions
 recipe_version_values
+
+$env:CRS_FLASK_DEBUG = "1"
+$env:CRS_FLASK_RELOAD = "0"
+python app.py

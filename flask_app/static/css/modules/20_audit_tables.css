@@ -39,7 +39,7 @@
 
     border: 1px solid var(--line-200) !important;
     border-radius: 10px !important;
-    background: #fff !important;
+    background: var(--surface-elevated) !important;
 }
 
 /* Remove older 1280 / 1580 / 1700px minimum widths */
@@ -493,7 +493,7 @@
 /* Subtle industrial old/new distinction. */
 .audit-history-workbench .audit-value-item-old {
     border-left: 3px solid #dc2626 !important;
-    background: #fff7f7 !important;
+    background: var(--danger-bg) !important;
 }
 
 .audit-history-workbench .audit-value-item-new {
@@ -784,4 +784,3 @@ span.audit-new-value {
         font-size: 8.5px !important;
     }
 }
-

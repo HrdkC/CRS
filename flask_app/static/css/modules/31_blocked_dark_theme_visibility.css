@@ -1,0 +1,126 @@
+/*
+ * 31_blocked_dark_theme_visibility.css
+ * Final CRS BLOCKED badge paint layer for light, dark, system, and forced-color modes.
+ *
+ * Why this exists:
+ * Some browser/theme combinations can wash out a semantic background after the
+ * normal cascade has resolved. The inset paint layer below keeps BLOCKED visibly
+ * red without changing the meaning or layout of the status badge.
+ *
+ * Keep this module after the general semantic status modules.
+ */
+
+:root {
+    --crs-blocked-solid-bg: #b91c1c;
+    --crs-blocked-solid-border: #ef4444;
+    --crs-blocked-solid-text: #ffffff;
+    --crs-blocked-solid-ring: rgba(185, 28, 28, 0.30);
+    --crs-blocked-solid-shadow: rgba(15, 23, 42, 0.18);
+}
+
+html[data-crs-resolved-theme="dark"] {
+    --crs-blocked-solid-bg: #c62828;
+    --crs-blocked-solid-border: #f87171;
+    --crs-blocked-solid-text: #ffffff;
+    --crs-blocked-solid-ring: rgba(248, 113, 113, 0.34);
+    --crs-blocked-solid-shadow: rgba(0, 0, 0, 0.38);
+}
+
+/*
+ * Canonical BLOCKED status paint. The large inset shadow is deliberate: it is
+ * painted above the element background and below its content, so the pill stays
+ * solid red even if a browser theme engine substitutes the background color.
+ */
+html body :is(.status-badge, .status-pill).status-blocked,
+html body :is(.status-badge, .status-pill)[class~="status-blocked"],
+html body .status-blocked:is(.status-badge, .status-pill),
+html body .configuration-stage-card-blocked :is(.status-badge, .status-pill).status-blocked,
+html body .readiness-section-blocked :is(.status-badge, .status-pill).status-blocked {
+    position: relative !important;
+    isolation: isolate !important;
+
+    color: var(--crs-blocked-solid-text) !important;
+    background-color: var(--crs-blocked-solid-bg) !important;
+    background-image: linear-gradient(
+        var(--crs-blocked-solid-bg),
+        var(--crs-blocked-solid-bg)
+    ) !important;
+    border-color: var(--crs-blocked-solid-border) !important;
+
+    box-shadow:
+        inset 0 0 0 1000px var(--crs-blocked-solid-bg),
+        0 0 0 1px var(--crs-blocked-solid-ring),
+        0 3px 9px var(--crs-blocked-solid-shadow) !important;
+
+    opacity: 1 !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: var(--crs-blocked-solid-text) !important;
+    forced-color-adjust: none !important;
+}
+
+html body :is(.status-badge, .status-pill).status-blocked::before,
+html body :is(.status-badge, .status-pill)[class~="status-blocked"]::before,
+html body .status-blocked:is(.status-badge, .status-pill)::before {
+    color: var(--crs-blocked-solid-bg) !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.82) !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    -webkit-text-fill-color: var(--crs-blocked-solid-bg) !important;
+    forced-color-adjust: none !important;
+}
+
+/* Preserve the same semantic appearance on hover/focus without button motion. */
+html body :is(.status-badge, .status-pill).status-blocked:is(:hover, :active, :focus-visible) {
+    color: var(--crs-blocked-solid-text) !important;
+    background-color: var(--crs-blocked-solid-bg) !important;
+    background-image: linear-gradient(
+        var(--crs-blocked-solid-bg),
+        var(--crs-blocked-solid-bg)
+    ) !important;
+    border-color: var(--crs-blocked-solid-border) !important;
+    box-shadow:
+        inset 0 0 0 1000px var(--crs-blocked-solid-bg),
+        0 0 0 1px var(--crs-blocked-solid-ring),
+        0 3px 9px var(--crs-blocked-solid-shadow) !important;
+    transform: none !important;
+    -webkit-text-fill-color: var(--crs-blocked-solid-text) !important;
+}
+
+/*
+ * Windows contrast themes and browser forced-color modes must not turn the
+ * critical status into a white/white pill. Keep the explicit red + white cue.
+ */
+@media (forced-colors: active) {
+    html body :is(.status-badge, .status-pill).status-blocked,
+    html body .database-blocked-text {
+        color: #ffffff !important;
+        background-color: #b91c1c !important;
+        background-image: linear-gradient(#b91c1c, #b91c1c) !important;
+        border: 2px solid #ffffff !important;
+        box-shadow: inset 0 0 0 1000px #b91c1c !important;
+        opacity: 1 !important;
+        -webkit-text-fill-color: #ffffff !important;
+        forced-color-adjust: none !important;
+    }
+
+    html body :is(.status-badge, .status-pill).status-blocked::before,
+    html body .database-blocked-text::before {
+        color: #b91c1c !important;
+        background: #ffffff !important;
+        border-color: #ffffff !important;
+        -webkit-text-fill-color: #b91c1c !important;
+        forced-color-adjust: none !important;
+    }
+}
+
+@media (prefers-contrast: more) {
+    html body :is(.status-badge, .status-pill).status-blocked {
+        border-width: 2px !important;
+        font-weight: 1000 !important;
+    }
+}

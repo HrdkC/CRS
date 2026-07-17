@@ -108,9 +108,9 @@ Stage Registry
                         <td>{{ stage.description }}</td>
                         <td>
                             {% if stage.active == 1 %}
-                            <span class="status-badge status-success">Active</span>
+                            <span class="status-badge status-success status-active">Active</span>
                             {% else %}
-                            <span class="status-badge status-neutral">Disabled</span>
+                            <span class="status-badge status-danger status-disabled">Disabled</span>
                             {% endif %}
                         </td>
                         <td>

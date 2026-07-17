@@ -1,0 +1,54 @@
+CRS V11.2 - Configuration 500 + Route/Link Smoke Fix
+Date: 2026-07-17
+
+ROOT CAUSE
+The V11.1 Configuration Readiness patch used two names without importing them:
+- quote from urllib.parse
+- PLCRegistryManager from database.plc_registry_manager
+
+Because /configuration calls _decorate_report() for every machine/stage, the missing
+PLCRegistryManager import raised NameError and produced the CRS 500 page.
+The stage detail page could also fail when building its PLC Create return URL because
+quote was not imported.
+
+FIX
+1. Adds both missing imports to flask_app/routes/configuration_routes.py.
+2. Adds scripts/check_crs_routes_and_links.py, a non-PLC safe verification tool.
+3. The checker validates:
+   - Python compilation
+   - all Jinja template compilation
+   - duplicate route/method collisions
+   - all safe registered GET pages using database-backed sample IDs
+   - rendered internal links
+   - rendered form actions and HTTP method compatibility
+4. It deliberately skips live PLC connection/identity verification routes and never
+   starts a PLC download.
+
+VALIDATION COMPLETED AGAINST V11 + V11.1
+- Python files compiled: 356
+- Jinja templates compiled: 62
+- Route/method combinations checked: 151
+- Safe GET results: 56 HTTP 200, 13 expected redirects, 1 expected synthetic-job 404
+- Rendered links parsed: 2689
+- Rendered forms parsed: 406
+- Unique internal route targets checked: 972
+- Broken links/form actions: 0
+- Safe page HTTP 500 errors: 0
+
+APPLY
+Expand-Archive -Path .\CRS_V11_2_Configuration_500_Route_Link_Smoke_FIX_PATCH_ONLY_170726.zip -DestinationPath . -Force
+python scripts\clear_crs_pycache.py
+python app.py
+
+VERIFY
+python scripts\check_crs_routes_and_links.py
+
+Expected final line:
+PASS: No Python, Jinja, safe-page HTTP 500, broken rendered link, or form-action issue found.
+
+IMPORTANT
+The verification script intentionally does not connect to a PLC and does not test:
+- /plcs/test_connection/<id>
+- /plcs/verify/<id>
+- PLC download start/write operations
+Those require supervised machine/network testing.

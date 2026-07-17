@@ -1,0 +1,964 @@
+/*
+ * 27_dark_theme_complete.css
+ * Final dark-theme completion layer for the complete CRS application.
+ *
+ * Purpose:
+ * - Remove light/white work surfaces that remained after page-specific CSS.
+ * - Keep every card, panel, table cell, form control, native file control,
+ *   disabled action, status object, dashboard object, PLC/configuration object,
+ *   recipe object, phase-control object, audit object, and administration object
+ *   consistent with the selected dark theme.
+ * - Preserve the intentional white brand-logo backing needed for transparent logos.
+ *
+ * This module must remain the final CSS import and must also be included in
+ * crs.bundle.css through scripts/build_css_bundle.py.
+ */
+
+html[data-crs-resolved-theme="dark"] {
+    color-scheme: dark;
+
+    --crs-dark-page: #08111f;
+    --crs-dark-surface: #0f1a2e;
+    --crs-dark-surface-2: #132039;
+    --crs-dark-surface-3: #182742;
+    --crs-dark-inset: #091426;
+    --crs-dark-border: #31425f;
+    --crs-dark-border-strong: #4a5f80;
+    --crs-dark-text: #f8fafc;
+    --crs-dark-text-secondary: #d7e0ed;
+    --crs-dark-text-muted: #9fb0c7;
+    --crs-dark-violet: #8b5cf6;
+    --crs-dark-violet-soft: #2b1d49;
+    --crs-dark-violet-hover: #39265d;
+    --crs-dark-blue-soft: #12294b;
+
+    --surface: rgba(15, 26, 46, 0.98);
+    --surface-soft: var(--crs-dark-surface);
+    --surface-solid: var(--crs-dark-surface);
+    --surface-elevated: var(--crs-dark-surface-2);
+    --surface-muted: #101c31;
+    --surface-inset: var(--crs-dark-inset);
+    --surface-violet-soft: var(--crs-dark-violet-soft);
+    --page-bg: var(--crs-dark-page);
+    --text-primary: var(--crs-dark-text);
+    --text-secondary: var(--crs-dark-text-secondary);
+    --text-muted: var(--crs-dark-text-muted);
+    --ink-900: var(--crs-dark-text);
+    --ink-800: #e6edf7;
+    --ink-700: var(--crs-dark-text-secondary);
+    --ink-600: #b9c7d9;
+    --ink-500: var(--crs-dark-text-muted);
+    --line-100: #23334c;
+    --line-200: var(--crs-dark-border);
+    --line-300: var(--crs-dark-border-strong);
+    --crs-readable-surface: var(--crs-dark-surface);
+    --crs-readable-surface-soft: var(--crs-dark-surface-2);
+    --crs-readable-border: var(--crs-dark-border);
+    --control-disabled-bg: #22314a;
+    --control-disabled-text: #c5d0df;
+    --control-disabled-border: #465a78;
+}
+
+/* -------------------------------------------------------------------------
+   Page shell, header, footer, menus and floating surfaces
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] body,
+html[data-crs-resolved-theme="dark"] body.authenticated-layout,
+html[data-crs-resolved-theme="dark"] body.login-layout {
+    color: var(--crs-dark-text-secondary) !important;
+    background:
+        radial-gradient(circle at 5% 0%, rgba(139, 92, 246, 0.16), transparent 27%),
+        radial-gradient(circle at 96% 100%, rgba(37, 99, 235, 0.12), transparent 30%),
+        linear-gradient(135deg, #07101d 0%, #0b1526 48%, #0e192b 100%) !important;
+    background-attachment: fixed !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .site-header,
+    .site-footer,
+    .user-info,
+    .dropdown-menu,
+    .menu-panel,
+    .popover,
+    .modal-content,
+    .dialog-card,
+    .tooltip-card,
+    .operation-lock-overlay,
+    .operation-lock-card
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: rgba(10, 19, 34, 0.98) !important;
+    border-color: var(--crs-dark-border) !important;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .site-header {
+    border-bottom-color: var(--crs-dark-violet) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .site-footer {
+    border-top-color: var(--crs-dark-violet) !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .brand-title,
+    .page-title,
+    .workbench-title h1,
+    .panel-heading > div > span:first-child,
+    .table-heading > div > span:first-child,
+    .card-title,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6
+) {
+    color: var(--crs-dark-text) !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .brand-subtitle,
+    .page-subtitle,
+    .workbench-title p,
+    .panel-heading p,
+    .table-heading p,
+    .helper-text,
+    .field-help,
+    .muted-text,
+    .muted-inline,
+    small
+) {
+    color: var(--crs-dark-text-muted) !important;
+}
+
+/* Brand containers follow dark mode; only the logo artwork gets a small white plate. */
+html[data-crs-resolved-theme="dark"] :is(
+    .site-header .header-brand-logo-row,
+    .campaign-logo-lockup,
+    .brand-logo-panel
+) {
+    background: var(--crs-dark-surface) !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border) !important;
+    box-shadow: none !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .site-header .header-brand-logo-row img,
+    .compact-corporate-login-panel img.login-panel-logo,
+    .campaign-logo-lockup img
+) {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 7px !important;
+    box-shadow: none !important;
+}
+
+/* -------------------------------------------------------------------------
+   Complete shared surface contract
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] :is(
+    .page-hero,
+    .page-banner,
+    .page-header,
+    .workbench-hero,
+    .workbench-card,
+    .data-workbench,
+    .content-card,
+    .content-panel,
+    .table-panel,
+    .panel,
+    .section-card,
+    .form-card,
+    .metric-card,
+    .summary-card,
+    .stat-card,
+    .dashboard-card,
+    .dashboard-insight-card,
+    .configuration-stage-card,
+    .configuration-action,
+    .configuration-action-card,
+    .readiness-section,
+    .readiness-check,
+    .stage-readiness-card,
+    .phase-card,
+    .phase-group-card,
+    .phase-master-card,
+    .phase-template-card,
+    .plc-card,
+    .plc-record-card,
+    .plc-setup-card,
+    .plc-setup-row,
+    .plc-stage-config-card,
+    .stage-plc-rule-card,
+    .plc-purpose-remap-card,
+    .plc-assignment-current-card,
+    .plc-tag-seed-form,
+    .import-export-card,
+    .import-preview-card,
+    .import-guide-card,
+    .database-card,
+    .database-profile-card,
+    .database-config-card,
+    .table-card,
+    .smart-help-card,
+    .audit-filter-card-pro,
+    .audit-record-card-pro,
+    details.workbench-card
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface-2) !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22) !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .panel-heading,
+    .table-heading,
+    .audit-filter-header-pro,
+    .plc-setup-header,
+    .plc-remap-header,
+    .plc-stage-config-header,
+    .phase-control-column-header,
+    .phase-option-master-group-header,
+    .stage-plc-rule-actions,
+    .plc-setup-guidance,
+    .plc-remap-guidance,
+    .setup-rule-note,
+    .database-result-details div,
+    .database-profile-summary div,
+    .summary-list div,
+    .flow-node,
+    .audit-help-list li,
+    .help-topic-link,
+    .help-section,
+    .checkbox-tile,
+    .compact-empty-state,
+    .empty-state-card,
+    .tag-purpose-group,
+    .bulk-edit-reason-row
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface) !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border) !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .panel-heading,
+    .table-heading,
+    .plc-setup-header,
+    .plc-remap-header,
+    .plc-stage-config-header,
+    .phase-control-column-header,
+    .phase-option-master-group-header
+) :is(strong, b, span:not(.status-badge):not(.badge):not(.pill)) {
+    color: var(--crs-dark-text) !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .section-kicker,
+    .kicker,
+    .eyebrow
+) {
+    color: #99f6e4 !important;
+    background: #123a3b !important;
+    border-color: #2f7675 !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .empty-state,
+    .compact-empty-state
+) {
+    color: var(--crs-dark-text-muted) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Buttons, links, actions and disabled objects
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] :is(
+    .crs-btn-soft,
+    .btn-secondary,
+    .secondary-action,
+    a.secondary-action,
+    button.secondary-action,
+    .row-action:not(.primary):not(.danger):not(.success):not(.warning),
+    .client-sort-button,
+    .nav-back-button,
+    .menu-back-item,
+    .stage-readiness-actions a,
+    .table-tools a
+) {
+    color: #e8eef8 !important;
+    background: #243550 !important;
+    background-image: none !important;
+    border-color: #4b6080 !important;
+    box-shadow: none !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .crs-btn-soft,
+    .btn-secondary,
+    .secondary-action,
+    a.secondary-action,
+    button.secondary-action,
+    .row-action:not(.primary):not(.danger):not(.success):not(.warning),
+    .client-sort-button,
+    .nav-back-button,
+    .menu-back-item,
+    .stage-readiness-actions a,
+    .table-tools a
+):is(:hover, :focus-visible) {
+    color: #ffffff !important;
+    background: #334a6e !important;
+    border-color: #7186a4 !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    button,
+    .btn,
+    .crs-btn,
+    [class*="button"],
+    [class*="action"]
+):disabled,
+html[data-crs-resolved-theme="dark"] :is(
+    button,
+    .btn,
+    .crs-btn,
+    [class*="button"],
+    [class*="action"]
+)[aria-disabled="true"],
+html[data-crs-resolved-theme="dark"] a:is(.disabled, .is-disabled, [aria-disabled="true"]) {
+    color: var(--control-disabled-text) !important;
+    background: var(--control-disabled-bg) !important;
+    background-image: none !important;
+    border-color: var(--control-disabled-border) !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+/* Header preference controls must also follow the active dark theme. */
+html[data-crs-resolved-theme="dark"] :is(
+    .crs-accessibility-strip,
+    .crs-access-button,
+    .crs-font-normal,
+    .crs-theme-system,
+    .crs-theme-light,
+    .crs-theme-dark
+) {
+    color: #e5edf8 !important;
+    background: #1c2a42 !important;
+    border-color: #506482 !important;
+    box-shadow: none !important;
+}
+
+html[data-crs-resolved-theme="dark"] .crs-access-button.is-active {
+    color: #ffffff !important;
+    background: #6d36ca !important;
+    border-color: #b99cff !important;
+    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.22) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .crs-access-divider {
+    background: #4a5f7c !important;
+}
+
+/* -------------------------------------------------------------------------
+   Forms and native browser controls
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea
+) {
+    color: var(--crs-dark-text) !important;
+    background-color: var(--crs-dark-inset) !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border-strong) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea
+):is(:hover, :focus) {
+    border-color: #9f7aea !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(input, textarea)::placeholder {
+    color: #8495ac !important;
+    opacity: 1 !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(input, select, textarea):disabled,
+html[data-crs-resolved-theme="dark"] :is(input, textarea)[readonly] {
+    color: #c3cfdd !important;
+    background: #1c2a40 !important;
+    border-color: #435774 !important;
+    opacity: 1 !important;
+}
+
+html[data-crs-resolved-theme="dark"] select :is(option, optgroup) {
+    color: var(--crs-dark-text) !important;
+    background: var(--crs-dark-inset) !important;
+}
+
+html[data-crs-resolved-theme="dark"] input[type="file"] {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-inset) !important;
+    border-color: var(--crs-dark-border-strong) !important;
+}
+
+html[data-crs-resolved-theme="dark"] input[type="file"]::file-selector-button {
+    color: #ffffff !important;
+    background: linear-gradient(180deg, #7c3aed, #5b21b6) !important;
+    border: 1px solid #9f7aea !important;
+    border-radius: 7px !important;
+    box-shadow: none !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(input[type="checkbox"], input[type="radio"]) {
+    accent-color: var(--crs-dark-violet) !important;
+}
+
+html[data-crs-resolved-theme="dark"] input:-webkit-autofill,
+html[data-crs-resolved-theme="dark"] input:-webkit-autofill:hover,
+html[data-crs-resolved-theme="dark"] input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--crs-dark-text) !important;
+    -webkit-box-shadow: 0 0 0 1000px var(--crs-dark-inset) inset !important;
+    caret-color: var(--crs-dark-text) !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(fieldset, details, summary) {
+    color: var(--crs-dark-text-secondary) !important;
+    border-color: var(--crs-dark-border) !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(pre, code, kbd, samp) {
+    color: #dbeafe !important;
+    background: #07111f !important;
+    border-color: var(--crs-dark-border) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Tables and data grids, including page-specific TD backgrounds
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] :is(
+    .table-wrap,
+    .table-scroll,
+    .professional-table-wrap,
+    .registry-table-wrap,
+    .data-table-wrap,
+    .audit-table-wrap-pro,
+    .audit-responsive-table-wrap,
+    .plc-tag-config-table-wrap,
+    .phase-master-table-wrap,
+    .phase-template-table-wrap
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface) !important;
+    border-color: var(--crs-dark-border) !important;
+}
+
+html[data-crs-resolved-theme="dark"] table,
+html[data-crs-resolved-theme="dark"] table tbody,
+html[data-crs-resolved-theme="dark"] table tbody tr,
+html[data-crs-resolved-theme="dark"] table tbody tr:nth-child(odd),
+html[data-crs-resolved-theme="dark"] table tbody tr:nth-child(even) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface) !important;
+}
+
+html[data-crs-resolved-theme="dark"] table thead th {
+    color: #ffffff !important;
+    background: #25183e !important;
+    background-image: none !important;
+    border-color: #563681 !important;
+}
+
+html[data-crs-resolved-theme="dark"] table tbody td,
+html[data-crs-resolved-theme="dark"] table tbody tr:nth-child(even) td,
+html[data-crs-resolved-theme="dark"] :is(
+    .user-records-table,
+    .audit-responsive-table,
+    .phase-template-table,
+    .plc-registry-table,
+    .stage-plc-rule-table,
+    .plc-tag-config-table
+) tbody tr:nth-child(even) td {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface) !important;
+    background-image: none !important;
+    border-color: #22324b !important;
+}
+
+html[data-crs-resolved-theme="dark"] table tbody tr:nth-child(even) td {
+    background: #101d32 !important;
+}
+
+html[data-crs-resolved-theme="dark"] table tbody tr:hover td,
+html[data-crs-resolved-theme="dark"] :is(
+    .user-records-table,
+    .audit-responsive-table,
+    .phase-template-table,
+    .plc-registry-table,
+    .stage-plc-rule-table,
+    .plc-tag-config-table
+) tbody tr:hover td {
+    color: var(--crs-dark-text) !important;
+    background: #241b3b !important;
+}
+
+html[data-crs-resolved-theme="dark"] table tbody td :is(strong, b) {
+    color: var(--crs-dark-text) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Semantic status, alerts, flashes and audit values
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] :is(
+    .status-success,
+    .status-active,
+    .status-ready,
+    .status-released,
+    .status-ok,
+    .badge-success,
+    .status-badge-success,
+    .status-badge.status-success,
+    .status-badge.status-active,
+    .status-badge.status-ready,
+    .status-badge.status-released,
+    .status-badge.status-ok
+) {
+    color: #bbf7d0 !important;
+    background: #123521 !important;
+    background-image: none !important;
+    border-color: #287a49 !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .status-warning,
+    .status-pending,
+    .status-draft,
+    .badge-warning,
+    .status-badge-warning,
+    .status-badge.status-warning,
+    .status-badge.status-pending,
+    .status-badge.status-draft
+) {
+    color: #fde68a !important;
+    background: #422d0b !important;
+    background-image: none !important;
+    border-color: #9a670d !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .status-danger,
+    .status-inactive,
+    .status-disabled,
+    .status-failed,
+    .status-error,
+    .status-blocked,
+    .badge-danger,
+    .status-badge-danger,
+    .status-badge.status-danger,
+    .status-badge.status-inactive,
+    .status-badge.status-disabled,
+    .status-badge.status-failed,
+    .status-badge.status-error,
+    .status-badge.status-blocked
+) {
+    color: #fecaca !important;
+    background: #421a1f !important;
+    background-image: none !important;
+    border-color: #a63a45 !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .status-info,
+    .status-current,
+    .status-running,
+    .badge-info,
+    .status-badge-info,
+    .status-badge.status-info,
+    .status-badge.status-current,
+    .status-badge.status-running
+) {
+    color: #bfdbfe !important;
+    background: #172c4f !important;
+    background-image: none !important;
+    border-color: #315f9b !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .status-neutral,
+    .status-historical,
+    .status-test,
+    .status-badge.status-neutral,
+    .status-badge.status-historical,
+    .status-badge.status-test,
+    .tag-pill,
+    .tag-chip,
+    .mini-badge
+) {
+    color: #dbe5f1 !important;
+    background: #26354b !important;
+    background-image: none !important;
+    border-color: #4d607c !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .flash-message,
+    .login-attempt-alert,
+    .inline-alert,
+    .import-message-block
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #121f34 !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border-strong) !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(.flash-success, .import-success) {
+    color: #bbf7d0 !important;
+    background: #123521 !important;
+    border-color: #287a49 !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(.flash-warning, .import-warnings) {
+    color: #fde68a !important;
+    background: #422d0b !important;
+    border-color: #9a670d !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(.flash-danger, .import-errors) {
+    color: #fecaca !important;
+    background: #421a1f !important;
+    border-color: #a63a45 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .flash-info {
+    color: #bfdbfe !important;
+    background: #172c4f !important;
+    border-color: #315f9b !important;
+}
+
+html[data-crs-resolved-theme="dark"] .audit-value-item {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #111d31 !important;
+    border-color: #344761 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .audit-value-item-old {
+    background: #32191f !important;
+    border-color: #963b47 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .audit-value-item-new {
+    background: #112d21 !important;
+    border-color: #2f764d !important;
+}
+
+html[data-crs-resolved-theme="dark"] .audit-value-label {
+    color: #dbe5f1 !important;
+    background: #27364d !important;
+}
+
+/* -------------------------------------------------------------------------
+   Dashboard-specific objects
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] .lifecycle-bar,
+html[data-crs-resolved-theme="dark"] .progress-track,
+html[data-crs-resolved-theme="dark"] .operation-lock-progress {
+    background: #22314a !important;
+}
+
+html[data-crs-resolved-theme="dark"] .activity-item {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #111d31 !important;
+    border-color: #344761 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .activity-item:is(:hover, :focus-visible) {
+    background: #211936 !important;
+    border-color: #6f4aa3 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .activity-item :is(span, small) {
+    color: var(--crs-dark-text-muted) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .activity-item strong {
+    color: #c4b5fd !important;
+}
+
+html[data-crs-resolved-theme="dark"] .stage-readiness-metrics span {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #101d32 !important;
+    border: 1px solid #2d405d !important;
+}
+
+html[data-crs-resolved-theme="dark"] .stage-readiness-metrics b {
+    color: var(--crs-dark-text) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Configuration, PLC registry, PLC setup and readiness objects
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] :is(
+    .plc-setup-summary span,
+    .plc-setup-row-inactive,
+    .plc-tag-seed-check,
+    .plc-assignment-current-card,
+    .plc-assignment-body,
+    .plc-setup-fields,
+    .plc-rule-identity,
+    .configuration-progress,
+    .readiness-progress
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #101d32 !important;
+    background-image: none !important;
+    border-color: #344761 !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .plc-tag-seed-form,
+    .plc-setup-guidance,
+    .plc-remap-guidance,
+    .setup-rule-note
+) {
+    color: #bfdbfe !important;
+    background: #12294b !important;
+    background-image: none !important;
+    border-color: #315f9b !important;
+}
+
+html[data-crs-resolved-theme="dark"] .plc-rule-switch-box {
+    color: #dbe5f1 !important;
+    background: #243550 !important;
+    border-color: #526784 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .plc-rule-switch input:checked + .plc-rule-switch-box {
+    color: #bbf7d0 !important;
+    background: #123521 !important;
+    border-color: #287a49 !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .plc-registry-actions .row-action:not(.primary):not(.buffer):not(.danger):not(.success),
+    .plc-registry-actions .row-action.buffer
+) {
+    color: #e8eef8 !important;
+    background: #243550 !important;
+    border-color: #4b6080 !important;
+}
+
+/* -------------------------------------------------------------------------
+   Recipe import/export and upload controls
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page {
+    --import-border: var(--crs-dark-border);
+    --import-muted: var(--crs-dark-text-muted);
+}
+
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page :is(
+    .workbench-hero,
+    .metric-card,
+    .workbench-card,
+    .smart-help-card
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface-2) !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page .panel-heading.table-heading {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface) !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page .panel-heading.table-heading span:not(.status-badge) {
+    color: var(--crs-dark-text) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page :is(
+    .file-drop-zone,
+    .import-mode-card,
+    .inline-check-option,
+    .import-process-strip,
+    .import-rules-grid > div
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #101d32 !important;
+    background-image: none !important;
+    border-color: #344761 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page .import-process-strip span {
+    color: #bfdbfe !important;
+    background: #172c4f !important;
+    border-color: #315f9b !important;
+}
+
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page .import-mode-card:has(input:checked) {
+    color: var(--crs-dark-text) !important;
+    background: linear-gradient(135deg, #2b1d49, #172c4f) !important;
+    border-color: #9f7aea !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page :is(
+    .import-field > span,
+    .import-mode-card strong,
+    .inline-check-option strong,
+    .file-drop-zone strong,
+    .import-rules-grid strong
+) {
+    color: var(--crs-dark-text) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page :is(
+    .import-field small,
+    .import-mode-card small,
+    .inline-check-option small,
+    .file-drop-zone small,
+    .metric-card small
+) {
+    color: var(--crs-dark-text-muted) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page input[type="radio"],
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page input[type="checkbox"] {
+    border-color: #71829a !important;
+    background: var(--crs-dark-inset) !important;
+    box-shadow: inset 0 0 0 3px var(--crs-dark-inset) !important;
+}
+
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page input[type="radio"]:checked,
+html[data-crs-resolved-theme="dark"] .recipe-import-export-page input[type="checkbox"]:checked {
+    border-color: #a78bfa !important;
+    background: #7c3aed !important;
+    box-shadow: inset 0 0 0 3px var(--crs-dark-inset) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Phase control, phase master and recipe-detail objects
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] :is(
+    .phase-index,
+    .phase-body span,
+    .phase-control-slot-empty,
+    .phase-control-display-empty,
+    .locked-cell-display,
+    .value-input,
+    .compact-cell-input:disabled,
+    .wide-cell-input:disabled,
+    .phase-template-guidance-grid > div,
+    .phase-template-warning-grid > div,
+    .phase-code-pill,
+    .phase-template-workbench .mini-badge
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #101d32 !important;
+    background-image: none !important;
+    border-color: #344761 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .phase-body span:nth-of-type(1) {
+    color: #fecaca !important;
+    background: #421a1f !important;
+    border-color: #a63a45 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .phase-body span:nth-of-type(2) {
+    color: #dbe5f1 !important;
+    background: #27364d !important;
+    border-color: #52647d !important;
+}
+
+html[data-crs-resolved-theme="dark"] .phase-body span:nth-of-type(3) {
+    color: #ddd6fe !important;
+    background: #2b1d49 !important;
+    border-color: #6d4ca0 !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .phase-group-row td,
+    .bulk-row-dirty td
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #211936 !important;
+    background-image: none !important;
+    border-color: #60418b !important;
+}
+
+html[data-crs-resolved-theme="dark"] .phase-display-line {
+    color: #bfdbfe !important;
+    background: #172c4f !important;
+    border-color: #315f9b !important;
+}
+
+html[data-crs-resolved-theme="dark"] .phase-remove-toggle:is(:hover, :focus-within) {
+    color: #fecaca !important;
+    background: #421a1f !important;
+    border-color: #a63a45 !important;
+}
+
+/* -------------------------------------------------------------------------
+   Audit, help, database and administration objects
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] :is(
+    .audit-chip-pro,
+    .chip-muted-pro,
+    .filter-title-pro,
+    .database-test-result details pre
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #101d32 !important;
+    border-color: #344761 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .audit-advanced-filter-pro > summary,
+html[data-crs-resolved-theme="dark"] .smart-help-card > summary {
+    color: var(--crs-dark-text) !important;
+    background: var(--crs-dark-surface) !important;
+    border-color: var(--crs-dark-border) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Small-screen and native fallback
+   ------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+    html[data-crs-resolved-theme="dark"] :is(
+        .professional-table tbody tr,
+        .plc-tag-config-table tbody tr
+    ) {
+        color: var(--crs-dark-text-secondary) !important;
+        background: var(--crs-dark-surface-2) !important;
+        border-color: var(--crs-dark-border) !important;
+    }
+}
+
+@media (forced-colors: active) {
+    html[data-crs-resolved-theme="dark"] :is(
+        button,
+        .btn,
+        input,
+        select,
+        textarea,
+        .status-badge,
+        .badge
+    ) {
+        forced-color-adjust: auto;
+    }
+}

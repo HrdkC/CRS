@@ -193,7 +193,7 @@ table td {
 .phase-control-column {
     border: 1px solid #d8b4fe;
     border-radius: 12px;
-    background: #ffffff;
+    background: var(--surface-elevated);
     box-shadow: 0 10px 24px rgba(111,45,168,0.07);
     overflow: hidden;
 }
@@ -218,7 +218,7 @@ table td {
     border-left: 3px solid var(--apollo-violet);
     border-bottom: 1px solid #eee7f8;
     border-radius: 0;
-    background: #fff;
+    background: var(--surface-elevated);
     color: var(--ink-900);
 }
 
@@ -245,7 +245,7 @@ table td {
 
 .phase-control-slot-edit {
     border-color: #e9d5ff;
-    background: #fff;
+    background: var(--surface-elevated);
 }
 
 .phase-control-slot-edit:focus-within {
@@ -429,7 +429,7 @@ table td {
     max-height: calc(100vh - 300px) !important;
     overflow: auto !important;
     border-radius: 10px !important;
-    background: #fff !important;
+    background: var(--surface-elevated) !important;
 }
 
 .audit-history-table-pro {
@@ -630,7 +630,9 @@ table td {
 
 .phase-template-warning-card {
     border-left: 4px solid var(--warning) !important;
-    background: #fffbeb !important;
+    background: var(--warning-bg) !important;
+    border-color: var(--warning-border) !important;
+    color: var(--warning-text) !important;
 }
 
 .phase-cleanup-form {
@@ -722,7 +724,7 @@ table td {
     padding: 6px 10px;
     border: 1px solid #fecaca;
     border-radius: 999px;
-    background: #fff7f7;
+    background: var(--danger-bg);
     color: #991b1b;
     font-size: 11px;
     font-weight: 900;

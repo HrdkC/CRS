@@ -26,7 +26,18 @@ Edit PLC
         </div>
 
         <form method="post" class="import-options-form">
-            <label><span>IP Address</span><input type="text" name="ip_address" value="{{ plc.ip_address }}"></label>
+            {{ csrf_input() }}
+            <input type="hidden" name="return_to" value="{{ form.get('return_to', '') if form else request.args.get('return_to', '') }}">
+            <label>
+                <span>Stage</span>
+                <select name="machine_stage_id" required>
+                    {% for stage in stages or [] %}
+                    <option value="{{ stage.id }}" {% if plc.machine_stage_id|string == stage.id|string %}selected{% endif %}>{{ stage.machine_code }} - {{ stage.stage_type }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label><span>PLC Name</span><input type="text" name="plc_name" value="{{ plc.plc_name }}" required maxlength="100"></label>
+            <label><span>IP Address</span><input type="text" name="ip_address" value="{{ plc.ip_address }}" required maxlength="45"></label>
             <label><span>Controller Type</span><input type="text" name="controller_type" value="{{ plc.controller_type }}"></label>
             <label><span>Firmware Revision</span><input type="text" name="firmware_revision" value="{{ plc.firmware_revision }}"></label>
             <label><span>Program Revision</span><input type="text" name="program_revision" value="{{ plc.program_revision }}"></label>

@@ -26,11 +26,13 @@ Create PLC
         </div>
 
         <form method="post" class="import-options-form">
+            {{ csrf_input() }}
+            <input type="hidden" name="return_to" value="{{ form.get('return_to', '') if form else request.args.get('return_to', '') }}">
             <label>
                 <span>Stage</span>
                 <select name="machine_stage_id" required>
                     {% for stage in stages %}
-                    <option value="{{ stage.id }}">{{ stage.machine_code }} - {{ stage.stage_type }}</option>
+                    <option value="{{ stage.id }}" {% if form and form.get('machine_stage_id')|string == stage.id|string %}selected{% endif %}>{{ stage.machine_code }} - {{ stage.stage_type }}</option>
                     {% endfor %}
                 </select>
             </label>

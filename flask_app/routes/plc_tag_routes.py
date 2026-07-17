@@ -946,6 +946,36 @@ def register_plc_tag_routes(app):
 
         )
 
+        if not tag:
+
+            flash(
+                "PLC tag was not found.",
+                "warning"
+            )
+
+            return redirect("/machines")
+
+        if not tag.get("is_array") or any(
+            tag.get(field) is None
+            for field in (
+                "array_start_index",
+                "array_end_index"
+            )
+        ):
+
+            flash(
+                "Selected PLC tag is not configured as an array.",
+                "warning"
+            )
+
+            return redirect(
+                machine_stage_url(
+                    "/plc-tags",
+                    machine_id=tag.get("machine_id"),
+                    stage_id=tag.get("stage_id")
+                )
+            )
+
         search_text = request.args.get(
             "search",
             ""
@@ -1227,6 +1257,36 @@ def register_plc_tag_routes(app):
             )
 
         )
+
+        if not tag:
+
+            flash(
+                "PLC tag was not found.",
+                "warning"
+            )
+
+            return redirect("/machines")
+
+        if not tag.get("is_array") or any(
+            tag.get(field) is None
+            for field in (
+                "array_start_index",
+                "array_end_index"
+            )
+        ):
+
+            flash(
+                "Selected PLC tag is not configured as an array.",
+                "warning"
+            )
+
+            return redirect(
+                machine_stage_url(
+                    "/plc-tags",
+                    machine_id=tag.get("machine_id"),
+                    stage_id=tag.get("stage_id")
+                )
+            )
 
         parameters = (
 

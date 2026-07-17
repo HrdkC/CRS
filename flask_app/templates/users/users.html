@@ -104,9 +104,9 @@ Users
                         </td>
                         <td class="user-status-cell">
                             {% if user.active == 1 %}
-                            <span class="status-badge status-success">Active</span>
+                            <span class="status-badge status-success status-active">Active</span>
                             {% else %}
-                            <span class="status-badge status-danger">Disabled</span>
+                            <span class="status-badge status-danger status-disabled">Disabled</span>
                             {% endif %}
                             {% if user.disabled_at %}
                             <br><small class="muted-text">{{ user.disabled_at_ist }} by {{ user.disabled_by }}</small>
@@ -116,7 +116,7 @@ Users
                             {% if user.password_reset_required == 1 %}
                             <span class="status-badge status-warning">Reset Required</span>
                             {% else %}
-                            <span class="status-badge status-success">OK</span>
+                            <span class="status-badge status-ok">OK</span>
                             {% endif %}
                             {% if user.password_changed_at %}
                             <br><small class="muted-text">Changed: {{ user.password_changed_at_ist }}</small>
@@ -137,12 +137,12 @@ Users
                                     {% if user.active == 1 %}
                                     <form method="POST" action="/users/disable/{{ user.username }}" class="row-action-form">
                                         {{ csrf_input() }}
-                                        <button type="submit" class="row-action danger">Disable</button>
+                                        <button type="submit" class="row-action danger action-disable">Disable</button>
                                     </form>
                                     {% else %}
                                     <form method="POST" action="/users/enable/{{ user.username }}" class="row-action-form">
                                         {{ csrf_input() }}
-                                        <button type="submit" class="row-action success">Enable</button>
+                                        <button type="submit" class="row-action success action-enable">Enable</button>
                                     </form>
                                     {% endif %}
                                 {% endif %}

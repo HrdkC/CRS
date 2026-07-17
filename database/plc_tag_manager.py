@@ -1524,6 +1524,266 @@ class PLCTagManager:
 
             conn.close()
 
+
+    @staticmethod
+    def create_missing_tags_from_requirements(
+        machine_id,
+        stage_id,
+        username=None,
+        include_recommended=True
+    ):
+        """Create editable offline PLC tag rows from active setup rules.
+
+        This is intentionally not an online PLC browse/import. It gives the
+        engineer a safe GUI starting point when a stage has no saved PLC tags
+        yet, so the tags can be renamed/remapped from Configuration Readiness.
+        """
+
+        from database.stage_plc_tag_requirement_manager import (
+            StagePLCTagRequirementManager
+        )
+
+        requirement_level = None if include_recommended else (
+            StagePLCTagRequirementManager.LEVEL_REQUIRED
+        )
+
+        requirements = StagePLCTagRequirementManager.get_stage_requirements(
+            machine_id,
+            stage_id,
+            requirement_level=requirement_level,
+            active_only=True
+        )
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        created = []
+        skipped = []
+        errors = []
+
+        try:
+
+            cursor.execute(
+                """
+                SELECT *
+                FROM plc_tags
+                WHERE
+                    machine_id = ?
+                    AND stage_id = ?
+                """,
+                (
+                    machine_id,
+                    stage_id
+                )
+            )
+
+            existing_rows = [
+                dict(row)
+                for row in cursor.fetchall()
+            ]
+
+            existing_purposes = {
+                (row.get("tag_purpose") or "").strip().upper()
+                for row in existing_rows
+                if (row.get("tag_purpose") or "").strip()
+            }
+
+            existing_names = {
+                (row.get("tag_name") or "").strip().upper()
+                for row in existing_rows
+                if (row.get("tag_name") or "").strip()
+            }
+
+            stage_requirements = PLCTagManager._stage_requirements_by_purpose(
+                machine_id,
+                stage_id
+            )
+
+            cursor.execute(
+                "BEGIN"
+            )
+
+            for requirement in requirements:
+
+                purpose = (
+                    requirement.get("purpose")
+                    or
+                    ""
+                ).strip().upper()
+
+                if not purpose:
+
+                    continue
+
+                if purpose in existing_purposes:
+
+                    skipped.append(
+                        f"{purpose}: already mapped"
+                    )
+
+                    continue
+
+                base_name = (
+                    requirement.get("default_tag_name")
+                    or
+                    purpose
+                ).strip()
+
+                tag_name = base_name
+                suffix = 2
+
+                while tag_name.upper() in existing_names:
+
+                    tag_name = f"{base_name}_{suffix}"
+                    suffix += 1
+
+                is_array = 1 if int(
+                    requirement.get("array_required")
+                    or
+                    0
+                ) else 0
+
+                start_index = requirement.get("array_start_index")
+                end_index = requirement.get("array_end_index")
+                array_size = requirement.get("minimum_array_size")
+
+                if is_array:
+
+                    if start_index is None:
+
+                        start_index = 0
+
+                    if end_index is not None and array_size is None:
+
+                        array_size = int(end_index) - int(start_index) + 1
+
+                    if array_size is None:
+
+                        array_size = 1
+
+                    if end_index is None:
+
+                        end_index = int(start_index) + int(array_size) - 1
+
+                else:
+
+                    array_size = None
+                    start_index = None
+                    end_index = None
+
+                candidate = PLCTagManager._clean_tag_config({
+                    "tag_name": tag_name,
+                    "tag_type": requirement.get("expected_type") or "",
+                    "is_array": is_array,
+                    "array_size": array_size,
+                    "array_start_index": start_index,
+                    "array_end_index": end_index,
+                    "description": requirement.get("label") or purpose,
+                    "tag_purpose": purpose,
+                })
+
+                row_errors = PLCTagManager._validate_tag_config(
+                    candidate,
+                    stage_requirements=stage_requirements
+                )
+
+                if row_errors:
+
+                    errors.extend(row_errors)
+                    continue
+
+                cursor.execute(
+                    """
+                    INSERT INTO plc_tags
+                    (
+                        machine_id,
+                        stage_id,
+                        tag_name,
+                        tag_type,
+                        is_array,
+                        array_size,
+                        array_start_index,
+                        array_end_index,
+                        description,
+                        created_by,
+                        tag_purpose
+                    )
+                    VALUES
+                    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        machine_id,
+                        stage_id,
+                        candidate["tag_name"],
+                        candidate["tag_type"],
+                        candidate["is_array"],
+                        candidate["array_size"],
+                        candidate["array_start_index"],
+                        candidate["array_end_index"],
+                        candidate["description"],
+                        username,
+                        candidate["tag_purpose"],
+                    )
+                )
+
+                tag_id = cursor.lastrowid
+                existing_names.add(
+                    candidate["tag_name"].upper()
+                )
+                existing_purposes.add(
+                    purpose
+                )
+
+                created.append({
+                    "id": tag_id,
+                    "purpose": purpose,
+                    "tag_name": candidate["tag_name"],
+                    "tag_type": candidate["tag_type"],
+                    "is_array": candidate["is_array"],
+                    "array_size": candidate["array_size"],
+                    "array_start_index": candidate["array_start_index"],
+                    "array_end_index": candidate["array_end_index"],
+                })
+
+            if errors:
+
+                conn.rollback()
+
+                return {
+                    "success": False,
+                    "created": created,
+                    "skipped": skipped,
+                    "errors": errors,
+                    "message": errors[0],
+                }
+
+            conn.commit()
+
+            return {
+                "success": True,
+                "created": created,
+                "skipped": skipped,
+                "errors": [],
+                "message": f"{len(created)} missing PLC tag row(s) created from setup rules.",
+            }
+
+        except Exception as exc:
+
+            conn.rollback()
+
+            return {
+                "success": False,
+                "created": created,
+                "skipped": skipped,
+                "errors": [str(exc)],
+                "message": f"Could not create missing PLC tag rows: {exc}",
+            }
+
+        finally:
+
+            conn.close()
+
+
     @staticmethod
     def update_tag(
 

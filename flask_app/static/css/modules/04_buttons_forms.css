@@ -72,7 +72,7 @@ button:hover,
     border: 1px solid #fecaca;
     border-left: 4px solid #dc2626;
     border-radius: var(--radius-md);
-    background: #fff7f7;
+    background: var(--danger-bg);
     box-shadow: var(--shadow-sm);
 }
 .delete-confirm-panel label {
@@ -83,7 +83,7 @@ button:hover,
 }
 .delete-confirm-panel textarea {
     min-height: 58px;
-    background: #fff;
+    background: var(--surface-elevated);
 }
 .inline-action-form { display: inline-flex; margin: 0; }
 .nav-post-form { display: block; margin: 0; }
@@ -131,7 +131,7 @@ form { margin: 0; }
 label { display: inline-block; color: var(--ink-700); font-size: 12.5px; font-weight: 800; margin-bottom: 4px; }
 input,
 select,
-textarea { width: 100%; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line-300); border-radius: var(--radius-sm); background: #fff; color: var(--ink-900); font: 13px var(--font-sans); outline: none; }
+textarea { width: 100%; min-height: 36px; padding: 8px 10px; border: 1px solid var(--line-300); border-radius: var(--radius-sm); background: var(--surface-elevated); color: var(--ink-900); font: 13px var(--font-sans); outline: none; }
 input:focus,
 select:focus,
 textarea:focus { border-color: var(--apollo-violet); box-shadow: 0 0 0 3px rgba(111,45,168,0.13); }

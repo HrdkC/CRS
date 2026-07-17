@@ -1,0 +1,33 @@
+CRS V11.10 - OK Status and Dark Surface Standardization
+Date: 2026-07-17
+
+Purpose
+-------
+1. Standardize every explicit OK status across CRS.
+2. Correct remaining white/light page-specific surfaces in dark/system-dark mode.
+
+Final OK contract
+-----------------
+Light theme:
+- Background: #166534
+- Text: #FFFFFF
+- Border: #4ADE80
+
+Dark/system-dark theme:
+- Background: #15803D
+- Text: #FFFFFF
+- Border: #86EFAC
+
+OK includes a check mark so meaning is not communicated by color alone.
+
+Dark-theme pages corrected
+--------------------------
+- PLC Tag Browser hero, search, result, manual and saved-tag cards
+- PLC browser headings, check pills, metrics, notices, tables, badges and empty states
+- Bulk parameter editor toolbar and inactive/dirty rows
+- Recipe PLC buffer operation panels, recipe strips, live status, process steps,
+  compact details, neutral status and lock warning
+
+Safety
+------
+No PLC communication, PLC mapping, recipe data or database schema is changed.

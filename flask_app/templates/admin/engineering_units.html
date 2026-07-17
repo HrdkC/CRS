@@ -71,9 +71,9 @@ Engineering Units
                         <td>{{ unit.description }}</td>
                         <td>
                             {% if unit.is_active == 1 %}
-                            <span class="status-badge status-success">Active</span>
+                            <span class="status-badge status-success status-active">Active</span>
                             {% else %}
-                            <span class="status-badge status-neutral">Disabled</span>
+                            <span class="status-badge status-danger status-disabled">Disabled</span>
                             {% endif %}
                         </td>
                         <td>
@@ -90,7 +90,7 @@ Engineering Units
                                     data-confirm="Disable this engineering unit?"
                                 >
                                     {{ csrf_input() }}
-                                    <button type="submit" class="row-action disable">Disable</button>
+                                    <button type="submit" class="row-action danger disable action-disable">Disable</button>
                                 </form>
                                 {% else %}
                                 <form
@@ -100,7 +100,7 @@ Engineering Units
                                     data-confirm="Enable this engineering unit?"
                                 >
                                     {{ csrf_input() }}
-                                    <button type="submit" class="row-action enable">Enable</button>
+                                    <button type="submit" class="row-action success enable action-enable">Enable</button>
                                 </form>
                                 {% endif %}
                                 {% endif %}

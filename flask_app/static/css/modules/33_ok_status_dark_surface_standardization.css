@@ -1,0 +1,384 @@
+/*
+ * 33_ok_status_dark_surface_standardization.css
+ * Final CRS OK-state and remaining dark-surface completion layer.
+ *
+ * Responsibilities:
+ * - Standardize OK badges/pills in light, dark, system and forced-color modes.
+ * - Preserve a clear positive-state green with white text and a check cue.
+ * - Correct page-specific inline light CSS that bypasses the shared dark theme,
+ *   especially PLC Tag Browser, bulk parameter editor and PLC buffer operations.
+ *
+ * Keep this module as the final CSS import.
+ */
+
+:root {
+    --crs-status-ok-bg: #166534;
+    --crs-status-ok-text: #ffffff;
+    --crs-status-ok-border: #4ade80;
+    --crs-status-ok-ring: rgba(22, 101, 52, 0.22);
+    --crs-status-ok-shadow: rgba(22, 101, 52, 0.18);
+}
+
+html[data-crs-resolved-theme="dark"] {
+    --crs-status-ok-bg: #15803d;
+    --crs-status-ok-text: #ffffff;
+    --crs-status-ok-border: #86efac;
+    --crs-status-ok-ring: rgba(134, 239, 172, 0.26);
+    --crs-status-ok-shadow: rgba(0, 0, 0, 0.38);
+}
+
+/* -------------------------------------------------------------------------
+   Canonical OK status. OK is a positive state, not a disabled control.
+   ------------------------------------------------------------------------- */
+html body :is(.status-badge, .status-pill).status-ok,
+html body :is(.status-badge, .status-pill)[class~="status-ok"],
+html body .status-ok:is(.status-badge, .status-pill) {
+    position: relative !important;
+    isolation: isolate !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+
+    min-height: 23px !important;
+    max-width: 100% !important;
+    padding: 4px 9px !important;
+
+    color: var(--crs-status-ok-text) !important;
+    background-color: var(--crs-status-ok-bg) !important;
+    background-image: linear-gradient(
+        var(--crs-status-ok-bg),
+        var(--crs-status-ok-bg)
+    ) !important;
+    border: 1px solid var(--crs-status-ok-border) !important;
+    border-radius: 999px !important;
+
+    box-shadow:
+        inset 0 0 0 1000px var(--crs-status-ok-bg),
+        0 0 0 1px var(--crs-status-ok-ring),
+        0 2px 7px var(--crs-status-ok-shadow) !important;
+
+    font-size: 10px !important;
+    font-weight: 950 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.025em !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+    text-shadow: none !important;
+
+    white-space: nowrap !important;
+    overflow: visible !important;
+    opacity: 1 !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    cursor: default !important;
+    -webkit-text-fill-color: var(--crs-status-ok-text) !important;
+    forced-color-adjust: none !important;
+}
+
+html[data-crs-resolved-theme="dark"] body :is(.status-badge, .status-pill).status-ok {
+    color: var(--crs-status-ok-text) !important;
+    background-color: var(--crs-status-ok-bg) !important;
+    background-image: linear-gradient(
+        var(--crs-status-ok-bg),
+        var(--crs-status-ok-bg)
+    ) !important;
+    border-color: var(--crs-status-ok-border) !important;
+    box-shadow:
+        inset 0 0 0 1000px var(--crs-status-ok-bg),
+        0 0 0 1px var(--crs-status-ok-ring),
+        0 2px 7px var(--crs-status-ok-shadow) !important;
+    -webkit-text-fill-color: var(--crs-status-ok-text) !important;
+}
+
+html body :is(.status-badge, .status-pill).status-ok::before {
+    content: "✓";
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 13px !important;
+    min-width: 13px !important;
+    height: 13px !important;
+
+    color: var(--crs-status-ok-bg) !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.88) !important;
+    border-radius: 50% !important;
+
+    font-size: 9px !important;
+    font-weight: 1000 !important;
+    line-height: 1 !important;
+    -webkit-text-fill-color: var(--crs-status-ok-bg) !important;
+    forced-color-adjust: none !important;
+}
+
+html body :is(.status-badge, .status-pill).status-ok:is(:hover, :active, :focus-visible) {
+    color: var(--crs-status-ok-text) !important;
+    background-color: var(--crs-status-ok-bg) !important;
+    border-color: var(--crs-status-ok-border) !important;
+    transform: none !important;
+    -webkit-text-fill-color: var(--crs-status-ok-text) !important;
+}
+
+/* -------------------------------------------------------------------------
+   PLC Tag Browser: replace every remaining inline white/light work surface.
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 {
+    color: var(--crs-dark-text-secondary) !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 :is(
+    .plc-hero,
+    .search-card,
+    .result-card,
+    .manual-card,
+    .saved-card
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface-2) !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border) !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26) !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 :is(
+    h1,
+    .card-heading strong,
+    .field-title,
+    label > span,
+    .metric-card b,
+    details summary,
+    tbody td,
+    .tag-name-cell
+) {
+    color: var(--crs-dark-text) !important;
+    -webkit-text-fill-color: currentColor !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 :is(
+    .muted-line,
+    .card-heading p,
+    .metric-card span
+) {
+    color: var(--crs-dark-text-muted) !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 :is(
+    .card-heading,
+    details summary
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface) !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border) !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .metric-card {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface-3) !important;
+    border-color: var(--crs-dark-border) !important;
+    box-shadow: none !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .check-pill {
+    color: var(--crs-dark-text) !important;
+    background: var(--crs-dark-inset) !important;
+    border-color: var(--crs-dark-border-strong) !important;
+    font-size: 12px !important;
+    -webkit-text-fill-color: var(--crs-dark-text) !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .check-pill input {
+    accent-color: var(--crs-dark-violet) !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .hint-strip {
+    color: #bfdbfe !important;
+    background: #102746 !important;
+    border-color: #315d91 !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .notice-info {
+    color: #bae6fd !important;
+    background: #0c2b40 !important;
+    border-color: #23759a !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .notice-warning {
+    color: #fde68a !important;
+    background: #3b2a0b !important;
+    border-color: #a16207 !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .notice-danger {
+    color: #fecaca !important;
+    background: #421515 !important;
+    border-color: #b91c1c !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .plc-action-message {
+    color: #e9d5ff !important;
+    background: #2b1746 !important;
+    border-color: #8b5cf6 !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 :is(
+    .table-scroll,
+    .empty-state
+) {
+    color: var(--crs-dark-text-muted) !important;
+    background: var(--crs-dark-surface) !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border) !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 table,
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 tbody,
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 tbody tr,
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 tbody td {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface) !important;
+    background-image: none !important;
+    border-color: #22324b !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 tbody tr:nth-child(even) td {
+    background: #101d32 !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 tbody tr:hover td {
+    color: var(--crs-dark-text) !important;
+    background: #241b3b !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .mini-badge {
+    color: #dbeafe !important;
+    background: #243550 !important;
+    border-color: #4b6080 !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .mini-badge.array {
+    color: #bbf7d0 !important;
+    background: #123521 !important;
+    border-color: #287a49 !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .plc-browser-v2 .mini-badge.scalar {
+    color: #cbd5e1 !important;
+    background: #1d2a40 !important;
+    border-color: #425573 !important;
+}
+
+/* -------------------------------------------------------------------------
+   Other page-specific inline light styles that must obey dark mode.
+   ------------------------------------------------------------------------- */
+html[data-crs-resolved-theme="dark"] body .bulk-edit-control-bar {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface) !important;
+    border-color: var(--crs-dark-border) !important;
+}
+
+html[data-crs-resolved-theme="dark"] body :is(.bulk-chip-button, .bulk-action-button) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #243550 !important;
+    border-color: #4b6080 !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .bulk-parameter-table tbody tr.row-inactive td {
+    color: var(--crs-dark-text-muted) !important;
+    background: #101b2d !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .bulk-parameter-table tbody tr.bulk-row-dirty td {
+    color: var(--crs-dark-text) !important;
+    background: #2a1c43 !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .bulk-visible-counter {
+    color: #c4b5fd !important;
+}
+
+html[data-crs-resolved-theme="dark"] body :is(
+    .buffer-panel,
+    .strip-item,
+    .live-status-item,
+    .live-status-value,
+    .live-status-meta span,
+    .step-item,
+    .compact-details
+) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: var(--crs-dark-surface-2) !important;
+    background-image: none !important;
+    border-color: var(--crs-dark-border) !important;
+    box-shadow: none !important;
+}
+
+html[data-crs-resolved-theme="dark"] body :is(
+    .strip-label,
+    .flow-row,
+    .live-status-label,
+    .step-label
+) {
+    color: var(--crs-dark-text-muted) !important;
+}
+
+html[data-crs-resolved-theme="dark"] body :is(
+    .strip-value,
+    .live-status-value,
+    .step-value,
+    .compact-details strong
+) {
+    color: var(--crs-dark-text) !important;
+}
+
+html[data-crs-resolved-theme="dark"] body :is(.flow-node, .status-neutral) {
+    color: var(--crs-dark-text-secondary) !important;
+    background: #1d2a40 !important;
+    border-color: #425573 !important;
+}
+
+html[data-crs-resolved-theme="dark"] body :is(.btn-restore, .btn-save, .btn-upload) {
+    color: #ffffff !important;
+    background: #334a6e !important;
+    border-color: #7186a4 !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="dark"] body .operation-lock-warning {
+    color: #fde68a !important;
+    background: #3b2a0b !important;
+    border-color: #a16207 !important;
+}
+
+/* -------------------------------------------------------------------------
+   Accessibility/high-contrast support.
+   ------------------------------------------------------------------------- */
+@media (forced-colors: active) {
+    html body :is(.status-badge, .status-pill).status-ok {
+        color: #ffffff !important;
+        background-color: #15803d !important;
+        background-image: linear-gradient(#15803d, #15803d) !important;
+        border: 2px solid #ffffff !important;
+        box-shadow: inset 0 0 0 1000px #15803d !important;
+        -webkit-text-fill-color: #ffffff !important;
+        forced-color-adjust: none !important;
+    }
+
+    html body :is(.status-badge, .status-pill).status-ok::before {
+        color: #15803d !important;
+        background: #ffffff !important;
+        border-color: #ffffff !important;
+        -webkit-text-fill-color: #15803d !important;
+        forced-color-adjust: none !important;
+    }
+}
+
+@media (prefers-contrast: more) {
+    html body :is(.status-badge, .status-pill).status-ok {
+        border-width: 2px !important;
+        font-weight: 1000 !important;
+    }
+}

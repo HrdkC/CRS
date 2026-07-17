@@ -68,7 +68,10 @@
         ].join(","),
 
         init() {
-            this.mediaQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+            const runtime = window.CRSThemeRuntime;
+            this.mediaQuery = runtime && runtime.mediaQuery
+                ? runtime.mediaQuery
+                : (window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null);
             this.applyStored();
             this.bindControls();
             this.bindSystemThemeWatcher();
@@ -102,6 +105,10 @@
         },
 
         resolvedTheme(theme) {
+            const runtime = window.CRSThemeRuntime;
+            if (runtime && typeof runtime.resolvedTheme === "function") {
+                return runtime.resolvedTheme(theme);
+            }
             if (theme === "dark") return "dark";
             if (theme === "light") return "light";
             return this.mediaQuery && this.mediaQuery.matches ? "dark" : "light";
@@ -116,19 +123,58 @@
 
         applyTheme(theme, persist) {
             const safeTheme = this.safeTheme(theme);
-            const root = document.documentElement;
-            root.setAttribute("data-crs-theme", safeTheme);
-            root.setAttribute("data-crs-resolved-theme", this.resolvedTheme(safeTheme));
+            const runtime = window.CRSThemeRuntime;
+            let state;
 
-            if (persist !== false) {
-                this.storageSet(this.themeKey, safeTheme);
+            if (runtime && typeof runtime.apply === "function") {
+                state = runtime.apply(safeTheme, persist !== false, true);
+            } else {
+                const root = document.documentElement;
+                const resolved = this.resolvedTheme(safeTheme);
+                root.setAttribute("data-crs-theme", safeTheme);
+                root.setAttribute("data-crs-system-theme", this.mediaQuery && this.mediaQuery.matches ? "dark" : "light");
+                root.setAttribute("data-crs-resolved-theme", resolved);
+                root.style.colorScheme = resolved;
+                if (persist !== false) this.storageSet(this.themeKey, safeTheme);
+                state = {
+                    choice: safeTheme,
+                    system: this.mediaQuery && this.mediaQuery.matches ? "dark" : "light",
+                    resolved: resolved
+                };
             }
 
+            this.updateThemeControls(state);
+        },
+
+        updateThemeControls(state) {
+            const root = document.documentElement;
+            const choice = this.safeTheme(
+                state && state.choice
+                    ? state.choice
+                    : (root.getAttribute("data-crs-theme") || "system")
+            );
+            const system = state && state.system
+                ? state.system
+                : (root.getAttribute("data-crs-system-theme") || this.resolvedTheme("system"));
+            const resolved = state && state.resolved
+                ? state.resolved
+                : (root.getAttribute("data-crs-resolved-theme") || this.resolvedTheme(choice));
+
             CRS.util.qsa("[data-crs-theme-choice]").forEach(function (button) {
-                const active = button.getAttribute("data-crs-theme-choice") === safeTheme;
+                const buttonChoice = button.getAttribute("data-crs-theme-choice");
+                const active = buttonChoice === choice;
                 button.classList.toggle("is-active", active);
                 button.setAttribute("aria-pressed", active ? "true" : "false");
+
+                if (buttonChoice === "system") {
+                    const systemLabel = system === "dark" ? "Dark" : "Light";
+                    button.setAttribute("data-crs-system-resolved", system);
+                    button.setAttribute("title", "Use system theme — current system preference: " + systemLabel);
+                    button.setAttribute("aria-label", "Use system theme. Current system preference: " + systemLabel);
+                }
             });
+
+            root.setAttribute("data-crs-resolved-theme", resolved);
         },
 
         applyFontStep(step, persist) {
@@ -300,23 +346,43 @@
         },
 
         bindSystemThemeWatcher() {
-            if (!this.mediaQuery) return;
-
-            const updateResolvedTheme = function () {
-                const theme = CRS.preferences.safeTheme(
-                    document.documentElement.getAttribute("data-crs-theme") || "system"
-                );
-                document.documentElement.setAttribute(
-                    "data-crs-resolved-theme",
-                    CRS.preferences.resolvedTheme(theme)
-                );
+            const updateControls = function (event) {
+                const detail = event && event.detail ? event.detail : null;
+                CRS.preferences.updateThemeControls(detail);
             };
 
-            if (this.mediaQuery.addEventListener) {
-                this.mediaQuery.addEventListener("change", updateResolvedTheme);
-            } else if (this.mediaQuery.addListener) {
-                this.mediaQuery.addListener(updateResolvedTheme);
+            document.addEventListener("crs:themechange", updateControls);
+
+            window.addEventListener("storage", function (event) {
+                if (!event || event.key === CRS.preferences.themeKey || event.key === null) {
+                    const runtime = window.CRSThemeRuntime;
+                    const state = runtime && typeof runtime.sync === "function"
+                        ? runtime.sync(true)
+                        : null;
+                    CRS.preferences.updateThemeControls(state);
+                }
+            });
+
+            // Fallback for browsers where the early bootstrap runtime is not available.
+            if (!window.CRSThemeRuntime && this.mediaQuery) {
+                const updateResolvedTheme = function () {
+                    const theme = CRS.preferences.safeTheme(
+                        document.documentElement.getAttribute("data-crs-theme") || "system"
+                    );
+                    CRS.preferences.applyTheme(theme, false);
+                };
+
+                if (this.mediaQuery.addEventListener) {
+                    this.mediaQuery.addEventListener("change", updateResolvedTheme);
+                } else if (this.mediaQuery.addListener) {
+                    this.mediaQuery.addListener(updateResolvedTheme);
+                }
             }
+
+            const runtime = window.CRSThemeRuntime;
+            CRS.preferences.updateThemeControls(
+                runtime && typeof runtime.sync === "function" ? runtime.sync(true) : null
+            );
         }
     };
 

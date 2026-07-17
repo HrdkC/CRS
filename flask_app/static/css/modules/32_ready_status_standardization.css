@@ -1,0 +1,174 @@
+/*
+ * 32_ready_status_standardization.css
+ * Final CRS READY-state contract for light, dark, system and forced-color modes.
+ *
+ * READY is a positive workflow status, not an action button. It therefore uses
+ * one green status pill with white text and a check mark on every CRS page.
+ * This module must remain the final CSS import.
+ */
+
+:root {
+    /* Green 700: white-text contrast is about 5.02:1. */
+    --crs-status-ready-bg: #15803d;
+    --crs-status-ready-text: #ffffff;
+    --crs-status-ready-border: #4ade80;
+    --crs-status-ready-ring: rgba(21, 128, 61, 0.24);
+    --crs-status-ready-shadow: rgba(21, 128, 61, 0.20);
+}
+
+html[data-crs-resolved-theme="dark"] {
+    /* Keep the same semantic green in dark mode; the brighter border preserves
+       a clear component boundary against the dark CRS surface. */
+    --crs-status-ready-bg: #15803d;
+    --crs-status-ready-text: #ffffff;
+    --crs-status-ready-border: #86efac;
+    --crs-status-ready-ring: rgba(134, 239, 172, 0.28);
+    --crs-status-ready-shadow: rgba(0, 0, 0, 0.38);
+}
+
+/* Canonical READY badge/pill styling across every CRS page and theme. */
+html body :is(.status-badge, .status-pill).status-ready,
+html body :is(.status-badge, .status-pill)[class~="status-ready"],
+html body .status-ready:is(.status-badge, .status-pill),
+html body .configuration-stage-card-ready :is(.status-badge, .status-pill).status-ready {
+    position: relative !important;
+    isolation: isolate !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+
+    min-height: 23px !important;
+    max-width: 100% !important;
+    padding: 4px 9px !important;
+
+    color: var(--crs-status-ready-text) !important;
+    background-color: var(--crs-status-ready-bg) !important;
+    background-image: linear-gradient(
+        var(--crs-status-ready-bg),
+        var(--crs-status-ready-bg)
+    ) !important;
+    border: 1px solid var(--crs-status-ready-border) !important;
+    border-radius: 999px !important;
+
+    box-shadow:
+        inset 0 0 0 1000px var(--crs-status-ready-bg),
+        0 0 0 1px var(--crs-status-ready-ring),
+        0 2px 7px var(--crs-status-ready-shadow) !important;
+
+    font-size: 10px !important;
+    font-weight: 950 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.025em !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+    text-shadow: none !important;
+
+    white-space: nowrap !important;
+    overflow: visible !important;
+    opacity: 1 !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    cursor: default !important;
+    -webkit-text-fill-color: var(--crs-status-ready-text) !important;
+    forced-color-adjust: none !important;
+}
+
+/* Explicit dark-theme selector matches the specificity of older theme layers. */
+html[data-crs-resolved-theme="dark"] body .status-badge.status-ready,
+html[data-crs-resolved-theme="dark"] body .status-pill.status-ready,
+html[data-crs-resolved-theme="dark"] body .configuration-stage-card-ready .status-badge.status-ready {
+    color: var(--crs-status-ready-text) !important;
+    background-color: var(--crs-status-ready-bg) !important;
+    background-image: linear-gradient(
+        var(--crs-status-ready-bg),
+        var(--crs-status-ready-bg)
+    ) !important;
+    border-color: var(--crs-status-ready-border) !important;
+    box-shadow:
+        inset 0 0 0 1000px var(--crs-status-ready-bg),
+        0 0 0 1px var(--crs-status-ready-ring),
+        0 2px 7px var(--crs-status-ready-shadow) !important;
+    -webkit-text-fill-color: var(--crs-status-ready-text) !important;
+}
+
+/* Check mark is a non-color cue and keeps READY distinct from ACTIVE/OK. */
+html body :is(.status-badge, .status-pill).status-ready::before,
+html body :is(.status-badge, .status-pill)[class~="status-ready"]::before,
+html body .status-ready:is(.status-badge, .status-pill)::before {
+    content: "✓";
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 13px !important;
+    min-width: 13px !important;
+    height: 13px !important;
+
+    color: var(--crs-status-ready-bg) !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.84) !important;
+    border-radius: 50% !important;
+    box-shadow: none !important;
+
+    font-size: 9px !important;
+    font-weight: 1000 !important;
+    line-height: 1 !important;
+    opacity: 1 !important;
+    filter: none !important;
+    -webkit-text-fill-color: var(--crs-status-ready-bg) !important;
+    forced-color-adjust: none !important;
+}
+
+/* Preserve semantic appearance on hover/focus without button motion. */
+html body :is(.status-badge, .status-pill).status-ready:is(:hover, :active, :focus-visible) {
+    color: var(--crs-status-ready-text) !important;
+    background-color: var(--crs-status-ready-bg) !important;
+    background-image: linear-gradient(
+        var(--crs-status-ready-bg),
+        var(--crs-status-ready-bg)
+    ) !important;
+    border-color: var(--crs-status-ready-border) !important;
+    box-shadow:
+        inset 0 0 0 1000px var(--crs-status-ready-bg),
+        0 0 0 1px var(--crs-status-ready-ring),
+        0 2px 7px var(--crs-status-ready-shadow) !important;
+    transform: none !important;
+    -webkit-text-fill-color: var(--crs-status-ready-text) !important;
+}
+
+/* Ready cards use the same semantic green as their left accent. */
+html body .configuration-stage-card-ready {
+    border-left-color: var(--crs-status-ready-bg) !important;
+}
+
+/* Keep explicit green + white in Windows/browser forced-color modes. */
+@media (forced-colors: active) {
+    html body :is(.status-badge, .status-pill).status-ready {
+        color: #ffffff !important;
+        background-color: #15803d !important;
+        background-image: linear-gradient(#15803d, #15803d) !important;
+        border: 2px solid #ffffff !important;
+        box-shadow: inset 0 0 0 1000px #15803d !important;
+        opacity: 1 !important;
+        -webkit-text-fill-color: #ffffff !important;
+        forced-color-adjust: none !important;
+    }
+
+    html body :is(.status-badge, .status-pill).status-ready::before {
+        color: #15803d !important;
+        background: #ffffff !important;
+        border-color: #ffffff !important;
+        -webkit-text-fill-color: #15803d !important;
+        forced-color-adjust: none !important;
+    }
+}
+
+@media (prefers-contrast: more) {
+    html body :is(.status-badge, .status-pill).status-ready {
+        border-width: 2px !important;
+        font-weight: 1000 !important;
+    }
+}

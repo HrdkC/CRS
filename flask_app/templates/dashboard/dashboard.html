@@ -108,7 +108,7 @@ Apollo CRS Dashboard
                 <span class="metric-label">{{ alert.label }}</span>
                 <strong>{{ alert.count }}</strong>
                 <small>{{ alert.detail }}</small>
-                <span class="status-badge {{ alert.status_class }}">
+                <span class="status-badge {% if alert.count == 0 %}status-ok{% else %}{{ alert.status_class }}{% endif %}">
                     {% if alert.count > 0 %}
                         {% if alert.status_class == "status-danger" %}
                             ⚠ Action

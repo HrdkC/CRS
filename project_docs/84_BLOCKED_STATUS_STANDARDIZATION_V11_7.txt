@@ -1,0 +1,34 @@
+CRS V11.7 - BLOCKED Status Standardization
+Date: 2026-07-17
+
+Professional status contract
+----------------------------
+BLOCKED is a workflow condition that requires corrective action before the process can continue.
+It is not the same as a disabled/unavailable control.
+
+Final appearance:
+- BLOCKED status: IBM Carbon status red (#DA1E28), white text, light-red border.
+- Includes explicit BLOCKED text, pill shape, semantic red, and an alert mark.
+- White text contrast against #DA1E28 is approximately 5.0:1 (WCAG AA).
+- Unavailable buttons remain neutral slate.
+- Disable/Delete actions remain solid destructive red under module 29.
+- Warning remains amber; Active/Ready remains green.
+
+Files changed:
+- flask_app/static/css/modules/30_blocked_status_standardization.css
+- flask_app/static/css/main.css
+- flask_app/static/css/crs.bundle.css
+- flask_app/templates/base.html
+- flask_app/routes/dashboard_routes.py
+- templates with static BLOCKED badges
+- scripts/check_blocked_status_standardization.py
+
+Apply:
+Expand-Archive -Path .\CRS_V11_7_Blocked_Status_Standardization_PATCH_ONLY_170726.zip -DestinationPath . -Force
+python scripts\clear_crs_pycache.py
+python scripts\build_css_bundle.py --check
+python scripts\check_blocked_status_standardization.py
+python app.py
+
+Browser refresh:
+Ctrl + F5

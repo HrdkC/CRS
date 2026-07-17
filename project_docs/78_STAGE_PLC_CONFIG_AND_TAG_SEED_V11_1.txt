@@ -1,0 +1,58 @@
+CRS V11.1 - Stage PLC Configuration + Missing PLC Tag Seed Patch
+Date: 2026-07-17
+
+Problem found in latest V11 backup:
+- /configuration/P01/FS showed PLC Registry = BLOCKED because P01 First Stage has no active PLC record in plc_registry for its exact machine_stage_id.
+- /configuration/P01/FS also showed no saved PLC tags, so the PLC Tag Edit / Rename / Remap table could not be used until tags were created elsewhere.
+- Existing PLC setup rules were already present, but there was no direct Configuration Readiness action to create editable plc_tags rows from those rules.
+- PLC registry creation/editing existed in /plcs, but not directly on the stage readiness page where the blocked status is shown.
+
+Patch changes:
+1. Adds Stage PLC Registry / Communication Setup card directly on Configuration Readiness.
+   - Create active PLC for the exact machine/stage.
+   - Edit active/disabled status, PLC name, IP, controller, firmware, program, processor, software, description.
+   - Save is audited with reason.
+   - Links to Test / Verify are shown for existing PLC rows.
+
+2. Adds Create Missing PLC Tags action on Configuration Readiness.
+   - Creates editable plc_tags rows from active setup rules.
+   - Uses default tag name, datatype, scalar/array, array size/start/end, purpose.
+   - Skips already mapped purposes.
+   - Creates both required and recommended tags when selected.
+   - Save is audited with reason.
+
+3. Hardens PLCRegistryManager.
+   - Supports stage-specific create/update from Configuration.
+   - Keeps machine_stage_id semantics clear.
+   - Adds get_plcs_for_stage() and joined list helpers.
+   - Keeps existing /plcs create/edit/enable/disable compatibility.
+
+4. Adds CSRF tokens to the changed Configuration and PLC Registry forms.
+
+5. Adds responsive CSS for the new PLC communication setup and tag seed UI.
+
+Files changed:
+- database/plc_registry_manager.py
+- database/plc_tag_manager.py
+- flask_app/routes/configuration_routes.py
+- flask_app/routes/plc_routes.py
+- flask_app/templates/configuration/stage_readiness.html
+- flask_app/templates/plcs/create_plc.html
+- flask_app/templates/plcs/edit_plc.html
+- flask_app/static/css/modules/09_configuration.css
+
+Apply:
+Expand-Archive -Path .\CRS_V11_1_Stage_PLC_Config_Seed_Tags_PATCH_ONLY_170726.zip -DestinationPath . -Force
+
+After apply:
+python scripts/clear_crs_pycache.py
+python app.py
+
+Recommended test:
+1. Open /configuration/P01/FS.
+2. In Stage PLC Registry / Communication Setup, enter PLC IP and save.
+3. Confirm PLC Registry card changes from BLOCKED to OK after refresh.
+4. In Saved PLC Tags section, click Create Missing PLC Tags.
+5. Confirm PLC Tag Edit / Rename / Remap table is populated.
+6. Rename/remap as needed and save PLC Tag Edit / Remap.
+7. Recheck Required PLC Tags and Recommended PLC Tags readiness sections.

@@ -110,9 +110,9 @@ Machine Registry
                         <td>{{ machine.created_by }}</td>
                         <td>
                             {% if machine.active == 1 %}
-                            <span class="status-badge status-success">Active</span>
+                            <span class="status-badge status-success status-active">Active</span>
                             {% else %}
-                            <span class="status-badge status-neutral">Disabled</span>
+                            <span class="status-badge status-danger status-disabled">Disabled</span>
                             {% endif %}
                         </td>
                         <td>
@@ -126,12 +126,12 @@ Machine Registry
                                 {% if machine.active == 1 %}
                                 <form method="POST" action="/machines/disable/{{ machine.id }}" class="row-action-form">
                                     {{ csrf_input() }}
-                                    <button type="submit" class="row-action danger">Disable</button>
+                                    <button type="submit" class="row-action danger action-disable">Disable</button>
                                 </form>
                                 {% else %}
                                 <form method="POST" action="/machines/enable/{{ machine.id }}" class="row-action-form">
                                     {{ csrf_input() }}
-                                    <button type="submit" class="row-action success">Enable</button>
+                                    <button type="submit" class="row-action success action-enable">Enable</button>
                                 </form>
                                 {% endif %}
                             </div>

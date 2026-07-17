@@ -1,0 +1,341 @@
+/*
+ * 29_semantic_action_status_standardization.css
+ * Final semantic color contract for CRS actions, statuses, and unavailable controls.
+ *
+ * Contract:
+ * - Disable / destructive action: red background, white text.
+ * - Enable / active / successful state: green background, white text.
+ * - Primary / edit / open action: blue background, white text.
+ * - Truly unavailable controls: neutral slate background with readable light text.
+ *
+ * This module is intentionally imported last so page-specific and theme-specific
+ * rules cannot reintroduce white-on-white or inconsistent semantic actions.
+ */
+
+:root {
+    --crs-action-disable-bg: #dc2626;
+    --crs-action-disable-hover: #b91c1c;
+    --crs-action-disable-active: #991b1b;
+    --crs-action-disable-border: #f87171;
+
+    --crs-action-enable-bg: #15803d;
+    --crs-action-enable-hover: #166534;
+    --crs-action-enable-active: #14532d;
+    --crs-action-enable-border: #4ade80;
+
+    --crs-action-primary-bg: #2563eb;
+    --crs-action-primary-hover: #1d4ed8;
+    --crs-action-primary-border: #60a5fa;
+
+    --crs-action-violet-bg: #7c3aed;
+    --crs-action-violet-hover: #6d28d9;
+    --crs-action-violet-border: #a78bfa;
+
+    --crs-action-neutral-bg: #334155;
+    --crs-action-neutral-hover: #475569;
+    --crs-action-neutral-border: #64748b;
+
+    --crs-unavailable-bg: #475569;
+    --crs-unavailable-text: #f8fafc;
+    --crs-unavailable-border: #64748b;
+}
+
+/* -------------------------------------------------------------------------
+   Base action appearance: every row action must remain readable in all themes.
+   ------------------------------------------------------------------------- */
+html body :is(a, button, summary, span).row-action {
+    color: #ffffff !important;
+    background: var(--crs-action-neutral-bg) !important;
+    background-image: none !important;
+    border: 1px solid var(--crs-action-neutral-border) !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    text-decoration: none !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body :is(a, button, summary, span).row-action:is(:hover, :focus-visible) {
+    color: #ffffff !important;
+    background: var(--crs-action-neutral-hover) !important;
+    border-color: #94a3b8 !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Primary, edit, open, and informational actions. */
+html body :is(a, button, summary, span).row-action:is(
+    .primary,
+    .edit,
+    .open,
+    .info,
+    .action-primary
+) {
+    color: #ffffff !important;
+    background: var(--crs-action-primary-bg) !important;
+    border-color: var(--crs-action-primary-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body :is(a, button, summary, span).row-action:is(
+    .primary,
+    .edit,
+    .open,
+    .info,
+    .action-primary
+):is(:hover, :focus-visible) {
+    color: #ffffff !important;
+    background: var(--crs-action-primary-hover) !important;
+    border-color: #93c5fd !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Violet / buffer actions. */
+html body :is(a, button, summary, span).row-action:is(
+    .buffer,
+    .violet,
+    .action-violet
+) {
+    color: #ffffff !important;
+    background: var(--crs-action-violet-bg) !important;
+    border-color: var(--crs-action-violet-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body :is(a, button, summary, span).row-action:is(
+    .buffer,
+    .violet,
+    .action-violet
+):is(:hover, :focus-visible) {
+    color: #ffffff !important;
+    background: var(--crs-action-violet-hover) !important;
+    border-color: #c4b5fd !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* -------------------------------------------------------------------------
+   Disable / destructive action contract: always red with white text.
+   Route-aware selectors protect pages that omit or change a semantic class.
+   ------------------------------------------------------------------------- */
+html body :is(a, button, summary, span).row-action:is(
+    .danger,
+    .disable,
+    .delete,
+    .action-disable,
+    .action-danger
+),
+html body form[action*="/disable/"] :is(button, input[type="submit"]),
+html body form[action$="/disable"] :is(button, input[type="submit"]),
+html body a.row-action[href*="/disable/"],
+html body a.row-action[href$="/disable"],
+html body summary.row-action.delete {
+    color: #ffffff !important;
+    background: var(--crs-action-disable-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-action-disable-border) !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body :is(a, button, summary, span).row-action:is(
+    .danger,
+    .disable,
+    .delete,
+    .action-disable,
+    .action-danger
+):is(:hover, :focus-visible),
+html body form[action*="/disable/"] :is(button, input[type="submit"]):is(:hover, :focus-visible),
+html body form[action$="/disable"] :is(button, input[type="submit"]):is(:hover, :focus-visible),
+html body a.row-action[href*="/disable/"]:is(:hover, :focus-visible),
+html body a.row-action[href$="/disable"]:is(:hover, :focus-visible),
+html body summary.row-action.delete:is(:hover, :focus-visible) {
+    color: #ffffff !important;
+    background: var(--crs-action-disable-hover) !important;
+    border-color: #fca5a5 !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body :is(a, button, summary, span).row-action:is(
+    .danger,
+    .disable,
+    .delete,
+    .action-disable,
+    .action-danger
+):active,
+html body form[action*="/disable/"] :is(button, input[type="submit"]):active,
+html body form[action$="/disable"] :is(button, input[type="submit"]):active {
+    background: var(--crs-action-disable-active) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Enable / positive action contract: always green with white text.
+   ------------------------------------------------------------------------- */
+html body :is(a, button, summary, span).row-action:is(
+    .success,
+    .enable,
+    .copy,
+    .action-enable,
+    .action-success
+),
+html body form[action*="/enable/"] :is(button, input[type="submit"]),
+html body form[action$="/enable"] :is(button, input[type="submit"]),
+html body a.row-action[href*="/enable/"],
+html body a.row-action[href$="/enable"] {
+    color: #ffffff !important;
+    background: var(--crs-action-enable-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-action-enable-border) !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body :is(a, button, summary, span).row-action:is(
+    .success,
+    .enable,
+    .copy,
+    .action-enable,
+    .action-success
+):is(:hover, :focus-visible),
+html body form[action*="/enable/"] :is(button, input[type="submit"]):is(:hover, :focus-visible),
+html body form[action$="/enable"] :is(button, input[type="submit"]):is(:hover, :focus-visible),
+html body a.row-action[href*="/enable/"]:is(:hover, :focus-visible),
+html body a.row-action[href$="/enable"]:is(:hover, :focus-visible) {
+    color: #ffffff !important;
+    background: var(--crs-action-enable-hover) !important;
+    border-color: #86efac !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body :is(a, button, summary, span).row-action:is(
+    .success,
+    .enable,
+    .copy,
+    .action-enable,
+    .action-success
+):active,
+html body form[action*="/enable/"] :is(button, input[type="submit"]):active,
+html body form[action$="/enable"] :is(button, input[type="submit"]):active {
+    background: var(--crs-action-enable-active) !important;
+}
+
+/* Neutral/version/linked actions are deliberately non-destructive. */
+html body :is(a, button, summary, span).row-action:is(
+    .neutral,
+    .version,
+    .linked,
+    .action-neutral
+) {
+    color: #ffffff !important;
+    background: var(--crs-action-neutral-bg) !important;
+    border-color: var(--crs-action-neutral-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Warning/history/audit actions use amber with white text. */
+html body :is(a, button, summary, span).row-action:is(
+    .warning,
+    .history,
+    .audit,
+    .action-warning
+) {
+    color: #ffffff !important;
+    background: #b45309 !important;
+    border-color: #f59e0b !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* -------------------------------------------------------------------------
+   Status contract: Active/OK/Ready = green/white; Disabled/Blocked = red/white.
+   ------------------------------------------------------------------------- */
+html body :is(.status-badge, .status-pill):is(
+    .status-success,
+    .status-active,
+    .status-ready,
+    .status-released,
+    .status-ok
+),
+html body :is(
+    .status-success,
+    .status-active,
+    .status-ready,
+    .status-released,
+    .status-ok
+).status-badge {
+    color: #ffffff !important;
+    background: var(--crs-action-enable-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-action-enable-border) !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body :is(.status-badge, .status-pill):is(
+    .status-danger,
+    .status-disabled,
+    .status-inactive,
+    .status-blocked,
+    .status-failed,
+    .status-error
+),
+html body :is(
+    .status-danger,
+    .status-disabled,
+    .status-inactive,
+    .status-blocked,
+    .status-failed,
+    .status-error
+).status-badge {
+    color: #ffffff !important;
+    background: var(--crs-action-disable-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-action-disable-border) !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* -------------------------------------------------------------------------
+   Truly unavailable controls are neutral, not destructive.
+   This prevents white-on-white disabled controls while keeping semantic clarity.
+   ------------------------------------------------------------------------- */
+html body :is(button, input[type="button"], input[type="submit"], .btn, .crs-btn, .row-action):disabled,
+html body :is(button, input[type="button"], input[type="submit"], .btn, .crs-btn, .row-action)[aria-disabled="true"],
+html body :is(a, summary).row-action:is(.disabled, .is-disabled, [aria-disabled="true"]),
+html body :is(a, button, summary).is-disabled {
+    color: var(--crs-unavailable-text) !important;
+    background: var(--crs-unavailable-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-unavailable-border) !important;
+    opacity: .78 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: var(--crs-unavailable-text) !important;
+}
+
+html body :is(input, select, textarea):disabled,
+html body :is(input, select, textarea)[readonly] {
+    color: var(--crs-unavailable-text) !important;
+    background: #334155 !important;
+    border-color: var(--crs-unavailable-border) !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: var(--crs-unavailable-text) !important;
+}
+
+/* Keep focus visible without changing semantic colors. */
+html body :is(a, button, summary, span).row-action:focus-visible,
+html body :is(.status-badge, .status-pill):focus-visible {
+    outline: 2px solid #facc15 !important;
+    outline-offset: 2px !important;
+}
+
+@media (forced-colors: active) {
+    html body :is(a, button, summary, span).row-action,
+    html body :is(.status-badge, .status-pill) {
+        forced-color-adjust: auto;
+    }
+}

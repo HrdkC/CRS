@@ -25,7 +25,7 @@
     border: 1px solid var(--line-200);
     border-left: 4px solid var(--danger);
     border-radius: var(--radius-lg);
-    background: #fff;
+    background: var(--surface-elevated);
     box-shadow: var(--shadow-sm);
 }
 
@@ -194,6 +194,5 @@
 [data-crs-resolved-theme="dark"] .database-test-result,
 [data-crs-resolved-theme="dark"] .database-result-details div,
 [data-crs-resolved-theme="dark"] .database-profile-summary div {
-    background: var(--surface-900, #171923);
+    background: var(--surface-inset);
 }
-

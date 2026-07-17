@@ -122,9 +122,9 @@ TBM Families
                         <td>{{ family.created_by }}</td>
                         <td>
                             {% if family.active == 1 %}
-                            <span class="status-badge status-success">Active</span>
+                            <span class="status-badge status-success status-active">Active</span>
                             {% else %}
-                            <span class="status-badge status-neutral">Disabled</span>
+                            <span class="status-badge status-danger status-disabled">Disabled</span>
                             {% endif %}
                         </td>
                         <td>
@@ -138,7 +138,7 @@ TBM Families
                                 {% if family.active == 1 and family.machine_count == 0 %}
                                 <form method="POST" action="/families/disable/{{ family.id }}" class="row-action-form">
                                     {{ csrf_input() }}
-                                    <button type="submit" class="row-action danger">Disable</button>
+                                    <button type="submit" class="row-action danger action-disable">Disable</button>
                                 </form>
                                 {% elif family.active == 1 %}
                                 <span
@@ -150,7 +150,7 @@ TBM Families
                                 {% else %}
                                 <form method="POST" action="/families/enable/{{ family.id }}" class="row-action-form">
                                     {{ csrf_input() }}
-                                    <button type="submit" class="row-action success">Enable</button>
+                                    <button type="submit" class="row-action success action-enable">Enable</button>
                                 </form>
                                 {% endif %}
                                 {% if family.machine_count == 0 %}

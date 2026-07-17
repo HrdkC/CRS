@@ -64,14 +64,109 @@ Configuration Readiness
                 <span>PLC Tags</span>
                 <strong>Open</strong>
             </a>
-            <a class="configuration-action" href="/plcs/create" title="Register PLC metadata and IP address for this machine/stage.">
-                <span>PLC Registry</span>
-                <strong>Open</strong>
+            <a class="configuration-action" href="#plc-communication-setup" title="Change the existing PLC assigned to this exact machine/stage.">
+                <span>PLC Assignment</span>
+                <strong>Change</strong>
             </a>
             <a class="configuration-action" href="/recipes/import-export" title="Download or import approved CRS Excel templates.">
                 <span>Recipe Excel</span>
                 <strong>Open</strong>
             </a>
+        </div>
+    </section>
+
+    <section class="workbench-card plc-stage-config-card" id="plc-communication-setup">
+        <div class="plc-stage-config-header">
+            <div>
+                <span class="section-kicker">PLC Assignment</span>
+                <h2>Stage PLC Assignment</h2>
+                <p>Select an existing PLC registry record for this exact machine/stage. PLC creation and communication-detail editing remain in the full PLC Registry.</p>
+            </div>
+            <div class="plc-stage-config-actions">
+                <a class="crs-btn crs-btn-soft" href="{{ report.plcs_url }}">Open Full PLC Registry</a>
+                <a class="crs-btn crs-btn-primary" href="{{ report.plc_create_url }}">Create New PLC</a>
+            </div>
+        </div>
+
+        <div class="plc-assignment-body">
+            <div class="plc-assignment-current">
+                <span class="plc-assignment-label">Current active assignment</span>
+
+                {% if report.active_stage_plcs %}
+                    {% for plc in report.active_stage_plcs %}
+                    <div class="plc-assignment-current-card">
+                        <div>
+                            <strong>{{ plc.plc_name }}</strong>
+                            <span>{{ plc.ip_address }} · {{ plc.controller_type or 'Controller not specified' }}</span>
+                        </div>
+                        <span class="status-badge status-success status-active">Active</span>
+                    </div>
+                    {% endfor %}
+
+                    {% if report.active_stage_plcs|length > 1 %}
+                    <div class="inline-alert warning">
+                        Multiple active PLC records are assigned to this stage. Saving the dropdown selection will keep the selected PLC active and disable the other active assignments.
+                    </div>
+                    {% endif %}
+                {% elif report.stage_plcs %}
+                    <div class="plc-assignment-current-card plc-assignment-current-card-warning">
+                        <div>
+                            <strong>No active PLC</strong>
+                            <span>{{ report.stage_plcs|length }} disabled PLC record(s) currently point to this stage.</span>
+                        </div>
+                        <span class="status-badge status-blocked">Blocked</span>
+                    </div>
+                {% else %}
+                    <div class="plc-assignment-current-card plc-assignment-current-card-warning">
+                        <div>
+                            <strong>No PLC assigned</strong>
+                            <span>Select an existing PLC below. Create a PLC only from the dedicated PLC Registry page.</span>
+                        </div>
+                        <span class="status-badge status-blocked">Blocked</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <form method="POST" action="{{ report.plc_assignment_save_url }}" class="plc-assignment-form">
+                {{ csrf_input() }}
+
+                <label class="plc-assignment-select-field">
+                    <span>Select existing PLC</span>
+                    <select name="plc_id" required>
+                        <option value="">Choose PLC registry record...</option>
+                        {% for plc in report.all_plcs %}
+                        <option
+                            value="{{ plc.id }}"
+                            {% if report.assigned_plc and plc.id == report.assigned_plc.id %}selected{% endif %}
+                        >
+                            {{ plc.plc_name }} | {{ plc.ip_address }} | {{ plc.stage_display }} | {% if plc.active == 1 %}ACTIVE{% else %}DISABLED{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small>Selecting a PLC assigned to another stage will transfer that PLC to {{ context.machine_stage_display }}.</small>
+                </label>
+
+                <label class="plc-assignment-reason-field">
+                    <span>Change reason</span>
+                    <input
+                        type="text"
+                        name="reason"
+                        placeholder="Example: Assign correct PLC to {{ context.machine_stage_display }}"
+                        required
+                        maxlength="250"
+                    >
+                </label>
+
+                <div class="plc-assignment-action-row">
+                    <button type="submit" class="crs-btn crs-btn-primary">Save PLC Assignment</button>
+                </div>
+            </form>
+
+            {% if not report.all_plcs %}
+            <div class="inline-alert warning">
+                No PLC registry records exist. Use Create New PLC, then return here to assign it.
+            </div>
+            {% endif %}
         </div>
     </section>
 
@@ -165,6 +260,7 @@ Configuration Readiness
         </div>
 
         <form method="POST" action="{{ report.tag_setup_save_url }}" class="stage-plc-rule-form">
+            {{ csrf_input() }}
             <div class="plc-setup-guidance">
                 <div>
                     <strong>Purpose key is fixed.</strong>
@@ -293,8 +389,22 @@ Configuration Readiness
             <span>RECIPE_DATA = CRS system buffer. TEST_RECIPE_DATA = PLC destination/running recipe tag. Tag name is editable per machine/stage.</span>
         </div>
 
+        <form method="POST" action="{{ report.plc_tag_seed_url }}" class="plc-tag-seed-form">
+            {{ csrf_input() }}
+            <label>
+                <span>Create missing tag rows</span>
+                <input type="text" name="reason" value="Create missing PLC tag rows from active setup rules for {{ context.machine_stage_display }}" required>
+            </label>
+            <label class="plc-tag-seed-check">
+                <input type="checkbox" name="include_recommended" value="1" checked>
+                <span>Include recommended handshake/history tags</span>
+            </label>
+            <button type="submit" class="crs-btn crs-btn-primary">Create Missing PLC Tags</button>
+        </form>
+
         {% if report.saved_plc_tags %}
         <form method="POST" action="{{ report.tag_purpose_remap_url }}" class="plc-remap-form">
+            {{ csrf_input() }}
             <div class="table-wrap plc-remap-table-wrap plc-tag-config-table-wrap">
                 <table class="data-table plc-remap-table plc-tag-config-table">
                     <thead>
@@ -365,7 +475,7 @@ Configuration Readiness
             </div>
         </form>
         {% else %}
-        <div class="empty-state">No saved PLC tags found for this machine/stage.</div>
+        <div class="empty-state">No saved PLC tags found for this machine/stage. Use "Create Missing PLC Tags" above to generate editable rows from active setup rules, then rename/remap as needed.</div>
         {% endif %}
     </section>
 
@@ -380,6 +490,7 @@ Configuration Readiness
                 <div class="readiness-heading-actions">
                     {% if section.key == "phase_master" %}
                     <form method="POST" action="{{ report.phase_defaults_url }}" class="inline-form">
+            {{ csrf_input() }}
                         <button type="submit" class="crs-btn crs-btn-primary" title="Create missing standard phase groups and dropdown names for this machine/stage. Existing rows are kept.">Initialize Defaults</button>
                     </form>
                     <a class="crs-btn crs-btn-soft" href="{{ report.phase_master_url }}">Open Master</a>

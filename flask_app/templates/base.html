@@ -16,17 +16,20 @@
         content="{{ csrf_token() }}"
     >
 
+    <meta id="crs-color-scheme-meta" name="color-scheme" content="light dark">
+    <meta id="crs-theme-color-meta" name="theme-color" content="#f8fafc">
+
     <title>
         {% block title %}
         Apollo CRS
         {% endblock %}
     </title>
 
-    <script src="{{ url_for('static', filename='js/theme-bootstrap.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme-bootstrap.js') }}?v=js-v119-system-theme-sync-20260717"></script>
 
     <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='css/crs.bundle.css') }}?v=css-v116-progressive-ui-20260712"
+        href="{{ url_for('static', filename='css/crs.bundle.css') }}?v=css-v124-ok-dark-surface-20260717"
     >
 
 </head>
@@ -344,7 +347,7 @@
         src="{{ url_for('static', filename='js/vendor/htmx-2.0.10.min.js') }}"
         integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V"
     ></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=js-v116-progressive-ui-20260712"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=js-v119-system-theme-sync-20260717"></script>
     {% block page_scripts %}{% endblock %}
 
 </body>

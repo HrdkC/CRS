@@ -172,7 +172,7 @@ Recipe Parameters
                                     {{ csrf_input() }}
                                     <button
                                         type="submit"
-                                        class="row-action danger"
+                                        class="row-action danger action-disable"
                                         title="Mark this parameter Not Used for this machine/stage template. Existing recipe values remain stored."
                                     >
                                         Not Used
@@ -183,7 +183,7 @@ Recipe Parameters
                                     {{ csrf_input() }}
                                     <button
                                         type="submit"
-                                        class="row-action success"
+                                        class="row-action success action-enable"
                                         title="Restore this parameter to active use and backfill missing values to existing recipes."
                                     >
                                         Use

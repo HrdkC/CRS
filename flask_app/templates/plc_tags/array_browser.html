@@ -113,7 +113,7 @@ Array Browser
                             {% if row.status == "MAPPED" %}
                             <span class="status-badge status-info">Mapped</span>
                             {% elif row.status == "DISABLED" %}
-                            <span class="status-badge status-neutral">Disabled</span>
+                            <span class="status-badge status-danger status-disabled">Disabled</span>
                             {% else %}
                             <span class="status-badge status-success">Available</span>
                             {% endif %}
@@ -124,12 +124,12 @@ Array Browser
                                 <a href="/parameters/edit/{{ row.parameter.id }}" class="row-action primary">View</a>
                                 <form method="POST" action="/parameters/disable/{{ row.parameter.id }}" class="row-action-form">
                                     {{ csrf_input() }}
-                                    <button type="submit" class="row-action danger">Disable</button>
+                                    <button type="submit" class="row-action danger action-disable">Disable</button>
                                 </form>
                                 {% elif row.status == "DISABLED" %}
                                 <form method="POST" action="/parameters/enable/{{ row.parameter.id }}" class="row-action-form">
                                     {{ csrf_input() }}
-                                    <button type="submit" class="row-action success">Enable</button>
+                                    <button type="submit" class="row-action success action-enable">Enable</button>
                                 </form>
                                 {% else %}
                                 <a href="/parameters/create-from-array/{{ tag.id }}/{{ row.index }}" class="row-action primary">Create</a>

@@ -1,0 +1,35 @@
+CRS V11.9 - READY Status Standardization
+Date: 2026-07-17
+
+Purpose
+-------
+Standardize READY status presentation across all CRS pages in light, dark,
+system and forced-color display modes.
+
+Final READY contract
+--------------------
+- Background: #15803D
+- Text: #FFFFFF
+- Light-theme text contrast: approximately 5.02:1
+- Dark-surface component contrast: approximately 3.47:1
+- Border: light green
+- Shape: rounded status pill
+- Non-color cue: white circular check mark
+
+Changes
+-------
+1. Added final CSS module 32_ready_status_standardization.css.
+2. Prevented dark/system theme rules from washing READY into a pale pill.
+3. Updated Phase Option Master READY labels to status-ready.
+4. Updated Recipe Import READY TO IMPORT to status-ready.
+5. Updated Download Preparation TAG READY to status-ready.
+6. Updated dashboard machine/stage healthy state from generic OK/status-success
+   to Ready/status-ready.
+7. Added a static checker for class usage, cache version and contrast.
+
+READY remains distinct from:
+- ACTIVE/OK: healthy current condition
+- SUCCESS: completed operation
+- BLOCKED: cannot continue
+- WARNING: attention required
+- unavailable control: neutral slate

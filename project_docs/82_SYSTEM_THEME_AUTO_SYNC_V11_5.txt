@@ -1,0 +1,29 @@
+CRS V11.5 - System Theme Auto-Synchronization
+Date: 2026-07-17
+
+Problem:
+The System (Sys) display setting could remain on the previous resolved theme after
+Windows/browser color mode changed, especially when Chrome/Edge was backgrounded or
+JavaScript assets were cached.
+
+Correction:
+- Applies the system preference before CSS paints.
+- Watches prefers-color-scheme changes.
+- Rechecks on focus, pageshow and visibility changes.
+- Adds a lightweight polling fallback for Windows/browser combinations that miss events.
+- Synchronizes theme changes between tabs through the storage event.
+- Updates color-scheme and browser theme-color metadata.
+- Adds cache versions to both theme-bootstrap.js and main.js.
+- Shows a small light/dark indicator beside the Sys control.
+
+System mode follows the browser's prefers-color-scheme value, which normally follows
+the Windows default app mode used by Chrome/Edge.
+
+Apply:
+Expand-Archive -Path .\CRS_V11_5_System_Theme_Auto_Sync_FIX_PATCH_ONLY_170726.zip -DestinationPath . -Force
+python scripts\build_css_bundle.py --check
+python scripts\check_system_theme_sync.py
+python app.py
+
+Browser:
+Ctrl+F5 once after applying the patch.

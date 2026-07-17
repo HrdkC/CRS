@@ -28,7 +28,7 @@
 
     border: 1px solid var(--line-200) !important;
     border-radius: 10px !important;
-    background: #fff !important;
+    background: var(--surface-elevated) !important;
 }
 
 /* Balanced table aspect ratio */
@@ -417,7 +417,7 @@
 
     border: 1px solid var(--line-200) !important;
     border-radius: 10px !important;
-    background: #fff !important;
+    background: var(--surface-elevated) !important;
 }
 
 /* Balanced desktop table */

@@ -1,0 +1,46 @@
+/*
+ * 28_system_theme_sync.css
+ * Visual confirmation and repaint support for System theme auto-sync.
+ */
+
+html {
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.crs-theme-system {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    min-width: 43px !important;
+}
+
+.crs-theme-system::after {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .12);
+}
+
+html[data-crs-system-theme="light"] .crs-theme-system::after {
+    background: #facc15;
+}
+
+html[data-crs-system-theme="dark"] .crs-theme-system::after {
+    background: #93c5fd;
+}
+
+html[data-crs-theme="system"] .crs-theme-system.is-active {
+    outline: 2px solid rgba(250, 204, 21, .58) !important;
+    outline-offset: 1px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        transition: none !important;
+    }
+}

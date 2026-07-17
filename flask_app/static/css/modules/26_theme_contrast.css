@@ -1,0 +1,350 @@
+/*
+ * 26_theme_contrast.css
+ * Final semantic color contract for light and dark themes.
+ * This module intentionally loads last so page modules cannot reduce contrast.
+ */
+
+:root {
+    color-scheme: light;
+}
+
+html[data-crs-resolved-theme="dark"] {
+    color-scheme: dark;
+    --apollo-violet: #a78bfa;
+    --apollo-violet-dark: #c4b5fd;
+    --apollo-violet-soft: #2a1c3d;
+    --ink-900: #f8fafc;
+    --ink-800: #e8edf5;
+    --ink-700: #d6deea;
+    --ink-600: #b8c4d4;
+    --ink-500: #a8b5c7;
+    --line-100: #243147;
+    --line-200: #34435b;
+    --line-300: #52627a;
+    --surface: rgba(15, 23, 42, 0.97);
+    --surface-soft: #111827;
+    --page-bg: #0b1220;
+    --surface-solid: #0f172a;
+    --surface-elevated: #131d31;
+    --surface-muted: #111827;
+    --surface-inset: #0b1324;
+    --surface-violet-soft: #1b1530;
+    --text-primary: #f8fafc;
+    --text-secondary: #d6deea;
+    --text-muted: #a8b5c7;
+    --control-disabled-bg: #253247;
+    --control-disabled-text: #cbd5e1;
+    --control-disabled-border: #52627a;
+    --success: #4ade80;
+    --success-bg: #123521;
+    --success-border: #287a49;
+    --success-text: #bbf7d0;
+    --warning: #fbbf24;
+    --warning-bg: #422d0b;
+    --warning-border: #9a670d;
+    --warning-text: #fde68a;
+    --danger: #f87171;
+    --danger-bg: #421a1f;
+    --danger-border: #a63a45;
+    --danger-text: #fecaca;
+    --info: #93c5fd;
+    --info-bg: #172c4f;
+    --info-border: #315f9b;
+    --info-text: #bfdbfe;
+    --neutral: #cbd5e1;
+    --neutral-bg: #273449;
+    --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.24);
+    --shadow-md: 0 18px 40px rgba(0, 0, 0, 0.32);
+    --page-gradient:
+        radial-gradient(circle at 6% 0%, rgba(139, 92, 246, 0.16), transparent 25%),
+        radial-gradient(circle at 96% 100%, rgba(124, 58, 237, 0.12), transparent 28%),
+        linear-gradient(135deg, #0b1220 0%, #0f172a 45%, #111827 100%);
+}
+
+html[data-crs-resolved-theme="dark"] body,
+html[data-crs-resolved-theme="dark"] .authenticated-layout {
+    color: var(--text-secondary);
+    background: var(--page-gradient);
+}
+
+html[data-crs-resolved-theme="dark"] .site-header {
+    color: var(--text-secondary);
+    background: rgba(11, 18, 32, 0.97);
+    border-bottom-color: #8b5cf6;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
+}
+
+html[data-crs-resolved-theme="dark"] .brand-title,
+html[data-crs-resolved-theme="dark"] a:not(.menu-item > a):not(.btn):not([class*="button"]):not([class*="action"]) {
+    color: #c4b5fd;
+}
+
+html[data-crs-resolved-theme="dark"] .brand-subtitle,
+html[data-crs-resolved-theme="dark"] .page-subtitle,
+html[data-crs-resolved-theme="dark"] .section-subtitle,
+html[data-crs-resolved-theme="dark"] .helper-text,
+html[data-crs-resolved-theme="dark"] .field-help,
+html[data-crs-resolved-theme="dark"] small {
+    color: var(--text-muted);
+}
+
+html[data-crs-resolved-theme="dark"] .user-info,
+html[data-crs-resolved-theme="dark"] .dropdown-menu {
+    color: var(--text-secondary);
+    background: var(--surface-elevated);
+    border-color: var(--line-200);
+}
+
+html[data-crs-resolved-theme="dark"] .dropdown-menu a {
+    color: var(--text-primary);
+}
+
+html[data-crs-resolved-theme="dark"] .dropdown-menu a:hover,
+html[data-crs-resolved-theme="dark"] .dropdown-menu a:focus-visible {
+    color: #ede9fe;
+    background: #39245c;
+}
+
+/* Shared panels, cards, and work surfaces. */
+html[data-crs-resolved-theme="dark"] :is(
+    .page-hero,
+    .page-banner,
+    .content-card,
+    .panel,
+    .section-card,
+    .metric-card,
+    .summary-card,
+    .stat-card,
+    .dashboard-card,
+    .workbench-card,
+    .configuration-stage-card,
+    .configuration-action,
+    .readiness-check,
+    .readiness-section,
+    .stage-readiness-card,
+    .phase-card,
+    .phase-group-card,
+    .phase-master-card,
+    .phase-template-card,
+    .plc-card,
+    .plc-record-card,
+    .plc-setup-card,
+    .plc-setup-row,
+    .import-export-card,
+    .import-mode-card,
+    .file-drop-zone,
+    .database-card,
+    .database-profile-card,
+    .database-config-card,
+    .table-card
+) {
+    color: var(--text-secondary);
+    background: var(--surface-elevated);
+    border-color: var(--line-200);
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .page-hero,
+    .page-banner,
+    .content-card,
+    .panel,
+    .section-card,
+    .metric-card,
+    .summary-card,
+    .stat-card,
+    .dashboard-card,
+    .workbench-card,
+    .configuration-stage-card,
+    .configuration-action,
+    .readiness-check,
+    .readiness-section,
+    .stage-readiness-card,
+    .phase-card,
+    .phase-group-card,
+    .phase-master-card,
+    .phase-template-card,
+    .plc-card,
+    .plc-record-card,
+    .plc-setup-card,
+    .plc-setup-row,
+    .import-export-card,
+    .import-mode-card,
+    .file-drop-zone,
+    .database-card,
+    .database-profile-card,
+    .database-config-card,
+    .table-card
+) :is(h1, h2, h3, h4, strong, b, .card-title, .metric-value, .stat-value) {
+    color: var(--text-primary);
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .configuration-stage-card,
+    .stage-readiness-card,
+    .phase-card,
+    .phase-group-card,
+    .plc-setup-row,
+    .import-mode-card,
+    .database-profile-card
+) :is(p, span:not(.status-badge):not(.badge):not(.pill), .meta, .description) {
+    color: var(--text-secondary);
+}
+
+html[data-crs-resolved-theme="dark"] .configuration-progress,
+html[data-crs-resolved-theme="dark"] .readiness-progress,
+html[data-crs-resolved-theme="dark"] .progress-track {
+    background: #2d2440;
+}
+
+html[data-crs-resolved-theme="dark"] .readiness-score,
+html[data-crs-resolved-theme="dark"] .configuration-metric-grid .metric-card strong,
+html[data-crs-resolved-theme="dark"] .stage-readiness-card .readiness-percent {
+    color: #c4b5fd;
+}
+
+/* Forms and disabled controls remain readable in both themes. */
+html[data-crs-resolved-theme="dark"] :is(input, select, textarea) {
+    color: var(--text-primary);
+    background-color: var(--surface-inset);
+    border-color: var(--line-300);
+}
+
+html[data-crs-resolved-theme="dark"] :is(input, select, textarea)::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+html[data-crs-resolved-theme="dark"] :is(input, select, textarea):focus {
+    border-color: #a78bfa;
+    outline-color: rgba(167, 139, 250, 0.5);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22);
+}
+
+:is(button, .btn, [class*="button"], [class*="action"]):disabled,
+:is(button, .btn, [class*="button"], [class*="action"])[aria-disabled="true"],
+.is-disabled {
+    color: var(--control-disabled-text) !important;
+    background: var(--control-disabled-bg) !important;
+    border-color: var(--control-disabled-border) !important;
+    opacity: 1;
+    box-shadow: none !important;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .crs-btn-soft,
+    .btn-secondary,
+    .secondary-action,
+    .row-action,
+    .client-sort-button
+) {
+    color: #e8edf5;
+    background: #26344a;
+    border-color: #52627a;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .crs-btn-soft,
+    .btn-secondary,
+    .secondary-action,
+    .row-action,
+    .client-sort-button
+):hover {
+    color: #ffffff;
+    background: #354762;
+    border-color: #7c8ba1;
+}
+
+/* Data grids and tables. */
+html[data-crs-resolved-theme="dark"] :is(
+    .table-wrap,
+    .table-scroll,
+    .data-table-wrap,
+    .audit-table-wrap,
+    .registry-table-wrap,
+    .phase-master-table-wrap
+) {
+    background: var(--surface-elevated);
+    border-color: var(--line-200);
+}
+
+html[data-crs-resolved-theme="dark"] table {
+    color: var(--text-secondary);
+    background: var(--surface-elevated);
+}
+
+html[data-crs-resolved-theme="dark"] table :is(th, td) {
+    border-color: var(--line-100);
+}
+
+html[data-crs-resolved-theme="dark"] table thead th {
+    color: #ffffff;
+    background: #25183e;
+    border-color: #4c2f78;
+}
+
+html[data-crs-resolved-theme="dark"] table tbody tr,
+html[data-crs-resolved-theme="dark"] table tbody tr:nth-child(even) {
+    color: var(--text-secondary);
+    background: var(--surface-elevated);
+}
+
+html[data-crs-resolved-theme="dark"] table tbody tr:nth-child(even) {
+    background: #101a2d;
+}
+
+html[data-crs-resolved-theme="dark"] table tbody tr:hover {
+    background: #211936;
+}
+
+html[data-crs-resolved-theme="dark"] table tbody td :is(strong, b) {
+    color: var(--text-primary);
+}
+
+/* Semantic statuses keep meaning without relying on color alone. */
+html[data-crs-resolved-theme="dark"] :is(.status-ok, .status-ready, .badge-success, .status-badge-success) {
+    color: #bbf7d0;
+    background: #123521;
+    border-color: #287a49;
+}
+
+html[data-crs-resolved-theme="dark"] :is(.status-warning, .badge-warning, .status-badge-warning) {
+    color: #fde68a;
+    background: #422d0b;
+    border-color: #9a670d;
+}
+
+html[data-crs-resolved-theme="dark"] :is(.status-blocked, .status-danger, .badge-danger, .status-badge-danger) {
+    color: #fecaca;
+    background: #421a1f;
+    border-color: #a63a45;
+}
+
+html[data-crs-resolved-theme="dark"] :is(.status-info, .badge-info, .status-badge-info) {
+    color: #bfdbfe;
+    background: #172c4f;
+    border-color: #315f9b;
+}
+
+/* Light-theme disabled controls need deliberate contrast too. */
+html:not([data-crs-resolved-theme="dark"]) :is(
+    button,
+    .btn,
+    [class*="button"],
+    [class*="action"]
+):disabled,
+html:not([data-crs-resolved-theme="dark"]) :is(
+    button,
+    .btn,
+    [class*="button"],
+    [class*="action"]
+)[aria-disabled="true"] {
+    color: #425269 !important;
+    background: #e8edf4 !important;
+    border-color: #b9c5d4 !important;
+}
+
+@media (forced-colors: active) {
+    :is(button, .btn, input, select, textarea, .status-badge, .badge) {
+        forced-color-adjust: auto;
+    }
+}

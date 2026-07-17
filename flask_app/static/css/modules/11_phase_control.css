@@ -24,7 +24,7 @@
 
     border: 1px solid var(--line-200) !important;
     border-radius: 10px !important;
-    background: #ffffff !important;
+    background: var(--surface-elevated) !important;
     box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04) !important;
 }
 
@@ -167,7 +167,7 @@
     gap: 12px;
     align-items: end;
     padding: 14px 16px !important;
-    background: #fff;
+    background: var(--surface-elevated);
     border: 0;
     box-shadow: none;
 }
@@ -298,9 +298,9 @@
 }
 
 .import-warnings {
-    background: #fffbeb;
-    border-color: #fde68a;
-    color: #92400e;
+    background: var(--warning-bg);
+    border-color: var(--warning-border);
+    color: var(--warning-text);
 }
 
 .import-confirm-form {
@@ -327,4 +327,3 @@
         width: 100%;
     }
 }
-

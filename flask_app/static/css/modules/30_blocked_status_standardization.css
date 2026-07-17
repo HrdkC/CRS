@@ -1,0 +1,169 @@
+/*
+ * 30_blocked_status_standardization.css
+ * Final CRS BLOCKED-state contract.
+ *
+ * Design rationale:
+ * - BLOCKED is a critical workflow/status condition, not a disabled control.
+ * - Use a consistent danger-red status surface with white text.
+ * - Preserve text + pill shape + semantic color, and add a compact alert mark so
+ *   meaning is not communicated by color alone.
+ * - Unavailable controls remain neutral slate through module 29.
+ *
+ * This module must remain the final CSS import.
+ */
+
+:root {
+    /* IBM Carbon status-red (Red 60) with WCAG-AA white-text contrast (~5.0:1). */
+    --crs-status-blocked-bg: #da1e28;
+    --crs-status-blocked-text: #ffffff;
+    --crs-status-blocked-border: #ff8389;
+    --crs-status-blocked-ring: rgba(218, 30, 40, 0.22);
+    --crs-status-blocked-shadow: rgba(218, 30, 40, 0.20);
+}
+
+/* Canonical BLOCKED badge/pill styling across every CRS page and theme. */
+html body :is(.status-badge, .status-pill).status-blocked,
+html body :is(.status-badge, .status-pill)[class~="status-blocked"],
+html body .status-blocked:is(.status-badge, .status-pill) {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+
+    min-height: 23px !important;
+    max-width: 100% !important;
+    padding: 4px 9px !important;
+
+    color: var(--crs-status-blocked-text) !important;
+    background: var(--crs-status-blocked-bg) !important;
+    background-color: var(--crs-status-blocked-bg) !important;
+    background-image: none !important;
+    border: 1px solid var(--crs-status-blocked-border) !important;
+    border-radius: 999px !important;
+
+    box-shadow:
+        0 0 0 1px var(--crs-status-blocked-ring),
+        0 2px 7px var(--crs-status-blocked-shadow) !important;
+
+    font-size: 10px !important;
+    font-weight: 950 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.025em !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+    text-shadow: none !important;
+
+    white-space: nowrap !important;
+    overflow: visible !important;
+    opacity: 1 !important;
+    filter: none !important;
+    cursor: default !important;
+    -webkit-text-fill-color: var(--crs-status-blocked-text) !important;
+}
+
+/* Alert sign supplies a non-color cue while retaining the explicit BLOCKED text. */
+html body :is(.status-badge, .status-pill).status-blocked::before,
+html body :is(.status-badge, .status-pill)[class~="status-blocked"]::before,
+html body .status-blocked:is(.status-badge, .status-pill)::before {
+    content: "!";
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 13px !important;
+    min-width: 13px !important;
+    height: 13px !important;
+
+    color: var(--crs-status-blocked-bg) !important;
+    background: #ffffff !important;
+    border-radius: 50% !important;
+
+    font-size: 9px !important;
+    font-weight: 1000 !important;
+    line-height: 1 !important;
+    -webkit-text-fill-color: var(--crs-status-blocked-bg) !important;
+}
+
+/* Non-pill BLOCKED labels use the same semantic red without becoming buttons. */
+html body :is(.status-text-blocked, .database-blocked-text) {
+    color: var(--crs-status-blocked-bg) !important;
+    font-weight: 950 !important;
+    -webkit-text-fill-color: var(--crs-status-blocked-bg) !important;
+}
+
+/* Database BLOCKED label is rendered as the same professional status pill. */
+html body .database-blocked-text {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+
+    min-height: 23px !important;
+    padding: 4px 9px !important;
+
+    color: #ffffff !important;
+    background: var(--crs-status-blocked-bg) !important;
+    border: 1px solid var(--crs-status-blocked-border) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 0 0 1px var(--crs-status-blocked-ring) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body .database-blocked-text::before {
+    content: "!";
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 13px !important;
+    height: 13px !important;
+    color: var(--crs-status-blocked-bg) !important;
+    background: #ffffff !important;
+    border-radius: 50% !important;
+    font-size: 9px !important;
+    font-weight: 1000 !important;
+    line-height: 1 !important;
+    -webkit-text-fill-color: var(--crs-status-blocked-bg) !important;
+}
+
+/* Related blocked containers receive a restrained red accent, not a red fill. */
+html body :is(
+    .configuration-stage-card-blocked,
+    .readiness-section-blocked,
+    .plc-assignment-current-card-warning
+) {
+    border-left-color: var(--crs-status-blocked-bg) !important;
+}
+
+html body .status-dot-blocked {
+    background: var(--crs-status-blocked-bg) !important;
+    box-shadow: 0 0 0 3px var(--crs-status-blocked-ring) !important;
+}
+
+/* The status is informational, not an interactive/destructive button. */
+html body :is(.status-badge, .status-pill).status-blocked:is(:hover, :active) {
+    color: #ffffff !important;
+    background: var(--crs-status-blocked-bg) !important;
+    border-color: var(--crs-status-blocked-border) !important;
+    transform: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Forced-colors/high-contrast users still receive a visible text+shape status. */
+@media (forced-colors: active) {
+    html body :is(.status-badge, .status-pill).status-blocked,
+    html body .database-blocked-text {
+        color: CanvasText !important;
+        background: Canvas !important;
+        border: 2px solid CanvasText !important;
+        box-shadow: none !important;
+        forced-color-adjust: none !important;
+        -webkit-text-fill-color: CanvasText !important;
+    }
+
+    html body :is(.status-badge, .status-pill).status-blocked::before,
+    html body .database-blocked-text::before {
+        color: Canvas !important;
+        background: CanvasText !important;
+        -webkit-text-fill-color: Canvas !important;
+    }
+}

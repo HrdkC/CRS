@@ -108,9 +108,9 @@ PLC Registry
                         <td>{{ plc.controller_type }}</td>
                         <td>
                             {% if plc.active == 1 %}
-                            <span class="status-badge status-success">Active</span>
+                            <span class="status-badge status-success status-active">Active</span>
                             {% else %}
-                            <span class="status-badge status-neutral">Disabled</span>
+                            <span class="status-badge status-danger status-disabled">Disabled</span>
                             {% endif %}
                         </td>
                         <td class="plc-registry-actions-cell">
@@ -146,12 +146,12 @@ PLC Registry
                                 {% if plc.active == 1 %}
                                 <form method="POST" action="/plcs/disable/{{ plc.id }}" class="row-action-form plc-registry-action-form">
                                     {{ csrf_input() }}
-                                    <button type="submit" class="row-action danger">Disable</button>
+                                    <button type="submit" class="row-action danger action-disable">Disable</button>
                                 </form>
                                 {% else %}
                                 <form method="POST" action="/plcs/enable/{{ plc.id }}" class="row-action-form plc-registry-action-form">
                                     {{ csrf_input() }}
-                                    <button type="submit" class="row-action success">Enable</button>
+                                    <button type="submit" class="row-action success action-enable">Enable</button>
                                 </form>
                                 {% endif %}
                             </div>
