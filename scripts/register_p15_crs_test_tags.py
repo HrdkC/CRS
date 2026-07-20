@@ -73,11 +73,14 @@ def register_tags(machine_code, stage_arg, created_by, include_optional=True):
     if not contexts:
         raise SystemExit(f"No active machine/stage found for {machine_code}/{stage_arg}.")
 
-    definitions = get_tag_definitions(include_optional=include_optional)
     total_created = 0
     total_updated = 0
 
     for ctx in contexts:
+        definitions = get_tag_definitions(
+            include_optional=include_optional,
+            stage_type=ctx["stage_type"],
+        )
         print("=" * 80)
         print(
             f"Registering CRS PLC test tags for "

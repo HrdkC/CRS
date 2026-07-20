@@ -9,7 +9,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from database.database import get_connection
+from database.database import get_connection, transaction
 from database.audit_manager import AuditManager
 from database.recipe_status_history_manager import RecipeStatusHistoryManager
 
@@ -261,33 +261,52 @@ class RecipeExcelImportExportManager:
         return ws
 
     @staticmethod
-    def _write_phase_control(wb, phase_rows):
+    def _write_phase_control(wb, phase_rows, stage_type=None):
         ws = wb.create_sheet(RecipeExcelImportExportManager.PHASE_SHEET)
-        ws.append(RecipeExcelImportExportManager.PHASE_HEADERS + [
-            "Phase Group Code",
-            "Phase Group Name",
-        ])
-        for row in phase_rows:
-            ws.append([
-                row.get("line_no"),
-                row.get("phase_control_name"),
-                row.get("phase_control_id"),
-                row.get("stop_option"),
-                row.get("position_option"),
-                row.get("sequence_no"),
-                row.get("description"),
-                row.get("stage_type"),
-                row.get("phase_group_code") or "MAIN",
-                row.get("phase_group_name") or "Phase Control",
+        stage_key = str(stage_type or "").strip().upper().replace(" ", "_")
+        is_second_stage = stage_key in {"SECOND_STAGE", "SECONDSTAGE", "SS"}
+
+        if is_second_stage:
+            headers = [
+                "Line No", "Phase Control Name", "Phase Control ID",
+                "Sequence No", "Description", "Stage Type",
+                "Phase Group Code", "Phase Group Name",
+            ]
+            ws.append(headers)
+            for row in phase_rows:
+                group_code = (row.get("phase_group_code") or "MAIN").upper()
+                if group_code not in {"CAP_STRIP_SIDE", "BT_SIDE"}:
+                    continue
+                ws.append([
+                    row.get("line_no"), row.get("phase_control_name"),
+                    row.get("phase_control_id"), row.get("sequence_no"),
+                    row.get("description"), row.get("stage_type"),
+                    group_code, row.get("phase_group_name") or "Phase Control",
+                ])
+            numeric_columns = ["A", "C", "D"]
+        else:
+            ws.append(RecipeExcelImportExportManager.PHASE_HEADERS + [
+                "Phase Group Code", "Phase Group Name",
             ])
+            for row in phase_rows:
+                ws.append([
+                    row.get("line_no"), row.get("phase_control_name"),
+                    row.get("phase_control_id"), row.get("stop_option"),
+                    row.get("position_option"), row.get("sequence_no"),
+                    row.get("description"), row.get("stage_type"),
+                    row.get("phase_group_code") or "MAIN",
+                    row.get("phase_group_name") or "Phase Control",
+                ])
+            numeric_columns = ["A", "C", "F"]
+            yn = DataValidation(type="list", formula1='"Yes,No"', allow_blank=False)
+            ws.add_data_validation(yn)
+            yn.add(f"D2:E{max(ws.max_row, 2)}")
+
         RecipeExcelImportExportManager._apply_sheet_style(ws, freeze="A2")
-        for col in ["A", "C", "F"]:
+        for col in numeric_columns:
             for cell in ws[col][1:]:
                 if cell.value is not None:
                     cell.number_format = "0"
-        yn = DataValidation(type="list", formula1='"Yes,No"', allow_blank=False)
-        ws.add_data_validation(yn)
-        yn.add(f"D2:E{max(ws.max_row, 2)}")
         return ws
 
     @staticmethod
@@ -500,7 +519,7 @@ class RecipeExcelImportExportManager:
         RecipeExcelImportExportManager._write_readme(wb)
         RecipeExcelImportExportManager._write_recipe_info(wb, recipe=recipe, exported_by=exported_by)
         RecipeExcelImportExportManager._write_parameters(wb, parameters)
-        RecipeExcelImportExportManager._write_phase_control(wb, phase_rows)
+        RecipeExcelImportExportManager._write_phase_control(wb, phase_rows, recipe.get("stage_type"))
         RecipeExcelImportExportManager._write_lists(wb, recipe.get("stage_type"))
         return wb, recipe
 
@@ -518,7 +537,7 @@ class RecipeExcelImportExportManager:
         RecipeExcelImportExportManager._write_readme(wb)
         RecipeExcelImportExportManager._write_recipe_info(wb, target=target, exported_by=exported_by, blank=True)
         RecipeExcelImportExportManager._write_parameters(wb, parameters)
-        RecipeExcelImportExportManager._write_phase_control(wb, phase_rows)
+        RecipeExcelImportExportManager._write_phase_control(wb, phase_rows, target.get("stage_type"))
         RecipeExcelImportExportManager._write_lists(wb, target.get("stage_type"))
         return wb, target
 
@@ -958,8 +977,8 @@ class RecipeExcelImportExportManager:
                         "line_no": line_no,
                         "phase_control_id": phase_id,
                         "phase_control_name": phase_name,
-                        "stop_option": "No",
-                        "position_option": "No",
+                        "stop_option": None,
+                        "position_option": None,
                         "sequence_no": line_no,
                         "phase_group_code": group_code,
                         "phase_group_name": group_name,
@@ -1639,113 +1658,133 @@ class RecipeExcelImportExportManager:
         ctx = RecipeExcelImportExportManager._get_request_context(request_obj)
 
         if import_mode == "update_existing":
+            from database.recipe_parameter_audit_manager import (
+                RecipeParameterAuditManager,
+            )
+
             recipe_id = int(summary.get("existing_recipe_id") or existing_recipe_id)
-            conn = get_connection()
-            cur = conn.cursor()
+            correlation_id = uuid.uuid4().hex
+            change_reason = (
+                reason or "Existing recipe parameter update from Excel import"
+            ).strip()
             try:
-                cur.execute("BEGIN")
-                recipe = RecipeExcelImportExportManager._get_recipe_update_target(cur, recipe_id)
-                if not recipe:
-                    raise ValueError("Existing recipe was not found.")
-                if str(recipe.get("version_usage_status") or "").upper() == "HISTORY_RELEASED":
-                    raise ValueError("Historical released recipe versions are locked and cannot be updated by Excel import.")
+                with transaction(immediate=True) as conn:
+                    cur = conn.cursor()
+                    recipe = RecipeExcelImportExportManager._get_recipe_update_target(
+                        cur, recipe_id
+                    )
+                    if not recipe:
+                        raise ValueError("Existing recipe was not found.")
+                    if str(recipe.get("version_usage_status") or "").upper() == "HISTORY_RELEASED":
+                        raise ValueError(
+                            "Historical released recipe versions are locked and cannot be updated by Excel import."
+                        )
 
-                master_detail_update_count = 0
-                if update_master_details:
+                    master_detail_update_count = 0
+                    if update_master_details:
+                        for item in parameters:
+                            master_detail_update_count += (
+                                RecipeExcelImportExportManager
+                                ._update_parameter_master_non_plc_details(cur, item)
+                            )
+
+                    current_values = RecipeExcelImportExportManager._current_value_map(
+                        cur, recipe_id
+                    )
+                    changed_count = 0
+                    inserted_count = 0
+                    unchanged_count = 0
+                    change_source = (
+                        "CURRENT_RELEASED_EDIT"
+                        if str(summary.get("existing_recipe_status") or "").upper()
+                        == "CURRENT_RELEASED"
+                        else "EXCEL_EXISTING_RECIPE_UPDATE"
+                    )
+
                     for item in parameters:
-                        master_detail_update_count += RecipeExcelImportExportManager._update_parameter_master_non_plc_details(cur, item)
-
-                current_values = RecipeExcelImportExportManager._current_value_map(cur, recipe_id)
-                changed_count = 0
-                inserted_count = 0
-                unchanged_count = 0
-                audit_rows = []
-
-                for item in parameters:
-                    definition = item["definition"]
-                    definition_id = int(definition["id"])
-                    new_value = item["value"]
-                    existing_value = current_values.get(definition_id)
-                    if existing_value:
-                        value_id = int(existing_value["value_id"])
-                        old_value = existing_value.get("parameter_value")
-                        if RecipeExcelImportExportManager._values_different(old_value, new_value):
+                        definition = item["definition"]
+                        definition_id = int(definition["id"])
+                        new_value = item["value"]
+                        existing_value = current_values.get(definition_id)
+                        if existing_value:
+                            value_id = int(existing_value["value_id"])
+                            old_value = existing_value.get("parameter_value")
+                            if RecipeExcelImportExportManager._values_different(
+                                old_value, new_value
+                            ):
+                                cur.execute(
+                                    """
+                                    UPDATE recipe_parameter_values
+                                    SET parameter_value=?, is_modified=1,
+                                        updated_at=CURRENT_TIMESTAMP
+                                    WHERE id=?
+                                    """,
+                                    (new_value, value_id),
+                                )
+                                changed_count += 1
+                            else:
+                                unchanged_count += 1
+                                continue
+                        else:
+                            old_value = None
                             cur.execute(
                                 """
-                                UPDATE recipe_parameter_values
-                                SET parameter_value = ?, is_modified = 1, updated_at = CURRENT_TIMESTAMP
-                                WHERE id = ?
+                                INSERT INTO recipe_parameter_values
+                                (recipe_id, parameter_definition_id, parameter_value, is_modified)
+                                VALUES (?, ?, ?, 1)
                                 """,
-                                (new_value, value_id),
+                                (recipe_id, definition_id, new_value),
                             )
-                            changed_count += 1
-                            audit_rows.append((value_id, definition, old_value, new_value))
-                        else:
-                            unchanged_count += 1
-                    else:
-                        cur.execute(
-                            """
-                            INSERT INTO recipe_parameter_values
-                            (recipe_id, parameter_definition_id, parameter_value, is_modified)
-                            VALUES (?, ?, ?, 1)
-                            """,
-                            (recipe_id, definition_id, new_value),
+                            value_id = int(cur.lastrowid)
+                            inserted_count += 1
+
+                        RecipeParameterAuditManager.log_change(
+                            recipe_id=recipe_id,
+                            recipe_parameter_value_id=value_id,
+                            parameter_definition_id=definition_id,
+                            old_value=old_value,
+                            new_value=new_value,
+                            changed_by=imported_by,
+                            recipe_code=recipe_code,
+                            recipe_version=version,
+                            parameter_name=definition.get("parameter_name"),
+                            tag_index=definition.get("tag_index"),
+                            change_source=change_source,
+                            change_reason=change_reason,
+                            user_role=user_role,
+                            client_ip=ctx.get("client_ip"),
+                            workstation_name=ctx.get("workstation_name"),
+                            correlation_id=correlation_id,
+                            _connection=conn,
                         )
-                        value_id = cur.lastrowid
-                        inserted_count += 1
-                        audit_rows.append((value_id, definition, None, new_value))
 
-                conn.commit()
-            except Exception as exc:
-                conn.rollback()
-                conn.close()
-                preview["errors"] = [f"Database update failed: {exc}"]
-                preview["ok"] = False
-                return False, None, preview
-            conn.close()
-
-            # Parameter value audit is written after the main transaction so the
-            # update remains simple and compatible with existing audit schema.
-            from database.recipe_parameter_audit_manager import RecipeParameterAuditManager
-            change_source = "CURRENT_RELEASED_EDIT" if str(summary.get("existing_recipe_status") or "").upper() == "CURRENT_RELEASED" else "EXCEL_EXISTING_RECIPE_UPDATE"
-            for value_id, definition, old_value, new_value in audit_rows:
-                try:
-                    RecipeParameterAuditManager.log_change(
-                        recipe_id=recipe_id,
-                        recipe_parameter_value_id=value_id,
-                        parameter_definition_id=definition["id"],
-                        old_value=old_value,
-                        new_value=new_value,
-                        changed_by=imported_by,
+                    AuditManager.log_event(
+                        username=imported_by,
+                        role=user_role,
+                        action="RECIPE_UPDATED_EXCEL",
+                        change_source="WEB_RECIPE_IMPORT_EXPORT",
                         recipe_code=recipe_code,
                         recipe_version=version,
-                        parameter_name=definition.get("parameter_name"),
-                        tag_index=definition.get("tag_index"),
-                        change_source=change_source,
-                        change_reason=reason or "Existing recipe parameter update from Excel import",
-                        user_role=user_role,
-                        client_ip=ctx.get("client_ip"),
-                        workstation_name=ctx.get("workstation_name"),
+                        record_id=recipe_id,
+                        old_value=os.path.basename(file_path),
+                        new_value=(
+                            f"mode=update_existing; changed_values={changed_count}; "
+                            f"inserted_values={inserted_count}; "
+                            f"unchanged_values={unchanged_count}; "
+                            f"master_detail_updates={master_detail_update_count}; "
+                            "phase_control=ignored"
+                        ),
+                        reason=change_reason,
+                        correlation_id=correlation_id,
+                        _connection=conn,
+                        **ctx,
                     )
-                except Exception:
-                    pass
-
-            AuditManager.log_event(
-                username=imported_by,
-                role=user_role,
-                action="RECIPE_UPDATED_EXCEL",
-                change_source="WEB_RECIPE_IMPORT_EXPORT",
-                recipe_code=recipe_code,
-                recipe_version=version,
-                record_id=recipe_id,
-                old_value=os.path.basename(file_path),
-                new_value=(
-                    f"mode=update_existing; changed_values={changed_count}; inserted_values={inserted_count}; "
-                    f"unchanged_values={unchanged_count}; master_detail_updates={master_detail_update_count}; phase_control=ignored"
-                ),
-                reason=reason or "Existing recipe parameter update from Excel import",
-                **ctx,
-            )
+            except Exception as exc:
+                preview["errors"] = [
+                    f"Database update failed and was rolled back: {type(exc).__name__}"
+                ]
+                preview["ok"] = False
+                return False, None, preview
 
             try:
                 os.remove(file_path)
@@ -1756,85 +1795,122 @@ class RecipeExcelImportExportManager:
             preview["summary"]["inserted_value_count"] = inserted_count
             preview["summary"]["unchanged_value_count"] = unchanged_count
             preview["summary"]["master_detail_update_count"] = master_detail_update_count
+            preview["summary"]["correlation_id"] = correlation_id
             return True, recipe_id, preview
 
-        conn = get_connection()
-        cur = conn.cursor()
+        correlation_id = uuid.uuid4().hex
+        import_reason = (reason or "Recipe imported from Excel template").strip()
         try:
-            cur.execute("BEGIN")
-            cur.execute(
-                """
-                INSERT INTO recipes
-                (machine_id, stage_id, recipe_code, recipe_name, version, status, created_by, is_test_only)
-                VALUES (?, ?, ?, ?, ?, 'DRAFT', ?, ?)
-                """,
-                (machine_id, stage_id, recipe_code, summary["recipe_name"], version, imported_by, is_test_only),
-            )
-            recipe_id = cur.lastrowid
-            master_detail_update_count = 0
-            if update_master_details:
+            with transaction(immediate=True) as conn:
+                cur = conn.cursor()
+                stage_row = cur.execute(
+                    "SELECT stage_type FROM machine_stages WHERE id=? AND machine_id=?",
+                    (stage_id, machine_id),
+                ).fetchone()
+                if not stage_row:
+                    raise ValueError("Import machine/stage is not valid.")
+                stage_key = str(stage_row["stage_type"] or "").upper().replace(" ", "_")
+                is_second_stage = stage_key in {"SECOND_STAGE", "SECONDSTAGE", "SS"}
+
+                duplicate = cur.execute(
+                    """
+                    SELECT id FROM recipes
+                    WHERE machine_id=? AND stage_id=? AND UPPER(recipe_code)=UPPER(?)
+                    LIMIT 1
+                    """,
+                    (machine_id, stage_id, recipe_code),
+                ).fetchone()
+                if duplicate:
+                    raise ValueError("Recipe code already exists for the selected machine/stage.")
+
+                cur.execute(
+                    """
+                    INSERT INTO recipes
+                    (machine_id, stage_id, recipe_code, recipe_name, version, status, created_by, is_test_only)
+                    VALUES (?, ?, ?, ?, ?, 'DRAFT', ?, ?)
+                    """,
+                    (machine_id, stage_id, recipe_code, summary["recipe_name"], version, imported_by, is_test_only),
+                )
+                recipe_id = int(cur.lastrowid)
+                master_detail_update_count = 0
+                if update_master_details:
+                    for item in parameters:
+                        master_detail_update_count += (
+                            RecipeExcelImportExportManager
+                            ._update_parameter_master_non_plc_details(cur, item)
+                        )
                 for item in parameters:
-                    master_detail_update_count += RecipeExcelImportExportManager._update_parameter_master_non_plc_details(cur, item)
-            for item in parameters:
-                definition = item["definition"]
+                    definition = item["definition"]
+                    cur.execute(
+                        """
+                        INSERT INTO recipe_parameter_values
+                        (recipe_id, parameter_definition_id, parameter_value, is_modified)
+                        VALUES (?, ?, ?, 1)
+                        """,
+                        (recipe_id, definition["id"], item["value"]),
+                    )
+
+                inserted_phase_rows = 0
+                for row in phase_rows:
+                    group_code = (row.get("phase_group_code") or "MAIN").upper()
+                    if is_second_stage and group_code not in {"CAP_STRIP_SIDE", "BT_SIDE"}:
+                        continue
+                    cur.execute(
+                        """
+                        INSERT INTO recipe_phase_control
+                        (recipe_id, line_no, phase_control_id, stop_option, position_option,
+                         sequence_no, phase_group_code, phase_group_name, used)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+                        """,
+                        (
+                            recipe_id,
+                            row["line_no"],
+                            row["phase_control_id"],
+                            None if is_second_stage else row.get("stop_option"),
+                            None if is_second_stage else row.get("position_option"),
+                            row["sequence_no"],
+                            group_code,
+                            row.get("phase_group_name") or "Phase Control",
+                        ),
+                    )
+                    inserted_phase_rows += 1
+
                 cur.execute(
                     """
-                    INSERT INTO recipe_parameter_values
-                    (recipe_id, parameter_definition_id, parameter_value, is_modified)
-                    VALUES (?, ?, ?, 1)
+                    INSERT INTO recipe_status_history
+                    (recipe_id, recipe_code, old_status, new_status, changed_by, remarks)
+                    VALUES (?, ?, 'IMPORT', 'DRAFT', ?, ?)
                     """,
-                    (recipe_id, definition["id"], item["value"]),
+                    (recipe_id, recipe_code, imported_by, import_reason),
                 )
-            for row in phase_rows:
-                cur.execute(
-                    """
-                    INSERT INTO recipe_phase_control
-                    (recipe_id, line_no, phase_control_id, stop_option, position_option, sequence_no, phase_group_code, phase_group_name)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        recipe_id,
-                        row["line_no"],
-                        row["phase_control_id"],
-                        row["stop_option"],
-                        row["position_option"],
-                        row["sequence_no"],
-                        row.get("phase_group_code") or "MAIN",
-                        row.get("phase_group_name") or "Phase Control",
+                AuditManager.log_event(
+                    username=imported_by,
+                    role=user_role,
+                    action="RECIPE_IMPORTED_EXCEL",
+                    change_source="WEB_RECIPE_IMPORT_EXPORT",
+                    recipe_code=recipe_code,
+                    recipe_version=version,
+                    record_id=recipe_id,
+                    old_value=os.path.basename(file_path),
+                    new_value=(
+                        f"mode=create_new; parameters={len(parameters)}; "
+                        f"phase_rows={inserted_phase_rows}; "
+                        f"master_detail_updates={master_detail_update_count}; status=DRAFT"
                     ),
+                    reason=import_reason,
+                    correlation_id=correlation_id,
+                    _connection=conn,
+                    **ctx,
                 )
-            conn.commit()
         except Exception as exc:
-            conn.rollback()
-            conn.close()
-            preview["errors"] = [f"Database import failed: {exc}"]
+            preview["errors"] = [
+                f"Database import failed and was rolled back: {type(exc).__name__}"
+            ]
             preview["ok"] = False
             return False, None, preview
-        conn.close()
 
-        RecipeStatusHistoryManager.add_history(
-            recipe_id=recipe_id,
-            recipe_code=recipe_code,
-            old_status="IMPORT",
-            new_status="DRAFT",
-            changed_by=imported_by,
-            remarks=reason or "Recipe imported from Excel template",
-        )
-
-        AuditManager.log_event(
-            username=imported_by,
-            role=user_role,
-            action="RECIPE_IMPORTED_EXCEL",
-            change_source="WEB_RECIPE_IMPORT_EXPORT",
-            recipe_code=recipe_code,
-            recipe_version=version,
-            record_id=recipe_id,
-            old_value=os.path.basename(file_path),
-            new_value=f"mode=create_new; parameters={len(parameters)}; phase_rows={len(phase_rows)}; master_detail_updates={locals().get('master_detail_update_count', 0)}; status=DRAFT",
-            reason=reason or "Recipe imported from Excel template",
-            **ctx,
-        )
-
+        preview["summary"]["correlation_id"] = correlation_id
+        preview["summary"]["master_detail_update_count"] = master_detail_update_count
         try:
             os.remove(file_path)
         except OSError:

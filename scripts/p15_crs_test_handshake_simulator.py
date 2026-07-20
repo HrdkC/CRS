@@ -8,6 +8,8 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
+from tools.plc_live_manual.safety import require_supervised_live_plc
+
 from pycomm3 import LogixDriver
 
 from database.database import get_connection
@@ -131,6 +133,7 @@ def main():
     parser.add_argument("--confirm", required=True, help="Must be YES")
     parser.add_argument("--poll-seconds", type=float, default=0.5, help="Polling interval. Default: 0.5")
     args = parser.parse_args()
+    require_supervised_live_plc(__file__)
     run(args.machine, args.stage, args.confirm, args.poll_seconds)
 
 

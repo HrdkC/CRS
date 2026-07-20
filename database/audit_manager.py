@@ -35,63 +35,36 @@ class AuditManager:
         reason=None,
         user_agent=None,
         forwarded_for=None,
-        request_host=None
+        request_host=None,
+        correlation_id=None,
+        _connection=None,
     ):
-
-        conn = get_connection()
+        owns_connection = _connection is None
+        conn = _connection or get_connection()
         cursor = conn.cursor()
-
         cursor.execute(
             """
             INSERT INTO audit_log
             (
-                username,
-                role,
-                workstation_name,
-                client_ip,
-                plc_name,
-                recipe_code,
-                recipe_version,
-                record_id,
-                parameter_name,
-                old_value,
-                new_value,
-                action,
-                change_source,
-                reason,
-                user_agent,
-                forwarded_for,
-                request_host
+                username, role, workstation_name, client_ip, plc_name,
+                recipe_code, recipe_version, record_id, parameter_name,
+                old_value, new_value, action, change_source, reason,
+                user_agent, forwarded_for, request_host, correlation_id
             )
-            VALUES
-            (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                username,
-                role,
-                workstation_name,
-                client_ip,
-                plc_name,
-                recipe_code,
-                recipe_version,
-                record_id,
-                parameter_name,
-                old_value,
-                new_value,
-                action,
-                change_source,
-                reason,
-                user_agent,
-                forwarded_for,
-                request_host
-            )
+                username, role, workstation_name, client_ip, plc_name,
+                recipe_code, recipe_version, record_id, parameter_name,
+                old_value, new_value, action, change_source, reason,
+                user_agent, forwarded_for, request_host, correlation_id,
+            ),
         )
-
-        conn.commit()
-        conn.close()
-        return True
+        audit_id = cursor.lastrowid
+        if owns_connection:
+            conn.commit()
+            conn.close()
+        return audit_id
 
     @staticmethod
     def log_parameter_change(

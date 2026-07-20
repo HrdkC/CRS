@@ -8,7 +8,9 @@ Create/import the PLC tags in Logix Designer first, then register/verify them in
 CRS with the scripts in the scripts folder.
 """
 
-PAYLOAD_SIZE = 150
+FIRST_STAGE_PAYLOAD_SIZE = 500
+SECOND_STAGE_PAYLOAD_SIZE = 150
+PAYLOAD_SIZE = SECOND_STAGE_PAYLOAD_SIZE  # deprecated compatibility alias
 
 CRS_STANDARD_TEST_TAGS = [
     {
@@ -232,8 +234,29 @@ OPTIONAL_HANDSHAKE_TAGS = [
 ]
 
 
-def get_tag_definitions(include_optional=True):
-    if include_optional:
-        return list(CRS_STANDARD_TEST_TAGS)
-    required = set(REQUIRED_FOR_BUFFER_OPERATIONS)
-    return [tag for tag in CRS_STANDARD_TEST_TAGS if tag["purpose"] in required]
+def payload_size_for_stage(stage_type):
+    stage = str(stage_type or "").strip().upper().replace(" ", "_")
+    if stage in {"FIRST_STAGE", "FIRSTSTAGE", "FS"}:
+        return FIRST_STAGE_PAYLOAD_SIZE
+    if stage in {"SECOND_STAGE", "SECONDSTAGE", "SS"}:
+        return SECOND_STAGE_PAYLOAD_SIZE
+    raise ValueError("Stage type must be FIRST_STAGE/FS or SECOND_STAGE/SS.")
+
+
+def get_tag_definitions(include_optional=True, stage_type="SECOND_STAGE"):
+    payload_size = payload_size_for_stage(stage_type)
+    source = CRS_STANDARD_TEST_TAGS
+    if not include_optional:
+        required = set(REQUIRED_FOR_BUFFER_OPERATIONS)
+        source = [tag for tag in source if tag["purpose"] in required]
+
+    definitions = []
+    for original in source:
+        tag = dict(original)
+        if tag["purpose"] in {"RECIPE_DATA", "TEST_RECIPE_DATA"}:
+            tag["array_size"] = payload_size
+            tag["array_start_index"] = 0
+            tag["array_end_index"] = payload_size - 1
+            tag["initial_value"] = f"REAL[{payload_size}] all 0.0"
+        definitions.append(tag)
+    return definitions

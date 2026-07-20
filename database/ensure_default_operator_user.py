@@ -16,5 +16,4 @@ from database.upgrade_user_management_priority11 import (
 if __name__ == "__main__":
     upgrade_user_management_schema()
     ensure_default_operator_user()
-    print("Default operator login ready: username=operator, temporary password=operator123")
-    print("Change this password immediately after first login.")
+    print("Operator recovery account ready from CRS_BOOTSTRAP_OPERATOR_PASSWORD.")

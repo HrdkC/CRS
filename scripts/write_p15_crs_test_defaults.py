@@ -6,10 +6,12 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
+from tools.plc_live_manual.safety import require_supervised_live_plc
+
 from pycomm3 import LogixDriver
 
 from database.database import get_connection
-from database.plc_crs_test_tag_definitions import PAYLOAD_SIZE
+from database.plc_crs_test_tag_definitions import payload_size_for_stage
 
 STAGE_ALIASES = {
     "FS": "FIRST_STAGE",
@@ -54,8 +56,12 @@ def get_active_plc(machine_code, stage):
 
 
 def write_defaults(machine_code, stage, confirm, zero_arrays=False):
-    if confirm != "YES":
-        raise SystemExit("Blocked. Re-run with --confirm YES after confirming PLC is in safe test/manual condition.")
+    if os.getenv("CRS_ALLOW_PLC_COMMUNICATION", "").strip().upper() != "YES":
+        raise SystemExit("Blocked. Set CRS_ALLOW_PLC_COMMUNICATION=YES only in an approved test window.")
+    normalized_stage = normalize_stage(stage)
+    expected = f"WRITE TEST DEFAULTS {machine_code.upper()} {normalized_stage}"
+    if confirm != expected:
+        raise SystemExit(f"Blocked. --confirm must exactly equal: {expected}")
 
     plc = get_active_plc(machine_code, stage)
     if not plc:
@@ -89,13 +95,14 @@ def write_defaults(machine_code, stage, confirm, zero_arrays=False):
             print(f"WRITE {tag_name:<30} {value!r:<12} {status}")
 
         if zero_arrays:
-            zeros = [0.0] * PAYLOAD_SIZE
+            payload_size = payload_size_for_stage(plc["stage_type"])
+            zeros = [0.0] * payload_size
             for tag_name in ["CRS_Recipe_Data", "CRS_Test_Recipe_Data"]:
-                expression = f"{tag_name}{{{PAYLOAD_SIZE}}}"
+                expression = f"{tag_name}{{{payload_size}}}"
                 result = plc_conn.write((expression, zeros))
                 error = getattr(result, "error", None)
                 status = "OK" if result and not error and bool(result) else f"FAILED: {error}"
-                print(f"WRITE {expression:<30} REAL[{PAYLOAD_SIZE}] {status}")
+                print(f"WRITE {expression:<30} REAL[{payload_size}] {status}")
 
     print("Done. Test permissives set TRUE; handshake bits cleared.")
 
@@ -106,13 +113,14 @@ def main():
     )
     parser.add_argument("--machine", default="P15", help="Machine code. Default: P15")
     parser.add_argument("--stage", required=True, help="FS or SS")
-    parser.add_argument("--confirm", required=True, help="Must be YES")
+    parser.add_argument("--confirm", required=True, help="Exact typed confirmation shown in the error message")
     parser.add_argument(
         "--zero-arrays",
         action="store_true",
-        help="Also write 150 zeroes to CRS_Recipe_Data and CRS_Test_Recipe_Data.",
+        help="Also write the stage-specific number of zeroes (FS=500, SS=150) to CRS_Recipe_Data and CRS_Test_Recipe_Data.",
     )
     args = parser.parse_args()
+    require_supervised_live_plc(__file__)
     write_defaults(args.machine, args.stage, args.confirm, zero_arrays=args.zero_arrays)
 
 

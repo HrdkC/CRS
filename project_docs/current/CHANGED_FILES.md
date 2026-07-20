@@ -1,0 +1,76 @@
+# V11.11-RC1 changed-file inventory
+
+Total changed/new/moved paths: **72**.
+
+- ` M README.md`
+- ` M config/settings.py`
+- ` M database/audit_archive_manager.py`
+- ` M database/audit_manager.py`
+- ` M database/database.py`
+- ` M database/ensure_backup_admin_user.py`
+- ` M database/ensure_default_engineering_user.py`
+- ` M database/ensure_default_operator_user.py`
+- ` M database/ensure_default_priority11_users.py`
+- ` M database/orm_models.py`
+- ` M database/phase_template_manager.py`
+- ` M database/plc_buffer_operation_manager.py`
+- ` M database/plc_crs_test_tag_definitions.py`
+- ` M database/plc_operation_job_manager.py`
+- ` M database/recipe_approval_manager.py`
+- ` M database/recipe_excel_import_export_manager.py`
+- ` M database/recipe_manager.py`
+- ` M database/recipe_parameter_audit_manager.py`
+- ` M database/recipe_parameter_value_manager.py`
+- ` M database/recipe_phase_control_manager.py`
+- ` M database/recipe_resource_lock_manager.py`
+- ` M database/recipe_status_history_manager.py`
+- ` M database/recipe_version_manager.py`
+- ` M database/stage_plc_tag_requirement_manager.py`
+- ` M database/system_bootstrap_manager.py`
+- ` M database/system_settings_manager.py`
+- ` M database/upgrade_user_management_priority11.py`
+- ` M database/upload_history_manager.py`
+- ` M database/user_session_manager.py`
+- ` M flask_app/__init__.py`
+- ` M flask_app/routes/auth_routes.py`
+- ` M flask_app/routes/recipe_editor_routes.py`
+- ` M flask_app/routes/recipe_routes.py`
+- ` M flask_app/routes/user_routes.py`
+- ` M flask_app/security/login_throttle.py`
+- ` M flask_app/security/session_guard.py`
+- ` M flask_app/templates/recipes/download_preparation.html`
+- ` M flask_app/templates/recipes/recipe_phase_control.html`
+- ` M requirements.txt`
+- ` M scripts/check_crs_routes_and_links.py`
+- ` M scripts/create_admin.py`
+- ` M scripts/diagnose_p15_ss_crs_array_tags.py`
+- ` M scripts/p15_crs_test_handshake_simulator.py`
+- ` M scripts/register_p15_crs_test_tags.py`
+- ` M scripts/verify_p15_crs_test_tags_online.py`
+- ` M scripts/write_p15_crs_test_defaults.py`
+- ` M tests/conftest.py`
+- ` M tests/safe/test_plc_test_connection_route.py`
+- `RM tests/test_p15_connection.py -> tools/plc_live_manual/test_p15_connection_manual.py`
+- `RM tests/test_p15_read_crs_tags.py -> tools/plc_live_manual/test_p15_read_crs_tags_manual.py`
+- `RM tests/test_p15_read_full_recipe_snapshot.py -> tools/plc_live_manual/test_p15_read_full_recipe_snapshot_manual.py`
+- `RM tests/test_p15_read_recipe_array.py -> tools/plc_live_manual/test_p15_read_recipe_array_manual.py`
+- `RM tests/test_p15_write_recipe_array.py -> tools/plc_live_manual/test_p15_write_recipe_array_manual.py`
+- `RM tests/test_plc_write.py -> tools/plc_live_manual/test_plc_write_manual.py`
+- ` M tools/route_smoke_check.py`
+- `?? .env.example`
+- `?? .github/`
+- `?? database/hardening_schema_manager.py`
+- `?? database/recipe_bulk_change_service.py`
+- `?? database/schema_guard.py`
+- `?? project_docs/current/`
+- `?? pytest.ini`
+- `?? scripts/build_clean_release.py`
+- `?? scripts/run_crs_plc_worker.bat`
+- `?? scripts/run_crs_waitress.bat`
+- `?? scripts/run_plc_worker.py`
+- `?? scripts/run_waitress.py`
+- `?? tests/safe/test_v11_11_hardening.py`
+- `?? tools/plc_live_manual/README.md`
+- `?? tools/plc_live_manual/safety.py`
+- `?? tools/safe_runtime_guard.py`
+- `?? wsgi.py`

@@ -1,0 +1,2442 @@
+{
+  "release": "V11.11-RC1",
+  "generated_at_utc": "2026-07-18T05:44:44.185163+00:00",
+  "file_count": 487,
+  "files": [
+    {
+      "path": ".env.example",
+      "size": 754,
+      "sha256": "34c827c6780af8023a49e75a4c796d115bcac29dfa2119184fad9601de539b68"
+    },
+    {
+      "path": ".gitattributes",
+      "size": 266,
+      "sha256": "d2bb08d96d5ec5f1ffe07d69458895a2b8587aa805ab01b4160544e41a9c402c"
+    },
+    {
+      "path": ".github/workflows/safe-ci.yml",
+      "size": 1191,
+      "sha256": "5f4fdd62d2980740ad65d52f0184f6c159683501fd2a033622b7bcd4c9bddf1c"
+    },
+    {
+      "path": ".gitignore",
+      "size": 535,
+      "sha256": "bbeec8ec716556e71a4f5ed011f629715a8aa5bce893659e49685ed57ad250fb"
+    },
+    {
+      "path": "app.py",
+      "size": 3054,
+      "sha256": "55149f6dc1b6af3bffa12e8fad3bc37445bf1536a5d5784443f37d16b65eeed4"
+    },
+    {
+      "path": "config/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "config/settings.py",
+      "size": 2755,
+      "sha256": "c799be10c1a3325a658972c3ec6b738eb9b1b7a61f683ae122ee14d9c1028167"
+    },
+    {
+      "path": "database/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "database/audit_actions.py",
+      "size": 855,
+      "sha256": "83a69b62bb28e1ec5d51bd63bca9b12f2f28ead5c9f00c0b3a4d887f863e3e3d"
+    },
+    {
+      "path": "database/audit_archive_manager.py",
+      "size": 11911,
+      "sha256": "6a94d812d335964bb330100a5ba139437c4cd991e1c8d7435832005d49f08f7c"
+    },
+    {
+      "path": "database/audit_manager.py",
+      "size": 8877,
+      "sha256": "25edaa31c0de2432085e5aea1f6208a1f4485d009bf78f5f81083b865ae83e1b"
+    },
+    {
+      "path": "database/build_p15_second_stage_parameter_master_draft_recipe_v1.py",
+      "size": 32636,
+      "sha256": "57b609215f0419e85743cfa6971a513accf57c06b063d174dede64f6330a4981"
+    },
+    {
+      "path": "database/cleanup_legacy_plc_tag_typo.py",
+      "size": 966,
+      "sha256": "9a62091849ee539c22cee568ea2f4b1bdf344ba0ce77436c80ea1c6cbc665c68"
+    },
+    {
+      "path": "database/clear_stale_sessions_priority11.py",
+      "size": 2374,
+      "sha256": "689b2042c1220cb34a454e48114aac7aa9986a3108a09f4cf5699f734672ecac"
+    },
+    {
+      "path": "database/configuration_readiness_manager.py",
+      "size": 29191,
+      "sha256": "b7adde71d11e9b982623391b9eec2b5f12d730bab829d4e99b5498133e3d80b1"
+    },
+    {
+      "path": "database/configure_p15_second_stage_phase_master.py",
+      "size": 8465,
+      "sha256": "0506e51a6835813d2bdd1b5e1a72215b2000d703e7779cac52227d543f67abf4"
+    },
+    {
+      "path": "database/create_engineering_units_table.py",
+      "size": 666,
+      "sha256": "ca566be6eb3be09d7c0fc68fc373e1ab81f818d4e71d2061464bbc0172235394"
+    },
+    {
+      "path": "database/create_machine_stage_table.py",
+      "size": 809,
+      "sha256": "869da2b3ac80e159e22fab72b1b6bb94e26260e60785fe0269a886cd8deaeca5"
+    },
+    {
+      "path": "database/create_parameter_definitions_table.py",
+      "size": 2046,
+      "sha256": "c01777f1abc1c5de58daae044ab453022fad09572b5284326ad4f3267ab30049"
+    },
+    {
+      "path": "database/create_phase_control_mapping_table.py",
+      "size": 1044,
+      "sha256": "36de0d03e82579fd379be105e578d7eb57fa8c9247edb7689ab975ac98d91161"
+    },
+    {
+      "path": "database/create_phase_control_master_table.py",
+      "size": 1938,
+      "sha256": "dc3421dcffe663f116aac3cd7ecb6c3b054cd95f335014836ae0eb1fe597b66c"
+    },
+    {
+      "path": "database/create_phase_control_option_table.py",
+      "size": 906,
+      "sha256": "9cc3891d5b0c4289e871180decda952b6f9bf54b1a79facc5413d88dad5432a4"
+    },
+    {
+      "path": "database/create_plc_program_history_table.py",
+      "size": 877,
+      "sha256": "ac750483bd7f33191b0417c473c252c10c153b9fd411572241c97fc37ea667d2"
+    },
+    {
+      "path": "database/create_plc_registry_table.py",
+      "size": 971,
+      "sha256": "b30982cebadaf6765edc136e17f3b528beceed6aec43939c563647de4258af2e"
+    },
+    {
+      "path": "database/create_plc_tags_table.py",
+      "size": 1183,
+      "sha256": "900c9921bf01ec79c3c1158468469b4925c146066af67c6f8b83a39f83c1be6a"
+    },
+    {
+      "path": "database/create_recipe_download_history_table.py",
+      "size": 846,
+      "sha256": "14c6d00629533c2332b746ee548bb7208d456631b66c0dad2272ee4c6241c4d7"
+    },
+    {
+      "path": "database/create_recipe_parameter_audit_table.py",
+      "size": 1145,
+      "sha256": "ac2f46cd02682624d9917c5cb5b33603600c388e03bdeebaf1d5880066f72806"
+    },
+    {
+      "path": "database/create_recipe_parameter_values_table.py",
+      "size": 1081,
+      "sha256": "2aac83e736b814474f493f85ce66462b91538ca96622a58559ae96ebbacadc5e"
+    },
+    {
+      "path": "database/create_recipe_phase_control_table.py",
+      "size": 1091,
+      "sha256": "1553816226b2bd677d4868cee3f1e6dfd7bc183e06bc276ca0aa95df4c9f94bd"
+    },
+    {
+      "path": "database/create_recipe_status_history_table.py",
+      "size": 818,
+      "sha256": "b6ab57f955947e644e2ca9777346ba171d4a6e30033c5c76f96b7ad19b9f0e4e"
+    },
+    {
+      "path": "database/create_recipe_version_values_table.py",
+      "size": 587,
+      "sha256": "541cfa97f20b97d01fd0b22f19c5923e7b0d2d7e057f42f1b5ebbd26f65c4a07"
+    },
+    {
+      "path": "database/create_recipe_versions_table.py",
+      "size": 687,
+      "sha256": "b3d7604b1ffe70e6e93e41fa242ff0a9b9a226ea5baa464f131cf77a5a09abd3"
+    },
+    {
+      "path": "database/create_recipes_table.py",
+      "size": 959,
+      "sha256": "4ec02d7bb34af7482a9bd6363e8a254bf730407b059beaff031497847126138e"
+    },
+    {
+      "path": "database/create_schema_version_table.py",
+      "size": 640,
+      "sha256": "5f8d76647171e7ada18512e9becb00adabf58c656a5e8976cf9b4887361bd892"
+    },
+    {
+      "path": "database/create_system_settings_table.py",
+      "size": 701,
+      "sha256": "a9569b15620f8ef4329b449413f3e242589254920ba18583013e0bb5d168b34a"
+    },
+    {
+      "path": "database/create_tbm_family_table.py",
+      "size": 680,
+      "sha256": "14622de5dea6cfa1b952760c7ce4d02893831d0baf0d80f12a54bde270330c45"
+    },
+    {
+      "path": "database/create_tbm_machine_table.py",
+      "size": 808,
+      "sha256": "fbb09d692a2fd98a21d86b4ee95a090f76bc58be7bc2f4886003a05c5ca0dc8a"
+    },
+    {
+      "path": "database/create_template_master_table.py",
+      "size": 884,
+      "sha256": "dabad330ccb3eaa2da2fc51ce19419745c4a46fb24ae6ce2dcdaa5c662997d7f"
+    },
+    {
+      "path": "database/create_template_parameter_table.py",
+      "size": 1479,
+      "sha256": "d8f4048856e807f1584cf8e5e8c8482576196725355e2328c98ba7ee5e2a2717"
+    },
+    {
+      "path": "database/database.py",
+      "size": 1569,
+      "sha256": "1e0e33ce19474438ac5cc33b107aec5b69678132bdefd95ffe4e2e57e31bac51"
+    },
+    {
+      "path": "database/database_configuration_manager.py",
+      "size": 12862,
+      "sha256": "a79f89a743111398a9e847a6e0602247f09619d11c6a8dd2495b73fdd0396022"
+    },
+    {
+      "path": "database/download_history_manager.py",
+      "size": 3072,
+      "sha256": "4e75ddcbd1d8bbbcfc3651ea775a46e47eda5285ccf10f5550bb75b2b5de2b3f"
+    },
+    {
+      "path": "database/drop_second_stage_shaping_phase_config.py",
+      "size": 4493,
+      "sha256": "c0a8328b6afe460e3f1c2d4a3a8d22bda576963a4506c3cf3bb24a591177d07b"
+    },
+    {
+      "path": "database/ensure_backup_admin_user.py",
+      "size": 417,
+      "sha256": "6832ca83fb66c5471ca4994e004906ff5e0eb2d0c30bb7f1df77724489c13baa"
+    },
+    {
+      "path": "database/ensure_default_engineering_user.py",
+      "size": 520,
+      "sha256": "234808de63016453e5d2ddd357780980d226e893f1eab02e025fbbede47b2a31"
+    },
+    {
+      "path": "database/ensure_default_operator_user.py",
+      "size": 508,
+      "sha256": "840f358a58534102c84d56f872b1829bda1aef64c411747354607cf2eb1cd0f2"
+    },
+    {
+      "path": "database/ensure_default_priority11_users.py",
+      "size": 432,
+      "sha256": "8f6598dbbf07425dd60beb1f6ca8b99a89d54bb291fe3e0250be5d3fb7674237"
+    },
+    {
+      "path": "database/fix_crs_array_size.py",
+      "size": 399,
+      "sha256": "b66852dc5257dd8678b19c2628c063f244319050ed07cf9098f97749886831c7"
+    },
+    {
+      "path": "database/hardening_schema_manager.py",
+      "size": 20645,
+      "sha256": "7a6d102051d1da69fb4128fc26b09c5d0bec75e2e9dd35284e037380c87b8f6c"
+    },
+    {
+      "path": "database/import_parameter_definitions.py",
+      "size": 1819,
+      "sha256": "d07adcc177f9eb99f4401584682fb475bf12e41177aa99c64abe0b950befc8e0"
+    },
+    {
+      "path": "database/import_parameter_template.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "database/load_default_phase_controls.py",
+      "size": 1558,
+      "sha256": "4483c11199cba3a771b905c3c1c6939c62a89b35ffdeeaa8521b5bf9c8f3aadf"
+    },
+    {
+      "path": "database/machine_manager.py",
+      "size": 8344,
+      "sha256": "c06acacbb8bfec16987e0560d27f6cace32339f23e65becfaa0c8aa016ed73cf"
+    },
+    {
+      "path": "database/migrate_plc_verification_fields.py",
+      "size": 876,
+      "sha256": "ae7f9fe594e768c9d0a545f3c1012d94933a6908aa6ef721ae9ec3c37c378af9"
+    },
+    {
+      "path": "database/migrate_second_stage_phase_tag_purposes.py",
+      "size": 3356,
+      "sha256": "c019157e22503c6a79324d63924246990cdd7e499464656fbccb95bd57723569"
+    },
+    {
+      "path": "database/migration_manager.py",
+      "size": 2059,
+      "sha256": "4ce457e32a122666f37581e80aa557236abbe6afd9448b2df8124c8849e34736"
+    },
+    {
+      "path": "database/models.py",
+      "size": 7167,
+      "sha256": "552081f66c08527408caae264898cbc36ac839b2aba733e9b9176662b9e04278"
+    },
+    {
+      "path": "database/orm_models.py",
+      "size": 11919,
+      "sha256": "4278a546e80f93460fdfd02d8ff1c3cd82e43d83b4ccc9839fb71f756ba802bf"
+    },
+    {
+      "path": "database/parameter_definition_manager.py",
+      "size": 13475,
+      "sha256": "fd38d5f8bd2d59c247381d965deca95480b7eaf2192e63e28ef439e39eed1797"
+    },
+    {
+      "path": "database/parameter_import_manager.py",
+      "size": 3718,
+      "sha256": "365c46425f9e11f9f86cc1a207b43b12d78debbb778e732d79abddef343982b8"
+    },
+    {
+      "path": "database/phase_control_default_manager.py",
+      "size": 12808,
+      "sha256": "ce317cf05b4f803ad296618d1901cd7712a178a0c21504627ebd3c626307556c"
+    },
+    {
+      "path": "database/phase_control_manager.py",
+      "size": 7643,
+      "sha256": "56fd814a89a5c1a78eb283e2a4213fb6e1b9de6fa0c0eccecfdcb7d01d6c33be"
+    },
+    {
+      "path": "database/phase_template_manager.py",
+      "size": 22365,
+      "sha256": "d4937d18a15f0ff0aa9732e04482b7b0f5a266d774049a7815737c8f995beeb9"
+    },
+    {
+      "path": "database/plc_1d_array_recipe_builder.py",
+      "size": 26543,
+      "sha256": "42e419ea5885596c3a814658a99fd6ce87751f0aea8c7e76cbdd860f602d7ea3"
+    },
+    {
+      "path": "database/plc_buffer_operation_manager.py",
+      "size": 102388,
+      "sha256": "ad68c68d7c1f9ba37a1e5687af465af6fbf4028b035435708786ffb84918f628"
+    },
+    {
+      "path": "database/plc_connection_errors.py",
+      "size": 1080,
+      "sha256": "f690e47f282d0c90ac41bd3b26c58beebc41d8a399ebd06c8a420405a0bf223d"
+    },
+    {
+      "path": "database/plc_crs_test_tag_definitions.py",
+      "size": 8793,
+      "sha256": "c4a6377e5fde00991888c4afb163bf8be6d15313596c0276124ebfc706c5c9a6"
+    },
+    {
+      "path": "database/plc_download_manager.py",
+      "size": 10950,
+      "sha256": "1ef69fee3357e535624e2a89db863a1bd2c98d8e6e3b61275b6ea98c22a0c5d7"
+    },
+    {
+      "path": "database/plc_download_preparation_manager.py",
+      "size": 18621,
+      "sha256": "5204370748fc0d682fb17ebc5dcd67604d34f23ca17e7a4242ccfa05930decad"
+    },
+    {
+      "path": "database/plc_download_tag_readiness_manager.py",
+      "size": 18290,
+      "sha256": "3b6a3f0991b7ceab6d28edfc9246c0f64e33868efac2ca2e4d2d11dc901ea743"
+    },
+    {
+      "path": "database/plc_manager.py",
+      "size": 3911,
+      "sha256": "f5f47baa6132273c370afb1b448b79282a5f58000e675dd7453ca6b390c5cd52"
+    },
+    {
+      "path": "database/plc_manager_legacy.py",
+      "size": 3911,
+      "sha256": "f5f47baa6132273c370afb1b448b79282a5f58000e675dd7453ca6b390c5cd52"
+    },
+    {
+      "path": "database/plc_online_tag_browser_manager.py",
+      "size": 12403,
+      "sha256": "a34e9a8ecb3f98407ec532b7c13e46538ccb51ffc8b84ac6b4ca79953bb9d868"
+    },
+    {
+      "path": "database/plc_operation_job_manager.py",
+      "size": 10389,
+      "sha256": "a8825399e1b8a6fcc89632f39a51f4360f1dab23e59d3c28a880074ca8d11169"
+    },
+    {
+      "path": "database/plc_parameter_mapping_manager.py",
+      "size": 3542,
+      "sha256": "46a2a51fc5bd5aae410aa04d24e5f3d3f9c9dcdf64a9d83383dc6f5288cfec11"
+    },
+    {
+      "path": "database/plc_program_history_manager.py",
+      "size": 883,
+      "sha256": "581bc886932d6689c92398e83054182a607e303b0fff7a9378b0620308b22211"
+    },
+    {
+      "path": "database/plc_registry_import_manager.py",
+      "size": 11782,
+      "sha256": "1c0096b14bc4262084b606404ee12319cc3889d4b8026a0df1d7f20dd8e88f5b"
+    },
+    {
+      "path": "database/plc_registry_manager.py",
+      "size": 20278,
+      "sha256": "3d7d276655fcb1d369dfd5557df3e28b90ad4eaacbba0e1ada1fae84c9dd7dfb"
+    },
+    {
+      "path": "database/plc_tag_manager.py",
+      "size": 43643,
+      "sha256": "ac2b424949f5834bb6db2ecd61112d3ffecaae65f2c8ebf8ca630b10490c2bd2"
+    },
+    {
+      "path": "database/plc_temporary_test_write_manager.py",
+      "size": 18451,
+      "sha256": "9ac5ec1abb11f14f5b25e18ced286abbc8153feafc8d011e9e7ecd68103da52c"
+    },
+    {
+      "path": "database/plc_upload_manager.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "database/plc_verification_manager.py",
+      "size": 8415,
+      "sha256": "8c7d72ca209703e1a63115438871566b8e24652f0ee72083b49afa33a15610f4"
+    },
+    {
+      "path": "database/rebuild_recipe_phase_control_table.py",
+      "size": 1195,
+      "sha256": "94616db3ac1b723cc211bf393a82a06aad99684296312c8b46574d39de52d8be"
+    },
+    {
+      "path": "database/recipe_approval_manager.py",
+      "size": 6189,
+      "sha256": "332a35b6eba5bcc305f4e91baad5156ec3284455cd5b19a3a5321115abcaacfe"
+    },
+    {
+      "path": "database/recipe_bulk_change_service.py",
+      "size": 9202,
+      "sha256": "41035b7d60863863ce3a9a748e2ecb1d3f59cc6146ec5d7fc067a2d9994e1810"
+    },
+    {
+      "path": "database/recipe_cleanup_manager.py",
+      "size": 2387,
+      "sha256": "21407015dbd3adc886fc470ae943e24298915807d8d42aec77c034b6f78d0553"
+    },
+    {
+      "path": "database/recipe_download_eligibility_manager.py",
+      "size": 4021,
+      "sha256": "4ea7b5ac0718a17f51b126e19db2208c7f31d0e27ecd82b0a73a8319dea28727"
+    },
+    {
+      "path": "database/recipe_excel_import_export_manager.py",
+      "size": 84373,
+      "sha256": "8e04f09816518111523f1a20c7c37b4dfecb70cb322b35236e357a54fe490298"
+    },
+    {
+      "path": "database/recipe_manager.py",
+      "size": 52157,
+      "sha256": "bd9c808fd99711bcb00d56994651b95810097ae24b2acd5af3dc82d1d1f1d07f"
+    },
+    {
+      "path": "database/recipe_parameter_audit_manager.py",
+      "size": 7061,
+      "sha256": "a937ce17f9bd07f282b14fb16210572fec57bc934a36c54461f9db0eb0ff1250"
+    },
+    {
+      "path": "database/recipe_parameter_value_manager.py",
+      "size": 12245,
+      "sha256": "b45b1d13816b9864619dcbb090cb7965cbb5fcd1d5da6570576627a641cfd023"
+    },
+    {
+      "path": "database/recipe_phase_control_manager.py",
+      "size": 39179,
+      "sha256": "11e130b8d2eb6bb927da063a807f9903ccc0313f3c4350870c1326e12d7595fa"
+    },
+    {
+      "path": "database/recipe_resource_lock_manager.py",
+      "size": 16519,
+      "sha256": "c875933078bf8edcb9029506c90eca821cc6ccedcaeb58cb941434634564842a"
+    },
+    {
+      "path": "database/recipe_status_history_manager.py",
+      "size": 2065,
+      "sha256": "fe6787d17facd71bd174468f328129b0fa92975743f487ece6f75b776f52d651"
+    },
+    {
+      "path": "database/recipe_validation_manager.py",
+      "size": 5394,
+      "sha256": "3e4a7f6a8d6cb189eee6294894851bd818bc6efe8a64d2b14c94eb5feecfbaa7"
+    },
+    {
+      "path": "database/recipe_version_manager.py",
+      "size": 28983,
+      "sha256": "21b4a3efe241a934e23e1536ece8d6c620ff0770da9d3efd3da2702dd8596d3f"
+    },
+    {
+      "path": "database/schema_guard.py",
+      "size": 1144,
+      "sha256": "34bf9dba08849a4566a6730e9f9b561c636734623f8a5e1aa6e610a60fb4cb1f"
+    },
+    {
+      "path": "database/sqlalchemy_db.py",
+      "size": 1309,
+      "sha256": "76e8069efcd4325664b79d34fdf9d895971fe345a490336f13b4f12a4f4427ee"
+    },
+    {
+      "path": "database/stage_manager.py",
+      "size": 5918,
+      "sha256": "3c4e62732c76e41484af05871f3e94e3dfe8b0bfc7cdc121386f5e718562913e"
+    },
+    {
+      "path": "database/stage_plc_tag_requirement_manager.py",
+      "size": 28236,
+      "sha256": "fe1f34f676a3a2039577fbcfd4b8e1bdb2ec4ba4660510c2c047264be980ef88"
+    },
+    {
+      "path": "database/system_bootstrap_manager.py",
+      "size": 29102,
+      "sha256": "1eb6fc6575d4bd8add4a8c52242c964418a8d086002ddd545b82467e20814163"
+    },
+    {
+      "path": "database/system_settings_manager.py",
+      "size": 9149,
+      "sha256": "9430f51f480c92b6f35e51ea8d4b86fd21260eaf63719662397bce6a25821d68"
+    },
+    {
+      "path": "database/tbm_family_manager.py",
+      "size": 8932,
+      "sha256": "b667f505d6f4d2c593d7aa24fb45b5f9b006fa94bf1a97d81b5bfc8ddd00f4bd"
+    },
+    {
+      "path": "database/tbm_machine_manager.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "database/template_import_manager.py",
+      "size": 2692,
+      "sha256": "46aff09ff27e396a1023cd4cfd539ae995c1458d6a42f5c61f4616a44014f7c8"
+    },
+    {
+      "path": "database/template_manager.py",
+      "size": 1218,
+      "sha256": "a6c238d2366e7adf9c2c52bc5e9ae77740cf4e31e2ff2e0eda35ed3c13291492"
+    },
+    {
+      "path": "database/template_parameter_manager.py",
+      "size": 2143,
+      "sha256": "b94172277683b38339bc118d899e7ddd5a77366e3bc505ab3c59aee688e247e9"
+    },
+    {
+      "path": "database/upgrade_p15_second_stage_phase_master.py",
+      "size": 14295,
+      "sha256": "9b9816c806f8217a8c8177db1735662442623fbd127f44c037536208b248980f"
+    },
+    {
+      "path": "database/upgrade_plc_tags_table.py",
+      "size": 1052,
+      "sha256": "5055e7e2769c3829c7ea44923ea4874dd1a9c711914e03867f2748d44f691b35"
+    },
+    {
+      "path": "database/upgrade_recipe_download_history_table.py",
+      "size": 1894,
+      "sha256": "f1b69295c839d0fb5628349417ceef2fd34debfe454ebbd96d150347cca1e979"
+    },
+    {
+      "path": "database/upgrade_recipe_phase_control_recipe_id.py",
+      "size": 847,
+      "sha256": "6ad043ab75721b1d7148c3053983281994332313bb9216f993e2044cad85e477"
+    },
+    {
+      "path": "database/upgrade_recipe_phase_control_table.py",
+      "size": 856,
+      "sha256": "896ce5a5f222990f194b4310625f932664e58717002729b62bc77575f01f1811"
+    },
+    {
+      "path": "database/upgrade_recipe_status_history_table.py",
+      "size": 1138,
+      "sha256": "5e6134374a2befa58231ed51a5114ca802006fd5291b48f2dd59c06e83f78f7b"
+    },
+    {
+      "path": "database/upgrade_recipe_versions_table.py",
+      "size": 728,
+      "sha256": "ea1f0603a8f03e88d6803fc4aa8c645c9c2a6f859001edf547e7b1eca55a5c3e"
+    },
+    {
+      "path": "database/upgrade_recipes_test_only.py",
+      "size": 596,
+      "sha256": "2b8eb78804876a01bcd91faa8ce5c20248bd6566dde73cd62a9c0e23a50b48ce"
+    },
+    {
+      "path": "database/upgrade_user_management_priority11.py",
+      "size": 13851,
+      "sha256": "f555becce63c76cf9331dc1969b4bb1e5c30a5760a3e4000606c442ebc86347d"
+    },
+    {
+      "path": "database/upload_history_manager.py",
+      "size": 4371,
+      "sha256": "f33b0ba2f8b34e3292f258e5210a2b7ede531db87722269e2dd0d7e40ff6b3f2"
+    },
+    {
+      "path": "database/user_manager.py",
+      "size": 8527,
+      "sha256": "6c7fe99b59f0ec1d307e155b89b219dff5817fd9810841cff3e64533f21c9bb5"
+    },
+    {
+      "path": "database/user_session_manager.py",
+      "size": 22243,
+      "sha256": "b4f9a3d2bc158180c9803830994c70e48e47b474d493072404c3cefb9ca2586d"
+    },
+    {
+      "path": "flask_app/__init__.py",
+      "size": 8171,
+      "sha256": "3249a8087ae89269c49d2b91ca556e93d7dd08ed01a04b90f59e1d071fd420b7"
+    },
+    {
+      "path": "flask_app/routes/audit_routes.py",
+      "size": 11668,
+      "sha256": "7df426f199cef22296ff6a0c1f83999da5ea268c80342457e0019af884dad967"
+    },
+    {
+      "path": "flask_app/routes/auth_routes.py",
+      "size": 12997,
+      "sha256": "9c076507dc193772f64af70e88559fcd83de085e40596785a32bbcd6cf3a4289"
+    },
+    {
+      "path": "flask_app/routes/configuration_routes.py",
+      "size": 30863,
+      "sha256": "c926e111db1fbce4aec790e7571066bcc8501bde29bda9b83192eadde9e95bb5"
+    },
+    {
+      "path": "flask_app/routes/dashboard_routes.py",
+      "size": 14191,
+      "sha256": "9e0fae27fc697a933eeb8b2ee8fb99452dcfa965b6b82d91e05cf1083367ce8c"
+    },
+    {
+      "path": "flask_app/routes/database_configuration_routes.py",
+      "size": 7166,
+      "sha256": "6ed9ef885e285c37535e4d91300769e256d6db0684c3debd1664baa3a5e8b081"
+    },
+    {
+      "path": "flask_app/routes/family_routes.py",
+      "size": 9597,
+      "sha256": "33941d7220f88e8b4a9837fd9369d437cca6883c66f94e0453c8fb34310f6560"
+    },
+    {
+      "path": "flask_app/routes/health_routes.py",
+      "size": 841,
+      "sha256": "853c586ca732cd50ef44a0ed35b210cf139a072a1b0325475bfdda78e4c5db67"
+    },
+    {
+      "path": "flask_app/routes/help_routes.py",
+      "size": 5671,
+      "sha256": "15411099a2e720a1a93f842c9c5fd86dae8da42a6332c96db63a753e92decd3c"
+    },
+    {
+      "path": "flask_app/routes/machine_routes.py",
+      "size": 10198,
+      "sha256": "a1b5620d8a478f8b8b31f09294d9363694f451b012b07ad2a0e2ddb802661ab7"
+    },
+    {
+      "path": "flask_app/routes/parameter_routes.py",
+      "size": 14323,
+      "sha256": "551366ba769e5177e451ae202fced51caa48ffa3e5fb3d20048afbcc317a4958"
+    },
+    {
+      "path": "flask_app/routes/phase_control_routes.py",
+      "size": 23383,
+      "sha256": "0dca3a818820b4bb6571dd9eb357a5c4867c5d26913f5f4202c1846c6f294980"
+    },
+    {
+      "path": "flask_app/routes/plc_array_import_routes.py",
+      "size": 10382,
+      "sha256": "5508b8c4f7cfa0d7914e7eec4bbd1bd1b091314b0ee279d1ea936f568286d742"
+    },
+    {
+      "path": "flask_app/routes/plc_registry_routes.py",
+      "size": 12075,
+      "sha256": "6fd21116f2607b85a38fe81af32997ad914950e20c2db92437533922851bbb94"
+    },
+    {
+      "path": "flask_app/routes/plc_routes.py",
+      "size": 12464,
+      "sha256": "efe563c779e154373544bb7909ad823be4b367f3010c721aecb0603613c66295"
+    },
+    {
+      "path": "flask_app/routes/plc_tag_routes.py",
+      "size": 28130,
+      "sha256": "fac8e7a23eaf250885ab307f35cc1fa5b1ccfd6780cf9c4d0094877cb6a0ee42"
+    },
+    {
+      "path": "flask_app/routes/recipe_editor_routes.py",
+      "size": 77852,
+      "sha256": "ecf4b11ee091e0fdba5198a98a737cbef96615f7a5be36f846c85a9983c098d4"
+    },
+    {
+      "path": "flask_app/routes/recipe_routes.py",
+      "size": 51644,
+      "sha256": "7c0c840953daccf2a3e5ae14208f09f534fe8da5ec631a2f0a5826958993d29e"
+    },
+    {
+      "path": "flask_app/routes/session_routes.py",
+      "size": 12131,
+      "sha256": "f0ee7f2b5cbe261499ca3304c6ce1eed7da145d7acfbdbaf725b044941001065"
+    },
+    {
+      "path": "flask_app/routes/stage_routes.py",
+      "size": 745,
+      "sha256": "d26af8895303c4aa2881379863bbef8c7aa9abbb4fe033628e2159a4e6585444"
+    },
+    {
+      "path": "flask_app/routes/user_routes.py",
+      "size": 9999,
+      "sha256": "402dcf9086a3c4bcedb5c401f9452a8f3807755d2bd66d99962845b66944264f"
+    },
+    {
+      "path": "flask_app/security/__init__.py",
+      "size": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "flask_app/security/csrf.py",
+      "size": 2849,
+      "sha256": "8586e00a6823e1f4eb45002a7d3aec2d7da6f36b64799f1e947229199ba2d81b"
+    },
+    {
+      "path": "flask_app/security/login_throttle.py",
+      "size": 4110,
+      "sha256": "fd3e45edea1951fab3738901967a904dbb6c3c27b9fc0553c0ade736e5911416"
+    },
+    {
+      "path": "flask_app/security/password_policy.py",
+      "size": 1167,
+      "sha256": "7ef7b9015d915d38e52d9cb3d55c2157679658f0f96295ebc55a1406c6643e3b"
+    },
+    {
+      "path": "flask_app/security/role_guard.py",
+      "size": 3146,
+      "sha256": "870dcb972f6038e36ac440de5cf97d1202c1ff56c580a6a6704f4c279c9a25e6"
+    },
+    {
+      "path": "flask_app/security/security_headers.py",
+      "size": 2098,
+      "sha256": "0a8f524a945c5e31297d1f7c3e5c10fe55ac5c0034ade9e6e2f1ad8fb6cceec7"
+    },
+    {
+      "path": "flask_app/security/session_guard.py",
+      "size": 6430,
+      "sha256": "1e2dc57dcf2281bbd6d778a7fadf0c323e1e80b38a5936e8ab9d7774c7a0a751"
+    },
+    {
+      "path": "flask_app/stage_url_helper.py",
+      "size": 6617,
+      "sha256": "226a3a3b378174886ff62380c2e5dfc05123ef12037a5bda5b5ca43010ae2f0d"
+    },
+    {
+      "path": "flask_app/static/css/crs.bundle.css",
+      "size": 417553,
+      "sha256": "a52bf72663c4561e488f67ce980ea1f45b9e7c6b32aa55b625be97ef2a26f3eb"
+    },
+    {
+      "path": "flask_app/static/css/main.css",
+      "size": 2589,
+      "sha256": "b78039a051da02cf57f4701d676b3d9ef81cc4c27cefdfe44d819b45281ddd88"
+    },
+    {
+      "path": "flask_app/static/css/modules/01_base.css",
+      "size": 6217,
+      "sha256": "f4a1a4f4459987f2e2db85cb18086f25ce299b985d11df829fe72fd73facb6f5"
+    },
+    {
+      "path": "flask_app/static/css/modules/02_auth.css",
+      "size": 3021,
+      "sha256": "e58809e683375d920c63a6acd50ba51e7b7b7aead0eb31ed3c7e69f26833a51c"
+    },
+    {
+      "path": "flask_app/static/css/modules/03_dashboard.css",
+      "size": 3552,
+      "sha256": "8d4c78483d2df6d32c1e2df8d764683b0267b3297beedbd0107cdab0e54a114b"
+    },
+    {
+      "path": "flask_app/static/css/modules/04_buttons_forms.css",
+      "size": 4955,
+      "sha256": "c2d7503b613daf0030e9e8c86168d1ad94c5c17eb8d989ae28755854f7804e02"
+    },
+    {
+      "path": "flask_app/static/css/modules/05_tables.css",
+      "size": 1735,
+      "sha256": "315966be19a8518957c9444a1b28a4d190f5e654cd9ca25c7bcdc6df675a248d"
+    },
+    {
+      "path": "flask_app/static/css/modules/06_status_messages.css",
+      "size": 4512,
+      "sha256": "1c7da545e4f35a3827f10c0f594bfc6b7aeccb64e87b01967e74d62244ab7670"
+    },
+    {
+      "path": "flask_app/static/css/modules/07_audit_help.css",
+      "size": 10342,
+      "sha256": "6e12ff8d22bb08302a5f53e618ddfe9cc3c8c1ed8ea97369c1c34feafb29cf52"
+    },
+    {
+      "path": "flask_app/static/css/modules/08_responsive_compact.css",
+      "size": 19572,
+      "sha256": "4d0b096ec90d12e8f1302088f9aaaf6660f8cc1de5900ae2e24cb6bed9713b31"
+    },
+    {
+      "path": "flask_app/static/css/modules/09_configuration.css",
+      "size": 13587,
+      "sha256": "ec96afadc5d1088db799fb5d3831c225001ffebcb3a08c461fddf1f1df5f5d07"
+    },
+    {
+      "path": "flask_app/static/css/modules/10_header_auth_branding.css",
+      "size": 17672,
+      "sha256": "d9f8e9a295ddbdc6ccef7092e364a989b35c598fe7a3bde14dd3d9f67d634b9e"
+    },
+    {
+      "path": "flask_app/static/css/modules/11_phase_control.css",
+      "size": 7127,
+      "sha256": "b1b3aec65ebef295192630a7dda4b234a375c6a818d57e164701453228cc6869"
+    },
+    {
+      "path": "flask_app/static/css/modules/12_recipes.css",
+      "size": 1749,
+      "sha256": "8fde70ad5d88b1a5750ea5b861a5bef083b1c6c58c1d407733f678a3fc08f331"
+    },
+    {
+      "path": "flask_app/static/css/modules/13_plc.css",
+      "size": 22536,
+      "sha256": "e41fbc1a316f53ebcc91d6a22bb8f4f5aa44882fe0d8fb6e6ab7fa37daf82d2b"
+    },
+    {
+      "path": "flask_app/static/css/modules/14_dashboard_import_export.css",
+      "size": 19117,
+      "sha256": "7b36b4987d9734a9f2488c655f094cb3c842ea288ab78c973e5a9fa14a08d6a4"
+    },
+    {
+      "path": "flask_app/static/css/modules/15_ui_hardening.css",
+      "size": 17379,
+      "sha256": "e8d4dddb4325430d1200d85c25cae48d05c34b9a8b909da836a02783f2f7367f"
+    },
+    {
+      "path": "flask_app/static/css/modules/16_phase_master.css",
+      "size": 2593,
+      "sha256": "8f66f04e3e30ba559cb64d82254f5a97aa839128dd869fd5e9a2e8202e559754"
+    },
+    {
+      "path": "flask_app/static/css/modules/17_plc_setup_tables.css",
+      "size": 34291,
+      "sha256": "5f7a4895089f62eb4ac54d72aeecc53c18c3f77a7444bb9ce9cd359a638bbb36"
+    },
+    {
+      "path": "flask_app/static/css/modules/18_phase_master_tables.css",
+      "size": 10758,
+      "sha256": "8584203ac6690edefdd6d92233e60b3689d1ea0ab9b3d780246a51da46d23498"
+    },
+    {
+      "path": "flask_app/static/css/modules/19_users.css",
+      "size": 18807,
+      "sha256": "7be20a1f0dbcce5f78940534e3a9bc6be692112b5297c182e7ef653624dddd7e"
+    },
+    {
+      "path": "flask_app/static/css/modules/20_audit_tables.css",
+      "size": 21459,
+      "sha256": "7525793938f962a2eb15c17fa45c454d424ca03bb97c5c020159a9222936213c"
+    },
+    {
+      "path": "flask_app/static/css/modules/21_header_alignment.css",
+      "size": 2731,
+      "sha256": "6ce65d1f66765071fd073e64c1481c80d8a1841a702d569e994b1cd843c81038"
+    },
+    {
+      "path": "flask_app/static/css/modules/22_accessibility_preferences.css",
+      "size": 49675,
+      "sha256": "e7cebf1d9e4a260b16a74d451fe58e609e9c23b55f998e90ea5d1fa19486fd88"
+    },
+    {
+      "path": "flask_app/static/css/modules/23_modern_professional_polish.css",
+      "size": 34362,
+      "sha256": "c8ca20e57cc4563e805935cd5e30e66a331750a84523a15c586b0928b90fa694"
+    },
+    {
+      "path": "flask_app/static/css/modules/24_database_configuration.css",
+      "size": 3774,
+      "sha256": "0751ae913e00d9a424eb0dafa54a280dca06a34f49f2564dfa6b8ebbe553d5e5"
+    },
+    {
+      "path": "flask_app/static/css/modules/25_progressive_ui.css",
+      "size": 1268,
+      "sha256": "212f2256a69cf627ab2825559edad0edc4bd198f51fdde12d25913ef466b824a"
+    },
+    {
+      "path": "flask_app/static/css/modules/26_theme_contrast.css",
+      "size": 9584,
+      "sha256": "d4054a9b6f39d7604686e170d495433ce05a0ed13e4504c407d70b314a04eef5"
+    },
+    {
+      "path": "flask_app/static/css/modules/27_dark_theme_complete.css",
+      "size": 29904,
+      "sha256": "737e505863a83da320f31a9f6d956d7783cb65ad781d96e3583c0c836162fad8"
+    },
+    {
+      "path": "flask_app/static/css/modules/28_system_theme_sync.css",
+      "size": 1050,
+      "sha256": "f4b6089ee608ff91e7c210de0408dd740a484aaaa379433ae689bd945c05811f"
+    },
+    {
+      "path": "flask_app/static/css/modules/29_semantic_action_status_standardization.css",
+      "size": 11861,
+      "sha256": "dce5e3bbc8a21f4d7453333c1a83bd48e9088c0ff46253dc35e709f102405c84"
+    },
+    {
+      "path": "flask_app/static/css/modules/30_blocked_status_standardization.css",
+      "size": 6107,
+      "sha256": "79b8371ad6ccf01331965b647fb9955d318e00938e068c885dbf067f9ca6b4dd"
+    },
+    {
+      "path": "flask_app/static/css/modules/31_blocked_dark_theme_visibility.css",
+      "size": 4980,
+      "sha256": "7a97fed64032cd22c4009113dd0a12a3b40731d2cbb9a2b5fa23a392e329747c"
+    },
+    {
+      "path": "flask_app/static/css/modules/32_ready_status_standardization.css",
+      "size": 6661,
+      "sha256": "b421383f02d67e955f78f4602c37ec2bb4b4df75b13a708115abe7283efa4ba5"
+    },
+    {
+      "path": "flask_app/static/css/modules/33_ok_status_dark_surface_standardization.css",
+      "size": 12876,
+      "sha256": "50cac4ef3a0b922762c389de2675a81787620c53c6ae45ecf522a427f6621231"
+    },
+    {
+      "path": "flask_app/static/images/apollo_logo.png",
+      "size": 3278,
+      "sha256": "037b01d20662089f00588e84bbeb6d524a22c903d91fead67115a5466f9270fe"
+    },
+    {
+      "path": "flask_app/static/images/branding/apollo_bcci_lead_sponsor.webp",
+      "size": 8252,
+      "sha256": "bf88e1aef51a8620c5b6c4e71fad263936736cfaf810b6dad51c9a04932b9f3c"
+    },
+    {
+      "path": "flask_app/static/images/branding/apollo_bcci_lead_sponsor_lockup.webp",
+      "size": 12404,
+      "sha256": "1706e731d44411ec194af3fdb9e8d5f6d66cc00ae36b8286e0fddf12148c7d20"
+    },
+    {
+      "path": "flask_app/static/images/branding/apollo_bcci_mark.webp",
+      "size": 14682,
+      "sha256": "9e5ddb34b42efe6508c75762fd5eca6d0aa30b5c448fa9319292047350303e42"
+    },
+    {
+      "path": "flask_app/static/images/branding/apollo_campaign_01.webp",
+      "size": 105572,
+      "sha256": "b69ef2bef1cdfc140db8fb303791dfa69bdd936aca8dda623b1fafa2aade6335"
+    },
+    {
+      "path": "flask_app/static/images/branding/apollo_campaign_02.webp",
+      "size": 217362,
+      "sha256": "672201d552bce514625ce61dc644584fe0bc5659ce59ef17b3335f33fb660c42"
+    },
+    {
+      "path": "flask_app/static/images/branding/apollo_campaign_header_thumb.webp",
+      "size": 6952,
+      "sha256": "15a18080d1cadf44e430ebfdc5df1e6e93e0fb47e50564f313bfa3af2b0d2114"
+    },
+    {
+      "path": "flask_app/static/images/branding/apollo_campaign_hero.webp",
+      "size": 185476,
+      "sha256": "30de529c0613bb7e63ca590bd66375babfc1adcaa4a44d3d92c33ee46ec83653"
+    },
+    {
+      "path": "flask_app/static/images/branding/apollo_campaign_thumb.webp",
+      "size": 26750,
+      "sha256": "b2088b753f7f5be108049f394e57cefe8857e7d792be746382b7c16a616e433a"
+    },
+    {
+      "path": "flask_app/static/images/branding/apollo_chairman_onkar.webp",
+      "size": 10172,
+      "sha256": "06efe030a085f2c4a8a1323b113c1fe22339966711566ea356ccfacc65905e59"
+    },
+    {
+      "path": "flask_app/static/images/branding/apollo_vcmd_neeraj.webp",
+      "size": 12052,
+      "sha256": "7fbd4022fef15011716cd06ba613c2926b65cef27f2543323b7f9dd821d1e6e9"
+    },
+    {
+      "path": "flask_app/static/js/main.js",
+      "size": 45643,
+      "sha256": "89be6e57a4448694ee45e319c5d01d98344c09d047299759cb0e78426961fdad"
+    },
+    {
+      "path": "flask_app/static/js/pages/bulk-edit-parameters.js",
+      "size": 13901,
+      "sha256": "4b73381242e71667a4d6f84c578941776c1788b663173487dcbf848bba00828c"
+    },
+    {
+      "path": "flask_app/static/js/pages/download-preparation.js",
+      "size": 28812,
+      "sha256": "ef46147e579056eba75475cbd4fbb1e8d940231fa315a1d2fef897a08a7a88a2"
+    },
+    {
+      "path": "flask_app/static/js/pages/recipe-import-export.js",
+      "size": 2236,
+      "sha256": "d06bcf05004b512c0c1385b142e0e73c9ab84cd1739165eeb2af881e14332440"
+    },
+    {
+      "path": "flask_app/static/js/theme-bootstrap.js",
+      "size": 5134,
+      "sha256": "89c640421acb8f510e6179c0a9fdc21c0504847376345108822affd0146ebe15"
+    },
+    {
+      "path": "flask_app/static/js/vendor/htmx-2.0.10.min.js",
+      "size": 51238,
+      "sha256": "71ea67185bfa8c98c39d31717c6fce5d852370fcdfd129db4543774d3145c0de"
+    },
+    {
+      "path": "flask_app/static/js/vendor/HTMX-LICENSE.txt",
+      "size": 642,
+      "sha256": "d3d2456f76414f2456104660ebd65aff1c04cd7966b942bdabd63f3cdb316a38"
+    },
+    {
+      "path": "flask_app/templates/admin/create_engineering_unit.html",
+      "size": 1313,
+      "sha256": "33a017e62115c593addc146237b18f1b4bb7b82c2b8b91aad8c1d10d87e5972d"
+    },
+    {
+      "path": "flask_app/templates/admin/edit_engineering_unit.html",
+      "size": 1318,
+      "sha256": "c13627855b8321d4624381186df07fcc3812425a14edc30f96ba78f1caa2e7c9"
+    },
+    {
+      "path": "flask_app/templates/admin/engineering_units.html",
+      "size": 4959,
+      "sha256": "1572a8c9a55db3ddfc4ff3b3554f8c38c3ea1e3b4aee6a77f738b764e6d23b22"
+    },
+    {
+      "path": "flask_app/templates/audit/audit_archive.html",
+      "size": 10164,
+      "sha256": "3d9703b539ea9722fbd23c811cdfd56763a127a9b26984e4fd2a20d24f831fe0"
+    },
+    {
+      "path": "flask_app/templates/audit/audit_history.html",
+      "size": 16610,
+      "sha256": "cab977e51555c4e3814443351ae0a1955e14763dca6da78e4633787c2c9bd746"
+    },
+    {
+      "path": "flask_app/templates/auth/login.html",
+      "size": 5642,
+      "sha256": "17ab771172b23a59c61efb83f65ebbc37cee2ecf25b070dba648b27b31d3fe44"
+    },
+    {
+      "path": "flask_app/templates/auth/my_password.html",
+      "size": 2253,
+      "sha256": "5631d7d021995c12802ef0d031e0acaccad7b8b02b159a932781cb4cba9fb223"
+    },
+    {
+      "path": "flask_app/templates/base.html",
+      "size": 14534,
+      "sha256": "33186d4713ff4f30360a41e40610d6f34f82fcd1013fb55fa6aae0df138c63ec"
+    },
+    {
+      "path": "flask_app/templates/configuration/database_configuration.html",
+      "size": 9338,
+      "sha256": "437ea3c759ca492fef95a930c65a0e58784a94730757665c727b2460daa8bb64"
+    },
+    {
+      "path": "flask_app/templates/configuration/index.html",
+      "size": 4414,
+      "sha256": "c5506b2e182539031a093381e3d0d4f0321bf41776e0b2982ca7b2052c98bd99"
+    },
+    {
+      "path": "flask_app/templates/configuration/stage_readiness.html",
+      "size": 28212,
+      "sha256": "77b7f2312fbfa9734fa3240294ff46af3cf624c4a3b677f7011ca13b901b6bf4"
+    },
+    {
+      "path": "flask_app/templates/dashboard/dashboard.html",
+      "size": 9238,
+      "sha256": "9a30c69d5298651f093dbdc74d37d9d2407a6ea72fc4b88a0877611626dc667a"
+    },
+    {
+      "path": "flask_app/templates/errors/error.html",
+      "size": 1063,
+      "sha256": "1c5ddf19e561192a86f5bdfe9d91e83dd7e38fc17bc20e9ac7355f625c7496d2"
+    },
+    {
+      "path": "flask_app/templates/families/create_family.html",
+      "size": 2677,
+      "sha256": "e47595dbbf2be60995de5edbf81e6588d439647cb762bd262f6a0759f4291657"
+    },
+    {
+      "path": "flask_app/templates/families/edit_family.html",
+      "size": 5261,
+      "sha256": "3a9138cf9a1af9a0d4f95feab19fa6c94168d94b16f479848b8aaff1c2b7a1ba"
+    },
+    {
+      "path": "flask_app/templates/families/families.html",
+      "size": 8145,
+      "sha256": "dd0df2efbb3abdf16bc57e49c333da0c774146eb1c64c5a16b6ccf35e1f62924"
+    },
+    {
+      "path": "flask_app/templates/help/help.html",
+      "size": 3596,
+      "sha256": "f7aa54ffa84678a7809dc948949bf103388169daf761f00b14e3109a525bf536"
+    },
+    {
+      "path": "flask_app/templates/machines/change_family.html",
+      "size": 3569,
+      "sha256": "9efefed93f13b1ae55bb12f123e229109355b7db6c47396a71937f1097aa2a6c"
+    },
+    {
+      "path": "flask_app/templates/machines/create_machine.html",
+      "size": 2929,
+      "sha256": "906e0f3a6c9213e4d76581b849fc78f4922a497a5b1bab5cdf79f16c792e0d59"
+    },
+    {
+      "path": "flask_app/templates/machines/machines.html",
+      "size": 5197,
+      "sha256": "1cf6998122d09e3d2461d48238ba613be5ea7efa3699f5a22bbcd33fa3433b7f"
+    },
+    {
+      "path": "flask_app/templates/parameters/add_parameter.html",
+      "size": 5016,
+      "sha256": "18d97ce59ed8e45b6fb37c3f181fc3505afbfd0e0ecd0c2a20a973951584e16c"
+    },
+    {
+      "path": "flask_app/templates/parameters/edit_parameter.html",
+      "size": 4683,
+      "sha256": "4f0e151454df517185cfadee7255d919d5581dac7536394a4949ab931348d055"
+    },
+    {
+      "path": "flask_app/templates/parameters/parameters.html",
+      "size": 8711,
+      "sha256": "17960e1b662ee1f16085edc8ce81295bbb731b1b943c406d3113e8842c0246b4"
+    },
+    {
+      "path": "flask_app/templates/phase_controls/master.html",
+      "size": 3805,
+      "sha256": "7659b70d1778e323fafc21ca65f52984cd98f9834d2ee78621361daf90acbd49"
+    },
+    {
+      "path": "flask_app/templates/phase_controls/stage_master.html",
+      "size": 18659,
+      "sha256": "a0f09344b8bc8742a8b85026d48de1cad4962488f50ae3033f527263e0823798"
+    },
+    {
+      "path": "flask_app/templates/plc_array_import/import_1d_array.html",
+      "size": 11588,
+      "sha256": "98ed1c585ac211266b326b6d6a6917983d06b9646bce58f0cf1777bac924fe31"
+    },
+    {
+      "path": "flask_app/templates/plc_tags/array_browser.html",
+      "size": 6324,
+      "sha256": "430a328b246012c6800a181f70d5e4344769de40784ec12ffc789a1f697c8a1d"
+    },
+    {
+      "path": "flask_app/templates/plc_tags/browser.html",
+      "size": 30905,
+      "sha256": "d43abe6a5c8b5de5b0eaf871b4ef3ad1328ae4f9a4340c4e30976f826b5c5d5d"
+    },
+    {
+      "path": "flask_app/templates/plc_tags/create_parameter.html",
+      "size": 945,
+      "sha256": "3b5216825fc756258f7c0374229c8fdd95518ef5c26173330444a1255efe5112"
+    },
+    {
+      "path": "flask_app/templates/plcs/check_plc.html",
+      "size": 3524,
+      "sha256": "bdb33d2a7e094bf0c4a43b6199b7e0f3587312df5a1dfb7abec7163495e22809"
+    },
+    {
+      "path": "flask_app/templates/plcs/create_plc.html",
+      "size": 2667,
+      "sha256": "334ef9ba4082bc6f9793150c3aa29002cb025d88fd9c4ff2207b1b60274476b4"
+    },
+    {
+      "path": "flask_app/templates/plcs/edit_plc.html",
+      "size": 2656,
+      "sha256": "5444b2657e86c427d75f69809dce12b59337197afe55080c546c74e7b51fcd7c"
+    },
+    {
+      "path": "flask_app/templates/plcs/import_plcs.html",
+      "size": 6246,
+      "sha256": "41eeb67bb8e32e222a46e8d41cbbefa3c2f6a5d01c6f0a566e68f8fbdddb7977"
+    },
+    {
+      "path": "flask_app/templates/plcs/plc_reason.html",
+      "size": 1650,
+      "sha256": "1968972256def357ed631cd9c6daa97739195f3f587382dfeca325311a1aff0c"
+    },
+    {
+      "path": "flask_app/templates/plcs/plcs.html",
+      "size": 6223,
+      "sha256": "6dcaec349b08410cb64fe32ab5a73ae6e1539b03ed330a2ee37e074a9f125bb2"
+    },
+    {
+      "path": "flask_app/templates/plcs/test_connection.html",
+      "size": 2011,
+      "sha256": "e69e9496336f839847826b08c71da53ea34303002adf9e14f0dd19b94e602c0b"
+    },
+    {
+      "path": "flask_app/templates/plcs/verify_plc.html",
+      "size": 6140,
+      "sha256": "3d1e3c84a3357d544594723b2cd35b6d023be0c62ee40b2e1bb8b78d015b06fa"
+    },
+    {
+      "path": "flask_app/templates/recipes/bulk_edit_parameters.html",
+      "size": 21712,
+      "sha256": "3ebd19b3afb7f6b0ee735a87f9bb40433343c035503232973c635650f8ee0da3"
+    },
+    {
+      "path": "flask_app/templates/recipes/compare_versions.html",
+      "size": 3716,
+      "sha256": "349967a944a0121349095b8af0f7d2fbf801e15a3fbf918585a88208398be451"
+    },
+    {
+      "path": "flask_app/templates/recipes/copy_recipe.html",
+      "size": 1578,
+      "sha256": "e98d76e05be93208b624adda7b42cc36f1ce1a4df8fb924a8883e475f0912201"
+    },
+    {
+      "path": "flask_app/templates/recipes/create_recipe.html",
+      "size": 5072,
+      "sha256": "0a1cf40fbb8a6d20faddb78e040e296f646a47a05d4e900bf5ca6e927641dd16"
+    },
+    {
+      "path": "flask_app/templates/recipes/create_version.html",
+      "size": 1509,
+      "sha256": "85781874335555efbe804c45bac393ed353707f4e1cde1f88009af66e616152a"
+    },
+    {
+      "path": "flask_app/templates/recipes/download_preparation.html",
+      "size": 35881,
+      "sha256": "0af09f0b73ac91b1508b9b4560df7d98655ffc131f0b727dcd44b3b9597542c5"
+    },
+    {
+      "path": "flask_app/templates/recipes/edit_parameter_metadata.html",
+      "size": 2481,
+      "sha256": "da3598aa59987c2fa2e905e6239fac3d673fd00ee2e432ba50fa14ce7a594d36"
+    },
+    {
+      "path": "flask_app/templates/recipes/edit_parameter_value.html",
+      "size": 2395,
+      "sha256": "6fb121070ee72bf00a3c321eed43e4dddc2ff2f6e7f2e59c07e9a7a5672a9f0b"
+    },
+    {
+      "path": "flask_app/templates/recipes/edit_value.html",
+      "size": 5986,
+      "sha256": "f3c7ac3df7b051be88cef28b31496f43dc881c4dd12754b7e4c71078553d8301"
+    },
+    {
+      "path": "flask_app/templates/recipes/editor.html",
+      "size": 26615,
+      "sha256": "4a64a21097d46307dc56334b5bf3b37078b641385714c84de34213a02647c94d"
+    },
+    {
+      "path": "flask_app/templates/recipes/parameter_history.html",
+      "size": 2925,
+      "sha256": "a803dea9a71e1a9c6ddccb767b75713028d22fe4ac661e073e38c554412a09f7"
+    },
+    {
+      "path": "flask_app/templates/recipes/recipe_details.html",
+      "size": 1964,
+      "sha256": "92ff1176b645dc5960653c17dc537db0ac43b94da246c35e48e3d77b1f0fdc1e"
+    },
+    {
+      "path": "flask_app/templates/recipes/recipe_import_export.html",
+      "size": 16426,
+      "sha256": "547fad6223eba8995628b1a54a81512606c4bd4394bb5628d52143e2e9f281c0"
+    },
+    {
+      "path": "flask_app/templates/recipes/recipe_parameters.html",
+      "size": 5220,
+      "sha256": "84929e637228cae5435522e0266710a75e6d1fe4f0555bae8cdb050b570390fd"
+    },
+    {
+      "path": "flask_app/templates/recipes/recipe_phase_control.html",
+      "size": 9050,
+      "sha256": "3394a8c08000b2007abc2d4ea3ec58fac14af0f1bf5808c5bc783e57da99a0b4"
+    },
+    {
+      "path": "flask_app/templates/recipes/recipes.html",
+      "size": 12121,
+      "sha256": "83640df336520477b3c8a84258ce0209e5c3109f465e20a01eb82fa1c158dba5"
+    },
+    {
+      "path": "flask_app/templates/recipes/status_history.html",
+      "size": 2837,
+      "sha256": "6c5757738f9b26342c6021235eab3951b90a8a6f7e968390772b691b1abcb7d9"
+    },
+    {
+      "path": "flask_app/templates/recipes/value_history.html",
+      "size": 3362,
+      "sha256": "f8feb02db00c1e87f7c39e90222228c0e056f1cb352106cded38763c5686abd9"
+    },
+    {
+      "path": "flask_app/templates/recipes/versions.html",
+      "size": 5148,
+      "sha256": "eaf6af30f4146cbf971191570a27d48568df92b006854ee4049d80166fd47175"
+    },
+    {
+      "path": "flask_app/templates/sessions/active_sessions.html",
+      "size": 3805,
+      "sha256": "cf44d880fda3dc734e55349eb5f69ff82f5b027a1532bfe988db610b223a1436"
+    },
+    {
+      "path": "flask_app/templates/sessions/auto_logout_settings.html",
+      "size": 4780,
+      "sha256": "8ae8b1300da8b7136ece4576de64b9e9d818a67c2a3437cea39363a6749aede6"
+    },
+    {
+      "path": "flask_app/templates/stages/stages.html",
+      "size": 4910,
+      "sha256": "1ab9f40094bb67ee76e48a541f876dfbafe72b6c0de67440b7eccda44249179c"
+    },
+    {
+      "path": "flask_app/templates/users/change_password.html",
+      "size": 1854,
+      "sha256": "301dc031be16e686f3d8d4691b1fea8b3ec88f796a45f7b218c80000bbac0a96"
+    },
+    {
+      "path": "flask_app/templates/users/create_user.html",
+      "size": 2449,
+      "sha256": "727b7f6087c60ae6f4cec64e9808c8adfdaaffeeba12685ac6f590539ebf99fa"
+    },
+    {
+      "path": "flask_app/templates/users/users.html",
+      "size": 8217,
+      "sha256": "a172df9c822e814c31a8fa1538f8fa41331a30daa54538859394f547a67e96f4"
+    },
+    {
+      "path": "helper/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "helper/datetime_helper.py",
+      "size": 540,
+      "sha256": "48811b524b80087a8d9c650ae07dcb8b2a380a7f98adb86d8cbc2f284db4869d"
+    },
+    {
+      "path": "helper/plc_helper.py",
+      "size": 4142,
+      "sha256": "5cc71dc1cede1a45408272e1b835af636a78a70572a8b8fed84b8287dbd0d062"
+    },
+    {
+      "path": "helper/plc_manager.py",
+      "size": 3202,
+      "sha256": "7f2d3def5b273fda5c3acdb3c3d3dee527a07f1d6bf42e1541775847a2929ca3"
+    },
+    {
+      "path": "plc/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "plc/plc_compare_manager.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "plc/plc_connection.py",
+      "size": 1789,
+      "sha256": "a1a40134436342a49c8a23a51aaa7adcd33a5fce1d2556f7edaafbbb06bd19b6"
+    },
+    {
+      "path": "plc/plc_connectivity_checker.py",
+      "size": 1541,
+      "sha256": "462e69a63d2974d5ff669ff8e4e0105b6240779748c3c57510b61aec4e2c8eb1"
+    },
+    {
+      "path": "plc/plc_recipe_manager.py",
+      "size": 5440,
+      "sha256": "e87cc0e19573538a56d9d1060c0e3e43da5d95ecbd58b901ad72b79256165d8e"
+    },
+    {
+      "path": "plc/plc_recipe_upload.py",
+      "size": 1759,
+      "sha256": "02c43c4333bbfd443b34b87bcf0fe5667aaf752e39d62214ee2b45ca545d4899"
+    },
+    {
+      "path": "plc/plc_upload_manager.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "plc_tag_import_templates/P15_CRS_Test_Tag_List.csv",
+      "size": 2358,
+      "sha256": "342d7de65c00c731b39d7b3bbba548e5bb24d8a9833706d08727e1683c082dba"
+    },
+    {
+      "path": "plc_tag_import_templates/P15_CRS_Test_Tags_Controller_Scope.L5X",
+      "size": 5196,
+      "sha256": "06692e2b2ac6de3d845b65189723a371d0acc7951d085ba483e8bc4b25b6e147"
+    },
+    {
+      "path": "plc_tag_import_templates/P15_CRS_Test_Tags_README.md",
+      "size": 3162,
+      "sha256": "718469ffd98bc971405f43f1be045f8ac1bec47f7d646bcefedc793b9d345e9e"
+    },
+    {
+      "path": "project_docs/00_READ_FIRST_FOR_NEW_CHATGPT_SESSION.txt",
+      "size": 5504,
+      "sha256": "ba81d8a1a6e5dc6032deb14316272dcc226cc8420a83947d57be9492d59554a6"
+    },
+    {
+      "path": "project_docs/01_Project_Vision.txt",
+      "size": 1651,
+      "sha256": "6be7dd2e2925843d43790f9fb2d7b38095cc7254d3661b5bfdc89e7fffc9053e"
+    },
+    {
+      "path": "project_docs/02_PCR_TBM_Process.txt",
+      "size": 1472,
+      "sha256": "85303a2ee90f2ac5bd07c38aa96e3447b0277996889d9050196622683773a416"
+    },
+    {
+      "path": "project_docs/03_System_Architecture.txt",
+      "size": 1481,
+      "sha256": "cad910e5c63ae286b7882f909f10d6d4b60ab361b33709ce9dbac84e6d51bb3f"
+    },
+    {
+      "path": "project_docs/04_Database_Architecture.txt",
+      "size": 1285,
+      "sha256": "92df2b5a0d10e3e471c0cdc9395242fd0a92ffc32418fb5ffd96ba6edd1b2a7b"
+    },
+    {
+      "path": "project_docs/05_User_Roles.txt",
+      "size": 1056,
+      "sha256": "6df1482da7fb02ed064426943257b3059169b9eabf225615e6482efd34b9639f"
+    },
+    {
+      "path": "project_docs/06_Recipe_Lifecycle.txt",
+      "size": 2738,
+      "sha256": "6d35458c28da16866cb84f4e912bc2f5252fecd5541d6c02aaacd62ea62c79b7"
+    },
+    {
+      "path": "project_docs/07_Template_Architecture.txt",
+      "size": 1280,
+      "sha256": "8181f7dfc1a9dc6f499c8a280332d9be472ccdd82a9cde890e1bf452f45a877d"
+    },
+    {
+      "path": "project_docs/08_PLC_Architecture.txt",
+      "size": 1192,
+      "sha256": "3773d56f0fc04855abf63c288f9d2efe5888d46fca6c5fdab42739ad2b187829"
+    },
+    {
+      "path": "project_docs/09_Phase_Control_Architecture.txt",
+      "size": 1114,
+      "sha256": "fb85e5fa44c8cad5d8236a6ab517cbcd7875748d3bbf89ff6a46bb0d65582ebf"
+    },
+    {
+      "path": "project_docs/10_Audit_Trail.txt",
+      "size": 1626,
+      "sha256": "411faa895df7ffd6997100085e0343d1868ef7de4597f1483c02c7e23b1b4fa3"
+    },
+    {
+      "path": "project_docs/11_Security.txt",
+      "size": 1109,
+      "sha256": "1a28b1a127a8d2959899225addf94931a40d0a45689f3f95933fb0fd56c2dfd3"
+    },
+    {
+      "path": "project_docs/12_Deployment.txt",
+      "size": 1137,
+      "sha256": "afffc1609173a192d654853eea104d576456b96b8f868158892e4447dc94ea45"
+    },
+    {
+      "path": "project_docs/13_Backup_Recovery.txt",
+      "size": 1409,
+      "sha256": "ffb2732e06f00d889ab3d746c8532e3c235141443927830940162aad1246d43e"
+    },
+    {
+      "path": "project_docs/14_Future_Roadmap.txt",
+      "size": 1072,
+      "sha256": "0cd02078f94a3d340916eb61936178ce05c4e65d8dc24e410b862183bc34b59a"
+    },
+    {
+      "path": "project_docs/15_Completed_Implementation.txt",
+      "size": 1254,
+      "sha256": "b2dd88e923722167e4669a5ca145b71a34dd1cb802c22e784952213de9e95153"
+    },
+    {
+      "path": "project_docs/16_Pending_Implementation.txt",
+      "size": 1317,
+      "sha256": "f64d65043252c1c6ac793b9fdde76b708173f8937293103efa06f5ec055be234"
+    },
+    {
+      "path": "project_docs/17_Project_Decisions_Log.txt",
+      "size": 4084,
+      "sha256": "5276f03268c8f6ee3dde7e9b36f879495be0d4e11fea3a156b69edba7c75af4c"
+    },
+    {
+      "path": "project_docs/18_Current_Released_Recipe_Edit_Policy.txt",
+      "size": 2012,
+      "sha256": "27b5edd0b4a5dfe731d8a9191ea0bf8626b2827d1897b67c08979ba4a1a5fd52"
+    },
+    {
+      "path": "project_docs/19_Released_Recipe_Edit_Audit_Hardening.txt",
+      "size": 1808,
+      "sha256": "bd1f44bb72d155c1e212b1aca28582dbf615f414f4df154cc07dcb88836fab3f"
+    },
+    {
+      "path": "project_docs/20_Priority_9_PLC_Download_Manager_V2.txt",
+      "size": 2275,
+      "sha256": "f6c231ca14e1050cb157f16ac9343bdccc069ef3ad11a26a80c31b9e046342b0"
+    },
+    {
+      "path": "project_docs/21_Priority_10_PLC_Upload_Audit_Flow.txt",
+      "size": 1540,
+      "sha256": "aec2991931b874e176cf737e9b9dda644386545f3fd726a681b7424b9dd66afe"
+    },
+    {
+      "path": "project_docs/22_Priority_11_User_Management_Auto_Logout.txt",
+      "size": 5231,
+      "sha256": "d29352ac8a5b6f31e68b2b77e7c73c9a2db49313a5005a65ec097a83dbadf2c1"
+    },
+    {
+      "path": "project_docs/23_Priority_11_Role_Visibility_Fix.txt",
+      "size": 1525,
+      "sha256": "d7c6dea7617368a479e68b0a234471594828b73fc9676dc5482361acd1c1ee46"
+    },
+    {
+      "path": "project_docs/24_Priority_11_Dashboard_Role_Visibility_And_Message_Colors.txt",
+      "size": 2917,
+      "sha256": "c693926e4d18c99474f34de34411cb21f6a224abe4601e29b035a912249942c5"
+    },
+    {
+      "path": "project_docs/25_Priority_11_PLC_Operation_Screen_Lock.txt",
+      "size": 2345,
+      "sha256": "86f1099bb7b5c5474b61c999b394f48d23deb52eb1b4f04cd929c4dfb23791da"
+    },
+    {
+      "path": "project_docs/26_Priority_11_Auto_Logout_GUI_Timer_Config.txt",
+      "size": 1748,
+      "sha256": "071b560ccb411145e196fb5e6910d9773129c58714662f425659b0c8d9e48d38"
+    },
+    {
+      "path": "project_docs/27_Priority_11_Auto_Logout_Separate_Page_Audit_Filters.txt",
+      "size": 1540,
+      "sha256": "38d3591370d3ae632881bef6760da1ab0b1d86969761c91b3fd294eab38184b2"
+    },
+    {
+      "path": "project_docs/28_Priority_11_Audit_History_Professional_UI_Sorting.txt",
+      "size": 1919,
+      "sha256": "7b68203e2a0f82fdcbbe4624b74441af8df0ae5f971f47f680263f69e042990f"
+    },
+    {
+      "path": "project_docs/30_Priority_11_Active_Session_Priority_Viewer_Role.txt",
+      "size": 1953,
+      "sha256": "7e95a31ef0c26353c5f5190b4882e73ff8fb803a3a763f922e2853f1d2e16b19"
+    },
+    {
+      "path": "project_docs/31_Priority_11_AuditManager_Metadata_Fix.txt",
+      "size": 993,
+      "sha256": "8e9733532447c72bb960821a0d4d11232544f02a2e75e612a4f24df12b766e8f"
+    },
+    {
+      "path": "project_docs/31_Priority_11_Live_Session_Guard_Permanent_Fix.txt",
+      "size": 2250,
+      "sha256": "ec44da26aa22e534993b3a0a978b32d8788c747cc53b8a72db1a8b3eec2bdeaf"
+    },
+    {
+      "path": "project_docs/32_Priority_11_Login_Attempt_Acknowledge_FIX.txt",
+      "size": 816,
+      "sha256": "e1ff18b1ab8c8ca1b811ddbc3daf278fb5ba4c6571117a843d5319c6c136a613"
+    },
+    {
+      "path": "project_docs/33_Priority_11_Auto_Logout_UI_Seconds_Confirm_FIX.txt",
+      "size": 1648,
+      "sha256": "4628a7a9ec71ff7cc118a8e78adc2aaec501d6b4b4cf8308f951df54999ed716"
+    },
+    {
+      "path": "project_docs/34_Priority_11_Audit_Archive_Route_FIX.txt",
+      "size": 757,
+      "sha256": "cb6136f76cb2adf759bca554d11914576f263e08e04f2400ae58eb8f924751f3"
+    },
+    {
+      "path": "project_docs/35_Priority_11_Audit_Archive_Destination_Download_FIX.txt",
+      "size": 2039,
+      "sha256": "bf0607e40994f6a47f44e8f54e7dfde689058b5b7a6b32ef30384ce2f29e68e1"
+    },
+    {
+      "path": "project_docs/36_Priority_11_Audit_Archive_Professional_UI_FIX.txt",
+      "size": 887,
+      "sha256": "ba44df1cefc9e0d979d91715e2746fc35f841b77a0c7531230957e1a86f41242"
+    },
+    {
+      "path": "project_docs/37_Priority_11_UI_CSS_JS_Standardization.txt",
+      "size": 1505,
+      "sha256": "37b52ba7f3cff1d09e828cf6039d97fc53a0c6357f278a022bde9bbad3376c6d"
+    },
+    {
+      "path": "project_docs/37_Priority_11_UI_Visual_Tuning_FIX2.txt",
+      "size": 1079,
+      "sha256": "b0f7b91f9ba96629cfd308e4a30504d0d06b790ed672043fb3196f12e83b6958"
+    },
+    {
+      "path": "project_docs/38_Priority_11_UI_Visual_Tuning_FIX3.txt",
+      "size": 981,
+      "sha256": "9c346b630a7729303eb9b1d42c12cade645cc7d715207c43f72bcd1ca9e8b01a"
+    },
+    {
+      "path": "project_docs/39_Priority_11_Production_Safety_Single_Cycle.txt",
+      "size": 3129,
+      "sha256": "7c8cd84fd304dc216668d028e92a4b5e0a239d61fd02e7528ccdd8b4eb972ee2"
+    },
+    {
+      "path": "project_docs/40_Priority_11_UI_Professional_Compact_FIX4.txt",
+      "size": 1370,
+      "sha256": "5e97d952de60189dc5cbbbeffc2e34947315a5a14286f768e3fea6ad5562a1ca"
+    },
+    {
+      "path": "project_docs/41_Priority_11_Apollo_Corporate_Branding_Login_FIX5.txt",
+      "size": 1615,
+      "sha256": "f6c9c47b57af40e3cb63a76658306f651e1d31eef3762a0cedacdda8f0f4c04e"
+    },
+    {
+      "path": "project_docs/42_Priority_11_Apollo_Campaign_Carousel_Header_FIX6.txt",
+      "size": 1635,
+      "sha256": "1d31fc56a38c528c3c9765aa6afbca3567f86af6cf189ccff81656961422b872"
+    },
+    {
+      "path": "project_docs/43_Priority_11_Final_Safety_Closure_Fixes.txt",
+      "size": 2453,
+      "sha256": "d30ebc2f466d927039e79acaa73037c46d349ddccc4102ae7d1f6b3a2fc24581"
+    },
+    {
+      "path": "project_docs/45_Recipe_Import_Export_V1.txt",
+      "size": 2451,
+      "sha256": "3b9fc01d816bf0e3a4b97d53d4f12e731e6ffd0599983eb27f772a25ba95ba0c"
+    },
+    {
+      "path": "project_docs/47_P15_Second_Stage_Phase_Control_Master.txt",
+      "size": 1369,
+      "sha256": "0acf8e281f912cf2aa018fef959e22c6938b5b02165d949f95fccfef5a0d01e0"
+    },
+    {
+      "path": "project_docs/48_P15_Second_Stage_Parameter_Master_Draft_Recipe_V1.txt",
+      "size": 2247,
+      "sha256": "212b61dbc169022d7cc8d73911f555c4407b091d4654dacce3406b2fe792cb79"
+    },
+    {
+      "path": "project_docs/49_PLC_Verification_Expected_Details_Sync_V1.txt",
+      "size": 1378,
+      "sha256": "230fef93fc42bf37923d5e2402ff78102fcb5376ae972a79610944595b67366c"
+    },
+    {
+      "path": "project_docs/50_P15_Second_Stage_PLC_1D_Array_Import_V1.txt",
+      "size": 1293,
+      "sha256": "05f3e01cec8d5f77cc19dd04383f871a75749591bad3fb95af0490631a096ab5"
+    },
+    {
+      "path": "project_docs/51_PLC_1D_Array_Import_FIX1_Access_Button.txt",
+      "size": 678,
+      "sha256": "126ecab4ceb975eee2fedf3511f346ea8c19a0292bf1caf4624100a4248aabd0"
+    },
+    {
+      "path": "project_docs/53_PLC_Tag_Browser_Online_Diagnostics_FIX3.txt",
+      "size": 856,
+      "sha256": "faec797332b3a325a60aa12dc87e5a5b72832080ae84ff62b5e96ffdcdcc8154"
+    },
+    {
+      "path": "project_docs/54_PLC_Tag_Browser_UI_Polish_FIX4.txt",
+      "size": 619,
+      "sha256": "df5285793a17dc1f1b4346207a87eed39857b9306b9c3c45ffe96441e4683227"
+    },
+    {
+      "path": "project_docs/55_Recipe_Friendly_Create_Routes_And_Stage_Guard.txt",
+      "size": 1484,
+      "sha256": "404d65c3cab3bca05e51d81fe530db6479e5b7458bfac5d1e901d9a54747b974"
+    },
+    {
+      "path": "project_docs/56_P15_CRS_Test_PLC_Tags_V1.txt",
+      "size": 3469,
+      "sha256": "50fb452f59d6301c82fdf0a494c58d8680cb616d25139c9cfdc1133a13ff5b1a"
+    },
+    {
+      "path": "project_docs/57_RECIPE_LIST_MACHINE_STAGE_SELECTION_V1.txt",
+      "size": 1979,
+      "sha256": "5acca88a404d8a8e58dff2659787e5dd605a8250a7666fc8c66596278c596a19"
+    },
+    {
+      "path": "project_docs/58_PLC_ARRAY_IMPORT_PREVIEW_FIX_V1.txt",
+      "size": 2021,
+      "sha256": "23a16d29e9fc406c146b206580f1c1c34757d0493c69cfc018f31ddd976c9c04"
+    },
+    {
+      "path": "project_docs/59_PLC_ARRAY_IMPORT_TAG_FOUND_READ_FIX_V1.txt",
+      "size": 2307,
+      "sha256": "0adad8ba2370d00325c47f19a7332dc11a8411f3908c7bf2027ee49b1ca35c55"
+    },
+    {
+      "path": "project_docs/60_PHASE_CONTROL_APOLLO_VIOLET_STANDARD_V1.txt",
+      "size": 876,
+      "sha256": "ac7756367acae251f047cfd47107dc52088396245f04f91d6927d710d8c4d702"
+    },
+    {
+      "path": "project_docs/60_PLC_ARRAY_IMPORT_PREVIEW_DIRECT_READ_V1.txt",
+      "size": 1249,
+      "sha256": "c58aa0d099b36ccc0c31f118b86af433d527eeb86caaf46e2cc2d6f10407c4ef"
+    },
+    {
+      "path": "project_docs/61_PHASE_CONTROL_POSITION_COLUMN_FIT_V1.txt",
+      "size": 563,
+      "sha256": "833ce8da22488011603dd91fc579e4473fba1cddb920b63e024d990b90821cce"
+    },
+    {
+      "path": "project_docs/62_PHASE_CONTROL_YES_NO_VISIBILITY_FIX_V1.txt",
+      "size": 440,
+      "sha256": "513ce0c94e675f238923574635be514009c5d3b730609bff1ba8e514661fd5aa"
+    },
+    {
+      "path": "project_docs/63_RECIPE_IMPORT_AND_BULK_EDIT_SAFETY_FIX_V1.txt",
+      "size": 2303,
+      "sha256": "debc55359d09fad7e15e64c1a3a4523e0a8137bdd8233a0378efde380c821976"
+    },
+    {
+      "path": "project_docs/63_RECIPE_IMPORT_TARGET_IDENTITY_OVERRIDE_FIX_V1.txt",
+      "size": 1245,
+      "sha256": "bdabb88dd1ff8a48abcadefced523327d61d4eb7298c715577ad66561c6c40ce"
+    },
+    {
+      "path": "project_docs/64_BULK_EDIT_NO_VALUE_LOSS_AND_PLC_INDEX_LOCK_V1.txt",
+      "size": 1346,
+      "sha256": "fb11a64643595ffc3e2c80e795f0264bb8e494f5a2e098c8790d7f3318f2804c"
+    },
+    {
+      "path": "project_docs/65_BULK_EDIT_NO_VALUE_LOSS_AND_PLC_INDEX_LOCK_FINAL_V1.txt",
+      "size": 898,
+      "sha256": "23792dec89bbf8e0000ed7f676b0c6be4746caf9524069aa99ad09b1686f6186"
+    },
+    {
+      "path": "project_docs/65_STAGE_PLC_TAG_SETUP_EDITABLE_RULES_V1.txt",
+      "size": 2275,
+      "sha256": "92cec9c4c1375212e8b22520f5555fa97ccd6a409365fdaffd55d69dd862a682"
+    },
+    {
+      "path": "project_docs/67_PARAMETER_USED_NOT_USED_TEMPLATE_POLICY_V1.txt",
+      "size": 1570,
+      "sha256": "70799ee2c149ce22b689fb63a6f53ce6a75e5d5ef9b15b470643960d134fa340"
+    },
+    {
+      "path": "project_docs/67_RECIPE_IMPORT_PARAMETER_ONLY_PHASE_OPTIONAL_V1.txt",
+      "size": 1342,
+      "sha256": "8aaf513e761c91cac862425e0d00e609c1b333e1bd5344d809d65a75139e11f5"
+    },
+    {
+      "path": "project_docs/68_RECIPE_IMPORT_PARAMETER_MASTER_DETAILS_FROM_EXCEL_V1.txt",
+      "size": 901,
+      "sha256": "71e4070d5bc65bee0aa18275ace6ad704df789ab51d6b1fcc37d182d0f9d5bd4"
+    },
+    {
+      "path": "project_docs/68_UI_ROUTE_HARDENING_AND_MODERNIZATION_PASS_V1.txt",
+      "size": 2567,
+      "sha256": "0780697cc99a6c868b25c451fdd95211c85a9ac0636396496ee9c97fa8b6589e"
+    },
+    {
+      "path": "project_docs/69_RECIPE_IMPORT_EXISTING_RECIPE_PARTIAL_UPDATE_V1.txt",
+      "size": 1556,
+      "sha256": "099c07f7df7ddea0dc4da62c8047df4edd4af8f752849b434d09d5dbae210127"
+    },
+    {
+      "path": "project_docs/70_BULK_EDIT_TOGGLE_SORT_MULTI_ACTIONS_V1.txt",
+      "size": 812,
+      "sha256": "9be18df4297983925d34bac7e5bc857cf2eb6e4698fd33382b79d2fecd61d094"
+    },
+    {
+      "path": "project_docs/71_PLC_BUFFER_FLOW_LIVE_STATUS_REMAP_V1.txt",
+      "size": 1338,
+      "sha256": "97d6b719eef74234b1b1ed7b524327842e5ece8112679ec21efe3cff6438d055"
+    },
+    {
+      "path": "project_docs/72_GUI_PLC_TAG_EDIT_RENAME_REMAP_V1.txt",
+      "size": 1761,
+      "sha256": "7112795e409020faf51cbabda241a7804164ecc2a346e4903f32478f5bda7d03"
+    },
+    {
+      "path": "project_docs/72_REMAINING_GAP_CORRECTION_V1.txt",
+      "size": 1922,
+      "sha256": "a37de0d842d1803e10dcdc23686668b93d8a246b535b1aa349bcd83158a2a7f4"
+    },
+    {
+      "path": "project_docs/73_STAGEWISE_PHASE_TEMPLATE_MASTER_PLC_CODE_V1.txt",
+      "size": 2150,
+      "sha256": "6c263989ec472e34ec4617810b142c5991650f80c1ccb0539bb848ad18f86224"
+    },
+    {
+      "path": "project_docs/74_READINESS_MAP_TAG_RIGHT_FIX.txt",
+      "size": 464,
+      "sha256": "15dc4bcb4fe0ff13ddf7d3ef5a506ab869a882db5413b0a72140eae9aaedda80"
+    },
+    {
+      "path": "project_docs/75_AUDIT_HISTORY_RESPONSIVE_TABLE_V1.txt",
+      "size": 907,
+      "sha256": "ebf10d596034bac7baead94bd93508b25c4dcae09c2d6066af91a5844a03e5a5"
+    },
+    {
+      "path": "project_docs/76_AUDIT_OLD_NEW_VALUE_FIT_WRAP_FIX.txt",
+      "size": 648,
+      "sha256": "56d017e94df1fb4bc89d3c9cc0320f32d036f60bf819c79765e64e6728a44b95"
+    },
+    {
+      "path": "project_docs/77_AUDIT_OLD_NEW_TD_DISPLAY_FINAL_FIX.txt",
+      "size": 726,
+      "sha256": "ad21c49465916075829b8828e9b94f55f641262a5137b8ff148ef154817488f3"
+    },
+    {
+      "path": "project_docs/77_SECURITY_DEPLOYMENT_HARDENING_V1.txt",
+      "size": 7507,
+      "sha256": "29dd61b75fe9d75cdecb498128569e3a4cc3a3a9989ef6d4779c35b3aa8b7e31"
+    },
+    {
+      "path": "project_docs/78_CSS_MODULE_SPLIT_V1.txt",
+      "size": 4237,
+      "sha256": "5739c7f9cc4e22a898b476abe4806687405d3f0500bdfc123b06bea108591b7b"
+    },
+    {
+      "path": "project_docs/78_STAGE_PLC_CONFIG_AND_TAG_SEED_V11_1.txt",
+      "size": 2808,
+      "sha256": "696ce4bfe2f1e6b6dff82feea007194c94ce99cfcdb8d9e6f94fc2151f66a5b2"
+    },
+    {
+      "path": "project_docs/79_CONFIGURATION_500_ROUTE_LINK_SMOKE_FIX_V11_2.txt",
+      "size": 2033,
+      "sha256": "ad3a3ac8b6e4f24314791cec3d867986cfb7a16538736bec3e2501ae362c39f4"
+    },
+    {
+      "path": "project_docs/79_P15_PHASE_SCOPE_AND_CSS_V93_RELEASE_CANDIDATE_NOTE.txt",
+      "size": 2616,
+      "sha256": "630e93f7bf0f04584b34719284213e17e48ea2beed1157c15ccb1e7c6737d251"
+    },
+    {
+      "path": "project_docs/80_EXISTING_PLC_ASSIGNMENT_DROPDOWN_V11_3.txt",
+      "size": 1776,
+      "sha256": "7e2a5819fe5f54dfc283bdd2fe9578a7024e9f5e7a92216beac2c19c3f1533da"
+    },
+    {
+      "path": "project_docs/80_SYSTEM_BOOTSTRAP_INITIALIZATION_V1.txt",
+      "size": 4441,
+      "sha256": "0acd7f1befed1067131b49183951d8adbf40030e2805c9c8e91616b990a148e5"
+    },
+    {
+      "path": "project_docs/81_COMPLETE_DARK_THEME_ALL_PAGES_V11_4.txt",
+      "size": 2846,
+      "sha256": "eac2f8d333aa55631eecaebeec857a214c26ef5bf3a9e2daf3aeb50a9c9528da"
+    },
+    {
+      "path": "project_docs/81_MYSQL_DATABASE_CONFIGURATION_GUI_V1.txt",
+      "size": 2313,
+      "sha256": "4f550afb1b71c8800c27546e03408cbda9b57d729b10479d3a26904d20765f30"
+    },
+    {
+      "path": "project_docs/82_SYSTEM_THEME_AUTO_SYNC_V11_5.txt",
+      "size": 1167,
+      "sha256": "7433b5f4086691c106261b562a6132a6066cb66c8a446b93d6d62ae130d7b78d"
+    },
+    {
+      "path": "project_docs/83_SEMANTIC_DISABLE_ENABLE_ACTIVE_STANDARDIZATION_V11_6.txt",
+      "size": 2815,
+      "sha256": "e36f4452e420063dce268be092728dd0cf7b1f80191b9134b5212c4c8d40cc84"
+    },
+    {
+      "path": "project_docs/84_BLOCKED_STATUS_STANDARDIZATION_V11_7.txt",
+      "size": 1300,
+      "sha256": "28497c3d581a1f16a164efbf2213506ec76c80fd1214e4c9846f59bbd363c7e1"
+    },
+    {
+      "path": "project_docs/85_BLOCKED_DARK_THEME_VISIBILITY_V11_8.txt",
+      "size": 1370,
+      "sha256": "306badf8bc252932c478b08b95458a2a61cabeed74a89d86db66d43eec2e17c3"
+    },
+    {
+      "path": "project_docs/86_READY_STATUS_STANDARDIZATION_V11_9.txt",
+      "size": 1173,
+      "sha256": "2112c34ca9ea2655c70b2d06aa903ecab79de14bea3f0f2bd3547e3f4bc54c0b"
+    },
+    {
+      "path": "project_docs/87_OK_STATUS_AND_DARK_SURFACE_STANDARDIZATION_V11_10.txt",
+      "size": 974,
+      "sha256": "5c53a7bb80a3bf73ea9489a16944854ba2cb6fdfd10b65bdaa559853f8172d87"
+    },
+    {
+      "path": "project_docs/CRS_ROADMAP_MODERNIZATION_IMPLEMENTATION_20260712.md",
+      "size": 4410,
+      "sha256": "1a2c9b3c33e5a6a5f0afc243b8f3e33b8820b75245eac94cf7915fb5f56f0e93"
+    },
+    {
+      "path": "project_docs/current/00_READ_FIRST_CURRENT.md",
+      "size": 519,
+      "sha256": "87d0f7835ca7f73589fd7364dbd151ff5f3d358d351bc09105f9b085a88ff7f2"
+    },
+    {
+      "path": "project_docs/current/AGREEMENT_DECISION_REGISTER.md",
+      "size": 1173,
+      "sha256": "de7866bda05c51582a261fda4620614c2a7ad12d810cc7169e8e601b4f5f374c"
+    },
+    {
+      "path": "project_docs/current/CHANGED_FILES.md",
+      "size": 3334,
+      "sha256": "914a3e3c5907389e89fcd7fda3e3a840a885b2b144fa6f95cfc0a6c9dc53ff3a"
+    },
+    {
+      "path": "project_docs/current/COMMISSIONING_STATUS.md",
+      "size": 565,
+      "sha256": "086c204a883671392797c98456b0437c44d2a97002c1314b729d8284224c6df5"
+    },
+    {
+      "path": "project_docs/current/COMPLIANCE_MATRIX.md",
+      "size": 3206,
+      "sha256": "334b6d7eaacf36e9a448d99643afe490dd1ec623b62b2f062ca563c05135f45a"
+    },
+    {
+      "path": "project_docs/current/CURRENT_RELEASE.md",
+      "size": 1368,
+      "sha256": "f1b3c53669df15d7451520bb175f3adb4c5ba4f35b2fee32bca7b5ee3749e0ae"
+    },
+    {
+      "path": "project_docs/current/DEFINITIVE_MASTER_PROMPT.md",
+      "size": 14714,
+      "sha256": "737327a37ac7190df5a81bae4b3f357fef746342da5c953c727c56f4424df57b"
+    },
+    {
+      "path": "project_docs/current/KNOWN_LIMITATIONS.md",
+      "size": 732,
+      "sha256": "1f5e1044b30abb7c95f08921cb79a738f4f0429d0b669478037e69c680638de1"
+    },
+    {
+      "path": "project_docs/current/MIGRATION_STATUS.md",
+      "size": 676,
+      "sha256": "bb68fd2f4b639eecf5daf44d8677686d71cade3be6ee9c9b129969c8ac017737"
+    },
+    {
+      "path": "project_docs/current/SECURITY_AND_SECRET_ROTATION.md",
+      "size": 1070,
+      "sha256": "c1aeb3593be7041361b77d76b97b8f8203aa563ef52a9e1b9136c6decdba3da8"
+    },
+    {
+      "path": "project_docs/current/TEST_SAFETY_POLICY.md",
+      "size": 470,
+      "sha256": "a5476014dce389c5f1d7b4d1cba550a993aa1bf9fb802b75f3d9d7121a304a34"
+    },
+    {
+      "path": "project_docs/current/V11_11_IMPLEMENTATION_AND_VALIDATION_REPORT.md",
+      "size": 4843,
+      "sha256": "37d69d1607f904a05aa157a792f8720ef637f1930e3be74351cc120e98c7aec5"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_AI_ANALYTICS_ASSESSMENT.md",
+      "size": 1480,
+      "sha256": "5e9a1635e9c4860e03ea046bd6c86590ae3851c8b1d958d5f81a650f0739f1eb"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_BACKUP_RESTORE_GUIDE.md",
+      "size": 1550,
+      "sha256": "9194064b04800b7f6f22b331f990f00e662546c23af3647f8f3c0d91e1e302b6"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_BROWSER_TEST_REPORT.md",
+      "size": 1197,
+      "sha256": "d60fbaa96acbc179bd1448331878e073daa148f0c0124b7947f2adcac82ca190"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_CHANGELOG.md",
+      "size": 2286,
+      "sha256": "c56b0c3d143fc6ae61e96fd49e62f80624fc8381b88957aad6ea5f49b6b36988"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_CURRENT_STATUS.md",
+      "size": 2588,
+      "sha256": "866c078370ba47d15f866bd14e658026f1a21c60bb5eb7491c65e251dfe9a78f"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_DATABASE_CONFIGURATION.md",
+      "size": 1828,
+      "sha256": "6a08b88c964d87063d90c6ed69cdd8986075a1a867dea27ed2ad1c89eaa5ca7f"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_DEPLOYMENT_GUIDE.md",
+      "size": 2903,
+      "sha256": "253c2665fdd063672b1f37040f038962874c22610facc574207fef0f80949bff"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_FINAL_VALIDATION_REPORT.md",
+      "size": 2087,
+      "sha256": "83a1a0b5cbff90a7642248d8a7101cde2eb614c5c0f3a04ee9779f799eb25f9f"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_GAP_ANALYSIS.md",
+      "size": 3130,
+      "sha256": "e0821b5ddfae8e2c5710092e17596206cb1be4c16024a68d588f7a3403bceda4"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_IMPROVEMENT_PLAN.md",
+      "size": 2226,
+      "sha256": "d86f78913815bc6ee45fbcb19f01c5ba92f2a6881f18eb0bb984f722fbc4406a"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_MASTER_AUDIT_FINAL_REPORT.md",
+      "size": 5880,
+      "sha256": "3945228660bd8f2f197defc2237d2e7388bf988bacb1ab71858b2f2fbb65c8e6"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_OFFICIAL_RESEARCH_REGISTER.md",
+      "size": 5000,
+      "sha256": "2959aaffd77dd3ade1f0ef07eb91abc77efec2fbde62b5551b576cfa16774796"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_PASS_1_REPORT.md",
+      "size": 1443,
+      "sha256": "b08ce38b9564f80e31392daa0db7e85dfdafe9e9cb5f6e57cae13bfcebcb46a3"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_PASS_2_REPORT.md",
+      "size": 2031,
+      "sha256": "d830a039f62d8aa7015c22490800714e4a502c991438d14cebd6084eda097215"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_SECURITY_REVIEW.md",
+      "size": 2539,
+      "sha256": "cfe7c79dbafbb0770da3501b4764ab4572f0e3299d4c593b43581addd4ce986d"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_TEST_MATRIX.md",
+      "size": 1333,
+      "sha256": "427c06d157a7fb5961c5e9f80ebc4dba0a2f97a96254ca03b785ebda71e70540"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/CRS_UI_UX_REVIEW.md",
+      "size": 1977,
+      "sha256": "31dfab139d68a2e7dd33247f4090985358c994d5a5bf5992a43daa4359e9cfad"
+    },
+    {
+      "path": "project_docs/master_audit_20260711/README.md",
+      "size": 607,
+      "sha256": "e33d0a379a352aea9ffed091c4e6637765178529c272bc0c50f63ed72be19074"
+    },
+    {
+      "path": "project_docs/README",
+      "size": 164,
+      "sha256": "582d2cc1cc2d168fddca22024dcb930a08e5ea758949b5bedf4fa3dd4093cdef"
+    },
+    {
+      "path": "pytest.ini",
+      "size": 455,
+      "sha256": "d56023d7e314aaf070faed74a3a27c092a5f4b04c8bae80391900ad2188bf4ec"
+    },
+    {
+      "path": "README.md",
+      "size": 4813,
+      "sha256": "09551d2908ac4d0ccf08618cf424a0dff38b7db460e2750f9f20396546884310"
+    },
+    {
+      "path": "recipe/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "recipe/recipe_compare.py",
+      "size": 1341,
+      "sha256": "1045241db3c70d0689644835c5261832b46dbd796dab07155246f574b5df84f1"
+    },
+    {
+      "path": "recipe/recipe_import_export.py",
+      "size": 4227,
+      "sha256": "5732c4bf409faf53d73a1fd9eda40b8ed2a06ab3980442d65d7598eccf840bd8"
+    },
+    {
+      "path": "recipe/recipe_reader.py",
+      "size": 182,
+      "sha256": "3ba799bdcc42b5ddeb696240df3bb7660502ec52a0da1bb2aac3ef272fbf6f36"
+    },
+    {
+      "path": "recipe/snapshots/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "recipe/snapshots/snapshot_manager.py",
+      "size": 2454,
+      "sha256": "4750ef411172ef510f1f976bd5a8ff69353af391cf6eca0908e2cd06c2de121a"
+    },
+    {
+      "path": "requirements-dev.txt",
+      "size": 38,
+      "sha256": "64d829d61fdf0e5cfb2bd06c41c863237979fb869711d6ed5c66441e307a7718"
+    },
+    {
+      "path": "requirements.txt",
+      "size": 394,
+      "sha256": "131a4beca45d89dd8c2894fdbbd6f24bf8ab39c701a6e84449cbf8ec6a662d65"
+    },
+    {
+      "path": "run_crs.bat",
+      "size": 418,
+      "sha256": "7a6ffd7849ce0f2469c76561aa027a665768a00acdd0a919bb6d3de5ca1e537f"
+    },
+    {
+      "path": "scripts/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "scripts/audit_crs_repository.py",
+      "size": 11665,
+      "sha256": "55c22e515162eaf17b4d1522a2895c135863aa439f72dff196ed2baa438270de"
+    },
+    {
+      "path": "scripts/bootstrap_crs_system.py",
+      "size": 322,
+      "sha256": "c98fcd94522bd6d7c7109d825d762a90b8a9c8ec06ab2eab6975af6a1c616902"
+    },
+    {
+      "path": "scripts/build_clean_release.py",
+      "size": 6475,
+      "sha256": "11949a026397159af9e5c3b2515060b378d2daaaffd29c0e2bbf27b2331a047c"
+    },
+    {
+      "path": "scripts/build_css_bundle.py",
+      "size": 2581,
+      "sha256": "1b14d5bcf8c3443e130dd6301ba9f124bac661952c118cba5a745ccd0106016e"
+    },
+    {
+      "path": "scripts/check_blocked_dark_theme_visibility.py",
+      "size": 3877,
+      "sha256": "625f4905871d12dc1af304d4d062a0e6dba399755f0a1ffa72e23641e579fac8"
+    },
+    {
+      "path": "scripts/check_blocked_status_standardization.py",
+      "size": 6047,
+      "sha256": "e1e27132613e85c3a944960ad5ea249bde409dfa6a4e4dd4a816e443c43e795b"
+    },
+    {
+      "path": "scripts/check_crs_routes_and_links.py",
+      "size": 13103,
+      "sha256": "371f89cb4b850d44bebd0853566aa593ddaf29b229439a1c5f8aaacac8860488"
+    },
+    {
+      "path": "scripts/check_dark_theme_coverage.py",
+      "size": 3910,
+      "sha256": "19e56f4399852bcfc6a97dea273227f048333a25bcf440b0035fb28c0bb9eb3e"
+    },
+    {
+      "path": "scripts/check_indexes.py",
+      "size": 532,
+      "sha256": "206644947bfd3963811707b85be1e1f07eaa6754552525e45c0c02dcc0e2dd09"
+    },
+    {
+      "path": "scripts/check_ok_status_dark_theme.py",
+      "size": 6317,
+      "sha256": "ffecd3e226226df03358bee1f30688060527602cbde488c547d4c72882dfd824"
+    },
+    {
+      "path": "scripts/check_ready_status_standardization.py",
+      "size": 4039,
+      "sha256": "0423b18b81508c574f9f1c8003591e0d6f00cb65f97aafa5df7568825c9bf538"
+    },
+    {
+      "path": "scripts/check_schema.py",
+      "size": 990,
+      "sha256": "189cda6fe3279b52aa5d252f0fb0b67fd5e041a6084e2284de4c95c8ec915c46"
+    },
+    {
+      "path": "scripts/check_semantic_action_status_standardization.py",
+      "size": 5638,
+      "sha256": "630dcc2b25d7027dee586fe845b1c219d57e73548721fd351cbe9372561a097e"
+    },
+    {
+      "path": "scripts/check_system_theme_sync.py",
+      "size": 1577,
+      "sha256": "fae6e03f1129eb31f695239b6ab32311d77ee365d291764c02353065562f7a70"
+    },
+    {
+      "path": "scripts/check_tables.py",
+      "size": 489,
+      "sha256": "c78b82d4277c34b189fcf7c08db1f49c48f8c4fa5e81471fca735480ec1fc9d6"
+    },
+    {
+      "path": "scripts/clear_crs_pycache.py",
+      "size": 371,
+      "sha256": "67c40bbc46d24a9902d014dd1d7048af6f87efd7a578152ccd7a7871e9130854"
+    },
+    {
+      "path": "scripts/configure_p15km_tags.py",
+      "size": 866,
+      "sha256": "6f1afe1754237629ae5a00a42fffa9e7a4bf5201372f330a9ef9de736d2e1aa2"
+    },
+    {
+      "path": "scripts/configure_secret_key.py",
+      "size": 2174,
+      "sha256": "c1c621ce8aee11dc1c835acce1736605e1007ba0524d3ba78a8f97bfd717b510"
+    },
+    {
+      "path": "scripts/create_admin.py",
+      "size": 1382,
+      "sha256": "4eb9ce80e363e09b33be5a00003f5a80b2f61f359d97788e740c623f4276f1a1"
+    },
+    {
+      "path": "scripts/create_database.py",
+      "size": 322,
+      "sha256": "c98fcd94522bd6d7c7109d825d762a90b8a9c8ec06ab2eab6975af6a1c616902"
+    },
+    {
+      "path": "scripts/create_plant_plcs.py",
+      "size": 2167,
+      "sha256": "ace0deb34b6ccd909be3b0d574e3bbd79dc57ec33152c55a97349aa9b71577b5"
+    },
+    {
+      "path": "scripts/create_test_parameters.py",
+      "size": 1008,
+      "sha256": "dbb849f2f7f8fbba9bacb72ca97c6bc4eb69b917f3bcb4be3c709e90accd983b"
+    },
+    {
+      "path": "scripts/diagnose_p15_ss_crs_array_tags.py",
+      "size": 4931,
+      "sha256": "144b08d680a6f190d7d504078a674651f41f35cf6ddc6a090e6ee01bfbfe02ae"
+    },
+    {
+      "path": "scripts/p15_crs_test_handshake_simulator.py",
+      "size": 4682,
+      "sha256": "538394ded501698f481f875337b24b35481d0d466c01658a8565f857296fe930"
+    },
+    {
+      "path": "scripts/register_p15_crs_test_tags.py",
+      "size": 4673,
+      "sha256": "b7bee1841d83499c7bd3b4a02d46d3759503d551a7f73e82e7b2dbb66a89a52c"
+    },
+    {
+      "path": "scripts/run_crs.py",
+      "size": 2600,
+      "sha256": "804b63e0fb3fb671f782a1c2ccdcd8c17b3163e832f5968ab5ea3a7bf530c615"
+    },
+    {
+      "path": "scripts/run_crs_plc_worker.bat",
+      "size": 207,
+      "sha256": "482cff292087a398e1e4121aa5bd72669fbc8eb3ad820b6aa6e1acfd0629130f"
+    },
+    {
+      "path": "scripts/run_crs_waitress.bat",
+      "size": 205,
+      "sha256": "4cbf591da6674cabdceb470a278535a0483252bb443c062b53da0bd9a01a793b"
+    },
+    {
+      "path": "scripts/run_plc_worker.py",
+      "size": 3275,
+      "sha256": "54d5025f264edf83fac0c0a04c88065136297d089c0e2a07b3076e336c1a5fe5"
+    },
+    {
+      "path": "scripts/run_waitress.py",
+      "size": 477,
+      "sha256": "de7a33ffb7f1845a6eb1d1ce33706d64ed2e096d7442df74eb74709d269351f5"
+    },
+    {
+      "path": "scripts/sqlalchemy_health_check.py",
+      "size": 2725,
+      "sha256": "a872e904c5fa4657a70bc5deccc86338a311e3fcc409a2dacc2b2937e5d320c0"
+    },
+    {
+      "path": "scripts/system_health_check.py",
+      "size": 927,
+      "sha256": "abb7f9a910aeab42c05d51c889eebf479de122dc527589eb7414671955dfad3f"
+    },
+    {
+      "path": "scripts/test_saved_database_profile.py",
+      "size": 964,
+      "sha256": "a17442c47c43bb308d18ab1a48bca5c27d2c0ec73aab4b88a8510eb24f558c84"
+    },
+    {
+      "path": "scripts/update_plc_master_tags.py",
+      "size": 951,
+      "sha256": "70bdfc9c6e27c5257119d0bf723a943be91a57674b99bb4cf012e4b1dccc5207"
+    },
+    {
+      "path": "scripts/validate_crs_release.py",
+      "size": 9434,
+      "sha256": "79e8973b75f4efd167512d09b601ddbcdd38907cf0be911b14ce1c9459a99133"
+    },
+    {
+      "path": "scripts/verify_mapping_table.py",
+      "size": 453,
+      "sha256": "a06084967b3117a6e592b4fb9005c1e5f196f2f97f7a5bc4737fc8738217d790"
+    },
+    {
+      "path": "scripts/verify_p15_crs_test_tags_online.py",
+      "size": 3990,
+      "sha256": "f638a7df5aaf8af583e8ef75afdfb2a822bdd57122094f323d3f8d2bc610b3b0"
+    },
+    {
+      "path": "scripts/verify_plc_master.py",
+      "size": 440,
+      "sha256": "ecdde9d429a86ccb56a3c64ce4ee3f28c5ef1173decb78efc3ece176386f5b4f"
+    },
+    {
+      "path": "scripts/verify_recipe_count.py",
+      "size": 460,
+      "sha256": "3f0a8629e142593a4e8af9ee7ea916db777c625f82ca09f052d240136f7453d9"
+    },
+    {
+      "path": "scripts/verify_recipe_master.py",
+      "size": 443,
+      "sha256": "d5fb9a3ae035588c4eb6d113e8e98ad06465f5b99ac0deaee5dcdae072de1eca"
+    },
+    {
+      "path": "scripts/verify_recipe_master_data.py",
+      "size": 513,
+      "sha256": "f33c9f1d18dd854238994fea3efc1032e0a3f6e128b936a00091e708a7fef1f8"
+    },
+    {
+      "path": "scripts/verify_recipe_parameters.py",
+      "size": 499,
+      "sha256": "5147dede19f102449a2f10a3f997fc00703d37ec05a824223c23ee6c277c5341"
+    },
+    {
+      "path": "scripts/verify_recipe_schema.py",
+      "size": 447,
+      "sha256": "92903a77dcb7c3ef30230851620daf265e862d69044f3fb5438a18b1c1c49141"
+    },
+    {
+      "path": "scripts/verify_tables.py",
+      "size": 841,
+      "sha256": "35dae23237b8368db1ff1de546467097ed958ca208f1a81df1faa321f1dbccd0"
+    },
+    {
+      "path": "scripts/write_p15_crs_test_defaults.py",
+      "size": 4643,
+      "sha256": "8e9ae23c9ac7d1059171d692aff6a2bb74ca18bdb825adc7f86e7dde6a15cdfb"
+    },
+    {
+      "path": "setup_crs.bat",
+      "size": 1251,
+      "sha256": "ae26bdbfcd68eb575fb61ea7d65c7ca1fd733a795bb2cd5cbf435e1b0878eaeb"
+    },
+    {
+      "path": "tests/conftest.py",
+      "size": 2811,
+      "sha256": "0ee91a30393e347932e71c8aa244d08eacc6c895352ffb42525bf73dfab5ce50"
+    },
+    {
+      "path": "tests/safe/conftest.py",
+      "size": 71,
+      "sha256": "e9ef2505351668d38dda8bcb77ebe79694da58565619b625dda749425d84e19c"
+    },
+    {
+      "path": "tests/safe/test_bootstrap_cli.py",
+      "size": 1299,
+      "sha256": "65588e890dd5c91afa70c484985318d0cd78f31193662a44d7e410148750e381"
+    },
+    {
+      "path": "tests/safe/test_database_configuration.py",
+      "size": 1770,
+      "sha256": "1d7409a1f897b47c58c37c953360ab64c67c667f816d53bc953d5f32a5736fad"
+    },
+    {
+      "path": "tests/safe/test_health_routes.py",
+      "size": 606,
+      "sha256": "2ca272d3c71773bb8532df0e532f9fdf18b5b3c1d9bd5201556aa116fb8c3dff"
+    },
+    {
+      "path": "tests/safe/test_plc_registry_validation.py",
+      "size": 1855,
+      "sha256": "53cefbbc0a370c9f1ea4a3d61915cddba51226bc391c8f180964990f928ac352"
+    },
+    {
+      "path": "tests/safe/test_plc_test_connection_route.py",
+      "size": 2724,
+      "sha256": "31715ada5e927fc5fc2e20fc0e6b0df6047dc7f66da20c4c0c274a3d954ee345"
+    },
+    {
+      "path": "tests/safe/test_progressive_ui.py",
+      "size": 2508,
+      "sha256": "6be3326d233f6f28fabd0d9708c7bfffcc60a31348ac08130dff5bd41c31c231"
+    },
+    {
+      "path": "tests/safe/test_secret_key_setup.py",
+      "size": 666,
+      "sha256": "fa16e16b9486507b765088ef9e37ae0d00380a3379ff92219746f0c2d2123f0c"
+    },
+    {
+      "path": "tests/safe/test_security_baseline.py",
+      "size": 3169,
+      "sha256": "34a6f89b32a7e3249e88229a7e191d342cf407431b724900d27dfae552f30afd"
+    },
+    {
+      "path": "tests/safe/test_v11_11_hardening.py",
+      "size": 11109,
+      "sha256": "57bc24e36937f7916c0af7286464935250f93ba9f454e402b3ef3c1559af941e"
+    },
+    {
+      "path": "tools/plc_live_manual/README.md",
+      "size": 628,
+      "sha256": "fde2cdd721ffdf0a19922a5dd0f28f8d0063b74afa5ecdafbd56f99cc68402bf"
+    },
+    {
+      "path": "tools/plc_live_manual/safety.py",
+      "size": 704,
+      "sha256": "f7da4c1345c8a6d2d7ceee38f53193dccba6d28401f588665df28b11e3929f18"
+    },
+    {
+      "path": "tools/plc_live_manual/test_p15_connection_manual.py",
+      "size": 411,
+      "sha256": "57f91157cfb0099d143497902467df07310962290530da10f5bc82ffe829699a"
+    },
+    {
+      "path": "tools/plc_live_manual/test_p15_read_crs_tags_manual.py",
+      "size": 470,
+      "sha256": "4103a40a48c7a364ee4ec6951e89baa70139aea7cd7cd24d9d85679029e2d88f"
+    },
+    {
+      "path": "tools/plc_live_manual/test_p15_read_full_recipe_snapshot_manual.py",
+      "size": 395,
+      "sha256": "9cec03d763c9434a69b59242055e90adf6253b4910da95b68c5aa8b3a5f80d60"
+    },
+    {
+      "path": "tools/plc_live_manual/test_p15_read_recipe_array_manual.py",
+      "size": 426,
+      "sha256": "04af0990fb9ab9c6aaf40c70532e33d090f995340dbe218e11a815bfd4ff6f10"
+    },
+    {
+      "path": "tools/plc_live_manual/test_p15_write_recipe_array_manual.py",
+      "size": 448,
+      "sha256": "856eca2b40e36c62b2eefa77dceb8f243f672376cbae610f61667ad16ceeee8b"
+    },
+    {
+      "path": "tools/plc_live_manual/test_plc_write_manual.py",
+      "size": 1849,
+      "sha256": "dc1e7ad306579a38ff841148634491c184f0d315ca7b4ff4ebc48e6dcd76afb9"
+    },
+    {
+      "path": "tools/route_smoke_check.py",
+      "size": 2782,
+      "sha256": "53f2035bb84dd9e0061c78cebed3eca8bffac02465c87a4450459134e8a706f6"
+    },
+    {
+      "path": "tools/safe_runtime_guard.py",
+      "size": 1105,
+      "sha256": "2492bee6c464e9fcfe91caf5bed188e6363aaa18ef24dd726227d152c64f1c22"
+    },
+    {
+      "path": "utils/__init__.py",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "utils/project_path.py",
+      "size": 224,
+      "sha256": "06d9c585be02f0036e3429a22457f0befc788e9b9b80aabd748b8ef8b385dab9"
+    },
+    {
+      "path": "wsgi.py",
+      "size": 82,
+      "sha256": "36f590bdb9d10b1811fa8ad04770b49c00b2433b73f144b820ba8f672d52b93d"
+    }
+  ]
+}

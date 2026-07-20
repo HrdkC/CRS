@@ -16,5 +16,4 @@ from database.upgrade_user_management_priority11 import (
 if __name__ == "__main__":
     upgrade_user_management_schema()
     ensure_default_engineering_user()
-    print("Default engineering login ready: username=engineering, temporary password=Engineering@123")
-    print("Engineering is below Admin and cannot manage users or active sessions.")
+    print("Engineering recovery account ready from CRS_BOOTSTRAP_ENGINEERING_PASSWORD.")

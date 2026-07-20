@@ -13,6 +13,12 @@ from database.system_settings_manager import SystemSettingsManager
 from database.user_session_manager import UserSessionManager
 
 
+BACKGROUND_ENDPOINTS = {
+    "recipe_download_preparation_job_status",
+    "session_heartbeat",
+}
+
+
 SKIP_ENDPOINTS = {
     "login",
     "logout",
@@ -55,6 +61,41 @@ def register_session_guard(app):
             )
         except Exception:
             pass
+
+        authority = UserSessionManager.get_session_authority(
+            session.get("session_id"),
+            session.get("username")
+        )
+        if (
+            not authority
+            or int(authority.get("active") or 0) != 1
+            or (authority.get("current_role") or "").upper()
+               != (session.get("role") or "").upper()
+        ):
+            username = session.get("username")
+            previous_role = session.get("role")
+            UserSessionManager.revoke_user_sessions(
+                username,
+                reason="AUTHORITY_CHANGED_OR_USER_DISABLED"
+            )
+            AuditManager.log_event(
+                username=username,
+                role=previous_role,
+                action="SESSION_REVOKED_AUTHORITY_CHANGED",
+                change_source="SESSION_GUARD",
+                client_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+                user_agent=request.headers.get("User-Agent", ""),
+                forwarded_for=request.headers.get("X-Forwarded-For"),
+                request_host=request.host,
+                reason="User disabled, role changed, or active session claim invalid."
+            )
+            session.clear()
+            flash("Your access was changed by an administrator. Please login again.", "warning")
+            return redirect("/login")
+
+        session["password_reset_required"] = int(
+            authority.get("password_reset_required") or 0
+        )
 
         # Existing active user has priority. A second login attempt for the same
         # username is blocked at /login and logged as an alert. Here we only
@@ -113,11 +154,17 @@ def register_session_guard(app):
             flash("Session timed out due to inactivity. Please login again.", "warning")
             return redirect("/login")
 
-        session["last_activity_epoch"] = now
+        explicit_activity = request.headers.get("X-CRS-User-Activity", "").strip() == "1"
+        background_request = endpoint in BACKGROUND_ENDPOINTS
+        if explicit_activity or not background_request:
+            session["last_activity_epoch"] = now
 
         last_db_touch = int(session.get("last_db_touch_epoch", 0))
         if now - last_db_touch >= 60:
-            UserSessionManager.touch(session.get("session_id"))
+            UserSessionManager.heartbeat(
+                session.get("session_id"),
+                mark_user_activity=(explicit_activity or not background_request)
+            )
             session["last_db_touch_epoch"] = now
 
         if session.get("password_reset_required") == 1:

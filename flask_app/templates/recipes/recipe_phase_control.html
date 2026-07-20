@@ -172,10 +172,7 @@ Recipe Phase Control
                             {% endfor %}
                         </select>
 
-                        {% if is_second_stage_phase %}
-                        <input type="hidden" name="stop_option_{{ row.id }}" value="{{ row.stop_option or 'No' }}">
-                        <input type="hidden" name="position_option_{{ row.id }}" value="{{ row.position_option or 'No' }}">
-                        {% else %}
+                        {% if not is_second_stage_phase %}
                         <select
                             name="stop_option_{{ row.id }}"
                             {% if not can_edit_phase_control %}
@@ -211,6 +208,22 @@ Recipe Phase Control
             {% else %}
             <div class="empty-state">
                 No phase-control rows configured for this recipe.
+            </div>
+            {% endif %}
+
+            {% if inline_edit_mode %}
+            <div class="form-group phase-change-reason">
+                <label for="change_reason">Reason for phase-control change</label>
+                <input
+                    id="change_reason"
+                    name="change_reason"
+                    type="text"
+                    maxlength="500"
+                    required
+                    autocomplete="off"
+                    placeholder="Enter the approved reason for this phase-control change"
+                >
+                <small>Required for traceability. Unchanged rows will not create audit entries.</small>
             </div>
             {% endif %}
 

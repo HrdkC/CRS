@@ -7,6 +7,8 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
+from tools.plc_live_manual.safety import require_supervised_live_plc
+
 from database.database import get_connection
 
 STAGE_ALIASES = {
@@ -136,6 +138,7 @@ def main():
     parser.add_argument("--stage", default="SS")
     parser.add_argument("--tag", action="append", dest="tags", help="Additional/exact tag to test. Can be repeated.")
     args = parser.parse_args()
+    require_supervised_live_plc(__file__)
     diagnose(machine=args.machine, stage=args.stage, tags=args.tags)
 
 

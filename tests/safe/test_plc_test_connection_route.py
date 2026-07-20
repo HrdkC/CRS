@@ -23,6 +23,15 @@ def _authenticated_client(monkeypatch):
     )
     monkeypatch.setattr(
         UserSessionManager,
+        "get_session_authority",
+        staticmethod(lambda *_args, **_kwargs: {
+            "active": 1,
+            "current_role": "ADMIN",
+            "password_reset_required": 0,
+        }),
+    )
+    monkeypatch.setattr(
+        UserSessionManager,
         "touch",
         staticmethod(lambda *_args, **_kwargs: None),
     )

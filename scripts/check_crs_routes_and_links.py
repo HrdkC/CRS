@@ -26,6 +26,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from tools.safe_runtime_guard import install_safe_runtime_guard
+install_safe_runtime_guard()
+
 from flask import url_for  # noqa: E402
 from werkzeug.exceptions import MethodNotAllowed, NotFound  # noqa: E402
 

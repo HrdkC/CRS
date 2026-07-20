@@ -81,6 +81,9 @@ class CRSSystemBootstrapManager:
         "recipe_phase_control",
         "recipe_plc_mapping",
         "recipe_resource_locks",
+        "recipe_resource_claims",
+        "recipe_phase_control_audit",
+        "login_throttle",
         "recipe_upload_history",
         "recipe_download_history",
         "recipe_status_history",
@@ -110,7 +113,7 @@ class CRSSystemBootstrapManager:
         if seed_users is not None:
             return bool(seed_users)
 
-        raw = os.getenv("CRS_BOOTSTRAP_SEED_DEFAULT_USERS", "1")
+        raw = os.getenv("CRS_BOOTSTRAP_SEED_DEFAULT_USERS", "0")
         return raw.strip().lower() in {
             "1",
             "true",
@@ -473,6 +476,7 @@ class CRSSystemBootstrapManager:
             BootstrapStep("08 Audit/Security", "Recipe parameter audit", self._create_recipe_parameter_audit),
             BootstrapStep("08 Audit/Security", "Recipe resource locks", self._create_recipe_resource_locks),
             BootstrapStep("08 Audit/Security", "User/session/archive schema", lambda: self._call("database.upgrade_user_management_priority11", "upgrade_user_management_schema")),
+            BootstrapStep("08 Audit/Security", "V11.11 hardening schema", lambda: self._call("database.hardening_schema_manager", "apply_v11_11_hardening_schema")),
             BootstrapStep("09 Upgrades", "PLC tags upgrade", lambda: self._call("database.upgrade_plc_tags_table", "upgrade_plc_tags_table")),
             BootstrapStep("09 Upgrades", "Recipe status history upgrade", lambda: self._call("database.upgrade_recipe_status_history_table", "upgrade_recipe_status_history_table")),
             BootstrapStep("09 Upgrades", "Recipe phase control upgrade", lambda: self._call("database.upgrade_recipe_phase_control_table", "upgrade_recipe_phase_control_table")),

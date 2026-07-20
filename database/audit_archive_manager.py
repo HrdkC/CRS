@@ -7,6 +7,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 
 from database.database import get_connection
+from database.schema_guard import require_tables
 
 
 class AuditArchiveManager:
@@ -19,55 +20,10 @@ class AuditArchiveManager:
 
     @staticmethod
     def ensure_tables():
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS audit_log_archive
-            (
-                archive_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                original_audit_id INTEGER,
-                username TEXT,
-                role TEXT,
-                workstation_name TEXT,
-                client_ip TEXT,
-                plc_name TEXT,
-                recipe_code TEXT,
-                recipe_version INTEGER,
-                record_id TEXT,
-                parameter_name TEXT,
-                old_value TEXT,
-                new_value TEXT,
-                action TEXT,
-                change_source TEXT,
-                reason TEXT,
-                user_agent TEXT,
-                request_host TEXT,
-                forwarded_for TEXT,
-                timestamp DATETIME,
-                archived_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                archived_by TEXT,
-                archive_batch_id TEXT
-            )
-            """
-        )
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS audit_archive_exports
-            (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                export_type TEXT,
-                export_path TEXT,
-                file_name TEXT,
-                row_count INTEGER DEFAULT 0,
-                exported_by TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                remarks TEXT
-            )
-            """
-        )
-        conn.commit()
-        conn.close()
+        return require_tables({
+            "audit_log_archive": {"archive_id", "original_audit_id", "archive_batch_id"},
+            "audit_archive_exports": {"id", "export_type", "export_path", "row_count"},
+        })
 
     @staticmethod
     def _audit_columns(cursor):

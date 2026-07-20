@@ -1,9 +1,12 @@
 from flask import render_template, session, redirect, request, flash, send_file
 
+from config.settings import ALLOW_LEGACY_RECIPE_WRITES
+
 from database.recipe_manager import RecipeManager
 from database.database import get_connection
 
 from database.audit_manager import AuditManager
+from database.recipe_resource_lock_manager import RecipeResourceLockManager
 
 from helper.datetime_helper import (
     utc_to_ist
@@ -46,6 +49,23 @@ def _is_legacy_historical_version(recipe, selected_version):
 
     return selected_version != current_version
 
+
+
+
+def _block_legacy_recipe_write(recipe_code=None):
+    AuditManager.log_event(
+        username=session.get("username"),
+        role=session.get("role"),
+        action="LEGACY_RECIPE_MUTATION_BLOCKED",
+        change_source="LEGACY_QUARANTINE",
+        recipe_code=recipe_code,
+        reason="Legacy recipe mutation route is disabled; canonical recipe-ID workflow required."
+    )
+    flash(
+        "This legacy recipe edit route is disabled. Open the canonical Recipe Editor instead.",
+        "warning"
+    )
+    return redirect("/recipes")
 
 
 def _engineering_config_allowed():
@@ -533,12 +553,50 @@ def register_recipe_routes(app):
         update_master_details = request.form.get("update_master_details")
         mark_missing_parameters_not_used = request.form.get("mark_missing_parameters_not_used")
 
+        if not reason:
+            flash("A change/import reason is required.", "error")
+            return redirect("/recipes/import-export")
+
+        import_lock_id = None
+        normalized_mode = str(import_mode or "").strip().lower()
+        if normalized_mode == "update_existing" and existing_recipe_id:
+            active_operation = RecipeResourceLockManager.get_active_lock(
+                "RECIPE_OPERATION", existing_recipe_id
+            )
+            if active_operation:
+                flash(
+                    "Recipe import update is blocked by an active PLC/buffer operation.",
+                    "warning",
+                )
+                return redirect("/recipes/import-export")
+            lock_result = RecipeResourceLockManager.acquire_lock(
+                resource_type="RECIPE_EDIT",
+                resource_id=existing_recipe_id,
+                operation_type="EXCEL_IMPORT_UPDATE",
+                username=session.get("username"),
+                user_role=session.get("role"),
+                session_id=session.get("session_id"),
+                workstation_name=(
+                    request.headers.get("X-Workstation-Name")
+                    or request.headers.get("X-Client-Workstation")
+                    or request.host
+                ),
+                client_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+                user_agent=request.headers.get("User-Agent", ""),
+                ttl_minutes=30,
+                notes="Existing recipe Excel import lock",
+            )
+            if not lock_result.get("acquired"):
+                flash("Recipe is currently locked by another user or operation.", "warning")
+                return redirect("/recipes/import-export")
+            import_lock_id = (lock_result.get("lock") or {}).get("id")
+
         try:
             success, recipe_id, preview = RecipeExcelImportExportManager.import_pending_file(
                 token=token,
                 imported_by=session.get("username"),
                 user_role=session.get("role"),
-                reason=reason or "Recipe imported from Excel template",
+                reason=reason,
                 request_obj=request,
                 machine_id=machine_id,
                 stage_id=stage_id,
@@ -550,8 +608,16 @@ def register_recipe_routes(app):
                 mark_missing_parameters_not_used=mark_missing_parameters_not_used
             )
         except Exception as exc:
-            flash(f"Recipe import failed: {exc}", "error")
+            flash(
+                f"Recipe import failed safely ({type(exc).__name__}). No partial update was committed.",
+                "error",
+            )
             return redirect("/recipes/import-export")
+        finally:
+            if import_lock_id:
+                RecipeResourceLockManager.release_lock(
+                    import_lock_id, reason="EXCEL_IMPORT_COMPLETED"
+                )
 
         if not success:
             flash("Recipe import failed validation. Correct the Excel file and upload again.", "error")
@@ -659,6 +725,9 @@ def register_recipe_routes(app):
 
         if not session.get("logged_in"):
             return redirect("/login")
+
+        if not ALLOW_LEGACY_RECIPE_WRITES:
+            return _block_legacy_recipe_write(recipe_code)
 
         if not role_can(
             session.get("role"),
@@ -780,6 +849,9 @@ def register_recipe_routes(app):
         if not session.get("logged_in"):
             return redirect("/login")
 
+        if request.method == "POST" and not ALLOW_LEGACY_RECIPE_WRITES:
+            return _block_legacy_recipe_write(recipe_code)
+
         if not role_can(
             session.get("role"),
             "recipe_edit"
@@ -894,6 +966,9 @@ def register_recipe_routes(app):
 
         if not session.get("logged_in"):
             return redirect("/login")
+
+        if request.method == "POST" and not ALLOW_LEGACY_RECIPE_WRITES:
+            return _block_legacy_recipe_write(recipe_code)
 
         if not _engineering_config_allowed():
             return redirect("/recipes")
@@ -1109,7 +1184,6 @@ def register_recipe_routes(app):
         if request.method == "POST":
 
             if not can_edit_phase_control:
-
                 flash(
                     (
                         "Historical released recipe phase controls are "
@@ -1117,141 +1191,112 @@ def register_recipe_routes(app):
                     ),
                     "error"
                 )
+                return redirect(f"/recipes/{recipe_id}/phase-control")
 
-                return redirect(
-                    f"/recipes/{recipe_id}/phase-control"
-                )
+            change_reason = (request.form.get("change_reason") or "").strip()
+            if not change_reason:
+                flash("Enter a reason before saving phase-control changes.", "error")
+                return redirect(f"/recipes/{recipe_id}/phase-control")
 
-            phase_rows = (
-
-                RecipePhaseControlManager
-                .get_recipe_phase_control(
-
-                    recipe_id
-
-                )
-
+            from database.recipe_resource_lock_manager import (
+                RecipeResourceLockManager,
             )
 
-            empty_phase = next(
+            active_operation = RecipeResourceLockManager.get_active_lock(
+                "RECIPE_OPERATION", recipe_id
+            )
+            if active_operation:
+                flash(
+                    "Phase edit is blocked while a recipe/PLC operation is active.",
+                    "warning"
+                )
+                return redirect(f"/recipes/{recipe_id}/phase-control")
 
-                (
-                    phase
-                    for phase in phase_controls
-
-                    if (
-                        phase[
-                            "phase_control_name"
-                        ]
-                        or
-                        ""
-                    ).strip().upper() == "EMPTY PHASE"
+            lock_result = RecipeResourceLockManager.acquire_lock(
+                resource_type="RECIPE_EDIT",
+                resource_id=recipe_id,
+                operation_type="PHASE_CONTROL_EDIT",
+                username=session.get("username"),
+                user_role=session.get("role"),
+                session_id=session.get("session_id"),
+                workstation_name=(
+                    request.headers.get("X-Workstation-Name")
+                    or request.headers.get("X-Forwarded-Host")
+                    or request.host
                 ),
-
-                None
-
+                client_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+                user_agent=request.headers.get("User-Agent", ""),
+                ttl_minutes=15,
+                notes="Atomic phase-control sequence save",
             )
-
-            empty_phase_id = None
-
-            if empty_phase:
-
-                empty_phase_id = empty_phase["id"]
-
-            for row in phase_rows:
-
-                phase_control_id = request.form.get(
-
-                    f"phase_control_id_{row['id']}"
-
+            if not lock_result.get("acquired"):
+                flash(
+                    "Recipe phase control is currently being edited by another session.",
+                    "warning"
                 )
+                return redirect(f"/recipes/{recipe_id}/phase-control")
 
-                if (
-
-                    not phase_control_id
-
-                    and
-
-                    empty_phase_id
-
-                ):
-
-                    phase_control_id = (
-                        empty_phase_id
+            lock_id = (lock_result.get("lock") or {}).get("id")
+            try:
+                phase_rows_for_save = (
+                    RecipePhaseControlManager.get_recipe_phase_control(recipe_id)
+                )
+                empty_phase = next(
+                    (
+                        phase for phase in phase_controls
+                        if (phase.get("phase_control_name") or "").strip().upper()
+                        == "EMPTY PHASE"
+                    ),
+                    None,
+                )
+                selections = {}
+                is_second_stage = (
+                    str(recipe.get("stage_type") or "")
+                    .strip().upper().replace(" ", "_")
+                    in {"SECOND_STAGE", "SECONDSTAGE", "SS"}
+                )
+                for row in phase_rows_for_save:
+                    phase_control_id = request.form.get(
+                        f"phase_control_id_{row['id']}"
                     )
+                    if not phase_control_id and empty_phase:
+                        phase_control_id = empty_phase.get("id")
+                    selections[str(row["id"])] = {
+                        "phase_control_id": phase_control_id,
+                    }
+                    if not is_second_stage:
+                        selections[str(row["id"])]["stop_option"] = (
+                            request.form.get(f"stop_option_{row['id']}") or "No"
+                        )
+                        selections[str(row["id"])]["position_option"] = (
+                            request.form.get(f"position_option_{row['id']}") or "No"
+                        )
 
-                row_group_code = (
-                    row.get("phase_group_code")
-                    or "MAIN"
+                result = RecipePhaseControlManager.save_phase_sequence(
+                    recipe_id=recipe_id,
+                    selections=selections,
+                    changed_by=session.get("username"),
+                    user_role=session.get("role"),
+                    change_reason=change_reason,
+                    client_ip=request.headers.get(
+                        "X-Forwarded-For", request.remote_addr
+                    ),
+                    workstation_name=(
+                        request.headers.get("X-Workstation-Name")
+                        or request.headers.get("X-Forwarded-Host")
+                        or request.host
+                    ),
                 )
-
-                allowed_phases = phase_controls_by_group.get(
-                    row_group_code,
-                    phase_controls
-                )
-
-                allowed_phase_ids = {
-                    str(phase["id"])
-                    for phase in allowed_phases
-                }
-
-                if (
-                    phase_control_id
-                    and
-                    str(phase_control_id) not in allowed_phase_ids
-                ):
-
-                    flash(
-                        (
-                            "Selected phase is not allowed for this "
-                            f"{row.get('phase_group_name') or 'phase group'}."
-                        ),
-                        "error"
-                    )
-
-                    return redirect(
-                        f"/recipes/{recipe_id}/phase-control"
-                    )
-
-                stop_option = request.form.get(
-
-                    f"stop_option_{row['id']}"
-
-                )
-
-                position_option = request.form.get(
-
-                    f"position_option_{row['id']}"
-
-                )
-
-                RecipePhaseControlManager.update_phase_row(
-
-                    phase_row_id=row["id"],
-
-                    phase_control_id=phase_control_id,
-
-                    stop_option=stop_option,
-
-                    position_option=position_option,
-
-                    sequence_no=row["line_no"]
-
+            finally:
+                RecipeResourceLockManager.release_lock(
+                    lock_id, reason="PHASE_CONTROL_EDIT_COMPLETED"
                 )
 
             flash(
-
-                "Phase Control Saved",
-
-                "success"
-
+                result.get("message", "Phase-control save completed."),
+                "success" if result.get("success") else "error"
             )
-
-            return redirect(
-
-                f"/recipes/{recipe_id}/phase-control"
-
-            )
+            return redirect(f"/recipes/{recipe_id}/phase-control")
 
         phase_rows = (
 

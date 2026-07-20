@@ -72,13 +72,7 @@ class PLCBufferOperationManager:
 
     CAP_STRIP_PHASE_STRING_PURPOSE = "CAP_STRIP_PHASE_CONTROL_STRING"
 
-    CAP_STRIP_PHASE_STOP_PURPOSE = "CAP_STRIP_PHASE_STOP_STRING"
-
     BT_PHASE_STRING_PURPOSE = "BT_PHASE_CONTROL_STRING"
-
-    BT_PHASE_STOP_PURPOSE = "BT_PHASE_STOP_STRING"
-
-    BT_PHASE_POSITION_PURPOSE = "BT_PHASE_POSITION_STRING"
 
     MANUAL_PURPOSE = "MACHINE_IN_MANUAL"
 
@@ -106,19 +100,12 @@ class PLCBufferOperationManager:
         PHASE_STRING_PURPOSE,
         PHASE_STOP_PURPOSE,
         PHASE_POSITION_PURPOSE,
-        CAP_STRIP_PHASE_STRING_PURPOSE,
-        CAP_STRIP_PHASE_STOP_PURPOSE,
-        BT_PHASE_STRING_PURPOSE,
-        BT_PHASE_STOP_PURPOSE,
-        BT_PHASE_POSITION_PURPOSE
     ]
 
+    # Final P15 Second Stage recipe contract is selection-only.
     SECOND_STAGE_PHASE_PURPOSES = [
         CAP_STRIP_PHASE_STRING_PURPOSE,
-        CAP_STRIP_PHASE_STOP_PURPOSE,
         BT_PHASE_STRING_PURPOSE,
-        BT_PHASE_STOP_PURPOSE,
-        BT_PHASE_POSITION_PURPOSE
     ]
 
     DOWNLOAD_HANDSHAKE_TIMEOUT_SECONDS = 20
@@ -3724,208 +3711,71 @@ class PLCBufferOperationManager:
         result,
         write_percent,
         verify_percent,
-        phase_tag,
-        stop_tag,
-        position_tag
+        bt_phase_tag,
     ):
-        rows = RecipePhaseControlManager.get_recipe_phase_control(
-            recipe["id"]
-        )
+        """Write P15 Second Stage recipe phase selections only.
 
+        SHAPING_SIDE and all stop/position strings are fixed PLC behavior and
+        are deliberately excluded from the CRS recipe payload.
+        """
+        rows = RecipePhaseControlManager.get_recipe_phase_control(recipe["id"])
         grouped = PLCBufferOperationManager.split_phase_rows_by_group(rows)
-
-        if not any(
-            code in grouped
-            for code in (
-                "CAP_STRIP_SIDE",
-                "BT_SIDE"
-            )
-        ):
-            return None
+        cap_rows = grouped.get("CAP_STRIP_SIDE", [])
+        bt_rows = grouped.get("BT_SIDE", [])
 
         cap_phase_tag = PLCBufferOperationManager.get_tag_for_purpose(
-            recipe,
-            PLCBufferOperationManager.CAP_STRIP_PHASE_STRING_PURPOSE
+            recipe, PLCBufferOperationManager.CAP_STRIP_PHASE_STRING_PURPOSE
         )
         if not PLCBufferOperationManager.valid_string_array_tag(cap_phase_tag):
             cap_phase_tag = PLCBufferOperationManager.find_stage_string_array_tag_by_name(
-                recipe,
-                "CRS_Phase_Cntrl_String_CapSd"
+                recipe, "CRS_Phase_Cntrl_String_CapSd"
             )
         if not cap_phase_tag:
             cap_phase_tag = PLCBufferOperationManager.probe_string_array_tag(
-                plc_conn,
-                "CRS_Phase_Cntrl_String_CapSd",
-                2
+                plc_conn, "CRS_Phase_Cntrl_String_CapSd", 2
             )
-
-        cap_stop_tag = PLCBufferOperationManager.get_tag_for_purpose(
-            recipe,
-            PLCBufferOperationManager.CAP_STRIP_PHASE_STOP_PURPOSE
-        )
-        if not PLCBufferOperationManager.valid_string_array_tag(cap_stop_tag):
-            cap_stop_tag = PLCBufferOperationManager.find_stage_string_array_tag_by_name(
-                recipe,
-                "CRS_Phase_Cntrl_Stop_String_CapSd"
-            )
-        if not cap_stop_tag:
-            cap_stop_tag = PLCBufferOperationManager.probe_string_array_tag(
-                plc_conn,
-                "CRS_Phase_Cntrl_Stop_String_CapSd",
-                2
-            )
-
-        cap_position_tag = (
-            PLCBufferOperationManager.find_stage_string_array_tag_by_name(
-                recipe,
-                "CRS_Phase_Cntrl_Pos_String_CapSd"
-            )
-            or
-            PLCBufferOperationManager.find_stage_string_array_tag_by_name(
-                recipe,
-                "CRS_Phase_Cntrl_Position_String_CapSd"
-            )
-        )
-        if not cap_position_tag:
-            cap_position_tag = (
-                PLCBufferOperationManager.probe_string_array_tag(
-                    plc_conn,
-                    "CRS_Phase_Cntrl_Pos_String_CapSd",
-                    2
-                )
-                or
-                PLCBufferOperationManager.probe_string_array_tag(
-                    plc_conn,
-                    "CRS_Phase_Cntrl_Position_String_CapSd",
-                    2
-                )
-            )
-
         if not cap_phase_tag:
             raise Exception(
-                "Cap strip phase names tag must be configured as STRING array."
+                "Cap strip phase names tag must be configured as a STRING array."
             )
-
-        if not cap_stop_tag:
-            raise Exception(
-                "Cap strip stop options tag must be configured as STRING array."
-            )
-
-        main_rows = grouped.get("BT_SIDE", [])
-
-        cap_rows = grouped.get(
-            "CAP_STRIP_SIDE",
-            []
-        )
 
         written_elements = 0
-
-        cap_phase_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
-            cap_rows,
-            PLCBufferOperationManager.get_array_size_from_tag(cap_phase_tag)
+        cap_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
+            cap_rows, PLCBufferOperationManager.get_array_size_from_tag(cap_phase_tag)
         )
-
         PLCBufferOperationManager.write_phase_split_tag(
-            plc_conn=plc_conn,
-            tag=cap_phase_tag,
-            values=cap_phase_payload["phase_names"],
-            result=result,
-            label="cap strip phase names",
-            write_percent=write_percent,
+            plc_conn=plc_conn, tag=cap_phase_tag,
+            values=cap_payload["phase_names"], result=result,
+            label="cap strip phase names", write_percent=write_percent,
             verify_percent=verify_percent
         )
-        written_elements += cap_phase_payload["payload_size"]
+        written_elements += cap_payload["payload_size"]
 
-        if cap_stop_tag:
-            cap_stop_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
-                cap_rows,
-                PLCBufferOperationManager.get_array_size_from_tag(cap_stop_tag)
-            )
-            PLCBufferOperationManager.write_phase_split_tag(
-                plc_conn=plc_conn,
-                tag=cap_stop_tag,
-                values=cap_stop_payload["stop_values"],
-                result=result,
-                label="cap strip stop options",
-                write_percent=write_percent,
-                verify_percent=verify_percent
-            )
-
-        if cap_position_tag:
-            cap_position_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
-                cap_rows,
-                PLCBufferOperationManager.get_array_size_from_tag(cap_position_tag)
-            )
-            PLCBufferOperationManager.write_phase_split_tag(
-                plc_conn=plc_conn,
-                tag=cap_position_tag,
-                values=cap_position_payload["position_values"],
-                result=result,
-                label="cap strip position options",
-                write_percent=write_percent,
-                verify_percent=verify_percent
-            )
-
-        main_phase_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
-            main_rows,
-            PLCBufferOperationManager.get_array_size_from_tag(phase_tag)
+        bt_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
+            bt_rows, PLCBufferOperationManager.get_array_size_from_tag(bt_phase_tag)
         )
-
         PLCBufferOperationManager.write_phase_split_tag(
-            plc_conn=plc_conn,
-            tag=phase_tag,
-            values=main_phase_payload["phase_names"],
-            result=result,
-            label="main phase names",
-            write_percent=write_percent,
+            plc_conn=plc_conn, tag=bt_phase_tag,
+            values=bt_payload["phase_names"], result=result,
+            label="B&T phase names", write_percent=write_percent,
             verify_percent=verify_percent
         )
-        written_elements += main_phase_payload["payload_size"]
-
-        main_stop_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
-            main_rows,
-            PLCBufferOperationManager.get_array_size_from_tag(stop_tag)
-        )
-
-        PLCBufferOperationManager.write_phase_split_tag(
-            plc_conn=plc_conn,
-            tag=stop_tag,
-            values=main_stop_payload["stop_values"],
-            result=result,
-            label="main stop options",
-            write_percent=write_percent,
-            verify_percent=verify_percent
-        )
-
-        main_position_payload = PLCBufferOperationManager.build_phase_control_payload_from_rows(
-            main_rows,
-            PLCBufferOperationManager.get_array_size_from_tag(position_tag)
-        )
-
-        PLCBufferOperationManager.write_phase_split_tag(
-            plc_conn=plc_conn,
-            tag=position_tag,
-            values=main_position_payload["position_values"],
-            result=result,
-            label="main position options",
-            write_percent=write_percent,
-            verify_percent=verify_percent
-        )
+        written_elements += bt_payload["payload_size"]
 
         PLCBufferOperationManager.add_step(
             result,
-            "Phase control arrays verified",
+            "Phase control selections verified",
             "OK",
-            "Second-stage cap strip and B&T phase-control arrays written and verified.",
+            "Second-stage CAP_STRIP_SIDE and BT_SIDE phase selections written and verified; "
+            "SHAPING_SIDE and stop/position remain PLC-fixed non-recipe data.",
             verify_percent
         )
-
         result["metrics"]["phase_control_elements"] = written_elements
-
         return {
             "rows": rows,
             "grouped": True,
-            "payload_size": written_elements
+            "payload_size": written_elements,
+            "recipe_phase_fields": ["phase_group_code", "line_no", "phase_control_id"],
         }
 
     @staticmethod
@@ -3969,37 +3819,36 @@ class PLCBufferOperationManager:
     ):
 
         if PLCBufferOperationManager.is_second_stage_recipe(recipe):
-            phase_purpose = PLCBufferOperationManager.BT_PHASE_STRING_PURPOSE
-            stop_purpose = PLCBufferOperationManager.BT_PHASE_STOP_PURPOSE
-            position_purpose = PLCBufferOperationManager.BT_PHASE_POSITION_PURPOSE
-        else:
-            phase_purpose = PLCBufferOperationManager.PHASE_STRING_PURPOSE
-            stop_purpose = PLCBufferOperationManager.PHASE_STOP_PURPOSE
-            position_purpose = PLCBufferOperationManager.PHASE_POSITION_PURPOSE
+            bt_phase_tag = PLCBufferOperationManager.require_phase_string_array_tag(
+                recipe,
+                PLCBufferOperationManager.BT_PHASE_STRING_PURPOSE,
+                "B&T phase control names",
+                ["CRS_Phase_Cntrl_String", "CRS_Phase_Control_String"]
+            )
+            return PLCBufferOperationManager.write_split_second_stage_phase_arrays(
+                plc_conn=plc_conn,
+                recipe=recipe,
+                result=result,
+                write_percent=write_percent,
+                verify_percent=verify_percent,
+                bt_phase_tag=bt_phase_tag,
+            )
 
         phase_tag = PLCBufferOperationManager.require_phase_string_array_tag(
             recipe,
-            phase_purpose,
+            PLCBufferOperationManager.PHASE_STRING_PURPOSE,
             "Phase control names",
-            [
-                "CRS_Phase_Cntrl_String",
-                "CRS_Phase_Control_String"
-            ]
+            ["CRS_Phase_Cntrl_String", "CRS_Phase_Control_String"]
         )
-
         stop_tag = PLCBufferOperationManager.require_phase_string_array_tag(
             recipe,
-            stop_purpose,
+            PLCBufferOperationManager.PHASE_STOP_PURPOSE,
             "Phase control stop",
-            [
-                "CRS_Phase_Cntrl_Stop_String",
-                "CRS_Phase_Control_Stop_String"
-            ]
+            ["CRS_Phase_Cntrl_Stop_String", "CRS_Phase_Control_Stop_String"]
         )
-
         position_tag = PLCBufferOperationManager.require_phase_string_array_tag(
             recipe,
-            position_purpose,
+            PLCBufferOperationManager.PHASE_POSITION_PURPOSE,
             "Phase control position",
             [
                 "CRS_Phase_Cntrl_Pos_String",
@@ -4007,22 +3856,6 @@ class PLCBufferOperationManager:
                 "CRS_Phase_Control_Position_String"
             ]
         )
-
-        split_payload = (
-            PLCBufferOperationManager.write_split_second_stage_phase_arrays(
-                plc_conn=plc_conn,
-                recipe=recipe,
-                result=result,
-                write_percent=write_percent,
-                verify_percent=verify_percent,
-                phase_tag=phase_tag,
-                stop_tag=stop_tag,
-                position_tag=position_tag
-            )
-        )
-
-        if split_payload:
-            return split_payload
 
         phase_size = PLCBufferOperationManager.get_phase_payload_size(
             [

@@ -1,6 +1,7 @@
 from database.database import (
     get_connection
 )
+from database.schema_guard import require_table
 
 
 class RecipeParameterAuditManager:
@@ -29,81 +30,28 @@ class RecipeParameterAuditManager:
 
     @staticmethod
     def ensure_schema(cursor=None):
-
-        own_connection = False
-
-        if cursor is None:
-
-            conn = get_connection()
-
-            cursor = conn.cursor()
-
-            own_connection = True
-
-        else:
-
-            conn = None
-
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS
-            recipe_parameter_audit
-            (
-
-                id INTEGER
-                PRIMARY KEY AUTOINCREMENT,
-
-                recipe_id INTEGER
-                NOT NULL,
-
-                recipe_parameter_value_id INTEGER
-                NOT NULL,
-
-                parameter_definition_id INTEGER
-                NOT NULL,
-
-                old_value REAL,
-
-                new_value REAL,
-
-                changed_by TEXT,
-
-                changed_at TIMESTAMP
-                DEFAULT CURRENT_TIMESTAMP
-
-            )
-            """
-        )
-
-        cursor.execute(
-            "PRAGMA table_info(recipe_parameter_audit)"
-        )
-
-        existing_columns = {
-            row["name"]
-            for row in cursor.fetchall()
+        required = {
+            "recipe_id", "recipe_parameter_value_id",
+            "parameter_definition_id", "old_value", "new_value",
+            "changed_by", "recipe_code", "recipe_version",
+            "parameter_name", "tag_index", "change_source",
+            "change_reason", "user_role", "client_ip",
+            "workstation_name", "correlation_id",
         }
-
-        for column_name, column_type in (
-            RecipeParameterAuditManager
-            .OPTIONAL_COLUMNS
-            .items()
-        ):
-
-            if column_name not in existing_columns:
-
-                cursor.execute(
-                    f"""
-                    ALTER TABLE recipe_parameter_audit
-                    ADD COLUMN {column_name} {column_type}
-                    """
-                )
-
-        if own_connection:
-
-            conn.commit()
-
-            conn.close()
+        if cursor is None:
+            return require_table("recipe_parameter_audit", required)
+        exists = cursor.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='recipe_parameter_audit'"
+        ).fetchone()
+        columns = {
+            row[1] for row in cursor.execute("PRAGMA table_info(recipe_parameter_audit)")
+        } if exists else set()
+        missing = sorted(required - columns)
+        if missing:
+            raise RuntimeError(
+                "recipe_parameter_audit schema is not ready: " + ", ".join(missing)
+            )
+        return True
 
     @staticmethod
     def ensure_table(cursor=None):
@@ -112,126 +60,50 @@ class RecipeParameterAuditManager:
 
     @staticmethod
     def log_change(
-
         recipe_id,
-
         recipe_parameter_value_id,
-
         parameter_definition_id,
-
         old_value,
-
         new_value,
-
         changed_by,
-
         recipe_code=None,
-
         recipe_version=None,
-
         parameter_name=None,
-
         tag_index=None,
-
         change_source="DATABASE",
-
         change_reason=None,
-
         user_role=None,
-
         client_ip=None,
-
-        workstation_name=None
-
+        workstation_name=None,
+        correlation_id=None,
+        _connection=None,
     ):
-
-        conn = get_connection()
-
+        owns_connection = _connection is None
+        conn = _connection or get_connection()
         cursor = conn.cursor()
-
-        RecipeParameterAuditManager.ensure_schema(
-            cursor
-        )
-
+        RecipeParameterAuditManager.ensure_schema(cursor)
         cursor.execute(
             """
-            INSERT INTO
-            recipe_parameter_audit
+            INSERT INTO recipe_parameter_audit
             (
-
-                recipe_id,
-
-                recipe_parameter_value_id,
-
-                parameter_definition_id,
-
-                old_value,
-
-                new_value,
-
-                changed_by,
-
-                recipe_code,
-
-                recipe_version,
-
-                parameter_name,
-
-                tag_index,
-
-                change_source,
-
-                change_reason,
-
-                user_role,
-
-                client_ip,
-
-                workstation_name
-
+                recipe_id, recipe_parameter_value_id, parameter_definition_id,
+                old_value, new_value, changed_by, recipe_code, recipe_version,
+                parameter_name, tag_index, change_source, change_reason, user_role,
+                client_ip, workstation_name, correlation_id
             )
-            VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                recipe_id,
-
-                recipe_parameter_value_id,
-
-                parameter_definition_id,
-
-                old_value,
-
-                new_value,
-
-                changed_by,
-
-                recipe_code,
-
-                recipe_version,
-
-                parameter_name,
-
-                tag_index,
-
-                change_source,
-
-                change_reason,
-
-                user_role,
-
-                client_ip,
-
-                workstation_name
-            )
+                recipe_id, recipe_parameter_value_id, parameter_definition_id,
+                old_value, new_value, changed_by, recipe_code, recipe_version,
+                parameter_name, tag_index, change_source, change_reason, user_role,
+                client_ip, workstation_name, correlation_id,
+            ),
         )
-
-        conn.commit()
-
         audit_id = cursor.lastrowid
-
-        conn.close()
-
+        if owns_connection:
+            conn.commit()
+            conn.close()
         return audit_id
 
     @staticmethod

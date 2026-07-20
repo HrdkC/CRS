@@ -1,134 +1,194 @@
 # database/recipe_manager.py
 
-from database.database import get_connection
+import uuid
+
+from config.settings import ALLOW_LEGACY_RECIPE_WRITES
+from database.database import get_connection, transaction
 from database.audit_manager import AuditManager
 
 
 class RecipeManager:
 
     @staticmethod
+    def _require_legacy_write_enabled(operation):
+        if not ALLOW_LEGACY_RECIPE_WRITES:
+            raise RuntimeError(
+                f"Legacy recipe mutation blocked: {operation}. "
+                "Use the canonical recipe-ID workflow."
+            )
+
+
+    @staticmethod
     def create_recipe(
-
         machine_id,
-
         stage_id,
-
         recipe_code,
-
         recipe_name,
-
         created_by
-
     ):
+        """Create the recipe, its values, phase rows, status history and audit atomically."""
+        from database.phase_control_default_manager import PhaseControlDefaultManager
 
-        from database.recipe_parameter_value_manager import (
-            RecipeParameterValueManager
-        )
-        
-        from database.recipe_phase_control_manager import (
-            RecipePhaseControlManager
-        )
+        recipe_code = (recipe_code or "").strip().upper()
+        recipe_name = (recipe_name or "").strip()
+        if not recipe_code:
+            raise ValueError("Recipe code is required.")
+        if not recipe_name:
+            raise ValueError("Recipe name is required.")
 
-        from database.phase_control_default_manager import (
-            PhaseControlDefaultManager
-        )
+        # Phase-master seeding is a controlled configuration action and must
+        # finish before the business-data transaction begins.
+        stage_conn = get_connection()
+        try:
+            stage = stage_conn.execute(
+                """
+                SELECT s.stage_type, m.machine_code
+                FROM machine_stages s
+                JOIN tbm_machines m ON m.id = s.machine_id
+                WHERE s.id=? AND s.machine_id=?
+                """,
+                (int(stage_id), int(machine_id)),
+            ).fetchone()
+        finally:
+            stage_conn.close()
+        if not stage:
+            raise ValueError("Machine/stage not found.")
 
-        conn = get_connection()
+        stage_type = stage["stage_type"]
+        PhaseControlDefaultManager.initialize_for_stage(stage_id, stage_type)
+        correlation_id = str(uuid.uuid4())
 
-        cursor = conn.cursor()
+        with transaction(immediate=True) as conn:
+            cursor = conn.cursor()
+            duplicate = cursor.execute(
+                """
+                SELECT id FROM recipes
+                WHERE machine_id=? AND stage_id=? AND UPPER(recipe_code)=?
+                LIMIT 1
+                """,
+                (int(machine_id), int(stage_id), recipe_code),
+            ).fetchone()
+            if duplicate:
+                raise ValueError("Recipe code already exists for this machine/stage.")
 
-        cursor.execute(
-            """
-            SELECT COUNT(*) AS total
-            FROM parameter_definitions
-            WHERE machine_id = ? AND stage_id = ? AND COALESCE(used, 1) = 1
-            """,
-            (machine_id, stage_id)
-        )
-        parameter_count = cursor.fetchone()["total"]
-        if parameter_count <= 0:
-            conn.close()
-            raise ValueError(
-                "Parameter master is not configured for this machine/stage. "
-                "Build/import parameter definitions before creating recipe."
+            parameter_count = cursor.execute(
+                """
+                SELECT COUNT(*)
+                FROM parameter_definitions
+                WHERE machine_id=? AND stage_id=? AND COALESCE(used, 1)=1
+                """,
+                (int(machine_id), int(stage_id)),
+            ).fetchone()[0]
+            if int(parameter_count or 0) <= 0:
+                raise ValueError(
+                    "Parameter master is not configured for this machine/stage. "
+                    "Build/import parameter definitions before creating recipe."
+                )
+
+            cursor.execute(
+                """
+                INSERT INTO recipes
+                (machine_id, stage_id, recipe_code, recipe_name, created_by)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (machine_id, stage_id, recipe_code, recipe_name, created_by),
+            )
+            recipe_id = int(cursor.lastrowid)
+
+            cursor.execute(
+                """
+                INSERT INTO recipe_parameter_values
+                (recipe_id, parameter_definition_id, parameter_value, is_modified)
+                SELECT ?, id, COALESCE(default_value, 0), 0
+                FROM parameter_definitions
+                WHERE machine_id=? AND stage_id=? AND COALESCE(used, 1)=1
+                ORDER BY tag_index
+                """,
+                (recipe_id, machine_id, stage_id),
             )
 
-        stage = cursor.execute(
-            """
-            SELECT stage_type
-            FROM machine_stages
-            WHERE id = ?
-            """,
-            (
-                stage_id,
+            stage_key = str(stage_type or "").strip().upper().replace(" ", "_")
+            is_second_stage = stage_key in {"SECOND_STAGE", "SECONDSTAGE", "SS"}
+            group_codes = ("CAP_STRIP_SIDE", "BT_SIDE") if is_second_stage else ("MAIN",)
+            slots = 6 if is_second_stage else 12
+
+            for group_code in group_codes:
+                group = cursor.execute(
+                    """
+                    SELECT phase_group_name
+                    FROM phase_control_group_master
+                    WHERE machine_stage_id=?
+                      AND UPPER(COALESCE(phase_group_code, 'MAIN'))=?
+                      AND COALESCE(active, 1)=1
+                    LIMIT 1
+                    """,
+                    (stage_id, group_code),
+                ).fetchone()
+                group_name = (
+                    group["phase_group_name"]
+                    if group
+                    else group_code.replace("_", " ").title()
+                )
+                empty_phase = cursor.execute(
+                    """
+                    SELECT id FROM phase_control_master
+                    WHERE machine_stage_id=?
+                      AND UPPER(COALESCE(phase_group_code, 'MAIN'))=?
+                      AND UPPER(COALESCE(phase_control_key, phase_control_name))='EMPTY PHASE'
+                      AND COALESCE(active, 1)=1
+                    LIMIT 1
+                    """,
+                    (stage_id, group_code),
+                ).fetchone()
+                if not empty_phase:
+                    raise ValueError(
+                        f"Empty Phase master is missing for {stage_type}/{group_code}."
+                    )
+                for line_no in range(1, slots + 1):
+                    cursor.execute(
+                        """
+                        INSERT INTO recipe_phase_control
+                        (recipe_id, phase_group_code, phase_group_name, line_no,
+                         phase_control_id, stop_option, position_option, sequence_no, used)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+                        """,
+                        (
+                            recipe_id,
+                            group_code,
+                            group_name,
+                            line_no,
+                            int(empty_phase["id"]),
+                            None if is_second_stage else "No",
+                            None if is_second_stage else "No",
+                            line_no,
+                        ),
+                    )
+
+            cursor.execute(
+                """
+                INSERT INTO recipe_status_history
+                (recipe_id, recipe_code, old_status, new_status, changed_by, remarks)
+                VALUES (?, ?, '', 'DRAFT', ?, ?)
+                """,
+                (recipe_id, recipe_code, created_by, "Canonical recipe created"),
             )
-        ).fetchone()
-        stage_type = stage["stage_type"] if stage else ""
-
-        cursor.execute(
-            """
-            INSERT INTO recipes
-            (
-
-                machine_id,
-
-                stage_id,
-
-                recipe_code,
-
-                recipe_name,
-
-                created_by
-
+            user_row = cursor.execute(
+                "SELECT role FROM users WHERE LOWER(username)=LOWER(?) LIMIT 1",
+                (created_by,),
+            ).fetchone()
+            AuditManager.log_event(
+                username=created_by,
+                role=(user_row["role"] if user_row else "UNKNOWN"),
+                action="RECIPE_CREATED",
+                change_source="CANONICAL_RECIPE_CREATE",
+                recipe_code=recipe_code,
+                recipe_version=1,
+                record_id=recipe_id,
+                new_value=f"{stage['machine_code']}/{stage_type}/{recipe_name}",
+                reason="Canonical recipe created from active machine/stage templates",
+                correlation_id=correlation_id,
+                _connection=conn,
             )
-            VALUES
-            (?, ?, ?, ?, ?)
-            """,
-            (
-                machine_id,
-
-                stage_id,
-
-                recipe_code.upper(),
-
-                recipe_name,
-
-                created_by
-            )
-        )
-
-        recipe_id = cursor.lastrowid
-
-        conn.commit()
-
-        conn.close()
-
-        RecipeParameterValueManager.create_values_from_template(
-
-            recipe_id=recipe_id,
-
-            machine_id=machine_id,
-
-            stage_id=stage_id
-
-        )
-
-        PhaseControlDefaultManager.initialize_for_stage(
-            machine_stage_id=stage_id,
-            stage_type=stage_type
-        )
-        
-        RecipePhaseControlManager.create_default_phase_rows(
-
-            recipe_id=recipe_id,
-
-            recipe_code=recipe_code.upper(),
-
-            machine_id=machine_id,
-
-            stage_id=stage_id
-
-        )
 
         return recipe_id
 
@@ -393,347 +453,172 @@ class RecipeManager:
 
     @staticmethod
     def copy_recipe(
-
         source_recipe_id,
-
         new_recipe_code,
-
         new_recipe_name,
-
         username
-
     ):
+        """Copy a canonical recipe as one atomic transaction.
 
-        from database.recipe_status_history_manager import (
-            RecipeStatusHistoryManager
-        )
+        P15 Second Stage copies deliberately retain only CAP_STRIP_SIDE and
+        BT_SIDE phase selections. Stop/position are fixed non-recipe data and
+        are stored as NULL in the new recipe.
+        """
+        new_recipe_code = (new_recipe_code or "").strip().upper()
+        new_recipe_name = (new_recipe_name or "").strip()
+        if not new_recipe_code or not new_recipe_name:
+            return False, "Recipe code and name are required"
 
-        conn = get_connection()
+        correlation_id = str(uuid.uuid4())
+        try:
+            with transaction(immediate=True) as conn:
+                cursor = conn.cursor()
+                source_recipe = cursor.execute(
+                    """
+                    SELECT r.*, s.stage_type, m.machine_code
+                    FROM recipes r
+                    JOIN machine_stages s ON s.id = r.stage_id
+                    JOIN tbm_machines m ON m.id = r.machine_id
+                    WHERE r.id = ?
+                    """,
+                    (int(source_recipe_id),),
+                ).fetchone()
+                if not source_recipe:
+                    raise ValueError("Source Recipe Not Found")
 
-        cursor = conn.cursor()
+                duplicate = cursor.execute(
+                    """
+                    SELECT id FROM recipes
+                    WHERE machine_id=? AND stage_id=? AND UPPER(recipe_code)=?
+                    LIMIT 1
+                    """,
+                    (
+                        source_recipe["machine_id"],
+                        source_recipe["stage_id"],
+                        new_recipe_code,
+                    ),
+                ).fetchone()
+                if duplicate:
+                    raise ValueError("Recipe Code Already Exists for this machine/stage")
 
-        cursor.execute(
-            """
-            SELECT
+                cursor.execute(
+                    """
+                    INSERT INTO recipes
+                    (machine_id, stage_id, recipe_code, recipe_name, version, status, created_by)
+                    VALUES (?, ?, ?, ?, 1, 'DRAFT', ?)
+                    """,
+                    (
+                        source_recipe["machine_id"],
+                        source_recipe["stage_id"],
+                        new_recipe_code,
+                        new_recipe_name,
+                        username,
+                    ),
+                )
+                new_recipe_id = int(cursor.lastrowid)
 
-                r.*,
+                cursor.execute(
+                    """
+                    INSERT INTO recipe_parameter_values
+                    (recipe_id, parameter_definition_id, parameter_value, is_modified)
+                    SELECT ?, parameter_definition_id, parameter_value, 0
+                    FROM recipe_parameter_values
+                    WHERE recipe_id=?
+                    """,
+                    (new_recipe_id, int(source_recipe_id)),
+                )
 
-                CASE
-                    WHEN
-                        r.status = 'RELEASED'
+                phase_columns = {
+                    row[1]
+                    for row in cursor.execute("PRAGMA table_info(recipe_phase_control)")
+                }
+                has_group_columns = {
+                    "phase_group_code", "phase_group_name", "used"
+                }.issubset(phase_columns)
+                stage_key = str(source_recipe["stage_type"] or "").upper().replace(" ", "_")
+                is_second_stage = stage_key in {"SECOND_STAGE", "SECONDSTAGE", "SS"}
 
-                        AND r.version = (
-                            SELECT MAX(x.version)
-
-                            FROM recipes x
-
-                            WHERE
-                                x.machine_id = r.machine_id
-
-                                AND x.stage_id = r.stage_id
-
-                                AND UPPER(x.recipe_code) = UPPER(r.recipe_code)
-
-                                AND x.status = 'RELEASED'
+                if has_group_columns:
+                    group_filter = ""
+                    params = [new_recipe_id, int(source_recipe_id)]
+                    if is_second_stage:
+                        group_filter = (
+                            " AND UPPER(COALESCE(phase_group_code, '')) "
+                            "IN ('CAP_STRIP_SIDE', 'BT_SIDE')"
                         )
-
-                    THEN 1
-
-                    ELSE 0
-
-                END AS is_current_released,
-
-                CASE
-                    WHEN
-                        r.status = 'RELEASED'
-
-                        AND r.version = (
-                            SELECT MAX(x.version)
-
-                            FROM recipes x
-
-                            WHERE
-                                x.machine_id = r.machine_id
-
-                                AND x.stage_id = r.stage_id
-
-                                AND UPPER(x.recipe_code) = UPPER(r.recipe_code)
-
-                                AND x.status = 'RELEASED'
+                    cursor.execute(
+                        f"""
+                        INSERT INTO recipe_phase_control
+                        (recipe_id, phase_group_code, phase_group_name, line_no,
+                         phase_control_id, stop_option, position_option,
+                         sequence_no, used)
+                        SELECT ?, phase_group_code, phase_group_name, line_no,
+                               phase_control_id,
+                               {"NULL" if is_second_stage else "stop_option"},
+                               {"NULL" if is_second_stage else "position_option"},
+                               sequence_no, COALESCE(used, 1)
+                        FROM recipe_phase_control
+                        WHERE recipe_id=? {group_filter}
+                        ORDER BY phase_group_code, line_no
+                        """,
+                        params,
+                    )
+                else:
+                    if is_second_stage:
+                        raise ValueError(
+                            "Second Stage recipe copy requires migrated phase-group columns."
                         )
+                    cursor.execute(
+                        """
+                        INSERT INTO recipe_phase_control
+                        (recipe_id, line_no, phase_control_id, stop_option,
+                         position_option, sequence_no)
+                        SELECT ?, line_no, phase_control_id, stop_option,
+                               position_option, sequence_no
+                        FROM recipe_phase_control
+                        WHERE recipe_id=?
+                        ORDER BY line_no
+                        """,
+                        (new_recipe_id, int(source_recipe_id)),
+                    )
 
-                    THEN 'CURRENT_RELEASED'
-
-                    WHEN r.status = 'RELEASED'
-
-                    THEN 'HISTORY_RELEASED'
-
-                    WHEN
-                        r.status = 'DRAFT'
-
-                        AND EXISTS (
-                            SELECT 1
-
-                            FROM recipes x
-
-                            WHERE
-                                x.machine_id = r.machine_id
-
-                                AND x.stage_id = r.stage_id
-
-                                AND UPPER(x.recipe_code) = UPPER(r.recipe_code)
-
-                                AND x.version < r.version
-
-                                AND x.status = 'RELEASED'
-                        )
-
-                    THEN 'DRAFT_REVISION'
-
-                    ELSE r.status
-
-                END AS version_usage_status
-
-            FROM recipes r
-
-            WHERE id = ?
-            """,
-            (
-                source_recipe_id,
-            )
-        )
-
-        source_recipe = cursor.fetchone()
-
-        if not source_recipe:
-
-            conn.close()
-
-            return (
-
-                False,
-
-                "Source Recipe Not Found"
-
-            )
-
-        cursor.execute(
-            """
-            SELECT id
-
-            FROM recipes
-
-            WHERE UPPER(recipe_code) = ?
-            """,
-            (
-                new_recipe_code.upper(),
-            )
-        )
-
-        if cursor.fetchone():
-
-            conn.close()
-
-            return (
-
-                False,
-
-                "Recipe Code Already Exists"
-
-            )
-
-        cursor.execute(
-            """
-            INSERT INTO recipes
-            (
-
-                machine_id,
-
-                stage_id,
-
-                recipe_code,
-
-                recipe_name,
-
-                version,
-
-                status,
-
-                created_by
-
-            )
-            VALUES
-            (?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-
-                source_recipe["machine_id"],
-
-                source_recipe["stage_id"],
-
-                new_recipe_code,
-
-                new_recipe_name,
-
-                1,
-
-                "DRAFT",
-
-                username
-
-            )
-        )
-
-        new_recipe_id = (
-            cursor.lastrowid
-        )
-
-        cursor.execute(
-            """
-            SELECT *
-
-            FROM recipe_parameter_values
-
-            WHERE recipe_id = ?
-            """,
-            (
-                source_recipe_id,
-            )
-        )
-
-        parameter_rows = (
-            cursor.fetchall()
-        )
-
-        for row in parameter_rows:
-
-            cursor.execute(
-                """
-                INSERT INTO
-                recipe_parameter_values
-                (
-
-                    recipe_id,
-
-                    parameter_definition_id,
-
-                    parameter_value,
-
-                    is_modified
-
+                cursor.execute(
+                    """
+                    INSERT INTO recipe_status_history
+                    (recipe_id, recipe_code, old_status, new_status, changed_by, remarks)
+                    VALUES (?, ?, '', 'DRAFT', ?, ?)
+                    """,
+                    (
+                        new_recipe_id,
+                        new_recipe_code,
+                        username,
+                        f"Copied from {source_recipe['recipe_code']}",
+                    ),
                 )
-                VALUES
-                (?, ?, ?, ?)
-                """,
-                (
-
-                    new_recipe_id,
-
-                    row[
-                        "parameter_definition_id"
-                    ],
-
-                    row[
-                        "parameter_value"
-                    ],
-
-                    0
-
+                user_row = cursor.execute(
+                    "SELECT role FROM users WHERE LOWER(username)=LOWER(?) LIMIT 1",
+                    (username,),
+                ).fetchone()
+                AuditManager.log_event(
+                    username=username,
+                    role=(user_row["role"] if user_row else "UNKNOWN"),
+                    action="RECIPE_COPIED",
+                    change_source="CANONICAL_RECIPE_COPY",
+                    recipe_code=new_recipe_code,
+                    recipe_version=1,
+                    record_id=new_recipe_id,
+                    old_value=f"source_recipe_id={source_recipe_id}",
+                    new_value=(
+                        f"{source_recipe['machine_code']}/"
+                        f"{source_recipe['stage_type']}/{new_recipe_name}"
+                    ),
+                    reason=f"Copied from {source_recipe['recipe_code']}",
+                    correlation_id=correlation_id,
+                    _connection=conn,
                 )
-            )
-
-        cursor.execute(
-            """
-            SELECT *
-
-            FROM recipe_phase_control
-
-            WHERE recipe_id = ?
-            """,
-            (
-                source_recipe_id,
-            )
-        )
-
-        phase_rows = (
-            cursor.fetchall()
-        )
-
-        for row in phase_rows:
-
-            cursor.execute(
-                """
-                INSERT INTO
-                recipe_phase_control
-                (
-
-                    recipe_id,
-
-                    line_no,
-
-                    phase_control_id,
-
-                    stop_option,
-
-                    position_option,
-
-                    sequence_no
-
-                )
-                VALUES
-                (?, ?, ?, ?, ?, ?)
-                """,
-                (
-
-                    new_recipe_id,
-
-                    row["line_no"],
-
-                    row["phase_control_id"],
-
-                    row["stop_option"],
-
-                    row["position_option"],
-
-                    row["sequence_no"]
-
-                )
-            )
-
-        conn.commit()
-
-        conn.close()
-
-        RecipeStatusHistoryManager.add_history(
-
-            recipe_id=
-            new_recipe_id,
-
-            recipe_code=
-            new_recipe_code,
-
-            old_status=
-            "",
-
-            new_status=
-            "DRAFT",
-
-            changed_by=
-            username,
-
-            remarks=
-            f"Copied From "
-            f"{source_recipe['recipe_code']}"
-
-        )
-
-        return (
-
-            True,
-
-            new_recipe_id
-
-        )
+            return True, new_recipe_id
+        except ValueError as exc:
+            return False, str(exc)
 
     @staticmethod
     def add_parameter(
@@ -762,6 +647,8 @@ class RecipeManager:
         max_value
 
     ):
+
+        RecipeManager._require_legacy_write_enabled("add_parameter")
 
         conn = get_connection()
         cursor = conn.cursor()
@@ -930,6 +817,8 @@ class RecipeManager:
         stop_flag
 
     ):
+
+        RecipeManager._require_legacy_write_enabled("add_phase_control")
 
         conn = get_connection()
         cursor = conn.cursor()
@@ -1315,6 +1204,8 @@ class RecipeManager:
         plc_name
     ):
 
+        RecipeManager._require_legacy_write_enabled("assign_recipe_to_plc")
+
         conn = get_connection()
         cursor = conn.cursor()
 
@@ -1483,6 +1374,8 @@ class RecipeManager:
 
     ):
 
+        RecipeManager._require_legacy_write_enabled("update_parameter")
+
         conn = get_connection()
         cursor = conn.cursor()
 
@@ -1622,6 +1515,8 @@ class RecipeManager:
         created_by
 
     ):
+
+        RecipeManager._require_legacy_write_enabled("create_recipe_version")
 
         conn = get_connection()
         cursor = conn.cursor()
@@ -1850,6 +1745,8 @@ class RecipeManager:
 
     ):
 
+        RecipeManager._require_legacy_write_enabled("update_recipe_status")
+
         allowed_statuses = [
 
             "DRAFT",
@@ -2004,6 +1901,8 @@ class RecipeManager:
         username
 
     ):
+
+        RecipeManager._require_legacy_write_enabled("update_parameter_metadata")
 
         conn = get_connection()
 
@@ -2199,6 +2098,8 @@ class RecipeManager:
         created_by
 
     ):
+
+        RecipeManager._require_legacy_write_enabled("create_version_record")
 
         conn = get_connection()
 

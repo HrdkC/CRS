@@ -142,6 +142,10 @@ def register_user_routes(app):
             username=username,
             disabled_by=session["username"]
         )
+        UserSessionManager.revoke_user_sessions(
+            username,
+            reason=f"USER_DISABLED_BY_{session['username']}"
+        )
 
         AuditManager.log_event(
             username=session["username"],
@@ -202,6 +206,10 @@ def register_user_routes(app):
         )
 
         if updated:
+            UserSessionManager.revoke_user_sessions(
+                username,
+                reason=f"ROLE_CHANGED_BY_{session['username']}"
+            )
             AuditManager.log_event(
                 username=session["username"],
                 role=session["role"],
@@ -250,6 +258,10 @@ def register_user_routes(app):
                 new_password=new_password,
                 require_reset=require_reset
             )
+            UserSessionManager.revoke_user_sessions(
+                username,
+                reason=f"PASSWORD_RESET_BY_{session['username']}"
+            )
 
             AuditManager.log_event(
                 username=session["username"],
@@ -274,6 +286,10 @@ def register_user_routes(app):
             return redirect("/")
 
         UserManager.mark_password_reset_required(username, True)
+        UserSessionManager.revoke_user_sessions(
+            username,
+            reason=f"PASSWORD_RESET_REQUIRED_BY_{session['username']}"
+        )
 
         AuditManager.log_event(
             username=session["username"],

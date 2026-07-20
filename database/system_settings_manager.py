@@ -1,5 +1,6 @@
 from config.settings import SESSION_TIMEOUT_MINUTES
 from database.database import get_connection
+from database.schema_guard import require_table
 
 
 class SystemSettingsManager:
@@ -22,43 +23,10 @@ class SystemSettingsManager:
 
     @staticmethod
     def ensure_table():
-        conn = get_connection()
-        cursor = conn.cursor()
-
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS system_settings
-            (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                setting_key TEXT NOT NULL UNIQUE,
-                setting_value TEXT NOT NULL,
-                description TEXT,
-                updated_by TEXT,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            """
+        return require_table(
+            "system_settings",
+            {"setting_key", "setting_value", "updated_by", "updated_at"},
         )
-
-        # Backward-compatible upgrades for older system_settings table.
-        cursor.execute("PRAGMA table_info(system_settings)")
-        columns = {row[1] for row in cursor.fetchall()}
-
-        if "updated_by" not in columns:
-            cursor.execute("ALTER TABLE system_settings ADD COLUMN updated_by TEXT")
-
-        if "updated_at" not in columns:
-            cursor.execute("ALTER TABLE system_settings ADD COLUMN updated_at TIMESTAMP")
-            cursor.execute(
-                """
-                UPDATE system_settings
-                SET updated_at = COALESCE(updated_at, created_at, CURRENT_TIMESTAMP)
-                WHERE updated_at IS NULL
-                """
-            )
-
-        conn.commit()
-        conn.close()
 
     @staticmethod
     def set_setting(setting_key, setting_value, description=None, updated_by=None):

@@ -1282,8 +1282,9 @@ body.operation-running * {
         </div>
 
         {% set array_purposes = ["RECIPE_DATA", "TEST_RECIPE_DATA"] %}
-        {% if "BT_PHASE_CONTROL_STRING" in operation_context.tags or "CAP_STRIP_PHASE_CONTROL_STRING" in operation_context.tags %}
-            {% set phase_purposes = ["CAP_STRIP_PHASE_CONTROL_STRING", "CAP_STRIP_PHASE_STOP_STRING", "BT_PHASE_CONTROL_STRING", "BT_PHASE_STOP_STRING", "BT_PHASE_POSITION_STRING"] %}
+        {% set stage_key = (recipe.stage_type or "")|upper|replace(" ", "_") %}
+        {% if stage_key in ["SECOND_STAGE", "SECONDSTAGE", "SS"] %}
+            {% set phase_purposes = ["CAP_STRIP_PHASE_CONTROL_STRING", "BT_PHASE_CONTROL_STRING"] %}
         {% else %}
             {% set phase_purposes = ["PHASE_CONTROL_STRING", "PHASE_STOP_STRING", "PHASE_POSITION_STRING"] %}
         {% endif %}

@@ -6,6 +6,8 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
+from tools.plc_live_manual.safety import require_supervised_live_plc
+
 from pycomm3 import LogixDriver
 
 from database.database import get_connection
@@ -70,7 +72,7 @@ def verify(machine_code, stage, required_only=False):
     if not plc:
         raise SystemExit(f"No active PLC found for {machine_code}/{stage}.")
 
-    tags = get_tag_definitions(include_optional=not required_only)
+    tags = get_tag_definitions(include_optional=not required_only, stage_type=plc["stage_type"])
     print(f"Connecting to {plc['plc_name']} at {plc['ip_address']} for {machine_code}/{stage}...")
 
     ok_count = 0
@@ -119,6 +121,7 @@ def main():
         help="Verify only required buffer-operation tags.",
     )
     args = parser.parse_args()
+    require_supervised_live_plc(__file__)
     verify(args.machine, args.stage, required_only=args.required_only)
 
 

@@ -1,6 +1,7 @@
 import re
 
 from database.database import get_connection
+from database.schema_guard import require_table
 
 
 class PhaseTemplateManager:
@@ -26,19 +27,13 @@ class PhaseTemplateManager:
 
     @staticmethod
     def ensure_schema():
-        conn = get_connection()
-        cur = conn.cursor()
-        cols = PhaseTemplateManager._columns(cur, "phase_control_master")
-
-        if "phase_control_key" not in cols:
-            cur.execute("ALTER TABLE phase_control_master ADD COLUMN phase_control_key TEXT")
-
-        if "plc_phase_code" not in cols:
-            cur.execute("ALTER TABLE phase_control_master ADD COLUMN plc_phase_code INTEGER")
-
-        conn.commit()
-        conn.close()
-        PhaseTemplateManager.sync_phase_keys()
+        return require_table(
+            "phase_control_master",
+            {
+                "phase_control_name", "phase_control_key", "plc_phase_code",
+                "machine_stage_id", "phase_group_code", "active",
+            },
+        )
 
     @staticmethod
     def clean_display_name(value):

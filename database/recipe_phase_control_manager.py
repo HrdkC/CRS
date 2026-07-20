@@ -1,5 +1,8 @@
+import uuid
+
 from database.database import (
-    get_connection
+    get_connection,
+    transaction,
 )
 from database.phase_template_manager import PhaseTemplateManager
 
@@ -646,62 +649,204 @@ class RecipePhaseControlManager:
         return result
 
     @staticmethod
-    def update_phase_row(
-
-        phase_row_id,
-
-        phase_control_id,
-
-        stop_option,
-
-        position_option,
-
-        sequence_no
-
+    def save_phase_sequence(
+        recipe_id,
+        selections,
+        changed_by,
+        user_role,
+        change_reason,
+        change_source="RECIPE_PHASE_CONTROL_EDIT",
+        client_ip=None,
+        workstation_name=None,
     ):
+        """Validate, save and audit a complete phase sequence atomically."""
+        from database.audit_manager import AuditManager
 
-        conn = get_connection()
+        reason = (change_reason or "").strip()
+        if not reason:
+            return {"success": False, "message": "Phase change reason is required."}
 
-        cursor = conn.cursor()
+        correlation_id = uuid.uuid4().hex
+        changed_rows = []
+        try:
+            with transaction(immediate=True) as conn:
+                cursor = conn.cursor()
+                recipe = cursor.execute(
+                    """
+                    SELECT r.*, s.stage_type, m.machine_code,
+                           CASE
+                               WHEN r.status='RELEASED' AND r.id=(
+                                   SELECT x.id FROM recipes x
+                                   WHERE x.machine_id=r.machine_id
+                                     AND x.stage_id=r.stage_id
+                                     AND UPPER(x.recipe_code)=UPPER(r.recipe_code)
+                                     AND x.status='RELEASED'
+                                   ORDER BY x.version DESC, x.id DESC LIMIT 1
+                               ) THEN 1 ELSE 0
+                           END AS is_current_released
+                    FROM recipes r
+                    LEFT JOIN machine_stages s ON s.id=r.stage_id
+                    LEFT JOIN tbm_machines m ON m.id=r.machine_id
+                    WHERE r.id=?
+                    """,
+                    (int(recipe_id),),
+                ).fetchone()
+                if not recipe:
+                    return {"success": False, "message": "Recipe not found."}
+                if recipe["status"] == "RELEASED" and int(recipe["is_current_released"] or 0) != 1:
+                    return {
+                        "success": False,
+                        "message": "Historical released recipe phase controls are read-only.",
+                    }
 
-        cursor.execute(
-            """
-            UPDATE
-            recipe_phase_control
+                stage_key = str(recipe["stage_type"] or "").strip().upper().replace(" ", "_")
+                is_second_stage = stage_key in {"SECOND_STAGE", "SECONDSTAGE", "SS"}
+                rows = cursor.execute(
+                    """
+                    SELECT rpc.*, old_pcm.phase_control_name AS old_phase_name
+                    FROM recipe_phase_control rpc
+                    LEFT JOIN phase_control_master old_pcm ON old_pcm.id=rpc.phase_control_id
+                    WHERE rpc.recipe_id=?
+                    ORDER BY rpc.phase_group_code, rpc.line_no
+                    """,
+                    (int(recipe_id),),
+                ).fetchall()
 
-            SET
+                for row in rows:
+                    group_code = (row["phase_group_code"] or "MAIN").upper()
+                    if is_second_stage and group_code not in RecipePhaseControlManager.SECOND_STAGE_RECIPE_GROUPS:
+                        continue
+                    posted = selections.get(str(row["id"])) or selections.get(int(row["id"]))
+                    if not posted:
+                        return {
+                            "success": False,
+                            "message": f"Missing phase selection for {group_code} line {row['line_no']}.",
+                        }
 
-                phase_control_id = ?,
+                    new_phase_id = int(posted.get("phase_control_id"))
+                    allowed = cursor.execute(
+                        """
+                        SELECT id, phase_control_name
+                        FROM phase_control_master
+                        WHERE id=?
+                          AND machine_stage_id=?
+                          AND UPPER(COALESCE(phase_group_code, 'MAIN'))=?
+                          AND COALESCE(active, 1)=1
+                        """,
+                        (new_phase_id, recipe["stage_id"], group_code),
+                    ).fetchone()
+                    if not allowed:
+                        return {
+                            "success": False,
+                            "message": f"Selected phase is not allowed for {group_code} line {row['line_no']}.",
+                        }
 
-                stop_option = ?,
+                    old_phase_id = row["phase_control_id"]
+                    old_stop = row["stop_option"]
+                    old_position = row["position_option"]
+                    if is_second_stage:
+                        # Final contract: SS recipe data is selection-only. Legacy
+                        # columns remain in the schema only for historical compatibility.
+                        new_stop = None
+                        new_position = None
+                    else:
+                        new_stop = posted.get("stop_option") or "No"
+                        new_position = posted.get("position_option") or "No"
 
-                position_option = ?,
+                    changed = (
+                        int(old_phase_id or 0) != new_phase_id
+                        or (not is_second_stage and (old_stop != new_stop or old_position != new_position))
+                    )
+                    if not changed:
+                        continue
 
-                sequence_no = ?,
+                    cursor.execute(
+                        """
+                        UPDATE recipe_phase_control
+                        SET phase_control_id=?, stop_option=?, position_option=?,
+                            sequence_no=?, updated_at=CURRENT_TIMESTAMP,
+                            row_version=COALESCE(row_version, 0)+1
+                        WHERE id=?
+                        """,
+                        (
+                            new_phase_id, new_stop, new_position, row["line_no"], row["id"]
+                        ),
+                    )
+                    cursor.execute(
+                        """
+                        INSERT INTO recipe_phase_control_audit
+                        (
+                            correlation_id, recipe_id, phase_row_id, phase_group_code,
+                            line_no, old_phase_control_id, new_phase_control_id,
+                            old_phase_name, new_phase_name, old_stop_option,
+                            new_stop_option, old_position_option, new_position_option,
+                            changed_by, user_role, change_source, change_reason
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            correlation_id, recipe_id, row["id"], group_code, row["line_no"],
+                            old_phase_id, new_phase_id, row["old_phase_name"],
+                            allowed["phase_control_name"],
+                            None if is_second_stage else old_stop,
+                            None if is_second_stage else new_stop,
+                            None if is_second_stage else old_position,
+                            None if is_second_stage else new_position,
+                            changed_by, user_role, change_source, reason,
+                        ),
+                    )
+                    changed_rows.append({
+                        "row_id": row["id"],
+                        "group": group_code,
+                        "line_no": row["line_no"],
+                        "old": row["old_phase_name"],
+                        "new": allowed["phase_control_name"],
+                    })
 
-                updated_at =
-                CURRENT_TIMESTAMP
+                if changed_rows:
+                    AuditManager.log_event(
+                        username=changed_by,
+                        role=user_role,
+                        action="RECIPE_PHASE_SEQUENCE_CHANGED",
+                        change_source=change_source,
+                        workstation_name=workstation_name,
+                        client_ip=client_ip,
+                        recipe_code=recipe["recipe_code"],
+                        recipe_version=recipe["version"],
+                        record_id=int(recipe_id),
+                        old_value=f"{len(changed_rows)} previous phase row(s)",
+                        new_value=f"{len(changed_rows)} updated phase row(s)",
+                        reason=reason,
+                        correlation_id=correlation_id,
+                        _connection=conn,
+                    )
 
-            WHERE id = ?
-            """,
-            (
+            return {
+                "success": True,
+                "changed": bool(changed_rows),
+                "changed_count": len(changed_rows),
+                "changed_rows": changed_rows,
+                "correlation_id": correlation_id,
+                "message": (
+                    f"Phase Control saved and audited: {len(changed_rows)} row(s) changed."
+                    if changed_rows
+                    else "No phase-control change detected; no audit was created."
+                ),
+            }
+        except Exception as exc:
+            return {
+                "success": False,
+                "message": "Phase-control save failed and was rolled back.",
+                "error_type": type(exc).__name__,
+                "correlation_id": correlation_id,
+            }
 
-                phase_control_id,
-
-                stop_option,
-
-                position_option,
-
-                sequence_no,
-
-                phase_row_id
-
-            )
+    @staticmethod
+    def update_phase_row(*_args, **_kwargs):
+        raise RuntimeError(
+            "Direct phase-row mutation is blocked. Use save_phase_sequence so "
+            "validation, locking and audit remain atomic."
         )
-
-        conn.commit()
-
-        conn.close()
 
     @staticmethod
     def ensure_group_empty_phase_slots(

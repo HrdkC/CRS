@@ -110,6 +110,33 @@ def create_app():
         except Exception as exc:
             print("Phase control default sync skipped/failed:", exc)
 
+        try:
+            from database.hardening_schema_manager import (
+                apply_v11_11_hardening_schema
+            )
+            apply_v11_11_hardening_schema()
+        except Exception as exc:
+            print("V11.11 hardening schema skipped/failed:", exc)
+    else:
+        from database.hardening_schema_manager import (
+            assert_v11_11_hardening_schema_ready
+        )
+        assert_v11_11_hardening_schema_ready()
+
+    if os.getenv("CRS_PLC_JOB_RECOVERY_ON_STARTUP", "1").strip().lower() in {
+        "1", "true", "yes", "on"
+    }:
+        try:
+            from database.plc_operation_job_manager import PLCOperationJobManager
+            recovered_jobs = PLCOperationJobManager.recover_stale_jobs(
+                stale_minutes=int(os.getenv("CRS_PLC_JOB_STALE_MINUTES", "10")),
+                recovery_reason="WEB_APPLICATION_STARTUP_RECOVERY",
+            )
+            if recovered_jobs:
+                print(f"Recovered stale PLC jobs: {recovered_jobs}")
+        except Exception as exc:
+            print("PLC job startup recovery skipped/failed:", exc)
+
     from flask_app.security.session_guard import register_session_guard
     register_session_guard(app)
 

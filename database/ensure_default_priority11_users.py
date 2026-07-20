@@ -1,23 +1,12 @@
-import os
-import sys
+"""Optional secure recovery-user bootstrap.
 
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
+No passwords are embedded in source. Set the documented CRS_BOOTSTRAP_*_PASSWORD
+environment variables before running this module.
+"""
 
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
-
-from database.upgrade_user_management_priority11 import (
-    ensure_priority11_default_users
-)
+from database.upgrade_user_management_priority11 import ensure_priority11_default_users
 
 
 if __name__ == "__main__":
     ensure_priority11_default_users()
-    print("")
-    print("Priority 11 default users ready:")
-    print("- operator    / operator123     / OPERATOR     / password reset required")
-    print("- engineering / Engineering@123 / ENGINEERING  / password reset required")
-    print("- hardik      / Hardik@123      / ADMIN backup / password reset required")
-    print("- viewer      / viewer123       / VIEWER       / password reset required")
-    print("Change all temporary passwords immediately after first login.")
+    print("Optional recovery users were created/verified from environment-supplied passwords.")

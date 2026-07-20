@@ -7,7 +7,6 @@ from flask import (
     jsonify
 )
 
-import threading
 
 from urllib.parse import (
     urlencode
@@ -71,6 +70,10 @@ from database.plc_operation_job_manager import (
 
 from database.recipe_resource_lock_manager import (
     RecipeResourceLockManager
+)
+
+from database.recipe_bulk_change_service import (
+    RecipeBulkChangeService
 )
 
 from flask_app.security.role_guard import (
@@ -1597,102 +1600,59 @@ def register_recipe_editor_routes(app):
                 {}
             ).get("id")
 
-            changed_count = 0
-
-            detail_changed_count = 0
+            changes = []
+            for value_id in selected_ids:
+                parsed = parsed_changes[value_id]
+                row = parsed["row"]
+                changes.append({
+                    "value_id": int(value_id),
+                    "value": parsed["value"],
+                    "parameter_name": parsed["parameter_name"],
+                    "unit": parsed["unit"],
+                    "min_value": parsed["min_value"],
+                    "max_value": parsed["max_value"],
+                    "default_value": parsed["default_value"],
+                    "used": parsed["used"],
+                    "parameter_definition_id": row["parameter_definition_id"],
+                })
 
             try:
+                bulk_result = RecipeBulkChangeService.apply(
+                    recipe_id=recipe_id,
+                    changes=changes,
+                    changed_by=session.get("username"),
+                    user_role=user_role,
+                    change_reason=change_reason,
+                    can_edit_details=can_edit_details,
+                    client_ip=request.remote_addr,
+                    workstation_name=request.headers.get(
+                        "X-Forwarded-Host", request.host
+                    ),
+                )
 
-                for value_id in selected_ids:
-
-                    parsed = parsed_changes[value_id]
-
-                    row = parsed["row"]
-
-                    if can_edit_details:
-
-                        detail_result = (
-                            ParameterDefinitionManager
-                            .update_parameter_details(
-                                parameter_id=row["parameter_definition_id"],
-                                parameter_name=parsed["parameter_name"],
-                                plc_array_index=row.get("plc_array_index"),
-                                unit=parsed["unit"],
-                                min_value=parsed["min_value"],
-                                max_value=parsed["max_value"],
-                                default_value=parsed["default_value"],
-                                used=parsed["used"]
-                            )
-                        )
-
-                        if detail_result:
-
-                            for field_name, old_value in detail_result["old"].items():
-
-                                if field_name == "plc_array_index":
-
-                                    continue
-
-                                new_value = detail_result["new"][field_name]
-
-                                if str(old_value) == str(new_value):
-
-                                    continue
-
-                                detail_changed_count += 1
-
-                                AuditManager.log_event(
-                                    username=session.get("username"),
-                                    role=user_role,
-                                    action="RECIPE_PARAMETER_DETAIL_CHANGED",
-                                    change_source="BULK_RECIPE_PARAMETER_EDIT",
-                                    recipe_code=recipe["recipe_code"],
-                                    recipe_version=recipe["version"],
-                                    record_id=row["parameter_definition_id"],
-                                    parameter_name=parsed["parameter_name"],
-                                    old_value=f"{field_name}: {old_value}",
-                                    new_value=f"{field_name}: {new_value}",
-                                    reason=change_reason,
-                                    client_ip=request.remote_addr,
-                                    workstation_name=request.headers.get(
-                                        "X-Forwarded-Host",
-                                        request.host
-                                    )
-                                )
-
-                    change_source = "CURRENT_RELEASED_BULK_EDIT"
-
-                    if not _is_current_released_recipe(
-                        recipe
-                    ):
-
-                        change_source = "DRAFT_RECIPE_BULK_EDIT"
-
-                    value_result = (
-                        RecipeParameterValueManager
-                        .update_recipe_value(
-                            value_id=int(value_id),
-                            new_value=parsed["value"],
-                            changed_by=session.get("username"),
-                            change_reason=change_reason,
-                            user_role=user_role,
-                            change_source=change_source,
-                            client_ip=request.remote_addr,
-                            workstation_name=request.headers.get(
-                                "X-Forwarded-Host",
-                                request.host
-                            )
-                        )
+                if not bulk_result.get("success"):
+                    flash(
+                        bulk_result.get(
+                            "message",
+                            "Bulk save failed and was rolled back."
+                        ),
+                        "error"
                     )
-
-                    if value_result.get("changed"):
-
-                        changed_count += 1
+                    return _render_bulk_edit(
+                        posted_rows,
+                        selected_ids=selected_ids,
+                        validation_errors=[
+                            "No selected row was saved. Typed values have been kept."
+                        ],
+                        change_reason=change_reason
+                    )
 
                 flash(
                     (
-                        f"Bulk parameter save completed: {changed_count} value change(s), "
-                        f"{detail_changed_count} detail field change(s). PLC index mapping was not changed."
+                        "Bulk parameter save completed atomically: "
+                        f"{bulk_result.get('changed_count', 0)} value change(s), "
+                        f"{bulk_result.get('detail_changed_count', 0)} detail field change(s). "
+                        "PLC index mapping was not changed."
                     ),
                     "success"
                 )
@@ -2247,6 +2207,11 @@ def register_recipe_editor_routes(app):
 
                 created_by=session.get(
                     "username"
+                ),
+
+                user_role=session.get(
+                    "role",
+                    "PRODUCTION"
                 )
 
             )
@@ -2492,15 +2457,39 @@ def register_recipe_editor_routes(app):
                 f"/recipe-editor/versions/{version['recipe_id']}"
             )
 
-        RecipeVersionManager.restore_version(
+        try:
+            result = RecipeVersionManager.restore_version(
 
-            recipe_version_id=version_id,
+                recipe_version_id=version_id,
 
-            restored_by=session.get(
-                "username"
+                restored_by=session.get(
+                    "username"
+                ),
+
+                reason=(
+                    request.form.get("reason")
+                    or f"Restore snapshot {version_id}"
+                ).strip(),
+
+                user_role=session.get(
+                    "role",
+                    "PRODUCTION"
+                ),
+
+                client_ip=request.remote_addr,
+
+                workstation_name=(
+                    request.headers.get("X-Forwarded-Host")
+                    or request.host
+                )
+
             )
-
-        )
+            flash(
+                f"Recipe snapshot restored: {result['changed_count']} parameter change(s).",
+                "success"
+            )
+        except (ValueError, RuntimeError) as exc:
+            flash(str(exc), "error")
 
         return redirect(
             request.referrer
@@ -3082,6 +3071,19 @@ def register_recipe_editor_routes(app):
                 "message": "Select PLC for recipe buffer operation."
             }), 400
 
+        edit_lock = RecipeResourceLockManager.get_active_lock(
+            "RECIPE_EDIT", recipe_id
+        )
+        if edit_lock:
+            return jsonify({
+                "success": False,
+                "message": (
+                    "Recipe is currently being edited. Save or cancel the edit "
+                    "before starting a PLC buffer operation."
+                ),
+                "active_lock_id": edit_lock.get("id")
+            }), 409
+
         recipe_lock = _active_recipe_operation_lock(recipe_id)
         if recipe_lock:
             return jsonify({
@@ -3200,78 +3202,39 @@ def register_recipe_editor_routes(app):
             ]
         )
 
-        job_id = (
-            PLCOperationJobManager
-            .create_job(
-
+        try:
+            job_id = PLCOperationJobManager.create_job(
                 recipe_id=recipe_id,
-
                 plc_id=selected_plc_id_int,
-
                 operation=action,
-
                 title=operation_title,
-
                 username=username,
-
-                user_role=user_role
-
+                user_role=user_role,
+                recipe_lock_id=recipe_operation_lock_id,
+                plc_lock_id=plc_operation_lock_id,
             )
-        )
-
-        def run_job():
-
-            try:
-
-                PLCBufferOperationManager.run_operation(
-
-                    recipe_id=recipe_id,
-
-                    plc_id=selected_plc_id_int,
-
-                    operation=action,
-
-                    username=username,
-
-                    user_role=user_role,
-
-                    status_job_id=job_id
-
-                )
-
-            except Exception as exc:
-
-                PLCOperationJobManager.fail_job(
-                    job_id=job_id,
-                    message=str(
-                        exc
-                    )
-                )
-
-            finally:
-
-                RecipeResourceLockManager.release_lock(
-                    recipe_operation_lock_id,
-                    reason="PLC_OPERATION_COMPLETED"
-                )
-                RecipeResourceLockManager.release_lock(
-                    plc_operation_lock_id,
-                    reason="PLC_OPERATION_COMPLETED"
-                )
-
-        thread = threading.Thread(
-            target=run_job,
-            daemon=True
-        )
-
-        thread.start()
+        except Exception:
+            RecipeResourceLockManager.release_lock(
+                recipe_operation_lock_id, reason="PLC_JOB_QUEUE_FAILED"
+            )
+            RecipeResourceLockManager.release_lock(
+                plc_operation_lock_id, reason="PLC_JOB_QUEUE_FAILED"
+            )
+            return jsonify({
+                "success": False,
+                "message": "Unable to queue the PLC operation. No PLC work was started."
+            }), 500
 
         return jsonify({
             "success": True,
             "job_id": job_id,
+            "queued": True,
+            "message": (
+                "Operation queued for the durable CRS PLC worker. "
+                "The web process will not execute PLC writes."
+            ),
             "status_url": (
-                "/recipe-editor/download-preparation/job/"
-                f"{job_id}"
+                "/recipe-editor/download-preparation/job/" + str(job_id)
             )
         })
 
@@ -3307,6 +3270,14 @@ def register_recipe_editor_routes(app):
                 "message": "Operation job not found."
             }), 404
 
+        is_owner = (job.get("started_by") or "").lower() == (session.get("username") or "").lower()
+        can_supervise = role_can(session.get("role"), "audit_view")
+        if not is_owner and not can_supervise:
+            return jsonify({
+                "success": False,
+                "message": "You are not authorized to view this PLC operation."
+            }), 403
+
         return jsonify({
             "success": True,
             "job": job,
@@ -3316,6 +3287,9 @@ def register_recipe_editor_routes(app):
             in [
                 "SUCCESS",
                 "BLOCKED",
-                "ERROR"
+                "ERROR",
+                "INTERRUPTED",
+                "CANCELLED",
+                "RECOVERY_REQUIRED"
             ]
         })

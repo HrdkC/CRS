@@ -10,7 +10,7 @@ import os
 import time
 
 from database.user_manager import UserManager
-from database.user_session_manager import UserSessionManager
+from database.user_session_manager import UserSessionManager, ActiveSessionConflict
 from database.audit_manager import AuditManager
 
 from helper.datetime_helper import utc_to_ist
@@ -133,21 +133,55 @@ def register_auth_routes(app):
                         )
                     )
 
+                try:
+                    session_id, replaced_count = UserSessionManager.login(
+                        username=canonical_username,
+                        role=user["role"],
+                        client_ip=client_ip,
+                        workstation_name=workstation_name,
+                        user_agent=user_agent,
+                        forwarded_for=forwarded_for,
+                        request_host=request_host,
+                        login_source="WEB_LOGIN"
+                    )
+                except ActiveSessionConflict as conflict:
+                    active_session = conflict.active_session or {}
+                    UserSessionManager.record_blocked_login_attempt(
+                        username=canonical_username,
+                        active_session=active_session,
+                        attempted_client_ip=client_ip,
+                        attempted_workstation_name=workstation_name,
+                        attempted_user_agent=user_agent,
+                        attempted_forwarded_for=forwarded_for,
+                        attempted_request_host=request_host,
+                        login_source="WEB_LOGIN_BLOCKED_ATOMIC_ACTIVE_SESSION"
+                    )
+                    AuditManager.log_event(
+                        username=canonical_username,
+                        role=user["role"],
+                        action="LOGIN_BLOCKED_ACTIVE_SESSION",
+                        change_source="AUTH_ATOMIC_ACTIVE_SESSION_GUARD",
+                        workstation_name=workstation_name,
+                        client_ip=client_ip,
+                        user_agent=user_agent,
+                        forwarded_for=forwarded_for,
+                        request_host=request_host,
+                        record_id=active_session.get("id"),
+                        reason="Atomic active-session claim rejected a concurrent login."
+                    )
+                    return render_template(
+                        "auth/login.html",
+                        error=(
+                            "This username is already logged in. Existing active "
+                            "user has priority. Please wait until that user logs out "
+                            "or the session expires."
+                        )
+                    )
+
                 record_login_success(canonical_username, client_ip)
                 UserManager.update_last_login(canonical_username)
                 user = UserManager.get_user(canonical_username)
                 last_login_ist = utc_to_ist(user["last_login"])
-
-                session_id, replaced_count = UserSessionManager.login(
-                    username=canonical_username,
-                    role=user["role"],
-                    client_ip=client_ip,
-                    workstation_name=workstation_name,
-                    user_agent=user_agent,
-                    forwarded_for=forwarded_for,
-                    request_host=request_host,
-                    login_source="WEB_LOGIN"
-                )
 
                 now = int(time.time())
 

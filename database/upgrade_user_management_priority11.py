@@ -229,6 +229,19 @@ def upgrade_user_management_schema():
     print("Priority 11 user/session/schema/archive upgrade completed.")
 
 
+
+def _resolve_seed_password(password, environment_name):
+    value = (password or os.getenv(environment_name, "")).strip()
+    if not value:
+        raise RuntimeError(
+            f"Secure bootstrap password is required in {environment_name}. "
+            "CRS no longer ships predictable default passwords."
+        )
+    if len(value) < 12:
+        raise RuntimeError(f"{environment_name} must contain at least 12 characters.")
+    return value
+
+
 def ensure_seed_user(
     username,
     password,
@@ -343,9 +356,10 @@ def ensure_seed_user(
 
 def ensure_default_operator_user(
     username="operator",
-    password="operator123",
+    password=None,
     created_by="SYSTEM"
 ):
+    password = _resolve_seed_password(password, "CRS_BOOTSTRAP_OPERATOR_PASSWORD")
     ensure_seed_user(
         username=username,
         password=password,
@@ -359,9 +373,10 @@ def ensure_default_operator_user(
 
 def ensure_default_engineering_user(
     username="engineering",
-    password="Engineering@123",
+    password=None,
     created_by="SYSTEM"
 ):
+    password = _resolve_seed_password(password, "CRS_BOOTSTRAP_ENGINEERING_PASSWORD")
     ensure_seed_user(
         username=username,
         password=password,
@@ -375,9 +390,10 @@ def ensure_default_engineering_user(
 
 def ensure_backup_admin_user(
     username="hardik",
-    password="Hardik@123",
+    password=None,
     created_by="SYSTEM"
 ):
+    password = _resolve_seed_password(password, "CRS_BOOTSTRAP_BACKUP_ADMIN_PASSWORD")
     ensure_seed_user(
         username=username,
         password=password,
@@ -391,9 +407,10 @@ def ensure_backup_admin_user(
 
 def ensure_default_viewer_user(
     username="viewer",
-    password="viewer123",
+    password=None,
     created_by="SYSTEM"
 ):
+    password = _resolve_seed_password(password, "CRS_BOOTSTRAP_VIEWER_PASSWORD")
     ensure_seed_user(
         username=username,
         password=password,

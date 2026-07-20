@@ -1,6 +1,15 @@
-from database.database import get_connection
+import sqlite3
+
+from database.database import get_connection, transaction
+from database.hardening_schema_manager import assert_v11_11_hardening_schema_ready
 from database.system_settings_manager import SystemSettingsManager
 from database.recipe_resource_lock_manager import RecipeResourceLockManager
+
+
+class ActiveSessionConflict(RuntimeError):
+    def __init__(self, active_session=None):
+        super().__init__("Username already has an active CRS session")
+        self.active_session = active_session
 
 
 class UserSessionManager:
@@ -39,45 +48,32 @@ class UserSessionManager:
         request_host=None,
         login_source="WEB_LOGIN",
     ):
-        conn = get_connection()
-        cursor = conn.cursor()
-
-        cursor.execute(
-            """
-            INSERT INTO user_sessions
-            (
-                username,
-                role,
-                client_ip,
-                workstation_name,
-                user_agent,
-                forwarded_for,
-                request_host,
-                login_source,
-                replaced_existing_sessions,
-                last_activity,
-                heartbeat_at
-            )
-            VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            """,
-            (
-                username,
-                role,
-                client_ip,
-                workstation_name,
-                user_agent,
-                forwarded_for,
-                request_host,
-                login_source,
-            )
-        )
-
-        conn.commit()
-        session_id = cursor.lastrowid
-        conn.close()
-
-        return session_id, 0
+        """Atomically create the one permitted active session for a username."""
+        assert_v11_11_hardening_schema_ready()
+        try:
+            with transaction(immediate=True) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    INSERT INTO user_sessions
+                    (
+                        username, role, client_ip, workstation_name, user_agent,
+                        forwarded_for, request_host, login_source,
+                        replaced_existing_sessions, last_activity, heartbeat_at
+                    )
+                    VALUES
+                    (?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    """,
+                    (
+                        username, role, client_ip, workstation_name, user_agent,
+                        forwarded_for, request_host, login_source,
+                    ),
+                )
+                session_id = int(cursor.lastrowid)
+            return session_id, 0
+        except sqlite3.IntegrityError as exc:
+            active = UserSessionManager.get_live_active_session_for_username(username)
+            raise ActiveSessionConflict(active) from exc
 
     @staticmethod
     def logout(session_id, reason="USER_LOGOUT"):
@@ -353,6 +349,55 @@ class UserSessionManager:
     def get_active_session_for_username(username):
         # Backward-compatible public name.
         return UserSessionManager.get_live_active_session_for_username(username)
+
+    @staticmethod
+    def revoke_user_sessions(username, reason="USER_AUTHORITY_CHANGED"):
+        """Close every active session for a user and release owned locks."""
+        if not username:
+            return 0
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id FROM user_sessions WHERE username=? COLLATE NOCASE AND logout_time IS NULL",
+            (username,),
+        )
+        session_ids = [int(row[0]) for row in cursor.fetchall()]
+        cursor.execute(
+            """
+            UPDATE user_sessions
+            SET logout_time=CURRENT_TIMESTAMP, logout_reason=?
+            WHERE username=? COLLATE NOCASE AND logout_time IS NULL
+            """,
+            (reason, username),
+        )
+        count = cursor.rowcount
+        conn.commit()
+        conn.close()
+        for session_id in session_ids:
+            RecipeResourceLockManager.release_session_locks(session_id, reason=reason)
+        return count
+
+    @staticmethod
+    def get_session_authority(session_id, username):
+        if not session_id or not username:
+            return None
+        conn = get_connection()
+        try:
+            row = conn.execute(
+                """
+                SELECT us.id AS session_id, us.role AS session_role,
+                       u.role AS current_role, u.active,
+                       u.password_reset_required
+                FROM user_sessions us
+                JOIN users u ON u.username = us.username COLLATE NOCASE
+                WHERE us.id=? AND us.username=? COLLATE NOCASE
+                  AND us.logout_time IS NULL
+                """,
+                (int(session_id), username),
+            ).fetchone()
+            return dict(row) if row else None
+        finally:
+            conn.close()
 
     @staticmethod
     def record_blocked_login_attempt(

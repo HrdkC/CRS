@@ -1,0 +1,41 @@
+name: CRS Safe CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  safe-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CRS_TEST_MODE: "1"
+      CRS_ALLOW_LIVE_PLC_TESTS: "NO"
+      CRS_ALLOW_PLC_COMMUNICATION: "NO"
+      CRS_PLC_WORKER_ENABLED: "0"
+      CRS_ALLOW_STARTUP_MIGRATIONS: "0"
+      CRS_PLC_JOB_RECOVERY_ON_STARTUP: "0"
+      CRS_DATABASE_PATH: /tmp/crs-ci.db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+      - name: Compile
+        run: python -m compileall -q app.py config database flask_app helper plc recipe scripts tools utils tests wsgi.py
+      - name: Safe tests
+        run: python -m pytest -q
+      - name: CSS bundle consistency
+        run: python scripts/build_css_bundle.py --check
+      - name: Clean release policy
+        run: python scripts/build_clean_release.py --check-only
+      - name: Dependency audit
+        run: python -m pip_audit -r requirements.txt

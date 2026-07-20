@@ -1,4 +1,5 @@
 from database.database import get_connection
+from database.schema_guard import require_table
 
 
 class StagePLCTagRequirementManager:
@@ -20,16 +21,22 @@ class StagePLCTagRequirementManager:
 
     SECOND_STAGE_PHASE_PURPOSES = {
         "CAP_STRIP_PHASE_CONTROL_STRING",
-        "CAP_STRIP_PHASE_STOP_STRING",
         "BT_PHASE_CONTROL_STRING",
+    }
+
+    # Historical Second Stage stop/position tag purposes are deliberately
+    # classified so they fail stage validation rather than being treated as
+    # unrelated custom purposes.  They remain only for migration/reconciliation.
+    LEGACY_NON_RECIPE_PHASE_PURPOSES = {
+        "CAP_STRIP_PHASE_STOP_STRING",
         "BT_PHASE_STOP_STRING",
         "BT_PHASE_POSITION_STRING",
     }
 
     ALL_PHASE_PURPOSES = (
         GENERIC_PHASE_PURPOSES
-        |
-        SECOND_STAGE_PHASE_PURPOSES
+        | SECOND_STAGE_PHASE_PURPOSES
+        | LEGACY_NON_RECIPE_PHASE_PURPOSES
     )
 
     @staticmethod
@@ -389,35 +396,15 @@ class StagePLCTagRequirementManager:
 
     @staticmethod
     def ensure_table():
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS stage_plc_tag_requirements
-            (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                machine_id INTEGER NOT NULL,
-                stage_id INTEGER NOT NULL,
-                purpose TEXT NOT NULL,
-                label TEXT NOT NULL,
-                requirement_level TEXT NOT NULL DEFAULT 'REQUIRED',
-                expected_type TEXT,
-                array_required INTEGER NOT NULL DEFAULT 0,
-                minimum_array_size INTEGER,
-                array_start_index INTEGER,
-                array_end_index INTEGER,
-                default_tag_name TEXT,
-                search_hint TEXT,
-                active INTEGER NOT NULL DEFAULT 1,
-                display_order INTEGER NOT NULL DEFAULT 100,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(machine_id, stage_id, purpose)
-            )
-            """
+        return require_table(
+            "stage_plc_tag_requirements",
+            {
+                "machine_id", "stage_id", "purpose", "label",
+                "requirement_level", "expected_type", "array_required",
+                "minimum_array_size", "array_start_index", "array_end_index",
+                "default_tag_name", "search_hint", "active", "display_order",
+            },
         )
-        conn.commit()
-        conn.close()
 
     @staticmethod
     def _get_stage_type(cur, machine_id, stage_id):
