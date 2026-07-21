@@ -76,7 +76,7 @@ if __name__ == "__main__":
     print(f"CRS Python auto-reloader: {'ON' if reload_enabled else 'OFF'}")
 
     app.run(
-        host=os.getenv("CRS_FLASK_HOST", "127.0.0.1"),
+        host=os.getenv("CRS_FLASK_HOST", "0.0.0.0"),
         port=int(os.getenv("CRS_FLASK_PORT", "5000")),
         debug=debug_enabled,
         use_reloader=reload_enabled,
