@@ -1,0 +1,330 @@
+/*
+ * CRS responsive authenticated header reflow.
+ *
+ * Final cascade guard for compact browser widths.  The header keeps its
+ * desktop appearance on wide screens, switches to the existing hamburger
+ * navigation before the navigation row begins to wrap, and never creates an
+ * internal vertical scrollbar.  Expanded compact navigation participates in
+ * normal document flow so the browser page scrolls normally.
+ */
+
+.site-header,
+.site-header .header-top,
+.site-header .navbar,
+.site-header .navbar ul {
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+}
+
+.site-header {
+    overflow: visible !important;
+}
+
+@media (max-width: 1180px) {
+    :root {
+        --crs-compact-header-padding: 14px;
+    }
+
+    .site-header .header-top {
+        display: grid !important;
+        grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+        grid-template-areas:
+            "logos brand toggle"
+            "user user user" !important;
+        align-items: center !important;
+        justify-items: stretch !important;
+        column-gap: 12px !important;
+        row-gap: 5px !important;
+        min-height: 0 !important;
+        padding: 6px var(--crs-compact-header-padding) 5px !important;
+        text-align: left !important;
+    }
+
+    .site-header .header-logo-panel {
+        grid-area: logos !important;
+        justify-self: start !important;
+        width: auto !important;
+    }
+
+    .site-header .header-brand-lockup,
+    .site-header .header-brand-logo-row {
+        width: max-content !important;
+        max-width: 100% !important;
+    }
+
+    .site-header .header-brand-logo-row {
+        min-height: 0 !important;
+        padding: 1px 4px !important;
+        column-gap: 8px !important;
+    }
+
+    .site-header .header-logo-main,
+    .site-header .header-logo-bcci {
+        width: 48px !important;
+        height: 34px !important;
+    }
+
+    .site-header .header-campaign-caption {
+        font-size: 10px !important;
+        line-height: 1.05 !important;
+        white-space: nowrap !important;
+    }
+
+    .site-header .brand-area {
+        grid-area: brand !important;
+        justify-self: stretch !important;
+        min-width: 0 !important;
+        text-align: center !important;
+    }
+
+    .site-header .brand-title {
+        font-size: clamp(19px, 2.4vw, 24px) !important;
+        line-height: 1.04 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .site-header .brand-subtitle {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        column-gap: 6px !important;
+        row-gap: 0 !important;
+        margin-top: 2px !important;
+        font-size: 10px !important;
+        line-height: 1.08 !important;
+    }
+
+    .site-header .user-info {
+        grid-area: user !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 3px 14px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        padding: 5px 9px !important;
+        text-align: left !important;
+        line-height: 1.08 !important;
+    }
+
+    .site-header .user-detail-line,
+    .site-header .user-detail-line + .user-detail-line,
+    .site-header .user-detail-name {
+        margin: 0 !important;
+        white-space: nowrap !important;
+    }
+
+    .site-header .user-info strong {
+        margin: 0 !important;
+    }
+
+    .site-header .session-countdown {
+        flex: 0 0 auto !important;
+        min-height: 22px !important;
+        margin: 0 0 0 auto !important;
+        padding: 2px 8px !important;
+        white-space: nowrap !important;
+    }
+
+    .mobile-nav-toggle {
+        grid-area: toggle !important;
+        display: inline-flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        justify-self: end !important;
+        align-self: center !important;
+        width: 38px !important;
+        min-width: 38px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 7px !important;
+    }
+
+    .site-header .navbar {
+        display: none !important;
+        grid-template-columns: 1fr !important;
+        width: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+        padding: 5px var(--crs-compact-header-padding) 8px !important;
+        overflow: visible !important;
+        border-top: 1px solid var(--crs-border, var(--line-200)) !important;
+        background: var(--surface-elevated) !important;
+    }
+
+    .site-header.mobile-navigation-open {
+        position: relative !important;
+    }
+
+    .site-header.mobile-navigation-open .navbar {
+        display: grid !important;
+        row-gap: 7px !important;
+    }
+
+    .site-header .navbar ul {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        width: 100% !important;
+        gap: 6px !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    .site-header .navbar li,
+    .site-header .navbar .menu-item,
+    .site-header .navbar a,
+    .site-header .navbar .nav-post-link,
+    .site-header .navbar .nav-post-form {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+
+    .site-header .navbar a,
+    .site-header .navbar .nav-post-link {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 34px !important;
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+        line-height: 1.15 !important;
+        text-align: center !important;
+        white-space: normal !important;
+    }
+
+    .site-header .dropdown-menu {
+        display: none !important;
+        position: static !important;
+        inset: auto !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        margin-top: 4px !important;
+        box-shadow: none !important;
+        white-space: normal !important;
+    }
+
+
+    .site-header .dropdown.dropdown-open > .dropdown-menu {
+        display: grid !important;
+    }
+
+    .site-header .navbar > .crs-accessibility-strip {
+        width: max-content !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        justify-self: end !important;
+    }
+}
+
+@media (max-width: 760px) {
+    :root {
+        --crs-compact-header-padding: 10px;
+    }
+
+    .site-header .header-top {
+        column-gap: 8px !important;
+    }
+
+    .site-header .header-logo-main,
+    .site-header .header-logo-bcci {
+        width: 43px !important;
+        height: 31px !important;
+    }
+
+    .site-header .header-campaign-caption {
+        font-size: 9px !important;
+    }
+
+    .site-header .brand-title {
+        font-size: clamp(17px, 3.5vw, 21px) !important;
+    }
+
+    .site-header .brand-subtitle {
+        font-size: 9px !important;
+    }
+
+    .site-header .user-info {
+        gap: 3px 10px !important;
+        font-size: 10px !important;
+    }
+
+    .site-header .user-detail-line {
+        font-size: 10px !important;
+    }
+
+    .site-header .session-countdown {
+        margin-left: 0 !important;
+    }
+
+    .site-header .navbar ul {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .site-header .navbar > .crs-accessibility-strip {
+        width: 100% !important;
+        justify-self: stretch !important;
+        justify-content: center !important;
+    }
+}
+
+@media (max-width: 520px) {
+    .site-header .header-top {
+        grid-template-columns: minmax(0, 1fr) max-content !important;
+        grid-template-areas:
+            "logos toggle"
+            "brand brand"
+            "user user" !important;
+        row-gap: 4px !important;
+    }
+
+    .site-header .brand-area {
+        text-align: left !important;
+    }
+
+    .site-header .brand-subtitle {
+        justify-content: flex-start !important;
+    }
+
+    .site-header .user-info {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 3px 8px !important;
+    }
+
+    .site-header .user-detail-line,
+    .site-header .user-detail-line + .user-detail-line,
+    .site-header .user-detail-name {
+        min-width: 0 !important;
+        white-space: normal !important;
+    }
+
+    .site-header .session-countdown {
+        grid-column: 1 / -1 !important;
+        justify-self: start !important;
+    }
+
+    .site-header .navbar ul {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+html[data-crs-resolved-theme="dark"] .mobile-nav-toggle {
+    color: #ffffff !important;
+    background: linear-gradient(180deg, #7c3aed, #5b21b6) !important;
+    border-color: #8b5cf6 !important;
+}
+
+html[data-crs-resolved-theme="dark"] .mobile-nav-toggle:hover,
+html[data-crs-resolved-theme="dark"] .mobile-nav-toggle:focus-visible {
+    background: linear-gradient(180deg, #8b5cf6, #6d28d9) !important;
+    border-color: #a78bfa !important;
+}

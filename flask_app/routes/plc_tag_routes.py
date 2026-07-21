@@ -264,6 +264,8 @@ def _render_plc_tag_browser(machine_id, stage_id, context=None):
 
         plc_array_import_url=machine_stage_url("/plc-array-import", context=context),
 
+        configuration_readiness_url=machine_stage_url("/configuration", context=context),
+
         search_text=search_text,
 
         purpose_to_assign=purpose_to_assign,

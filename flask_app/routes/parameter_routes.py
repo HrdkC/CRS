@@ -1,3 +1,5 @@
+import json
+
 from flask import (
     render_template,
     request,
@@ -12,6 +14,11 @@ from database.parameter_definition_manager import (
 
 from database.audit_manager import (
     AuditManager
+)
+
+from database.parameter_template_setup_service import (
+    ParameterTemplateSetupError,
+    ParameterTemplateSetupService,
 )
 
 
@@ -89,6 +96,32 @@ def _render_parameters_page(context):
         )
     )
 
+    configured_array_tags = (
+        ParameterTemplateSetupService
+        .get_configured_array_tags(
+            machine_id,
+            stage_id
+        )
+    )
+
+    default_array_tag_id = None
+    for configured_tag in configured_array_tags:
+        if configured_tag.get("recommended"):
+            default_array_tag_id = configured_tag.get("id")
+            break
+    if default_array_tag_id is None and configured_array_tags:
+        default_array_tag_id = configured_array_tags[0].get("id")
+
+    name_prefix = " ".join(
+        part
+        for part in [
+            str(context.get("machine_code") or "").upper(),
+            str(context.get("stage_url_code") or context.get("stage_type") or "").upper(),
+            "Parameter",
+        ]
+        if part
+    )
+
     return render_template(
 
         "parameters/parameters.html",
@@ -111,6 +144,20 @@ def _render_parameters_page(context):
 
         add_parameter_url=machine_stage_url("/parameters/add", context=context),
 
+        template_setup_url=machine_stage_url("/parameters/template-setup", context=context),
+
+        template_bulk_update_url=machine_stage_url("/parameters/bulk-update", context=context),
+
+        configuration_url=machine_stage_url("/configuration", context=context),
+
+        plc_array_import_url=machine_stage_url("/plc-array-import", context=context),
+
+        configured_array_tags=configured_array_tags,
+
+        default_array_tag_id=default_array_tag_id,
+
+        default_name_prefix=name_prefix,
+
         search_text=search_text,
 
         parameter_scope=parameter_scope,
@@ -125,6 +172,129 @@ def _render_parameters_page(context):
 
 
 def register_parameter_routes(app):
+
+    def _request_metadata():
+        return {
+            "user_agent": request.headers.get("User-Agent", ""),
+            "forwarded_for": request.headers.get("X-Forwarded-For"),
+            "request_host": request.host,
+        }
+
+    @app.route(
+        "/parameters/template-setup/<machine_code>/<stage_code>",
+        methods=["POST"]
+    )
+    def parameter_template_setup_named(machine_code, stage_code):
+        if not _engineering_config_allowed():
+            return redirect("/")
+
+        context = get_machine_stage_context_by_code(machine_code, stage_code)
+        if not context:
+            flash("Machine/stage not found.", "error")
+            return redirect("/configuration")
+
+        back_url = machine_stage_url("/parameters", context=context)
+        try:
+            result = ParameterTemplateSetupService.create_missing_from_configured_array(
+                machine_id=context["machine_id"],
+                stage_id=context["stage_id"],
+                source_tag_id=request.form.get("source_tag_id"),
+                start_index=request.form.get("start_index"),
+                end_index=request.form.get("end_index"),
+                name_prefix=request.form.get("name_prefix"),
+                unit=request.form.get("unit"),
+                min_value=request.form.get("min_value"),
+                max_value=request.form.get("max_value"),
+                default_value=request.form.get("default_value"),
+                username=session.get("username", "system"),
+                role=session.get("role", "SYSTEM"),
+                reason=request.form.get("reason"),
+                request_metadata=_request_metadata(),
+            )
+        except ParameterTemplateSetupError as exc:
+            flash(str(exc), "error")
+            return redirect(back_url)
+        except Exception:
+            flash(
+                "Parameter template setup could not be completed. No template rows were changed.",
+                "error"
+            )
+            return redirect(back_url)
+
+        if result.created_count:
+            flash(
+                f"Created {result.created_count} parameter template row(s) from "
+                f"{result.source_tag_name}[{result.start_index}..{result.end_index}]. "
+                "Review the generated names, units, limits, and defaults below before release.",
+                "success"
+            )
+        else:
+            flash(
+                "No new rows were required. Existing parameter indexes were preserved.",
+                "info"
+            )
+        if result.skipped_count:
+            flash(
+                f"{result.skipped_count} existing index(es) were skipped and not overwritten.",
+                "warning"
+            )
+        return redirect(back_url)
+
+    @app.route(
+        "/parameters/bulk-update/<machine_code>/<stage_code>",
+        methods=["POST"]
+    )
+    def parameter_template_bulk_update_named(machine_code, stage_code):
+        if not _engineering_config_allowed():
+            return redirect("/")
+
+        context = get_machine_stage_context_by_code(machine_code, stage_code)
+        if not context:
+            flash("Machine/stage not found.", "error")
+            return redirect("/configuration")
+
+        back_url = machine_stage_url(
+            "/parameters",
+            context=context,
+            query={
+                "search": request.form.get("return_search", ""),
+                "parameter_scope": request.form.get("return_scope", "active"),
+            }
+        )
+
+        try:
+            payload = json.loads(request.form.get("changes_json") or "[]")
+            if not isinstance(payload, list):
+                raise ParameterTemplateSetupError("Invalid parameter change payload.")
+            result = ParameterTemplateSetupService.bulk_update_template(
+                machine_id=context["machine_id"],
+                stage_id=context["stage_id"],
+                changes=payload,
+                username=session.get("username", "system"),
+                role=session.get("role", "SYSTEM"),
+                reason=request.form.get("reason"),
+                request_metadata=_request_metadata(),
+            )
+        except (json.JSONDecodeError, ParameterTemplateSetupError) as exc:
+            flash(str(exc), "error")
+            return redirect(back_url)
+        except Exception:
+            flash(
+                "Parameter template changes could not be saved. No rows were changed.",
+                "error"
+            )
+            return redirect(back_url)
+
+        flash(
+            f"Saved {result.changed_count} changed parameter row(s).",
+            "success"
+        )
+        if result.backfilled_value_count:
+            flash(
+                f"Backfilled {result.backfilled_value_count} missing recipe value row(s) for parameters restored to Used.",
+                "info"
+            )
+        return redirect(back_url)
 
     @app.route(
         "/parameters/<machine_code>/<stage_code>"

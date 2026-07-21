@@ -453,6 +453,9 @@ PLC Tag Browser
             </p>
         </div>
         <div class="action-row">
+            {% if purpose_to_assign %}
+            <a href="{{ configuration_readiness_url if configuration_readiness_url is defined else machine_stage_url('/configuration', machine_id=machine_id, stage_id=stage_id) }}" class="crs-btn crs-btn-soft" title="Return to Configuration Readiness for this machine and stage.">&larr; Back to Configuration</a>
+            {% endif %}
             <a href="{{ plc_array_import_url if plc_array_import_url is defined else machine_stage_url('/plc-array-import', machine_id=machine_id, stage_id=stage_id) }}" class="crs-btn crs-btn-primary">1D Array Import</a>
             <a href="{{ plc_tag_browser_url if plc_tag_browser_url is defined else machine_stage_url('/plc-tags', machine_id=machine_id, stage_id=stage_id) }}?purpose=RECIPE_DATA&online_search=1&search=Recipe&array_only=1&bool_only=0" class="crs-btn crs-btn-soft">Recipe Array Search</a>
             <a href="{{ plc_tag_browser_url if plc_tag_browser_url is defined else machine_stage_url('/plc-tags', machine_id=machine_id, stage_id=stage_id) }}?online_search=1&search=&array_only=0&bool_only=0" class="crs-btn crs-btn-soft">Diagnostic Browse All</a>

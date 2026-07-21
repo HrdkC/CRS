@@ -1,0 +1,294 @@
+/* CRS V11.11 RC1: guided parameter-template setup and compact bulk editor. */
+
+.parameter-template-workbench {
+    --template-accent: #8b5cf6;
+    --template-accent-soft: rgba(139, 92, 246, 0.14);
+    --template-border: rgba(148, 163, 184, 0.28);
+}
+
+.parameter-template-guide {
+    overflow: visible;
+}
+
+.parameter-template-guide-heading {
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.parameter-template-guide-heading h2 {
+    margin: 0.3rem 0 0.35rem;
+    font-size: clamp(1.1rem, 1.7vw, 1.45rem);
+}
+
+.parameter-template-guide-heading p {
+    margin: 0;
+    max-width: 78rem;
+}
+
+.parameter-template-wizard {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1rem;
+}
+
+.parameter-template-step {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 0.85rem;
+    align-items: flex-start;
+    padding: 1rem;
+    border: 1px solid var(--template-border);
+    border-radius: 0.85rem;
+    background: color-mix(in srgb, var(--surface-panel, #13203a) 94%, var(--template-accent) 6%);
+}
+
+.parameter-template-step-number {
+    display: grid;
+    place-items: center;
+    width: 2.35rem;
+    height: 2.35rem;
+    border-radius: 999px;
+    background: linear-gradient(145deg, #7c3aed, #9333ea);
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 0.45rem 1rem rgba(124, 58, 237, 0.24);
+}
+
+.parameter-template-step-body {
+    min-width: 0;
+}
+
+.parameter-template-step-body > label,
+.parameter-template-range-grid label,
+.parameter-template-default-grid label,
+.parameter-template-reason-field,
+.parameter-template-save-bar label {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.parameter-template-step-body label > span,
+.parameter-template-save-bar label > span {
+    font-weight: 750;
+}
+
+.parameter-template-step select,
+.parameter-template-step input,
+.parameter-template-save-bar input,
+.parameter-template-cell-input {
+    width: 100%;
+    min-width: 0;
+}
+
+.parameter-template-range-grid {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.7fr) minmax(8rem, 0.7fr) minmax(15rem, 1.6fr);
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.parameter-template-count {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.15rem 0.65rem;
+    align-items: center;
+    min-height: 4.25rem;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--template-border);
+    border-radius: 0.65rem;
+    background: var(--template-accent-soft);
+}
+
+.parameter-template-count span {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.parameter-template-count strong {
+    justify-self: end;
+    font-size: 1.45rem;
+}
+
+.parameter-template-count small {
+    grid-column: 1 / -1;
+}
+
+.parameter-template-count small.is-invalid {
+    color: #fbbf24;
+    font-weight: 700;
+}
+
+.parameter-template-default-grid {
+    display: grid;
+    grid-template-columns: minmax(15rem, 1.8fr) repeat(4, minmax(7.5rem, 0.75fr));
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.parameter-template-prefix-field small,
+.field-help {
+    opacity: 0.82;
+    line-height: 1.45;
+}
+
+.parameter-template-reason-field {
+    margin-top: 0.8rem;
+}
+
+.parameter-template-wizard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 0.8rem;
+}
+
+.parameter-template-empty-config {
+    display: grid;
+    justify-items: start;
+    gap: 0.65rem;
+    padding: 1.2rem;
+}
+
+.parameter-template-editor-heading {
+    align-items: flex-start;
+}
+
+.parameter-template-table-wrap {
+    max-height: min(58vh, 44rem);
+}
+
+.parameter-template-table {
+    min-width: 76rem;
+}
+
+.parameter-template-table th:nth-child(1),
+.parameter-template-table th:nth-child(2) {
+    width: 6.2rem;
+}
+
+.parameter-template-table th:nth-child(3) {
+    width: 21rem;
+}
+
+.parameter-template-table th:nth-child(4) {
+    width: 7rem;
+}
+
+.parameter-template-table th:nth-child(5),
+.parameter-template-table th:nth-child(6),
+.parameter-template-table th:nth-child(7) {
+    width: 8rem;
+}
+
+.parameter-template-table th:nth-child(8) {
+    width: 7.5rem;
+}
+
+.parameter-template-cell-input {
+    min-height: 2.1rem;
+    padding: 0.35rem 0.45rem;
+    border-radius: 0.45rem;
+    font-size: 0.82rem;
+}
+
+.parameter-template-name-input {
+    min-width: 17rem;
+}
+
+.parameter-template-unit-input {
+    min-width: 5rem;
+    text-align: center;
+}
+
+.parameter-template-number-input {
+    min-width: 6.2rem;
+    text-align: right;
+}
+
+.parameter-template-used-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.1rem;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid var(--template-border);
+    border-radius: 999px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.parameter-template-used-toggle input {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+}
+
+.parameter-template-row-dirty td {
+    background: color-mix(in srgb, var(--template-accent-soft) 82%, transparent) !important;
+}
+
+.parameter-template-row-dirty td:first-child {
+    box-shadow: inset 0.22rem 0 0 var(--template-accent);
+}
+
+.parameter-template-save-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 8;
+    display: grid;
+    grid-template-columns: minmax(18rem, 1fr) auto;
+    gap: 0.8rem;
+    align-items: end;
+    padding: 0.9rem 1rem;
+    border-top: 1px solid var(--template-border);
+    background: color-mix(in srgb, var(--surface-panel, #111c33) 96%, transparent);
+    backdrop-filter: blur(10px);
+}
+
+.parameter-template-save-bar .crs-btn {
+    min-height: 2.55rem;
+}
+
+.parameter-template-save-bar .crs-btn:disabled,
+.parameter-template-wizard .crs-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 1180px) {
+    .parameter-template-default-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .parameter-template-prefix-field {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 760px) {
+    .parameter-template-step {
+        grid-template-columns: 1fr;
+    }
+
+    .parameter-template-step-number {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .parameter-template-range-grid,
+    .parameter-template-default-grid,
+    .parameter-template-save-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .parameter-template-count {
+        min-height: 0;
+    }
+
+    .parameter-template-wizard-actions .crs-btn,
+    .parameter-template-save-bar .crs-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

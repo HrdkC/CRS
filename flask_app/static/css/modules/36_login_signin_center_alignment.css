@@ -1,0 +1,54 @@
+/*
+ * 36_login_signin_center_alignment.css
+ * Keeps the login form and Sign In action centered inside the right login panel.
+ * This module intentionally loads after accessibility/responsive overrides.
+ */
+
+/* Center the complete sign-in form card within the login panel. */
+.compact-corporate-login-panel .compact-login-form {
+    width: min(430px, 100%) !important;
+    justify-self: center !important;
+    align-self: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Keep the username/password field group centered inside the form card. */
+.compact-corporate-login-panel .login-field-stack {
+    width: min(350px, 100%) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Center both the button and its visible Sign In label. */
+.compact-corporate-login-panel .login-submit-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 158px !important;
+    min-height: 35px !important;
+    margin: 10px auto 0 !important;
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+    text-align: center !important;
+    line-height: 1.1 !important;
+}
+
+/* A block wrapper is required so auto margins center the inline-flex button. */
+.compact-corporate-login-panel .login-field-stack > .login-submit-button {
+    display: flex !important;
+}
+
+@media (max-width: 640px) {
+    .compact-corporate-login-panel .compact-login-form,
+    .compact-corporate-login-panel .login-field-stack {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .compact-corporate-login-panel .login-submit-button {
+        width: min(180px, 72vw) !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+}
