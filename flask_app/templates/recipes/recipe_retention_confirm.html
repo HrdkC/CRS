@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="recipe-workbench">
+    <div class="workbench-hero">
+        <div class="workbench-title">
+            <span class="section-kicker">Controlled Recipe Retention</span>
+            <h1>{{ title }}</h1>
+            <p>{{ description }}</p>
+        </div>
+        <div class="workbench-actions">
+            <a href="{{ back_url }}" class="crs-btn crs-btn-soft">Cancel / Back</a>
+        </div>
+    </div>
+
+    <div class="workbench-card">
+        <div class="panel-heading table-heading">
+            <div>
+                <span>{{ recipe.recipe_code }} — {{ recipe.recipe_name }}</span>
+                <p>Machine {{ recipe.machine_code }} | {{ recipe.stage_type }} | Version V{{ recipe.version }}</p>
+            </div>
+            <span class="status-badge status-neutral">{{ recipe.status }}</span>
+        </div>
+
+        {% if blockers %}
+        <div class="notice notice-warning" style="margin: 16px;">
+            <strong>This action is currently blocked.</strong>
+            <ul>
+                {% for blocker in blockers %}<li>{{ blocker }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{{ post_url }}" style="padding: 18px; max-width: 920px;">
+            {{ csrf_input() }}
+
+            {% if action_kind in ["archive", "delete"] %}
+            <div class="form-group">
+                <label for="confirmation_code">Recipe code</label>
+                <input
+                    id="confirmation_code"
+                    name="confirmation_code"
+                    type="text"
+                    value="{{ recipe.recipe_code }}"
+                    readonly
+                    aria-readonly="true"
+                    required
+                >
+                <small class="form-help-text">
+                    {% if action_kind == "delete" %}
+                    Selected automatically from the archived recipe list. Enter the deletion reason and press Delete Permanently.
+                    {% else %}
+                    Selected automatically from the recipe list. Only enter the archive reason below.
+                    {% endif %}
+                </small>
+            </div>
+            {% else %}
+            <div class="form-group">
+                <label for="confirmation_code">Type the exact recipe code to confirm</label>
+                <input
+                    id="confirmation_code"
+                    name="confirmation_code"
+                    type="text"
+                    autocomplete="off"
+                    required
+                    placeholder="{{ recipe.recipe_code }}"
+                >
+            </div>
+            {% endif %}
+
+
+            <div class="form-group">
+                <label for="reason">Reason</label>
+                <textarea
+                    id="reason"
+                    name="reason"
+                    rows="4"
+                    minlength="5"
+                    required
+                    placeholder="Explain why this recipe is no longer required or why it is being restored."
+                ></textarea>
+            </div>
+
+            <div class="workbench-actions" style="justify-content: flex-start; margin-top: 18px;">
+                <a href="{{ back_url }}" class="crs-btn crs-btn-soft">Cancel</a>
+                <button
+                    type="submit"
+                    class="crs-btn {% if action_kind == 'delete' %}danger{% else %}crs-btn-primary{% endif %}"
+                    {% if not allowed %}disabled{% endif %}
+                >
+                    {{ action_label }}
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

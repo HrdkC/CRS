@@ -32,6 +32,8 @@ ROLE_CAPABILITIES = {
         "recipe_copy",
         "recipe_submit_review",
         "recipe_approve",
+        "recipe_archive",
+        "recipe_permanent_delete",
         "engineering_config",
         "admin_config",
         "user_manage",

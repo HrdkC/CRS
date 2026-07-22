@@ -83,6 +83,7 @@ class CRSSystemBootstrapManager:
         "recipe_resource_locks",
         "recipe_resource_claims",
         "recipe_phase_control_audit",
+        "recipe_retention_history",
         "login_throttle",
         "recipe_upload_history",
         "recipe_download_history",

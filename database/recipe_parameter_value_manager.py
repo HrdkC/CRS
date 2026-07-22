@@ -1,8 +1,13 @@
+import logging
 import uuid
 
 from database.database import (
-    get_connection
+    get_connection,
+    transaction,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class RecipeParameterValueManager:
@@ -340,12 +345,21 @@ class RecipeParameterValueManager:
         try:
             with transaction(immediate=True) as conn:
                 cursor = conn.cursor()
+                recipe_columns = {
+                    item[1] for item in cursor.execute("PRAGMA table_info(recipes)")
+                }
+                archived_select = (
+                    "COALESCE(r.is_archived, 0) AS is_archived"
+                    if "is_archived" in recipe_columns
+                    else "0 AS is_archived"
+                )
                 row = cursor.execute(
-                    """
+                    f"""
                     SELECT
                         rpv.id, rpv.recipe_id, rpv.parameter_definition_id,
                         rpv.parameter_value, rpv.updated_at,
                         r.recipe_code, r.version, r.status, r.machine_id, r.stage_id,
+                        {archived_select},
                         pd.parameter_name, pd.tag_index, pd.min_value, pd.max_value,
                         CASE
                             WHEN r.status='RELEASED' AND r.id=(
@@ -370,6 +384,13 @@ class RecipeParameterValueManager:
                         "success": False,
                         "changed": False,
                         "message": "Recipe parameter value not found.",
+                    }
+
+                if int(row["is_archived"] or 0) == 1:
+                    return {
+                        "success": False,
+                        "changed": False,
+                        "message": "Archived recipe values are read-only. Restore the recipe first.",
                     }
 
                 if row["status"] == "RELEASED" and int(row["is_current_released"] or 0) != 1:
@@ -464,10 +485,19 @@ class RecipeParameterValueManager:
                     "new_value": numeric_new_value,
                 }
         except Exception as exc:
+            logger.exception(
+                "Recipe parameter update failed and was rolled back "
+                "(value_id=%s, correlation_id=%s).",
+                value_id,
+                correlation_id,
+            )
             return {
                 "success": False,
                 "changed": False,
-                "message": "Recipe parameter update failed and was rolled back.",
+                "message": (
+                    "Recipe parameter update failed and was rolled back. "
+                    f"Reference: {correlation_id[:8]}"
+                ),
                 "error_type": type(exc).__name__,
                 "correlation_id": correlation_id,
             }

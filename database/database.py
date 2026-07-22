@@ -1,4 +1,5 @@
 import sqlite3
+import threading
 from contextlib import contextmanager
 
 from config.settings import (
@@ -9,18 +10,44 @@ from config.settings import (
 )
 
 
+_JOURNAL_MODE_LOCK = threading.Lock()
+_JOURNAL_MODE_INITIALIZED = False
+
+
+def _initialize_journal_mode_once(conn):
+    """Apply the database-level journal mode once per process.
+
+    Re-running ``PRAGMA journal_mode`` on every connection can require an
+    exclusive SQLite lock.  The PLC worker and browser status endpoint use
+    separate processes, so doing this on every short-lived status read can
+    produce transient ``database is locked`` failures.  Journal mode is a
+    persistent database property; one startup attempt per process is enough.
+    """
+    global _JOURNAL_MODE_INITIALIZED
+
+    if _JOURNAL_MODE_INITIALIZED:
+        return
+
+    with _JOURNAL_MODE_LOCK:
+        if _JOURNAL_MODE_INITIALIZED:
+            return
+        try:
+            conn.execute(f"PRAGMA journal_mode = {SQLITE_JOURNAL_MODE}").fetchone()
+        except sqlite3.DatabaseError:
+            # The connection still remains usable with SQLite's effective
+            # journal mode.  Bootstrap/release validation reports the actual
+            # mode separately.
+            pass
+        finally:
+            _JOURNAL_MODE_INITIALIZED = True
+
+
 def _configure_connection(conn):
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute(f"PRAGMA busy_timeout = {max(1000, int(SQLITE_BUSY_TIMEOUT_MS))}")
+    _initialize_journal_mode_once(conn)
 
-    # Journal/synchronous PRAGMAs are connection-safe. If the database is on a
-    # filesystem that rejects WAL, SQLite returns the effective mode and the app
-    # continues with that mode rather than silently changing data semantics.
-    try:
-        conn.execute(f"PRAGMA journal_mode = {SQLITE_JOURNAL_MODE}").fetchone()
-    except sqlite3.DatabaseError:
-        pass
     try:
         conn.execute(f"PRAGMA synchronous = {SQLITE_SYNCHRONOUS}")
     except sqlite3.DatabaseError:

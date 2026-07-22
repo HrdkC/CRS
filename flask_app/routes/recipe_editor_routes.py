@@ -4,9 +4,12 @@ from flask import (
     redirect,
     session,
     flash,
-    jsonify
+    jsonify,
+    current_app
 )
 
+
+from datetime import datetime, timezone
 
 from urllib.parse import (
     urlencode
@@ -76,6 +79,10 @@ from database.recipe_bulk_change_service import (
     RecipeBulkChangeService
 )
 
+from utils.plc_worker_runtime_status import (
+    PLCWorkerRuntimeStatus
+)
+
 from flask_app.security.role_guard import (
     role_can
 )
@@ -93,6 +100,73 @@ def _buffer_operation_capability(operation):
     return "recipe_download"
 
 
+def _job_timestamp_age_seconds(value):
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if parsed.tzinfo is not None:
+            now = datetime.now(timezone.utc)
+            return max(0.0, (now - parsed.astimezone(timezone.utc)).total_seconds())
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        return max(0.0, (now - parsed).total_seconds())
+    except (TypeError, ValueError):
+        return None
+
+
+def _no_store_json(payload, status=200):
+    response = jsonify(payload)
+    response.status_code = int(status)
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
+def _live_status_json_payload(live_status):
+    """Return a stable, JSON-safe view of read-only PLC live status."""
+
+    def scalar(value):
+        if value is None or isinstance(value, (str, int, float, bool)):
+            return value
+        return str(value)
+
+    groups = []
+    for group in (live_status or {}).get("groups", []):
+        items = []
+        for item in group.get("items", []):
+            tag = item.get("tag") or {}
+            try:
+                tag_name = tag.get("tag_name")
+            except AttributeError:
+                try:
+                    tag_name = tag["tag_name"]
+                except Exception:
+                    tag_name = None
+
+            items.append({
+                "purpose": item.get("purpose"),
+                "label": item.get("label"),
+                "tag_name": tag_name or "Not mapped",
+                "value": scalar(item.get("value")),
+                "expected_text": item.get("expected_text") or "Readable",
+                "status": item.get("status") or "missing",
+                "status_text": item.get("status_text") or "Not Checked",
+                "message": item.get("message") or "",
+            })
+
+        groups.append({
+            "title": group.get("title") or "PLC Status",
+            "items": items,
+        })
+
+    return {
+        "connected": bool((live_status or {}).get("connected")),
+        "status": (live_status or {}).get("status") or "NOT_CHECKED",
+        "summary": (live_status or {}).get("summary") or "Live PLC status was not checked.",
+        "groups": groups,
+        "issues": [str(issue) for issue in (live_status or {}).get("issues", [])],
+    }
 
 
 def _lock_context():
@@ -562,6 +636,13 @@ def register_recipe_editor_routes(app):
             )
 
         )
+
+        if not recipe:
+            flash(
+                "Recipe is archived or no longer available in the active list.",
+                "warning"
+            )
+            return redirect("/recipes")
 
         search_text = request.args.get(
             "search",
@@ -1717,6 +1798,13 @@ def register_recipe_editor_routes(app):
                 value["recipe_id"]
             )
         )
+
+        if not recipe:
+            flash(
+                "Recipe is archived or no longer available for editing.",
+                "warning"
+            )
+            return redirect("/recipes")
 
         is_current_released_edit = (
             recipe
@@ -2950,6 +3038,54 @@ def register_recipe_editor_routes(app):
         )
 
     @app.route(
+        "/recipe-editor/download-preparation/<int:recipe_id>/live-status",
+        methods=["GET"]
+    )
+    def recipe_download_preparation_live_status(recipe_id):
+        """Read current interlock/handshake values without changing PLC data."""
+
+        if not session.get("username"):
+            return jsonify({
+                "success": False,
+                "message": "Login required."
+            }), 401
+
+        if not role_can(session.get("role"), "recipe_download"):
+            return jsonify({
+                "success": False,
+                "message": "Your role cannot access PLC buffer live status."
+            }), 403
+
+        recipe = RecipeManager.get_recipe_by_id(recipe_id)
+        if not recipe:
+            return jsonify({
+                "success": False,
+                "message": "Recipe not found."
+            }), 404
+
+        selected_plc_id = request.args.get("plc_id", "").strip()
+        try:
+            selected_plc_id = int(selected_plc_id) if selected_plc_id else None
+        except (TypeError, ValueError):
+            return jsonify({
+                "success": False,
+                "message": "Invalid PLC selection."
+            }), 400
+
+        live_status = PLCBufferOperationManager.get_live_tag_status(
+            recipe_id=recipe_id,
+            plc_id=selected_plc_id,
+        )
+
+        response = jsonify({
+            "success": True,
+            "live_status": _live_status_json_payload(live_status),
+        })
+        response.headers["Cache-Control"] = "no-store, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        return response
+
+    @app.route(
         "/recipe-editor/download-preparation/<int:recipe_id>/start",
         methods=["POST"]
     )
@@ -3070,6 +3206,22 @@ def register_recipe_editor_routes(app):
                 "success": False,
                 "message": "Select PLC for recipe buffer operation."
             }), 400
+
+        worker_status = PLCWorkerRuntimeStatus.get_status(max_age_seconds=5.0)
+        if not worker_status.get("online"):
+            return jsonify({
+                "success": False,
+                "worker_offline": True,
+                "message": (
+                    "The durable CRS PLC worker is offline. "
+                    "Start CRS with Start_CRS_With_PLC_Worker.bat and retry. "
+                    "No PLC job was queued and no resource lock was taken."
+                ),
+                "worker_status": {
+                    "state": worker_status.get("state") or "OFFLINE",
+                    "age_seconds": worker_status.get("age_seconds"),
+                },
+            }), 503
 
         edit_lock = RecipeResourceLockManager.get_active_lock(
             "RECIPE_EDIT", recipe_id
@@ -3256,40 +3408,73 @@ def register_recipe_editor_routes(app):
                 "message": "Login required."
             }), 401
 
-        job = (
-            PLCOperationJobManager
-            .get_job(
-                job_id
+        try:
+            job = PLCOperationJobManager.get_job(job_id)
+        except Exception as exc:
+            if PLCOperationJobManager.is_retryable_database_error(exc):
+                return _no_store_json({
+                    "success": False,
+                    "retryable": True,
+                    "message": (
+                        "The PLC job database is briefly busy. CRS will retry "
+                        "without unlocking the operation."
+                    ),
+                }, status=503)
+            current_app.logger.exception(
+                "Unable to read PLC operation job %s", job_id
             )
-        )
+            return _no_store_json({
+                "success": False,
+                "retryable": True,
+                "message": "PLC operation status is temporarily unavailable.",
+            }, status=503)
 
         if not job:
-
-            return jsonify({
+            return _no_store_json({
                 "success": False,
                 "message": "Operation job not found."
-            }), 404
+            }, status=404)
 
-        is_owner = (job.get("started_by") or "").lower() == (session.get("username") or "").lower()
+        is_owner = (job.get("started_by") or "").lower() == (
+            session.get("username") or ""
+        ).lower()
         can_supervise = role_can(session.get("role"), "audit_view")
         if not is_owner and not can_supervise:
-            return jsonify({
+            return _no_store_json({
                 "success": False,
                 "message": "You are not authorized to view this PLC operation."
-            }), 403
+            }, status=403)
 
-        return jsonify({
+        # Recover an old active row when the durable worker is demonstrably
+        # online but idle and no longer owns this job.  This is a final safety
+        # net for jobs created before terminal-status persistence was hardened.
+        if job.get("status") in PLCOperationJobManager.ACTIVE_STATUSES:
+            worker_status = PLCWorkerRuntimeStatus.get_status()
+            heartbeat_age = _job_timestamp_age_seconds(
+                job.get("heartbeat_at") or job.get("updated_at")
+            )
+            worker_owns_job = str(
+                worker_status.get("current_job_id") or ""
+            ) == str(job_id)
+            worker_is_idle = (
+                worker_status.get("online")
+                and str(worker_status.get("state") or "").upper() == "IDLE"
+                and not worker_owns_job
+            )
+            if worker_is_idle and heartbeat_age is not None and heartbeat_age >= 45:
+                try:
+                    PLCOperationJobManager.recover_orphaned_job(
+                        job_id,
+                        recovery_reason="STATUS_ENDPOINT_IDLE_WORKER_RECOVERY",
+                    )
+                    job = PLCOperationJobManager.get_job(job_id) or job
+                except Exception:
+                    current_app.logger.exception(
+                        "Unable to recover orphaned PLC operation job %s", job_id
+                    )
+
+        return _no_store_json({
             "success": True,
             "job": job,
-            "done": job.get(
-                "status"
-            )
-            in [
-                "SUCCESS",
-                "BLOCKED",
-                "ERROR",
-                "INTERRUPTED",
-                "CANCELLED",
-                "RECOVERY_REQUIRED"
-            ]
+            "done": job.get("status") in PLCOperationJobManager.FINAL_STATUSES,
         })

@@ -84,6 +84,34 @@ ALLOW_PLC_COMMUNICATION = os.getenv(
     "CRS_ALLOW_PLC_COMMUNICATION", ""
 ).strip().upper() == "YES"
 
+# Restore operations perform a delayed fresh-connection readback so CRS does
+# not report success when PLC logic, SCADA, or another client immediately
+# overwrites the CRS recipe buffer. Keep this setting compatible with older
+# deployments and fail safely when an invalid environment value is supplied.
+try:
+    PLC_RESTORE_VERIFY_DELAY_SECONDS = max(
+        0.2,
+        float(os.getenv("CRS_PLC_RESTORE_VERIFY_DELAY_SECONDS", "1.0")),
+    )
+except (TypeError, ValueError):
+    PLC_RESTORE_VERIFY_DELAY_SECONDS = 1.0
+
 ALLOW_LEGACY_RECIPE_WRITES = os.getenv(
     "CRS_ALLOW_LEGACY_RECIPE_WRITES", "0"
 ).strip().lower() in {"1", "true", "yes", "on"}
+
+# Automatic deployment/runtime supervision. When app.py is started directly,
+# CRS starts one durable PLC worker automatically and supervises it. Set
+# CRS_AUTO_START_PLC_WORKER=0 only for safe tests, maintenance, or web-only mode.
+AUTO_START_PLC_WORKER = os.getenv(
+    "CRS_AUTO_START_PLC_WORKER", "1"
+).strip().lower() in {"1", "true", "yes", "on"}
+PLC_WORKER_POLL_SECONDS = float(
+    os.getenv("CRS_PLC_WORKER_POLL_SECONDS", "0.25")
+)
+PLC_WORKER_READY_TIMEOUT_SECONDS = float(
+    os.getenv("CRS_PLC_WORKER_READY_TIMEOUT_SECONDS", "12")
+)
+PLC_WORKER_MAX_RESTARTS = int(
+    os.getenv("CRS_PLC_WORKER_MAX_RESTARTS", "5")
+)

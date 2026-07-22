@@ -4,10 +4,16 @@ This module is intentionally idempotent. It is executed only by bootstrap or an
 explicit migration command, never by normal read-only request paths.
 """
 
+import threading
+
 from database.database import transaction
 
 
 HARDENING_SCHEMA_VERSION = "CRS_V11_11_HARDENING_001"
+RECIPE_RETENTION_SCHEMA_VERSION = "CRS_V13_RECIPE_RETENTION_001"
+
+_SCHEMA_READY_LOCK = threading.Lock()
+_SCHEMA_READY_VERIFIED = False
 
 
 def _table_exists(cursor, table_name):
@@ -335,6 +341,52 @@ def apply_v11_11_hardening_schema():
             """
         )
 
+        # V13 safe recipe retention. Active recipe data is archived first and
+        # remains recoverable. Permanent deletion is restricted to unused
+        # TEST-ONLY drafts and leaves a durable tombstone/audit record.
+        if _table_exists(cursor, "recipes"):
+            _add_column(cursor, "recipes", "is_archived", "INTEGER NOT NULL DEFAULT 0")
+            _add_column(cursor, "recipes", "archived_at", "DATETIME")
+            _add_column(cursor, "recipes", "archived_by", "TEXT")
+            _add_column(cursor, "recipes", "archive_reason", "TEXT")
+            _add_column(cursor, "recipes", "archived_previous_status", "TEXT")
+            _add_column(cursor, "recipes", "archive_correlation_id", "TEXT")
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_recipes_active_stage "
+                "ON recipes(machine_id, stage_id, is_archived, recipe_code, version)"
+            )
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS recipe_retention_history
+            (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                recipe_id INTEGER,
+                recipe_code TEXT NOT NULL,
+                recipe_name TEXT,
+                recipe_version INTEGER,
+                machine_id INTEGER,
+                stage_id INTEGER,
+                event_type TEXT NOT NULL,
+                previous_status TEXT,
+                actor TEXT NOT NULL,
+                actor_role TEXT,
+                reason TEXT NOT NULL,
+                correlation_id TEXT NOT NULL,
+                metadata_json TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_recipe_retention_history_recipe "
+            "ON recipe_retention_history(recipe_id, created_at)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_recipe_retention_history_code "
+            "ON recipe_retention_history(recipe_code, recipe_version, created_at)"
+        )
+
         # Final P15 Second Stage contract: recipe rows carry only group, line
         # and selected phase. Legacy columns are retained but cleared and no
         # longer participate in recipe behavior.
@@ -485,46 +537,73 @@ def apply_v11_11_hardening_schema():
                 "Atomic locks/sessions, audit correlation, durable PLC jobs and shared throttle",
             ),
         )
+        cursor.execute(
+            """
+            INSERT OR IGNORE INTO schema_version(version, description)
+            VALUES (?, ?)
+            """,
+            (
+                RECIPE_RETENTION_SCHEMA_VERSION,
+                "Safe recipe archive, restore and restricted permanent-delete evidence",
+            ),
+        )
 
     return HARDENING_SCHEMA_VERSION
 
 
 def assert_v11_11_hardening_schema_ready():
-    """Verify the controlled migration was applied without executing DDL."""
-    from database.database import get_connection
+    """Verify the controlled migration once per process without executing DDL.
 
-    required_tables = {
-        "schema_version",
-        "recipe_resource_locks",
-        "recipe_resource_claims",
-        "login_throttle",
-        "recipe_phase_control_audit",
-        "plc_operation_jobs",
-    }
-    conn = get_connection()
-    try:
-        rows = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchall()
-        existing = {row[0] for row in rows}
-        missing = sorted(required_tables - existing)
-        if missing:
-            raise RuntimeError(
-                "CRS hardening schema is not ready; missing tables: "
-                + ", ".join(missing)
-                + ". Run the controlled bootstrap/migration before starting CRS."
-            )
-        version = conn.execute(
-            "SELECT 1 FROM schema_version WHERE version=?",
-            (HARDENING_SCHEMA_VERSION,),
-        ).fetchone()
-        if not version:
-            raise RuntimeError(
-                f"Required schema version {HARDENING_SCHEMA_VERSION} is not applied."
-            )
-    finally:
-        conn.close()
-    return True
+    The schema cannot legitimately change underneath a running CRS process.
+    Caching this successful preflight avoids opening a second SQLite connection
+    for every one-second browser status poll while the PLC worker is writing
+    job progress.
+    """
+    global _SCHEMA_READY_VERIFIED
+
+    if _SCHEMA_READY_VERIFIED:
+        return True
+
+    with _SCHEMA_READY_LOCK:
+        if _SCHEMA_READY_VERIFIED:
+            return True
+
+        from database.database import get_connection
+
+        required_tables = {
+            "schema_version",
+            "recipe_resource_locks",
+            "recipe_resource_claims",
+            "login_throttle",
+            "recipe_phase_control_audit",
+            "plc_operation_jobs",
+        }
+        conn = get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+            existing = {row[0] for row in rows}
+            missing = sorted(required_tables - existing)
+            if missing:
+                raise RuntimeError(
+                    "CRS hardening schema is not ready; missing tables: "
+                    + ", ".join(missing)
+                    + ". Run the controlled bootstrap/migration before starting CRS."
+                )
+            version = conn.execute(
+                "SELECT 1 FROM schema_version WHERE version=?",
+                (HARDENING_SCHEMA_VERSION,),
+            ).fetchone()
+            if not version:
+                raise RuntimeError(
+                    f"Required schema version {HARDENING_SCHEMA_VERSION} is not applied."
+                )
+        finally:
+            conn.close()
+
+        _SCHEMA_READY_VERIFIED = True
+        return True
 
 
 if __name__ == "__main__":

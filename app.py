@@ -25,6 +25,28 @@ from flask_app.routes.database_configuration_routes import (
 )
 
 
+def _env_enabled(name: str, default: str = "0") -> bool:
+    return os.getenv(name, default).strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def should_use_waitress(deployment_mode: str) -> bool:
+    """Choose the HTTP server independently from the security profile.
+
+    Production security mode always uses Waitress.  Controlled intranet/trial
+    installations may also request Waitress with ``CRS_USE_WAITRESS=1`` while
+    HTTPS, trusted-host and secure-cookie commissioning is still pending.
+    """
+
+    return deployment_mode == "production" or _env_enabled(
+        "CRS_USE_WAITRESS", "0"
+    )
+
+
 app = create_app()
 
 register_auth_routes(app)
@@ -49,35 +71,58 @@ register_database_configuration_routes(app)
 
 
 if __name__ == "__main__":
-    # Debug mode is OFF by default. Enable only on a local development PC with
-    # CRS_FLASK_DEBUG=1. Never expose the Flask debugger on the plant network.
-    debug_enabled = os.getenv("CRS_FLASK_DEBUG", "0").strip().lower() in {
-        "1",
-        "true",
-        "yes",
-        "on",
-    }
+    from config.settings import DEPLOYMENT_MODE
+    from utils.plc_worker_supervisor import PLCWorkerSupervisor
 
-    # Python auto-reloader remains disabled by default to prevent duplicate
-    # PLC/background initialization.
-    reload_enabled = os.getenv("CRS_FLASK_RELOAD", "0").strip().lower() in {
-        "1",
-        "true",
-        "yes",
-        "on",
-    }
+    debug_enabled = _env_enabled("CRS_FLASK_DEBUG", "0")
+    reload_requested = _env_enabled("CRS_FLASK_RELOAD", "0")
+    auto_worker_enabled = _env_enabled("CRS_AUTO_START_PLC_WORKER", "1")
+    reload_enabled = reload_requested and not auto_worker_enabled
+    use_waitress = should_use_waitress(DEPLOYMENT_MODE)
 
     app.config["TEMPLATES_AUTO_RELOAD"] = debug_enabled
-
     if debug_enabled:
         app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 
-    print(f"CRS Flask debug mode: {'ON' if debug_enabled else 'OFF'}")
-    print(f"CRS Python auto-reloader: {'ON' if reload_enabled else 'OFF'}")
+    supervisor = PLCWorkerSupervisor()
+    worker_status = supervisor.start()
 
-    app.run(
-        host=os.getenv("CRS_FLASK_HOST", "0.0.0.0"),
-        port=int(os.getenv("CRS_FLASK_PORT", "5000")),
-        debug=debug_enabled,
-        use_reloader=reload_enabled,
+    print(f"CRS deployment/security mode: {DEPLOYMENT_MODE}", flush=True)
+    print(
+        f"CRS HTTP server: {'Waitress' if use_waitress else 'Flask development server'}",
+        flush=True,
     )
+    print(f"CRS Flask debug mode: {'ON' if debug_enabled else 'OFF'}", flush=True)
+    print(f"CRS Python auto-reloader: {'ON' if reload_enabled else 'OFF'}", flush=True)
+    print(worker_status.get("message", "PLC worker status unavailable."), flush=True)
+
+    host = os.getenv("CRS_FLASK_HOST", "0.0.0.0")
+    port = int(os.getenv("CRS_FLASK_PORT", "5000"))
+
+    try:
+        if use_waitress:
+            from waitress import serve
+
+            threads = max(4, int(os.getenv("CRS_WAITRESS_THREADS", "8")))
+            print(
+                f"Starting CRS with Waitress on {host}:{port}; threads={threads}",
+                flush=True,
+            )
+            serve(
+                app,
+                host=host,
+                port=port,
+                threads=threads,
+                channel_timeout=int(
+                    os.getenv("CRS_WAITRESS_CHANNEL_TIMEOUT", "120")
+                ),
+            )
+        else:
+            app.run(
+                host=host,
+                port=port,
+                debug=debug_enabled,
+                use_reloader=reload_enabled,
+            )
+    finally:
+        supervisor.stop()

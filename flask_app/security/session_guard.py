@@ -15,6 +15,7 @@ from database.user_session_manager import UserSessionManager
 
 BACKGROUND_ENDPOINTS = {
     "recipe_download_preparation_job_status",
+    "recipe_download_preparation_live_status",
     "session_heartbeat",
 }
 

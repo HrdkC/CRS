@@ -620,9 +620,209 @@ body.operation-running * {
     .recipe-strip,
     .tag-grid,
     .metric-strip,
-    .history-row {
+    .history-row,
+    .live-status-groups {
         grid-template-columns: 1fr;
     }
+
+    .live-status-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .live-status-actions {
+        justify-content: flex-start;
+    }
+
+    .live-status-item {
+        grid-template-columns: 78px minmax(0, 1fr);
+    }
+
+    .live-status-pill {
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+}
+
+/*
+ * Page-local theme completion.
+ * This template historically declared light surfaces after the global bundle,
+ * so these selectors intentionally live at the end of the page style block.
+ */
+html[data-crs-resolved-theme="dark"] .buffer-shell {
+    color: #f5f7ff;
+}
+
+html[data-crs-resolved-theme="dark"] .buffer-panel,
+html[data-crs-resolved-theme="dark"] .live-status-group,
+html[data-crs-resolved-theme="dark"] .live-status-item,
+html[data-crs-resolved-theme="dark"] .tag-chip,
+html[data-crs-resolved-theme="dark"] .metric-chip,
+html[data-crs-resolved-theme="dark"] .history-row,
+html[data-crs-resolved-theme="dark"] .step-item,
+html[data-crs-resolved-theme="dark"] .compact-details,
+html[data-crs-resolved-theme="dark"] .operation-lock-card {
+    background: #101f37;
+    border-color: #334a6d;
+    color: #f5f7ff;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24);
+}
+
+html[data-crs-resolved-theme="dark"] .strip-item,
+html[data-crs-resolved-theme="dark"] .flow-node {
+    background: #142743;
+    border-color: #385477;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .strip-value,
+    .tag-name,
+    .metric-value,
+    .history-title,
+    .progress-title,
+    .live-status-group h3,
+    .live-status-body strong,
+    .operation-lock-title
+) {
+    color: #f7f8ff;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .strip-label,
+    .tag-purpose,
+    .metric-label,
+    .step-message,
+    .live-status-actual span,
+    .live-status-body small,
+    .operation-lock-text,
+    .muted-inline
+) {
+    color: #b9c9e6;
+}
+
+html[data-crs-resolved-theme="dark"] .live-status-meta span {
+    background: #172c4a;
+    border-color: #405d84;
+    color: #e9f0ff;
+}
+
+html[data-crs-resolved-theme="dark"] .live-status-value {
+    background: #1b3151;
+    color: #ffffff;
+}
+
+html[data-crs-resolved-theme="dark"] .live-status-item-ok .live-status-value {
+    background: #123f30;
+    color: #a7f3d0;
+}
+
+html[data-crs-resolved-theme="dark"] :is(
+    .live-status-item-bad,
+    .live-status-item-missing
+) .live-status-value {
+    background: #4b1f2a;
+    color: #fecaca;
+}
+
+html[data-crs-resolved-theme="dark"] .progress-track,
+html[data-crs-resolved-theme="dark"] .operation-lock-track {
+    background: #263b5c;
+}
+
+html[data-crs-resolved-theme="dark"] .compact-details summary {
+    color: #d8b4fe;
+}
+
+html[data-crs-resolved-theme="dark"] .operation-lock-warning {
+    background: #3e3214;
+    border-color: #856b20;
+    color: #fde68a;
+}
+
+.live-status-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.live-refresh-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 7px;
+    color: #625a70;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.live-refresh-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    border: 1px solid #dbe3ee;
+    border-radius: 999px;
+    padding: 3px 8px;
+    background: #f8fafc;
+}
+
+html[data-crs-resolved-theme="dark"] .live-refresh-meta {
+    color: #c4d2ea;
+}
+
+html[data-crs-resolved-theme="dark"] .live-refresh-meta span {
+    background: #172c4a;
+    border-color: #405d84;
+    color: #e9f0ff;
+}
+
+.live-refresh-button.is-refreshing {
+    opacity: 0.72;
+    cursor: wait;
+}
+
+.live-status-panel.is-live-refresh-error {
+    border-color: #b45353;
+}
+
+.machine-stage-tag-panel .tag-grid {
+    align-items: stretch;
+}
+
+.machine-stage-tag-panel .tag-chip {
+    display: grid;
+    align-content: start;
+    gap: 5px;
+    min-height: 58px;
+}
+
+.machine-stage-tag-panel .tag-purpose,
+.machine-stage-tag-panel .tag-name {
+    display: block;
+    line-height: 1.28;
+}
+
+.machine-stage-tag-panel .tag-purpose {
+    font-weight: 900;
+    letter-spacing: 0.02em;
+}
+
+.machine-stage-tag-panel .tag-name {
+    font-size: 12px;
+}
+
+.machine-stage-tag-panel .muted-inline {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 5px;
+}
+
+.machine-stage-tag-panel .muted-inline::before {
+    content: "•";
+    margin-right: 5px;
+    color: #8ea5c8;
 }
 
 </style>
@@ -820,7 +1020,7 @@ body.operation-running * {
 
                 <div>
                     <label>Select PLC</label>
-                    <select name="plc_id" required>
+                    <select name="plc_id" id="bufferPlcSelect" required>
                         {% for plc in available_plcs %}
                         <option
                             value="{{ plc.id }}"
@@ -915,24 +1115,45 @@ body.operation-running * {
 
     </div>
 
-    <div class="buffer-panel live-status-panel">
+    <div
+        class="buffer-panel live-status-panel"
+        id="livePlcStatusPanel"
+        data-live-status-url="/recipe-editor/download-preparation/{{ recipe.id }}/live-status"
+        data-refresh-ms="2000"
+    >
         <div class="live-status-header">
             <div>
                 <h3>Live PLC Interlock / Handshake Status</h3>
                 <div class="step-message">
-                    Green means healthy / good to go. Red means not healthy or needs checking. Values are read from the selected PLC when this page loads.
+                    Green means healthy / good to go. Red means not healthy or needs checking. The browser performs read-only refresh every 2 seconds while this page is visible.
+                </div>
+                <div class="live-refresh-meta" aria-live="polite">
+                    <span id="liveStatusConnection" class="live-refresh-connection">
+                        {% if live_tag_status.connected %}PLC connected{% else %}PLC status pending{% endif %}
+                    </span>
+                    <span id="liveStatusUpdatedAt">Initial page read</span>
                 </div>
             </div>
-            {% if live_tag_status.status == "READY" %}
-            <span class="status-pill status-ready">LIVE HEALTHY</span>
-            {% elif live_tag_status.status == "BLOCKED" %}
-            <span class="status-pill status-blocked">CHECK REQUIRED</span>
-            {% else %}
-            <span class="status-pill status-neutral">NOT CHECKED</span>
-            {% endif %}
+            <div class="live-status-actions">
+                <button
+                    type="button"
+                    class="crs-btn crs-btn-soft live-refresh-button"
+                    id="liveStatusRefreshButton"
+                    title="Read the latest interlock and handshake values from the selected PLC now."
+                >
+                    Refresh Now
+                </button>
+                {% if live_tag_status.status == "READY" %}
+                <span class="status-pill status-ready" id="liveStatusOverallPill">LIVE HEALTHY</span>
+                {% elif live_tag_status.status == "BLOCKED" %}
+                <span class="status-pill status-blocked" id="liveStatusOverallPill">CHECK REQUIRED</span>
+                {% else %}
+                <span class="status-pill status-neutral" id="liveStatusOverallPill">NOT CHECKED</span>
+                {% endif %}
+            </div>
         </div>
 
-        <div class="step-message">{{ live_tag_status.summary }}</div>
+        <div class="step-message" id="liveStatusSummary">{{ live_tag_status.summary }}</div>
 
         {% if live_tag_status.groups %}
         <div class="live-status-groups">
@@ -941,7 +1162,7 @@ body.operation-running * {
                 <h3>{{ group.title }}</h3>
                 <div class="live-status-grid">
                     {% for item in group["items"] %}
-                    <div class="live-status-item live-status-item-{{ item.status }}">
+                    <div class="live-status-item live-status-item-{{ item.status }}" data-live-purpose="{{ item.purpose }}">
                         <div class="live-status-actual">
                             <span>Actual</span>
                             <div class="live-status-value">
@@ -955,15 +1176,15 @@ body.operation-running * {
                         <div class="live-status-body">
                             <strong>{{ item.label }}</strong>
                             <small>
-                                {{ item.tag.tag_name if item.tag else 'Not mapped' }}
+                                <span class="live-status-tag-name">{{ item.tag.tag_name if item.tag else 'Not mapped' }}</span>
                             </small>
                             <div class="live-status-meta">
-                                <span>Expected {{ item.expected_text or 'Readable' }}</span>
+                                <span class="live-status-expected">Expected {{ item.expected_text or 'Readable' }}</span>
                                 <span class="live-status-state">{{ item.status_text }}</span>
                             </div>
-                            <small>{{ item.message }}</small>
+                            <small class="live-status-message">{{ item.message }}</small>
                         </div>
-                        <span class="status-pill {% if item.status == 'ok' %}status-ready{% elif item.status == 'bad' or item.status == 'missing' %}status-blocked{% else %}status-neutral{% endif %}">
+                        <span class="status-pill live-status-pill {% if item.status == 'ok' %}status-ready{% elif item.status == 'bad' or item.status == 'missing' %}status-blocked{% else %}status-neutral{% endif %}">
                             {{ item.status_text }}
                         </span>
                     </div>
@@ -974,16 +1195,18 @@ body.operation-running * {
         </div>
         {% endif %}
 
-        {% if live_tag_status.issues %}
-        <details class="compact-details">
+        <details
+            class="compact-details"
+            id="liveStatusIssuesDetails"
+            {% if not live_tag_status.issues %}hidden{% endif %}
+        >
             <summary>Live Status Issues</summary>
-            <ul class="issue-list">
+            <ul class="issue-list" id="liveStatusIssuesList">
                 {% for issue in live_tag_status.issues[:8] %}
                 <li>{{ issue }}</li>
                 {% endfor %}
             </ul>
         </details>
-        {% endif %}
     </div>
 
     <div class="buffer-panel live-progress" id="liveProgress">
@@ -1336,5 +1559,5 @@ body.operation-running * {
 {% endblock %}
 
 {% block page_scripts %}
-<script src="{{ url_for('static', filename='js/pages/download-preparation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pages/download-preparation.js') }}?v=js-v129-terminal-status-recovery-20260721"></script>
 {% endblock %}

@@ -10,6 +10,22 @@ from database.audit_manager import AuditManager
 class RecipeManager:
 
     @staticmethod
+    def _archive_filter(conn, alias="r"):
+        """Return a backward-compatible active-row filter.
+
+        The V13 retention migration is controlled by bootstrap. Until it has
+        been applied, existing recipe reads remain available instead of
+        failing during application startup.
+        """
+        columns = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(recipes)").fetchall()
+        }
+        if "is_archived" in columns:
+            return f"COALESCE({alias}.is_archived, 0)=0"
+        return "1=1"
+
+    @staticmethod
     def _require_legacy_write_enabled(operation):
         if not ALLOW_LEGACY_RECIPE_WRITES:
             raise RuntimeError(
@@ -204,9 +220,10 @@ class RecipeManager:
         conn = get_connection()
 
         cursor = conn.cursor()
+        archive_filter = RecipeManager._archive_filter(conn, "r")
 
         cursor.execute(
-            """
+            f"""
             SELECT
 
                 r.*,
@@ -291,9 +308,11 @@ class RecipeManager:
 
             WHERE
 
-                machine_id = ?
+                r.machine_id = ?
 
-                AND stage_id = ?
+                AND r.stage_id = ?
+
+                AND {archive_filter}
 
             ORDER BY
                 recipe_code,
@@ -321,7 +340,7 @@ class RecipeManager:
 
         cursor = conn.cursor()
 
-        where_clauses = []
+        where_clauses = [RecipeManager._archive_filter(conn, "r")]
         params = []
 
         if machine_id is not None:
@@ -1042,9 +1061,10 @@ class RecipeManager:
         conn = get_connection()
 
         cursor = conn.cursor()
+        archive_filter = RecipeManager._archive_filter(conn, "r")
 
         cursor.execute(
-            """
+            f"""
             SELECT
 
                 r.*,
@@ -1182,6 +1202,7 @@ class RecipeManager:
             ON r.stage_id = s.id
 
             WHERE r.id = ?
+              AND {archive_filter}
             """,
             (
                 recipe_id,

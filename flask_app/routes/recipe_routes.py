@@ -7,6 +7,7 @@ from database.database import get_connection
 
 from database.audit_manager import AuditManager
 from database.recipe_resource_lock_manager import RecipeResourceLockManager
+from database.recipe_retention_manager import RecipeRetentionManager
 
 from helper.datetime_helper import (
     utc_to_ist
@@ -66,6 +67,20 @@ def _block_legacy_recipe_write(recipe_code=None):
         "warning"
     )
     return redirect("/recipes")
+
+
+def _retention_request_context():
+    return {
+        "workstation_name": (
+            request.headers.get("X-Workstation-Name")
+            or request.headers.get("X-Client-Workstation")
+            or request.host
+        ),
+        "client_ip": request.headers.get("X-Forwarded-For", request.remote_addr),
+        "user_agent": request.headers.get("User-Agent", ""),
+        "forwarded_for": request.headers.get("X-Forwarded-For"),
+        "request_host": request.host,
+    }
 
 
 def _engineering_config_allowed():
@@ -205,6 +220,18 @@ def _machine_stage_targets():
 def _render_recipe_list_page(ctx=None, recipes=None):
     """Render recipe list only after machine/stage selection."""
     recipes = recipes or []
+    retention_schema_ready = RecipeRetentionManager.schema_ready()
+    if retention_schema_ready:
+        for recipe in recipes:
+            policy = RecipeRetentionManager.get_policy(recipe.get("id"))
+            recipe["can_archive"] = bool(policy.get("can_archive"))
+            recipe["archive_blockers"] = policy.get("archive_blockers") or []
+    else:
+        for recipe in recipes:
+            recipe["can_archive"] = False
+            recipe["archive_blockers"] = [
+                "Recipe archive migration is pending. Run controlled bootstrap."
+            ]
     targets = _machine_stage_targets()
     machine_seen = set()
     machine_options = []
@@ -224,6 +251,7 @@ def _render_recipe_list_page(ctx=None, recipes=None):
         "machine_stage_targets": targets,
         "machine_stage_machine_options": machine_options,
         "has_stage_selection": bool(ctx),
+        "retention_schema_ready": retention_schema_ready,
     }
 
     if ctx:
@@ -242,6 +270,7 @@ def _render_recipe_list_page(ctx=None, recipes=None):
             "selected_stage_id": ctx["stage_id"],
             "selected_recipe_list_url": _friendly_recipe_list_url(ctx),
             "create_url": _friendly_recipe_create_url(ctx),
+            "archived_url": _friendly_archived_recipe_list_url(ctx),
             "parameter_count": parameter_count,
             "parameter_master_ready": (parameter_count > 0),
             "plc_tag_browser_url": machine_stage_url(
@@ -266,6 +295,10 @@ def _friendly_recipe_list_url(ctx):
 
 def _friendly_recipe_create_url(ctx):
     return f"/recipes/create/{ctx['machine_code']}/{_friendly_stage_path(ctx['stage_type'])}"
+
+
+def _friendly_archived_recipe_list_url(ctx):
+    return f"/recipes/archived/{ctx['machine_code']}/{_friendly_stage_path(ctx['stage_type'])}"
 
 
 def _render_create_recipe_page(ctx):
@@ -690,6 +723,217 @@ def register_recipe_routes(app):
             return redirect(canonical_url)
 
         return _render_create_recipe_page(ctx)
+
+    @app.route("/recipes/archived/<machine_code>/<stage_path>")
+    def archived_recipe_list(machine_code, stage_path):
+        if not session.get("logged_in"):
+            return redirect("/login")
+        if not role_can(session.get("role"), "recipe_archive"):
+            flash("Only ADMIN can access archived recipes.", "error")
+            return redirect("/recipes")
+
+        ctx = _resolve_machine_stage_by_code(machine_code, stage_path)
+        if not ctx:
+            flash("Machine/stage not found.", "error")
+            return redirect("/recipes")
+        if not RecipeRetentionManager.schema_ready():
+            flash(
+                "Recipe archive migration is pending. Run controlled bootstrap and restart CRS.",
+                "warning",
+            )
+            return redirect(_friendly_recipe_list_url(ctx))
+
+        archived = RecipeRetentionManager.list_archived(
+            ctx["machine_id"], ctx["stage_id"]
+        )
+        for recipe in archived:
+            if recipe.get("archived_at"):
+                recipe["archived_at_display"] = utc_to_ist(recipe["archived_at"])
+            else:
+                recipe["archived_at_display"] = "-"
+
+        return render_template(
+            "recipes/archived_recipes.html",
+            recipes=archived,
+            context=ctx,
+            machine_stage_title=machine_stage_display(context=ctx),
+            active_url=_friendly_recipe_list_url(ctx),
+        )
+
+    def _retention_confirmation(recipe_id, action_kind):
+        if not session.get("logged_in"):
+            return redirect("/login")
+
+        capability = (
+            "recipe_permanent_delete"
+            if action_kind == "delete"
+            else "recipe_archive"
+        )
+        if not role_can(session.get("role"), capability):
+            flash("Only ADMIN can perform this recipe retention action.", "error")
+            return redirect("/recipes")
+
+        try:
+            policy = RecipeRetentionManager.get_policy(recipe_id)
+        except RuntimeError as exc:
+            flash(str(exc), "warning")
+            return redirect("/recipes")
+
+        if not policy.get("exists"):
+            flash("Recipe not found.", "error")
+            return redirect("/recipes")
+
+        recipe = policy["recipe"]
+        ctx = {
+            "machine_code": recipe.get("machine_code"),
+            "stage_type": recipe.get("stage_type"),
+        }
+        active_url = _friendly_recipe_list_url(ctx)
+        archived_url = _friendly_archived_recipe_list_url(ctx)
+
+        action_map = {
+            "archive": {
+                "title": "Archive Recipe",
+                "action_label": "Archive Recipe",
+                "allowed": policy.get("can_archive"),
+                "blockers": policy.get("archive_blockers") or [],
+                "post_url": f"/recipes/{recipe_id}/archive",
+                "back_url": active_url,
+                "description": (
+                    "The recipe will be removed from the active list but all values, "
+                    "phase selections, history, and audit evidence will be preserved."
+                ),
+            },
+            "restore": {
+                "title": "Restore Archived Recipe",
+                "action_label": "Restore Recipe",
+                "allowed": policy.get("can_restore"),
+                "blockers": policy.get("restore_blockers") or [],
+                "post_url": f"/recipes/{recipe_id}/restore-archive",
+                "back_url": archived_url,
+                "description": (
+                    "The archived recipe will return to the active recipe list with "
+                    "its previous lifecycle status unchanged."
+                ),
+            },
+            "delete": {
+                "title": "Permanently Delete Unused Recipe",
+                "action_label": "Delete Permanently",
+                "allowed": policy.get("can_permanently_delete"),
+                "blockers": policy.get("delete_blockers") or [],
+                "post_url": f"/recipes/{recipe_id}/delete-permanently",
+                "back_url": archived_url,
+                "description": (
+                    "Only an archived TEST ONLY draft with no lifecycle, version, or PLC "
+                    "history can be deleted. Audit and deletion tombstone evidence remain."
+                ),
+            },
+        }
+        action = action_map[action_kind]
+        return render_template(
+            "recipes/recipe_retention_confirm.html",
+            recipe=recipe,
+            action_kind=action_kind,
+            **action,
+        )
+
+    @app.route("/recipes/<int:recipe_id>/archive", methods=["GET", "POST"])
+    def archive_recipe(recipe_id):
+        if request.method == "GET":
+            return _retention_confirmation(recipe_id, "archive")
+        if not session.get("logged_in"):
+            return redirect("/login")
+        if not role_can(session.get("role"), "recipe_archive"):
+            flash("Only ADMIN can archive recipes.", "error")
+            return redirect("/recipes")
+        try:
+            recipe = RecipeRetentionManager.archive_recipe(
+                recipe_id=recipe_id,
+                actor=session.get("username"),
+                actor_role=session.get("role"),
+                reason=request.form.get("reason"),
+                confirmation_code=request.form.get("confirmation_code"),
+                request_context=_retention_request_context(),
+            )
+        except (ValueError, RuntimeError) as exc:
+            flash(str(exc), "error")
+            return _retention_confirmation(recipe_id, "archive")
+        flash(
+            f"Recipe {recipe['recipe_code']} archived. It can be restored from Archived Recipes.",
+            "success",
+        )
+        return redirect(
+            _friendly_recipe_list_url({
+                "machine_code": recipe.get("machine_code"),
+                "stage_type": recipe.get("stage_type"),
+            })
+        )
+
+    @app.route(
+        "/recipes/<int:recipe_id>/restore-archive", methods=["GET", "POST"]
+    )
+    def restore_archived_recipe(recipe_id):
+        if request.method == "GET":
+            return _retention_confirmation(recipe_id, "restore")
+        if not session.get("logged_in"):
+            return redirect("/login")
+        if not role_can(session.get("role"), "recipe_archive"):
+            flash("Only ADMIN can restore archived recipes.", "error")
+            return redirect("/recipes")
+        try:
+            recipe = RecipeRetentionManager.restore_recipe(
+                recipe_id=recipe_id,
+                actor=session.get("username"),
+                actor_role=session.get("role"),
+                reason=request.form.get("reason"),
+                confirmation_code=request.form.get("confirmation_code"),
+                request_context=_retention_request_context(),
+            )
+        except (ValueError, RuntimeError) as exc:
+            flash(str(exc), "error")
+            return _retention_confirmation(recipe_id, "restore")
+        flash(f"Recipe {recipe['recipe_code']} restored to the active list.", "success")
+        return redirect(
+            _friendly_archived_recipe_list_url({
+                "machine_code": recipe.get("machine_code"),
+                "stage_type": recipe.get("stage_type"),
+            })
+        )
+
+    @app.route(
+        "/recipes/<int:recipe_id>/delete-permanently", methods=["GET", "POST"]
+    )
+    def permanently_delete_recipe(recipe_id):
+        if request.method == "GET":
+            return _retention_confirmation(recipe_id, "delete")
+        if not session.get("logged_in"):
+            return redirect("/login")
+        if not role_can(session.get("role"), "recipe_permanent_delete"):
+            flash("Only ADMIN can permanently delete eligible recipes.", "error")
+            return redirect("/recipes")
+        try:
+            recipe = RecipeRetentionManager.permanently_delete_recipe(
+                recipe_id=recipe_id,
+                actor=session.get("username"),
+                actor_role=session.get("role"),
+                reason=request.form.get("reason"),
+                confirmation_code=request.form.get("confirmation_code"),
+                request_context=_retention_request_context(),
+            )
+        except (ValueError, RuntimeError) as exc:
+            flash(str(exc), "error")
+            return _retention_confirmation(recipe_id, "delete")
+        flash(
+            f"Unused TEST ONLY recipe {recipe['recipe_code']} permanently deleted. "
+            "Audit and tombstone evidence were retained.",
+            "success",
+        )
+        return redirect(
+            _friendly_archived_recipe_list_url({
+                "machine_code": recipe.get("machine_code"),
+                "stage_type": recipe.get("stage_type"),
+            })
+        )
 
     @app.route("/recipes/<recipe_code>")
     def recipe_details(recipe_code):

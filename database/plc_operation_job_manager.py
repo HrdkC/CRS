@@ -1,8 +1,11 @@
 import json
+import sqlite3
+import time
 import uuid
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func, select, update
+from sqlalchemy.exc import OperationalError as SQLAlchemyOperationalError
 
 from database.hardening_schema_manager import assert_v11_11_hardening_schema_ready
 from database.orm_models import PLCOperationJob
@@ -20,6 +23,44 @@ class PLCOperationJobManager:
     @staticmethod
     def ensure_table():
         assert_v11_11_hardening_schema_ready()
+
+    @staticmethod
+    def is_retryable_database_error(exc):
+        """Return True for transient SQLite busy/locked failures."""
+        current = exc
+        visited = set()
+        while current is not None and id(current) not in visited:
+            visited.add(id(current))
+            text = str(current).lower()
+            if "database is locked" in text or "database is busy" in text:
+                return True
+            if isinstance(current, (sqlite3.OperationalError, SQLAlchemyOperationalError)):
+                if "locked" in text or "busy" in text:
+                    return True
+            current = getattr(current, "__cause__", None) or getattr(
+                current, "__context__", None
+            )
+        return False
+
+    @staticmethod
+    def _with_database_retry(callback, *, attempts=8, initial_delay=0.05):
+        last_error = None
+        delay = max(0.01, float(initial_delay))
+        for attempt in range(max(1, int(attempts))):
+            try:
+                return callback()
+            except Exception as exc:
+                last_error = exc
+                if (
+                    not PLCOperationJobManager.is_retryable_database_error(exc)
+                    or attempt >= attempts - 1
+                ):
+                    raise
+                time.sleep(delay)
+                delay = min(0.5, delay * 1.7)
+        if last_error:
+            raise last_error
+        return None
 
     @staticmethod
     def create_job(
@@ -57,114 +98,196 @@ class PLCOperationJobManager:
                 "mismatch_count": 0, "mismatches": [],
             },
         }
-        with session_scope() as session:
-            session.add(
-                PLCOperationJob(
-                    id=job_id,
-                    recipe_id=recipe_id,
-                    plc_id=plc_id,
-                    operation=operation,
-                    title=title,
-                    status="QUEUED",
-                    success=0,
-                    progress_percent=0,
-                    current_step="Queued for durable PLC worker",
-                    started_by=username,
-                    user_role=user_role,
-                    result_json=json.dumps(initial_result, default=str),
-                    correlation_id=correlation_id,
-                    recipe_lock_id=recipe_lock_id,
-                    plc_lock_id=plc_lock_id,
-                    heartbeat_at=func.current_timestamp(),
+
+        def _create():
+            with session_scope() as session:
+                session.add(
+                    PLCOperationJob(
+                        id=job_id,
+                        recipe_id=recipe_id,
+                        plc_id=plc_id,
+                        operation=operation,
+                        title=title,
+                        status="QUEUED",
+                        success=0,
+                        progress_percent=0,
+                        current_step="Queued for durable PLC worker",
+                        started_by=username,
+                        user_role=user_role,
+                        result_json=json.dumps(initial_result, default=str),
+                        correlation_id=correlation_id,
+                        recipe_lock_id=recipe_lock_id,
+                        plc_lock_id=plc_lock_id,
+                        heartbeat_at=func.current_timestamp(),
+                    )
                 )
-            )
-        return job_id
+            return job_id
+
+        return PLCOperationJobManager._with_database_retry(
+            _create, attempts=12
+        )
 
     @staticmethod
     def get_active_for_plc(plc_id, stale_minutes=30):
         PLCOperationJobManager.ensure_table()
-        cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(minutes=stale_minutes)
-        with session_scope() as session:
-            job = session.execute(
-                select(PLCOperationJob)
-                .where(PLCOperationJob.plc_id == plc_id)
-                .where(PLCOperationJob.completed_at.is_(None))
-                .where(PLCOperationJob.status.in_(list(PLCOperationJobManager.ACTIVE_STATUSES)))
-                .where(func.coalesce(PLCOperationJob.heartbeat_at, PLCOperationJob.updated_at) >= cutoff)
-                .order_by(PLCOperationJob.created_at.desc())
-                .limit(1)
-            ).scalars().first()
-            return PLCOperationJobManager.to_dict(job) if job else None
+        cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
+            minutes=stale_minutes
+        )
+
+        def _read():
+            with session_scope() as session:
+                job = session.execute(
+                    select(PLCOperationJob)
+                    .where(PLCOperationJob.plc_id == plc_id)
+                    .where(PLCOperationJob.completed_at.is_(None))
+                    .where(
+                        PLCOperationJob.status.in_(
+                            list(PLCOperationJobManager.ACTIVE_STATUSES)
+                        )
+                    )
+                    .where(
+                        func.coalesce(
+                            PLCOperationJob.heartbeat_at,
+                            PLCOperationJob.updated_at,
+                        ) >= cutoff
+                    )
+                    .order_by(PLCOperationJob.created_at.desc())
+                    .limit(1)
+                ).scalars().first()
+                return PLCOperationJobManager.to_dict(job) if job else None
+
+        return PLCOperationJobManager._with_database_retry(_read, attempts=8)
 
     @staticmethod
     def claim_next_job(worker_id):
         """Atomically claim the oldest queued job for a durable worker."""
         PLCOperationJobManager.ensure_table()
+
         for _ in range(5):
-            with session_scope() as session:
-                job_id = session.execute(
-                    select(PLCOperationJob.id)
-                    .where(PLCOperationJob.status == "QUEUED")
-                    .order_by(PLCOperationJob.created_at.asc())
-                    .limit(1)
-                ).scalar_one_or_none()
-                if not job_id:
-                    return None
-                result = session.execute(
-                    update(PLCOperationJob)
-                    .where(PLCOperationJob.id == job_id)
-                    .where(PLCOperationJob.status == "QUEUED")
-                    .values(
-                        status="RUNNING",
-                        worker_id=worker_id,
-                        current_step="Claimed by durable PLC worker",
-                        heartbeat_at=func.current_timestamp(),
-                        updated_at=func.current_timestamp(),
+            def _claim():
+                with session_scope() as session:
+                    job_id = session.execute(
+                        select(PLCOperationJob.id)
+                        .where(PLCOperationJob.status == "QUEUED")
+                        .order_by(PLCOperationJob.created_at.asc())
+                        .limit(1)
+                    ).scalar_one_or_none()
+                    if not job_id:
+                        return None
+                    result = session.execute(
+                        update(PLCOperationJob)
+                        .where(PLCOperationJob.id == job_id)
+                        .where(PLCOperationJob.status == "QUEUED")
+                        .values(
+                            status="RUNNING",
+                            worker_id=worker_id,
+                            current_step="Claimed by durable PLC worker",
+                            heartbeat_at=func.current_timestamp(),
+                            updated_at=func.current_timestamp(),
+                        )
                     )
-                )
-                if result.rowcount == 1:
-                    job = session.get(PLCOperationJob, job_id)
-                    return PLCOperationJobManager.to_dict(job)
+                    if result.rowcount == 1:
+                        job = session.get(PLCOperationJob, job_id)
+                        return PLCOperationJobManager.to_dict(job)
+                    return False
+
+            claimed = PLCOperationJobManager._with_database_retry(
+                _claim, attempts=12
+            )
+            if claimed is None:
+                return None
+            if claimed:
+                return claimed
         return None
 
     @staticmethod
     def heartbeat(job_id, worker_id=None):
         PLCOperationJobManager.ensure_table()
-        with session_scope() as session:
-            query = (
-                update(PLCOperationJob)
-                .where(PLCOperationJob.id == job_id)
-                .where(PLCOperationJob.status == "RUNNING")
-            )
-            if worker_id:
-                query = query.where(PLCOperationJob.worker_id == worker_id)
-            result = session.execute(
-                query.values(
-                    heartbeat_at=func.current_timestamp(),
-                    updated_at=func.current_timestamp(),
+
+        def _heartbeat():
+            with session_scope() as session:
+                query = (
+                    update(PLCOperationJob)
+                    .where(PLCOperationJob.id == job_id)
+                    .where(PLCOperationJob.status == "RUNNING")
                 )
-            )
-            return result.rowcount == 1
+                if worker_id:
+                    query = query.where(PLCOperationJob.worker_id == worker_id)
+                result = session.execute(
+                    query.values(
+                        heartbeat_at=func.current_timestamp(),
+                        updated_at=func.current_timestamp(),
+                    )
+                )
+                return result.rowcount == 1
+
+        return PLCOperationJobManager._with_database_retry(
+            _heartbeat, attempts=8
+        )
 
     @staticmethod
-    def update_from_result(job_id, result, status_override=None, completed=False):
+    def update_from_result(
+        job_id,
+        result,
+        status_override=None,
+        completed=False,
+        retry_attempts=None,
+    ):
         if not job_id:
-            return
+            return False
         PLCOperationJobManager.ensure_table()
         status = status_override or result.get("status", "RUNNING")
-        with session_scope() as session:
-            job = session.get(PLCOperationJob, job_id)
-            if not job:
-                return
-            job.status = status
-            job.success = 1 if result.get("success") else 0
-            job.progress_percent = int(result.get("progress_percent", 0) or 0)
-            job.current_step = result.get("current_step", "")
-            job.result_json = json.dumps(result, default=str)
-            job.updated_at = func.current_timestamp()
-            job.heartbeat_at = func.current_timestamp()
-            if completed or status in PLCOperationJobManager.FINAL_STATUSES:
-                job.completed_at = func.current_timestamp()
+        attempts = retry_attempts or (40 if completed or status in PLCOperationJobManager.FINAL_STATUSES else 10)
+
+        def _update_job():
+            with session_scope() as session:
+                job = session.get(PLCOperationJob, job_id)
+                if not job:
+                    return False
+                job.status = status
+                job.success = 1 if result.get("success") else 0
+                job.progress_percent = int(result.get("progress_percent", 0) or 0)
+                job.current_step = result.get("current_step", "")
+                job.result_json = json.dumps(result, default=str)
+                job.updated_at = func.current_timestamp()
+                job.heartbeat_at = func.current_timestamp()
+                if completed or status in PLCOperationJobManager.FINAL_STATUSES:
+                    job.completed_at = func.current_timestamp()
+                return True
+
+        return bool(
+            PLCOperationJobManager._with_database_retry(
+                _update_job,
+                attempts=attempts,
+                initial_delay=0.05,
+            )
+        )
+
+    @staticmethod
+    def ensure_terminal_state(job_id, result):
+        """Persist the terminal result even if an earlier progress write failed."""
+        if not job_id:
+            return False
+
+        final_result = dict(result or {})
+        status = str(final_result.get("status") or "").upper()
+        success = bool(final_result.get("success"))
+        if status not in PLCOperationJobManager.FINAL_STATUSES:
+            status = "SUCCESS" if success else "BLOCKED"
+            final_result["status"] = status
+        if status == "SUCCESS":
+            final_result["success"] = True
+            final_result["progress_percent"] = 100
+        elif not final_result.get("progress_percent"):
+            final_result["progress_percent"] = 5
+
+        return PLCOperationJobManager.update_from_result(
+            job_id=job_id,
+            result=final_result,
+            status_override=status,
+            completed=True,
+            retry_attempts=40,
+        )
 
     @staticmethod
     def fail_job(job_id, message):
@@ -173,46 +296,79 @@ class PLCOperationJobManager:
             "title": "PLC Buffer Operation",
             "success": False,
             "status": "ERROR",
-            "progress_percent": 5,
+            "progress_percent": 100,
             "current_step": "Operation failed",
             "steps": [{
-                "label": "Operation failed", "status": "FAILED",
-                "message": message, "percent": 5,
+                "label": "Operation failed",
+                "status": "FAILED",
+                "message": message,
+                "percent": 100,
             }],
             "errors": [message],
             "warnings": [],
             "metrics": {},
-            "payload_compare": {"checked": False, "matched": False, "mismatch_count": 0, "mismatches": []},
-            "destination_compare": {"checked": False, "matched": False, "mismatch_count": 0, "mismatches": []},
+            "payload_compare": {
+                "checked": False, "matched": False,
+                "mismatch_count": 0, "mismatches": [],
+            },
+            "destination_compare": {
+                "checked": False, "matched": False,
+                "mismatch_count": 0, "mismatches": [],
+            },
         }
-        PLCOperationJobManager.update_from_result(
-            job_id=job_id, result=result, status_override="ERROR", completed=True
+        return PLCOperationJobManager.update_from_result(
+            job_id=job_id,
+            result=result,
+            status_override="ERROR",
+            completed=True,
+            retry_attempts=40,
         )
 
     @staticmethod
-    def recover_stale_jobs(stale_minutes=10, recovery_reason="APPLICATION_STARTUP_RECOVERY"):
+    def recover_stale_jobs(
+        stale_minutes=10,
+        recovery_reason="APPLICATION_STARTUP_RECOVERY",
+    ):
         """Close orphan active jobs and release their recorded resource locks."""
         PLCOperationJobManager.ensure_table()
-        cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(minutes=max(1, int(stale_minutes)))
+        cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
+            minutes=max(1, int(stale_minutes))
+        )
         recovered = []
-        with session_scope() as session:
-            jobs = session.execute(
-                select(PLCOperationJob)
-                .where(PLCOperationJob.status.in_(list(PLCOperationJobManager.ACTIVE_STATUSES)))
-                .where(func.coalesce(PLCOperationJob.heartbeat_at, PLCOperationJob.updated_at) < cutoff)
-            ).scalars().all()
-            for job in jobs:
-                job.status = "INTERRUPTED"
-                job.success = 0
-                job.current_step = "Recovered after stale worker/application restart"
-                job.recovery_note = recovery_reason
-                job.completed_at = func.current_timestamp()
-                job.updated_at = func.current_timestamp()
-                recovered.append({
-                    "id": job.id,
-                    "recipe_lock_id": job.recipe_lock_id,
-                    "plc_lock_id": job.plc_lock_id,
-                })
+
+        def _recover():
+            with session_scope() as session:
+                jobs = session.execute(
+                    select(PLCOperationJob)
+                    .where(
+                        PLCOperationJob.status.in_(
+                            list(PLCOperationJobManager.ACTIVE_STATUSES)
+                        )
+                    )
+                    .where(
+                        func.coalesce(
+                            PLCOperationJob.heartbeat_at,
+                            PLCOperationJob.updated_at,
+                        ) < cutoff
+                    )
+                ).scalars().all()
+                for job in jobs:
+                    job.status = "INTERRUPTED"
+                    job.success = 0
+                    job.current_step = (
+                        "Recovered after stale worker/application restart"
+                    )
+                    job.recovery_note = recovery_reason
+                    job.completed_at = func.current_timestamp()
+                    job.updated_at = func.current_timestamp()
+                    recovered.append({
+                        "id": job.id,
+                        "recipe_lock_id": job.recipe_lock_id,
+                        "plc_lock_id": job.plc_lock_id,
+                    })
+            return len(recovered)
+
+        PLCOperationJobManager._with_database_retry(_recover, attempts=20)
         for item in recovered:
             RecipeResourceLockManager.release_lock(
                 item.get("recipe_lock_id"), reason="STALE_PLC_JOB_RECOVERED"
@@ -223,23 +379,80 @@ class PLCOperationJobManager:
         return len(recovered)
 
     @staticmethod
+    def recover_orphaned_job(job_id, recovery_reason="WORKER_IDLE_ORPHAN_RECOVERY"):
+        """Close one active job only when the worker no longer owns it."""
+        PLCOperationJobManager.ensure_table()
+        released = {}
+
+        def _recover_one():
+            with session_scope() as session:
+                job = session.get(PLCOperationJob, job_id)
+                if not job or job.status not in PLCOperationJobManager.ACTIVE_STATUSES:
+                    return False
+                job.status = "INTERRUPTED"
+                job.success = 0
+                job.progress_percent = max(int(job.progress_percent or 0), 100)
+                job.current_step = (
+                    "PLC operation ended but final status was not persisted; "
+                    "the orphaned job was recovered. Review the PLC buffer before retrying."
+                )
+                job.recovery_note = recovery_reason
+                job.completed_at = func.current_timestamp()
+                job.updated_at = func.current_timestamp()
+                result = PLCOperationJobManager.parse_result(job.result_json)
+                result.update({
+                    "status": "INTERRUPTED",
+                    "success": False,
+                    "progress_percent": 100,
+                    "current_step": job.current_step,
+                })
+                result.setdefault("warnings", []).append(job.current_step)
+                job.result_json = json.dumps(result, default=str)
+                released["recipe_lock_id"] = job.recipe_lock_id
+                released["plc_lock_id"] = job.plc_lock_id
+                return True
+
+        changed = PLCOperationJobManager._with_database_retry(
+            _recover_one, attempts=20
+        )
+        if changed:
+            RecipeResourceLockManager.release_lock(
+                released.get("recipe_lock_id"), reason="ORPHAN_PLC_JOB_RECOVERED"
+            )
+            RecipeResourceLockManager.release_lock(
+                released.get("plc_lock_id"), reason="ORPHAN_PLC_JOB_RECOVERED"
+            )
+        return bool(changed)
+
+    @staticmethod
     def get_job(job_id):
         PLCOperationJobManager.ensure_table()
-        with session_scope() as session:
-            job = session.get(PLCOperationJob, job_id)
-            return PLCOperationJobManager.to_dict(job) if job else None
+
+        def _read():
+            with session_scope() as session:
+                job = session.get(PLCOperationJob, job_id)
+                return PLCOperationJobManager.to_dict(job) if job else None
+
+        return PLCOperationJobManager._with_database_retry(_read, attempts=12)
 
     @staticmethod
     def get_recent_for_recipe(recipe_id, limit=8):
         PLCOperationJobManager.ensure_table()
-        with session_scope() as session:
-            jobs = session.execute(
-                select(PLCOperationJob)
-                .where(PLCOperationJob.recipe_id == recipe_id)
-                .order_by(PLCOperationJob.created_at.desc(), PLCOperationJob.updated_at.desc())
-                .limit(limit)
-            ).scalars().all()
-            return [PLCOperationJobManager.to_dict(job) for job in jobs]
+
+        def _read():
+            with session_scope() as session:
+                jobs = session.execute(
+                    select(PLCOperationJob)
+                    .where(PLCOperationJob.recipe_id == recipe_id)
+                    .order_by(
+                        PLCOperationJob.created_at.desc(),
+                        PLCOperationJob.updated_at.desc(),
+                    )
+                    .limit(limit)
+                ).scalars().all()
+                return [PLCOperationJobManager.to_dict(job) for job in jobs]
+
+        return PLCOperationJobManager._with_database_retry(_read, attempts=8)
 
     @staticmethod
     def to_dict(job):
@@ -249,7 +462,9 @@ class PLCOperationJobManager:
         for key in ["created_at", "updated_at", "completed_at", "heartbeat_at"]:
             if data.get(key) is not None:
                 data[key] = str(data[key])
-        data["result"] = PLCOperationJobManager.parse_result(data.get("result_json"))
+        data["result"] = PLCOperationJobManager.parse_result(
+            data.get("result_json")
+        )
         return data
 
     @staticmethod

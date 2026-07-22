@@ -44,11 +44,26 @@ Recipes
             </a>
 
             {% if has_stage_selection %}
+                {% if role_can("recipe_archive") %}
+                <a href="{{ archived_url }}" class="crs-btn crs-btn-soft">
+                    Archived Recipes
+                </a>
+                {% endif %}
+
                 <a href="{{ create_url }}" class="crs-btn crs-btn-primary">
                     Create Recipe
                 </a>
 
-                {% if parameter_master_ready is defined and not parameter_master_ready %}
+                {% if role_can("recipe_archive") and not retention_schema_ready %}
+    <div class="workbench-card" style="border-left: 5px solid #f59e0b; padding: 14px 16px; margin-bottom: 14px;">
+        <strong>Recipe archive migration pending.</strong>
+        <p class="muted-text" style="margin: 6px 0 0;">
+            Stop CRS, run <code>python scripts\bootstrap_crs_system.py --no-seed-users</code>, then restart.
+        </p>
+    </div>
+    {% endif %}
+
+    {% if parameter_master_ready is defined and not parameter_master_ready %}
                     {% if plc_tag_browser_url is defined %}
                     <a href="{{ plc_tag_browser_url }}" class="crs-btn crs-btn-soft">
                         PLC Tag Browser
@@ -277,6 +292,24 @@ Recipes
                                 >
                                     Copy
                                 </a>
+                                {% if role_can("recipe_archive") %}
+                                    {% if recipe.can_archive %}
+                                    <a
+                                        href="/recipes/{{ recipe.id }}/archive"
+                                        class="row-action warning"
+                                        title="Archive this unused recipe while preserving all data and audit history"
+                                    >
+                                        Archive
+                                    </a>
+                                    {% else %}
+                                    <span
+                                        class="status-badge status-neutral"
+                                        title="{{ recipe.archive_blockers|join(' ') }}"
+                                    >
+                                        Protected
+                                    </span>
+                                    {% endif %}
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

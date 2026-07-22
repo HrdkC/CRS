@@ -1,9 +1,24 @@
+import os
 import time
 from datetime import datetime
 
 from pycomm3 import (
     LogixDriver
 )
+
+try:
+    from config.settings import PLC_RESTORE_VERIFY_DELAY_SECONDS
+except ImportError:
+    # Compatibility guard for partially applied patch sets. The canonical
+    # definition belongs in config.settings, but restore must not make the
+    # entire CRS application unstartable when an older settings file remains.
+    try:
+        PLC_RESTORE_VERIFY_DELAY_SECONDS = max(
+            0.2,
+            float(os.getenv("CRS_PLC_RESTORE_VERIFY_DELAY_SECONDS", "1.0")),
+        )
+    except (TypeError, ValueError):
+        PLC_RESTORE_VERIFY_DELAY_SECONDS = 1.0
 
 from database.audit_manager import (
     AuditManager
@@ -887,21 +902,106 @@ class PLCBufferOperationManager:
         )
 
         result["payload_compare"] = compare
+        result["metrics"]["restore_write_tag"] = (
+            PLCBufferOperationManager.get_write_tag_name(
+                source_tag["tag_name"],
+                payload
+            )
+        )
+        result["metrics"]["restore_expected_preview"] = payload[:8]
+        result["metrics"]["restore_immediate_preview"] = readback[:8]
 
         if not compare["matched"]:
 
+            first_mismatch = (
+                compare.get("mismatches") or [
+                    "Immediate PLC readback differs from the database payload."
+                ]
+            )[0]
+
             PLCBufferOperationManager.fail_with_step(
                 result,
-                "CRS buffer compare",
-                "CRS buffer readback does not match database recipe.",
-                96
+                "Immediate CRS buffer compare",
+                (
+                    "CRS buffer did not match immediately after the write. "
+                    f"{first_mismatch}"
+                ),
+                93
             )
 
         PLCBufferOperationManager.add_step(
             result,
-            "CRS buffer verified",
+            "Immediate CRS buffer verified",
             "OK",
-            "Database recipe restored to CRS_Recipe_Data.",
+            (
+                f"{source_tag['tag_name']} matched the database immediately "
+                "after the write."
+            ),
+            93
+        )
+
+        verify_delay = float(PLC_RESTORE_VERIFY_DELAY_SECONDS)
+        result["metrics"]["restore_verify_delay_seconds"] = verify_delay
+
+        time.sleep(verify_delay)
+
+        # Use a new connection for the persistence check. This prevents a very
+        # short-lived write from being reported as SUCCESS when controller logic,
+        # SCADA, or another client restores the old value immediately afterward.
+        with LogixDriver(
+            result["plc"]["ip_address"]
+        ) as verify_conn:
+
+            persistent_readback = (
+                PLCBufferOperationManager
+                .read_array_or_block(
+                    plc_conn=verify_conn,
+                    tag_name=source_tag["tag_name"],
+                    result=result,
+                    label="Persistent CRS buffer readback",
+                    percent=97,
+                    payload_size=result.get("payload_size")
+                )
+            )
+
+        persistent_compare = PLCBufferOperationManager.compare_payloads(
+            payload,
+            persistent_readback
+        )
+
+        result["persistent_payload_compare"] = persistent_compare
+        result["metrics"]["restore_persistent_preview"] = (
+            persistent_readback[:8]
+        )
+
+        if not persistent_compare["matched"]:
+
+            first_mismatch = (
+                persistent_compare.get("mismatches") or [
+                    "Persistent PLC readback differs from the database payload."
+                ]
+            )[0]
+
+            PLCBufferOperationManager.fail_with_step(
+                result,
+                "Persistent CRS buffer compare",
+                (
+                    f"{source_tag['tag_name']} did not retain the restored "
+                    f"values for {verify_delay:.1f} second(s). {first_mismatch}. "
+                    "PLC logic, SCADA, or another client may be overwriting the "
+                    "CRS buffer, or a different controller/tag may be monitored."
+                ),
+                99
+            )
+
+        PLCBufferOperationManager.add_step(
+            result,
+            "CRS buffer persistence verified",
+            "OK",
+            (
+                f"{source_tag['tag_name']} retained the restored values for "
+                f"{verify_delay:.1f} second(s) and matched the database."
+            ),
             100
         )
 
@@ -2596,6 +2696,13 @@ class PLCBufferOperationManager:
             "metrics": {},
 
             "payload_compare": {
+                "checked": False,
+                "matched": False,
+                "mismatch_count": 0,
+                "mismatches": []
+            },
+
+            "persistent_payload_compare": {
                 "checked": False,
                 "matched": False,
                 "mismatch_count": 0,
