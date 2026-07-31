@@ -11,13 +11,13 @@ def test_archive_confirmation_code_is_prefilled_and_read_only():
     )
     source = template_path.read_text(encoding="utf-8")
 
-    assert '{% if action_kind == "archive" %}' in source
+    assert '{% if action_kind in ["archive", "delete"] %}' in source
     assert 'value="{{ recipe.recipe_code }}"' in source
     assert "readonly" in source
-    assert "Selected automatically from the recipe list" in source
+    assert "Selected automatically from the recipe list." in source
 
 
-def test_non_archive_retention_actions_keep_manual_confirmation():
+def test_restore_keeps_manual_recipe_code_confirmation():
     template_path = (
         Path(__file__).resolve().parents[2]
         / "flask_app"
@@ -29,4 +29,4 @@ def test_non_archive_retention_actions_keep_manual_confirmation():
 
     assert "Type the exact recipe code to confirm" in source
     assert '{% if action_kind == "delete" %}' in source
-    assert "Type DELETE" in source
+    assert 'name="delete_confirmation"' not in source

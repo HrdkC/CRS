@@ -13,7 +13,9 @@ def test_app_starts_supervisor_automatically():
 def test_production_uses_waitress():
     root = Path(__file__).resolve().parents[2]
     source = (root / "app.py").read_text(encoding="utf-8")
-    assert 'DEPLOYMENT_MODE == "production"' in source
+    assert "def should_use_waitress(deployment_mode: str)" in source
+    assert 'deployment_mode == "production"' in source
+    assert "use_waitress = should_use_waitress(DEPLOYMENT_MODE)" in source
     assert "from waitress import serve" in source
 
 

@@ -1,0 +1,304 @@
+/*
+ * 38_global_action_typography_standardization.css
+ * Final shared contract for page typography and horizontal command groups.
+ * Navigation and branding retain their dedicated sizing rules.
+ */
+
+:root {
+    --crs-page-font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    --crs-page-font-body: calc(13px + var(--crs-font-adjust, 0px));
+    --crs-page-font-small: calc(12px + var(--crs-font-adjust, 0px));
+    --crs-page-font-button: calc(12px + var(--crs-font-adjust, 0px));
+    --crs-page-font-h1: calc(26px + var(--crs-font-adjust, 0px));
+    --crs-page-font-h2: calc(20px + var(--crs-font-adjust, 0px));
+    --crs-page-font-h3: calc(15px + var(--crs-font-adjust, 0px));
+    --crs-action-gap: 7px;
+    --crs-action-height: 32px;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+    font-family: var(--crs-page-font-family) !important;
+    letter-spacing: 0 !important;
+}
+
+.main-container,
+.login-layout {
+    font-family: var(--crs-page-font-family) !important;
+    font-size: var(--crs-page-font-body) !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0 !important;
+}
+
+.main-container h1,
+.main-container .page-title,
+.main-container .hero-title,
+.main-container .workbench-title h1 {
+    font-size: var(--crs-page-font-h1) !important;
+    line-height: 1.15 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+}
+
+.main-container h2,
+.main-container .section-title {
+    font-size: var(--crs-page-font-h2) !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+}
+
+.main-container h3,
+.main-container .card-title,
+.main-container .panel-title,
+.main-container .panel-heading span:first-child {
+    font-size: var(--crs-page-font-h3) !important;
+    line-height: 1.25 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+}
+
+.main-container p,
+.main-container li,
+.main-container td,
+.main-container input,
+.main-container select,
+.main-container textarea {
+    font-size: var(--crs-page-font-body) !important;
+    letter-spacing: 0 !important;
+}
+
+.main-container label,
+.main-container small,
+.main-container .muted-text,
+.main-container .settings-note,
+.main-container .panel-heading p,
+.main-container .metric-card small {
+    font-size: var(--crs-page-font-small) !important;
+    letter-spacing: 0 !important;
+}
+
+.main-container label,
+.main-container th,
+.main-container .metric-label,
+.main-container .section-kicker,
+.main-container .kicker,
+.main-container .eyebrow {
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+}
+
+.main-container th {
+    font-size: var(--crs-page-font-small) !important;
+    line-height: 1.25 !important;
+}
+
+button,
+.btn,
+.crs-btn,
+.primary-action,
+.secondary-action,
+.action-btn,
+.row-action,
+.bulk-action-button,
+.bulk-chip-button,
+.bulk-sort-button,
+.operation-button {
+    flex: 0 0 auto !important;
+    width: auto;
+    min-width: 0;
+    min-height: var(--crs-action-height) !important;
+    max-width: none;
+    padding: 7px 12px !important;
+    font-family: var(--crs-page-font-family) !important;
+    font-size: var(--crs-page-font-button) !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+}
+
+:is(
+    .row-actions,
+    .workbench-actions,
+    .form-action-row,
+    .form-actions,
+    .compact-actions,
+    .hero-actions,
+    .setup-actions,
+    .database-form-actions,
+    .audit-filter-actions-pro,
+    .audit-archive-actions,
+    .buffer-header-actions,
+    .live-status-actions,
+    .bulk-mass-actions,
+    .readiness-heading-actions,
+    .configuration-stage-actions,
+    .stage-readiness-actions,
+    .plc-stage-config-button-row,
+    .plc-assignment-action-row,
+    .stage-plc-rule-actions,
+    .parameter-template-wizard-actions,
+    .action-row
+) {
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    gap: var(--crs-action-gap) !important;
+    min-width: 0;
+    max-width: 100%;
+}
+
+:is(
+    .workbench-actions,
+    .form-action-row,
+    .form-actions,
+    .compact-actions,
+    .hero-actions,
+    .setup-actions,
+    .database-form-actions,
+    .audit-filter-actions-pro,
+    .audit-archive-actions,
+    .buffer-header-actions,
+    .live-status-actions,
+    .bulk-mass-actions,
+    .readiness-heading-actions,
+    .configuration-stage-actions,
+    .stage-readiness-actions,
+    .plc-stage-config-button-row,
+    .plc-assignment-action-row,
+    .stage-plc-rule-actions,
+    .parameter-template-wizard-actions,
+    .action-row
+) {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+}
+
+:is(
+    .row-actions,
+    .workbench-actions,
+    .form-action-row,
+    .form-actions,
+    .compact-actions,
+    .hero-actions,
+    .setup-actions,
+    .database-form-actions,
+    .audit-filter-actions-pro,
+    .audit-archive-actions,
+    .buffer-header-actions,
+    .live-status-actions,
+    .readiness-heading-actions,
+    .configuration-stage-actions,
+    .stage-readiness-actions,
+    .plc-stage-config-button-row,
+    .plc-assignment-action-row,
+    .stage-plc-rule-actions,
+    .parameter-template-wizard-actions,
+    .action-row
+) > form {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.button-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(120px, 1fr)) !important;
+    gap: var(--crs-action-gap) !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+}
+
+/* PLC Registry: all five commands remain on one row at desktop widths. */
+.plc-registry-table {
+    min-width: 1120px !important;
+}
+
+.plc-registry-table th:nth-child(6),
+.plc-registry-table td:nth-child(6),
+.plc-registry-actions-cell {
+    width: 410px !important;
+    min-width: 410px !important;
+    max-width: none !important;
+}
+
+.plc-registry-actions {
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    gap: var(--crs-action-gap) !important;
+    width: max-content !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+.plc-registry-actions .row-action,
+.plc-registry-actions a,
+.plc-registry-actions button {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    padding: 7px 10px !important;
+    white-space: nowrap !important;
+}
+
+.plc-registry-actions .plc-action-array-import {
+    min-width: 104px !important;
+}
+
+.plc-registry-actions .row-action-form,
+.plc-registry-actions .plc-registry-action-form {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+@media (max-width: 760px) {
+    :is(
+        .row-actions,
+        .workbench-actions,
+        .form-action-row,
+        .form-actions,
+        .compact-actions,
+        .hero-actions,
+        .setup-actions,
+        .database-form-actions,
+        .audit-filter-actions-pro,
+        .audit-archive-actions,
+        .buffer-header-actions,
+        .live-status-actions,
+        .bulk-mass-actions,
+        .readiness-heading-actions,
+        .configuration-stage-actions,
+        .stage-readiness-actions,
+        .plc-stage-config-button-row,
+        .plc-assignment-action-row,
+        .stage-plc-rule-actions,
+        .parameter-template-wizard-actions,
+        .action-row
+    ) {
+        justify-content: flex-start !important;
+    }
+}

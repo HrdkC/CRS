@@ -1,0 +1,9 @@
+{
+  "current_job_id": null,
+  "pid": 25176,
+  "poll_seconds": 0.25,
+  "state": "IDLE",
+  "updated_epoch": 1785480958.395984,
+  "updated_utc": "2026-07-31T06:55:58Z",
+  "worker_id": "Entra-F4NN0B4-25176-862ec360"
+}

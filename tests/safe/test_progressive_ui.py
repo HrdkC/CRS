@@ -68,4 +68,6 @@ def test_plc_operation_polling_is_visibility_aware_and_terminal_driven():
     assert 'document.addEventListener("visibilitychange"' in script
     assert "pollInFlight" in script
     assert "schedulePoll" in script
-    assert "Status connection interrupted" in script
+    assert "status connection (attempt " in script
+    assert "AbortController" in script
+    assert "if (payload.done)" in script

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Build Parameter Template{% endblock %}
+{% block content %}
+<main class="setup-shell parameter-build-shell">
+    <header class="setup-header">
+        <div>
+            <a class="setup-back-link" href="{{ stage_setup_url }}">Back to Guided Setup</a>
+            <span class="section-kicker">Parameter Template</span>
+            <h1>Build {{ context.machine_stage_display }} Template</h1>
+            <p>Select a source and review every planned database change before creating rows.</p>
+        </div>
+    </header>
+
+    <section class="setup-stage">
+        <div class="setup-stage-heading"><div><span class="section-kicker">Choose Source</span><h2>How do you want to start?</h2></div></div>
+        <div class="setup-choice-grid parameter-source-choices">
+            <div class="setup-choice is-recommended is-selected"><span>Recommended</span><strong>Configured Recipe Array</strong><small>Create missing indexes without reading or writing the PLC.</small></div>
+            <a class="setup-choice" href="{{ plc_import_url }}"><strong>Import Current PLC Values</strong><small>Use a supervised read-only PLC preview.</small></a>
+            <a class="setup-choice" href="#copy-compatible-template"><strong>Copy Compatible Template</strong><small>Preview missing rows from another machine with the same stage type.</small></a>
+        </div>
+
+        {% if configured_array_tags %}
+        <form method="POST" class="setup-form parameter-preview-form">
+            {{ csrf_input() }}
+            <div class="parameter-template-default-grid">
+                <label><span>Recipe array</span><select name="source_tag_id" id="source_tag_id" required>
+                    {% for tag in configured_array_tags %}<option value="{{ tag.id }}" data-start="{{ tag.array_start_index }}" data-end="{{ tag.array_end_index }}" {% if recommended_tag and tag.id == recommended_tag.id %}selected{% endif %}>{{ tag.tag_name }} · {{ tag.tag_type }}[{{ tag.array_start_index }}..{{ tag.array_end_index }}]{% if tag.recommended %} · Recommended{% endif %}</option>{% endfor %}
+                </select></label>
+                <label><span>First used index</span><input type="number" name="start_index" id="start_index" required value="{{ preview.start_index if preview else (recommended_tag.array_start_index if recommended_tag else 0) }}"></label>
+                <label><span>Last used index</span><input type="number" name="end_index" id="end_index" required value="{{ preview.end_index if preview else (recommended_tag.array_end_index if recommended_tag else 0) }}"></label>
+                <label><span>Name prefix</span><input name="name_prefix" required value="{{ preview.form.name_prefix if preview else context.machine_code ~ ' ' ~ context.stage_url_code ~ ' Parameter' }}"></label>
+                <label><span>Unit</span><input name="unit" value="{{ preview.form.unit if preview else '' }}" placeholder="MM / SEC / DEG"></label>
+                <label><span>Minimum</span><input type="number" step="any" name="min_value" required value="{{ preview.form.min_value if preview else 0 }}"></label>
+                <label><span>Maximum</span><input type="number" step="any" name="max_value" required value="{{ preview.form.max_value if preview else 999999 }}"></label>
+                <label><span>Default</span><input type="number" step="any" name="default_value" required value="{{ preview.form.default_value if preview else 0 }}"></label>
+            </div>
+            <div class="setup-actions"><button class="crs-btn crs-btn-primary" type="submit">Preview Template Rows</button></div>
+        </form>
+        {% else %}
+        <div class="setup-attention"><strong>Recipe array mapping is required first.</strong><p>Return to PLC Tag Mapping and map a numeric RECIPE_DATA array.</p></div>
+        {% endif %}
+    </section>
+
+    <section class="setup-stage" id="copy-compatible-template">
+        <div class="setup-stage-heading"><div><span class="section-kicker">Reuse Approved Structure</span><h2>Copy a Compatible Template</h2><p>Only missing PLC indexes are copied. Existing target rows are never overwritten.</p></div></div>
+        {% if compatible_sources %}
+        <form method="POST" class="setup-form">
+            {{ csrf_input() }}<input type="hidden" name="preview_method" value="copy">
+            <label><span>Source machine and stage</span><select name="source_stage_id" required><option value="">Select compatible template...</option>{% for source in compatible_sources %}<option value="{{ source.stage_id }}">{{ source.machine_code }} · {{ source.stage_type|replace('_', ' ')|title }} · {{ source.used_count }} used rows</option>{% endfor %}</select></label>
+            <div class="setup-actions"><button class="crs-btn crs-btn-soft" type="submit">Preview Copy</button></div>
+        </form>
+        {% else %}<p class="setup-guidance">No other machine with the same stage type has a parameter template yet.</p>{% endif %}
+    </section>
+
+    {% if preview %}
+    <section class="setup-stage parameter-preview-panel" aria-labelledby="preview-title">
+        <div class="setup-stage-heading"><div><span class="section-kicker">Review Before Create</span><h2 id="preview-title">{{ preview.create_count }} rows will be created</h2><p>{{ preview.keep_count }} existing rows will be preserved. No PLC communication is performed.</p></div><span class="setup-state setup-state-in-progress">Preview Only</span></div>
+        <div class="professional-table-wrap parameter-preview-table-wrap">
+            <table class="professional-table"><thead><tr><th>PLC Index</th><th>Parameter Name</th><th>Unit</th><th>Limits</th><th>Default</th><th>Action</th></tr></thead><tbody>
+                {% for row in preview.rows[:100] %}<tr><td>{{ row.index }}</td><td>{{ row.parameter_name }}</td><td>{{ row.unit or '-' }}</td><td>{{ row.min_value }} to {{ row.max_value }}</td><td>{{ row.default_value }}</td><td><span class="status-badge status-{{ 'success' if row.action == 'CREATE' else 'info' }}">{{ row.action }}</span></td></tr>{% endfor %}
+            </tbody></table>
+        </div>
+        {% if preview.row_count > 100 %}<p class="field-help">Showing the first 100 of {{ preview.row_count }} validated rows.</p>{% endif %}
+        <form method="POST" action="{{ create_url }}" class="setup-form">
+            {{ csrf_input() }}
+            <input type="hidden" name="return_to" value="guided_setup">
+            {% for key, value in preview.form.items() %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
+            <label><span>Setup reason</span><input name="reason" minlength="8" maxlength="500" required placeholder="Why is this parameter template being created?"></label>
+            <div class="setup-actions"><button class="crs-btn crs-btn-primary" type="submit">Create {{ preview.create_count }} Missing Rows</button><a class="crs-btn crs-btn-soft" href="{{ stage_setup_url }}">Cancel</a></div>
+        </form>
+    </section>
+    {% endif %}
+
+    {% if copy_preview %}
+    <section class="setup-stage parameter-preview-panel">
+        <div class="setup-stage-heading"><div><span class="section-kicker">Review Before Copy</span><h2>{{ copy_preview.copy_count }} rows will be copied</h2><p>{{ copy_preview.keep_count }} target indexes will remain unchanged.</p></div><span class="setup-state setup-state-in-progress">Preview Only</span></div>
+        <div class="professional-table-wrap parameter-preview-table-wrap"><table class="professional-table"><thead><tr><th>PLC Index</th><th>Parameter Name</th><th>Unit</th><th>Action</th></tr></thead><tbody>{% for row in copy_preview.rows[:100] %}<tr><td>{{ row.plc_array_index if row.plc_array_index is not none else row.tag_index }}</td><td>{{ row.parameter_name }}</td><td>{{ row.unit or '-' }}</td><td><span class="status-badge status-{{ 'success' if row.action == 'COPY' else 'info' }}">{{ row.action }}</span></td></tr>{% endfor %}</tbody></table></div>
+        <form method="POST" action="/parameters/copy-template/{{ context.machine_code }}/{{ context.stage_url_code }}" class="setup-form">{{ csrf_input() }}<input type="hidden" name="return_to" value="guided_setup"><input type="hidden" name="source_stage_id" value="{{ copy_preview.source.stage_id }}"><label><span>Copy reason</span><input name="reason" minlength="8" maxlength="500" required placeholder="Why is this compatible template being copied?"></label><div class="setup-actions"><button class="crs-btn crs-btn-primary" type="submit">Copy {{ copy_preview.copy_count }} Missing Rows</button></div></form>
+    </section>
+    {% endif %}
+</main>
+{% endblock %}

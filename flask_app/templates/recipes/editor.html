@@ -99,13 +99,26 @@ Recipe Editor
                 Phase Control
             </a>
 
-            {% if can_download_recipe %}
+            {% if can_role_download_recipe %}
             <a
                 class="crs-btn crs-btn-primary"
                 href="/recipe-editor/download-preparation/{{ recipe.id }}"
+                id="plcBufferAction"
+                data-access-status-url="/recipe-editor/{{ recipe.id }}/plc-buffer-access-status"
+                data-refresh-ms="2000"
+                {% if not can_download_recipe %}hidden{% endif %}
             >
                 PLC Buffer
             </a>
+            <span
+                class="status-badge status-warning"
+                id="plcBufferBusyStatus"
+                role="status"
+                aria-live="polite"
+                {% if can_download_recipe %}hidden{% endif %}
+            >
+                PLC Buffer In Use
+            </span>
             {% endif %}
 
         </div>
@@ -955,4 +968,13 @@ Recipe Editor
 
 </section>
 
+{% endblock %}
+
+{% block page_scripts %}
+{% if can_role_download_recipe %}
+<script
+    src="{{ url_for('static', filename='js/pages/recipe-editor.js') }}?v=js-v131-plc-buffer-access-20260731"
+    defer
+></script>
+{% endif %}
 {% endblock %}

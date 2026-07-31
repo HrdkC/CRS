@@ -185,7 +185,9 @@ def _build_stage_readiness(cursor):
         row["status"] = status
         row["status_class"] = status_class
         row["stage_code"] = stage_code
-        row["configuration_url"] = f"/configuration/{row.get('machine_code')}/{stage_code}"
+        row["configuration_url"] = (
+            f"/configuration/{row.get('machine_code')}/{stage_code}/setup"
+        )
         row["recipe_url"] = f"/recipes/{row.get('machine_code')}/{stage_code}"
         readiness.append(row)
 

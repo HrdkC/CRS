@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Setup {{ report.context.machine_stage_display }}{% endblock %}
+
+{% block content %}
+{% set context = report.context %}
+<main class="setup-shell" data-setup-shell>
+    <header class="setup-header">
+        <div>
+            <a class="setup-back-link" href="{{ back_url }}">Configuration Center</a>
+            <span class="section-kicker">Guided Configuration</span>
+            <h1>{{ context.machine_stage_display }}</h1>
+            <p>Complete each validated step in order. Your progress is saved automatically when you continue.</p>
+        </div>
+        <div class="setup-header-status">
+            <span class="status-badge status-{{ report.status_class }}">{{ report.status }}</span>
+            <strong>{{ workflow.completed_steps }} of 7 complete</strong>
+            <span>{{ workflow.progress_percent }}%</span>
+        </div>
+    </header>
+
+    <form method="POST" action="{{ report.setup_url }}/progress" class="setup-mode-switch" aria-label="Configuration mode">
+        {{ csrf_input() }}
+        <input type="hidden" name="workflow_id" value="{{ workflow.id }}">
+        <input type="hidden" name="row_version" value="{{ workflow.row_version }}">
+        <input type="hidden" name="step_key" value="{{ active_step.key }}">
+        <span>View</span>
+        <button type="submit" name="setup_mode" value="STANDARD" class="{% if workflow.setup_mode == 'STANDARD' %}is-selected{% endif %}">Standard</button>
+        <button type="submit" name="setup_mode" value="ADVANCED" class="{% if workflow.setup_mode == 'ADVANCED' %}is-selected{% endif %}">Advanced</button>
+    </form>
+
+    <div class="setup-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ workflow.progress_percent }}">
+        <span style="width: {{ workflow.progress_percent }}%"></span>
+    </div>
+
+    <div class="setup-layout">
+        <nav class="setup-step-nav" aria-label="Configuration steps">
+            {% for step in workflow.steps %}
+            <a
+                href="{{ report.setup_url }}?step={{ step.key }}"
+                class="setup-step {% if step.key == active_step.key %}is-current{% endif %} status-{{ step.status|lower|replace('_', '-') }}"
+                {% if step.key == active_step.key %}aria-current="step"{% endif %}
+            >
+                <span class="setup-step-number">{% if step.status == 'COMPLETE' %}✓{% else %}{{ step.number }}{% endif %}</span>
+                <span class="setup-step-copy">
+                    <strong>{{ step.title }}</strong>
+                    <small>{{ step.status|replace('_', ' ')|title }}</small>
+                </span>
+            </a>
+            {% endfor %}
+        </nav>
+
+        <section class="setup-stage" aria-labelledby="setup-step-title">
+            <div class="setup-stage-heading">
+                <div>
+                    <span class="section-kicker">Step {{ active_step.number }} of 7</span>
+                    <h2 id="setup-step-title">{{ active_step.title }}</h2>
+                    <p>{{ active_step.summary }}</p>
+                </div>
+                <span class="setup-state setup-state-{{ active_step.status|lower|replace('_', '-') }}">
+                    {{ active_step.status|replace('_', ' ')|title }}
+                </span>
+            </div>
+
+            {% if active_step.blockers %}
+            <div class="setup-attention" role="status">
+                <strong>Needs attention</strong>
+                <ul>
+                    {% for blocker in active_step.blockers %}<li>{{ blocker }}</li>{% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if active_step.key == 'machine_stage' %}
+            <div class="setup-summary-grid">
+                <div><span>Machine</span><strong>{{ context.machine_code }}</strong></div>
+                <div><span>Stage</span><strong>{{ context.stage_display_name }}</strong></div>
+                <div><span>Machine status</span><strong>{{ 'Active' if context.machine_active else 'Inactive' }}</strong></div>
+                <div><span>Stage status</span><strong>{{ 'Active' if context.stage_active else 'Inactive' }}</strong></div>
+            </div>
+            <p class="setup-guidance">This workflow is permanently owned by this machine and stage. Templates and PLC mappings created here do not affect other stages.</p>
+
+            {% elif active_step.key == 'plc_assignment' %}
+            {% if report.assigned_plc %}
+            <div class="setup-selected-record">
+                <span>Current PLC</span>
+                <strong>{{ report.assigned_plc.plc_name }}</strong>
+                <small>{{ report.assigned_plc.ip_address }} · {{ report.assigned_plc.controller_type or 'Controller type not set' }}</small>
+            </div>
+            {% endif %}
+            <form method="POST" action="{{ report.plc_assignment_save_url }}" class="setup-form">
+                {{ csrf_input() }}
+                <input type="hidden" name="return_to" value="guided_setup">
+                <label><span>PLC for this stage</span>
+                    <select name="plc_id" required>
+                        <option value="">Select a registered PLC...</option>
+                        {% for plc in report.all_plcs %}
+                        <option value="{{ plc.id }}" {% if report.assigned_plc and plc.id == report.assigned_plc.id %}selected{% endif %}>
+                            {{ plc.plc_name }} · {{ plc.ip_address }} · {{ plc.stage_display }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label><span>Reason</span><input name="reason" required maxlength="250" placeholder="Why is this PLC assigned to this stage?"></label>
+                <div class="setup-actions"><button class="crs-btn crs-btn-primary" type="submit">Save PLC Assignment</button><a class="crs-btn crs-btn-soft" href="{{ report.plc_create_url }}">Register New PLC</a></div>
+            </form>
+
+            {% elif active_step.key == 'plc_tags' %}
+            <div class="setup-check-list">
+                {% for section in report.sections if section.key in ['required_plc_tags', 'required_tags'] %}
+                    {% for item in section.items %}
+                    <div class="setup-check-row status-{{ item.status }}">
+                        <span class="setup-check-icon">{% if item.status == 'ok' %}✓{% else %}!{% endif %}</span>
+                        <div><strong>{{ item.label }}</strong><small>{{ item.detail }}</small></div>
+                        {% if item.action_url %}<a class="crs-btn crs-btn-soft" href="{{ item.action_url }}">Map Tag</a>{% endif %}
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <div class="setup-actions"><a class="crs-btn crs-btn-primary" href="{{ report.plc_tags_url }}">Open Tag Mapping</a></div>
+
+            {% elif active_step.key == 'parameters' %}
+            <div class="setup-choice-grid">
+                <a class="setup-choice is-recommended" href="/parameters/setup-options/{{ context.machine_code }}/{{ context.stage_url_code }}">
+                    <span>Recommended</span><strong>Build from Configured Recipe Array</strong><small>Preview the used indexes before creating any rows.</small>
+                </a>
+                <a class="setup-choice" href="{{ report.plc_array_import_url }}"><strong>Import Current PLC Values</strong><small>Read-only preview before creating a draft.</small></a>
+                <a class="setup-choice" href="{{ report.parameters_url }}"><strong>Edit Existing Template</strong><small>Search, validate, and update existing rows.</small></a>
+            </div>
+
+            {% elif active_step.key == 'phase_controls' %}
+            <div class="setup-guidance">
+                <strong>Stage-specific rule</strong>
+                {% if context.stage_type == 'SECOND_STAGE' %}
+                <p>Second Stage recipe control includes CAP_STRIP_SIDE and BT_SIDE only. Shaping, stop, and position remain PLC-fixed and are not recipe data.</p>
+                {% else %}
+                <p>Configure the approved First Stage phase names, order, stop, and position options for this machine.</p>
+                {% endif %}
+            </div>
+            <div class="setup-actions"><a class="crs-btn crs-btn-primary" href="{{ report.phase_master_url }}">Configure Phase Controls</a></div>
+
+            {% elif active_step.key == 'first_recipe' %}
+            <div class="setup-guidance"><strong>Create a controlled first recipe</strong><p>The recipe receives all Used parameter rows from this stage template. Keep it Draft until names, limits, values, and phase selections are verified.</p></div>
+            <div class="setup-actions"><a class="crs-btn crs-btn-primary" href="{{ report.create_recipe_url }}">Create First Recipe</a><a class="crs-btn crs-btn-soft" href="{{ report.recipes_url }}">View Stage Recipes</a></div>
+
+            {% elif active_step.key == 'review' %}
+            <div class="setup-review-summary">
+                <div><span>Readiness</span><strong>{{ report.score }}%</strong></div>
+                <div><span>Blocking checks</span><strong>{{ report.blocking_count }}</strong></div>
+                <div><span>Warnings</span><strong>{{ report.warning_count }}</strong></div>
+                <div><span>Checks passed</span><strong>{{ report.ready_count }} / {{ report.total_count }}</strong></div>
+            </div>
+            <div class="setup-check-list">
+                {% for section in report.sections %}
+                <div class="setup-check-row status-{{ section.severity }}">
+                    <span class="setup-check-icon">{% if section.severity == 'ok' %}✓{% else %}!{% endif %}</span>
+                    <div><strong>{{ section.title }}</strong><small>{{ section.summary }}</small></div>
+                    <span class="setup-state setup-state-{{ 'complete' if section.severity == 'ok' else ('blocked' if section.severity == 'blocked' else 'needs-attention') }}">{{ section.severity|title }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <form method="POST" action="{{ report.setup_url }}/review" class="setup-actions">
+                {{ csrf_input() }}
+                <button class="crs-btn crs-btn-primary" type="submit">Save Review Evidence</button>
+            </form>
+            {% endif %}
+
+            {% if active_step.key != 'review' %}
+                {% set next_number = active_step.number + 1 %}
+                {% if next_number <= 7 %}{% set next_step = workflow.steps[next_number - 1] %}
+                <form method="POST" action="{{ report.setup_url }}/progress" class="setup-continue-form">
+                    {{ csrf_input() }}
+                    <input type="hidden" name="workflow_id" value="{{ workflow.id }}">
+                    <input type="hidden" name="row_version" value="{{ workflow.row_version }}">
+                    <input type="hidden" name="setup_mode" value="{{ workflow.setup_mode }}">
+                    <input type="hidden" name="step_key" value="{{ next_step.key }}">
+                    <span>Next: {{ next_step.title }}</span>
+                    <button class="crs-btn crs-btn-primary" type="submit">Continue</button>
+                </form>
+                {% endif %}
+            {% endif %}
+        </section>
+    </div>
+
+    <footer class="setup-footer">
+        {% if workflow.setup_mode == 'ADVANCED' %}
+        <span>Advanced tools expose raw PLC rules and repair controls.</span>
+        <a href="{{ report.advanced_setup_url }}">Open Engineering Tools</a>
+        {% else %}
+        <span>Standard mode shows only the normal setup journey.</span>
+        {% endif %}
+    </footer>
+    <details class="setup-glossary">
+        <summary>Configuration terms</summary>
+        <dl>
+            <div><dt>PLC tag purpose</dt><dd>The stable CRS function mapped to a physical PLC tag.</dd></div>
+            <div><dt>Parameter template</dt><dd>The names, PLC indexes, units, limits, defaults, and Used state owned by this machine/stage.</dd></div>
+            <div><dt>Readiness</dt><dd>Live validation from saved configuration data. It is not a manual completion checkbox.</dd></div>
+            <div><dt>Engineering Tools</dt><dd>Advanced rule, remapping, and repair controls outside the standard setup journey.</dd></div>
+        </dl>
+    </details>
+</main>
+{% endblock %}

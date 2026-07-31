@@ -81,7 +81,10 @@ class _HtmlTargetParser(HTMLParser):
 
 def _iter_project_python_files():
     for path in PROJECT_ROOT.rglob("*.py"):
-        if any(part in EXCLUDED_DIR_NAMES for part in path.parts):
+        if any(
+            part in EXCLUDED_DIR_NAMES or part.startswith(".codex_test_")
+            for part in path.parts
+        ):
             continue
         yield path
 
@@ -183,6 +186,39 @@ def _sample_values() -> dict[str, object]:
     }
 
 
+def _machine_stage_samples() -> list[tuple[str, str]]:
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            """
+            SELECT m.machine_code, s.stage_type
+            FROM machine_stages s
+            JOIN tbm_machines m ON m.id = s.machine_id
+            ORDER BY m.machine_code, s.stage_type
+            """
+        ).fetchall()
+    finally:
+        conn.close()
+    return [
+        (
+            str(row[0]),
+            "SS" if str(row[1]).upper() == "SECOND_STAGE" else "FS",
+        )
+        for row in rows
+    ]
+
+
+def _all_recipe_ids() -> list[int]:
+    conn = get_connection()
+    try:
+        return [
+            int(row[0])
+            for row in conn.execute("SELECT id FROM recipes ORDER BY id").fetchall()
+        ]
+    finally:
+        conn.close()
+
+
 def _cleanup_test_session(session_id: int | None) -> None:
     if not session_id:
         return
@@ -265,6 +301,35 @@ def main() -> int:
             )
 
         print("[4/5] Safe GET page smoke check")
+        checked_get_targets: set[str] = set()
+
+        def check_safe_get(target: str, label: str) -> None:
+            if target in checked_get_targets:
+                return
+            checked_get_targets.add(target)
+            try:
+                response = client.get(target, follow_redirects=False)
+            except Exception as exc:
+                failures.append(
+                    f"GET EXCEPTION [{label}]: {target}: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+                return
+
+            status_counter[str(response.status_code)] += 1
+            if response.status_code >= 500:
+                failures.append(f"GET [{label}] {target}: HTTP {response.status_code}")
+                return
+            if response.status_code == 404 and label != "expected-404":
+                failures.append(f"GET [{label}] {target}: unexpected HTTP 404")
+                return
+            if response.status_code == 405:
+                failures.append(f"GET [{label}] {target}: HTTP 405")
+                return
+
+            if response.status_code == 200 and "text/html" in response.content_type:
+                rendered_pages.append((target, response.get_data(as_text=True)))
+
         with app.test_request_context():
             for rule in sorted(app.url_map.iter_rules(), key=lambda item: item.rule):
                 methods = rule.methods - {"HEAD", "OPTIONS"}
@@ -287,29 +352,61 @@ def main() -> int:
                     failures.append(f"URL BUILD: {rule.endpoint}: {exc}")
                     continue
 
-                try:
-                    response = client.get(target, follow_redirects=False)
-                except Exception as exc:
-                    failures.append(f"GET EXCEPTION: {target}: {type(exc).__name__}: {exc}")
-                    continue
+                label = (
+                    "expected-404"
+                    if rule.endpoint in EXPECTED_404_ENDPOINTS
+                    else rule.endpoint
+                )
+                check_safe_get(target, label)
 
-                status_counter[str(response.status_code)] += 1
-                if response.status_code >= 500:
-                    failures.append(f"GET {target}: HTTP {response.status_code}")
-                    continue
-                if response.status_code == 404 and rule.endpoint not in EXPECTED_404_ENDPOINTS:
-                    failures.append(f"GET {target}: unexpected HTTP 404")
-                    continue
-                if response.status_code == 405:
-                    failures.append(f"GET {target}: HTTP 405")
-                    continue
+            setup_steps = (
+                "machine_stage",
+                "plc_assignment",
+                "plc_tags",
+                "parameters",
+                "phase_controls",
+                "first_recipe",
+                "review",
+            )
+            configuration_matrix_count = 0
+            for machine_code, stage_code in _machine_stage_samples():
+                base = f"/configuration/{machine_code}/{stage_code}"
+                check_safe_get(base, "configuration-matrix")
+                for step_key in setup_steps:
+                    check_safe_get(
+                        f"{base}/setup?step={step_key}",
+                        "configuration-workflow-matrix",
+                    )
+                    configuration_matrix_count += 1
 
-                if response.status_code == 200 and "text/html" in response.content_type:
-                    rendered_pages.append((target, response.get_data(as_text=True)))
+            recipe_matrix_count = 0
+            recipe_rules = [
+                rule
+                for rule in app.url_map.iter_rules()
+                if "GET" in rule.methods
+                and rule.endpoint != "static"
+                and rule.endpoint not in UNSAFE_GET_ENDPOINTS
+                and rule.arguments == {"recipe_id"}
+            ]
+            for recipe_id in _all_recipe_ids():
+                for rule in recipe_rules:
+                    try:
+                        target = url_for(rule.endpoint, recipe_id=recipe_id)
+                    except Exception as exc:
+                        failures.append(
+                            f"URL BUILD [recipe-matrix]: {rule.endpoint}: {exc}"
+                        )
+                        continue
+                    check_safe_get(target, f"recipe-matrix:{rule.endpoint}")
+                    recipe_matrix_count += 1
 
         print(
             "  Status counts: "
             + ", ".join(f"{key}={value}" for key, value in sorted(status_counter.items()))
+        )
+        print(
+            f"  Matrix coverage: {configuration_matrix_count} configuration step page(s), "
+            f"{recipe_matrix_count} recipe page(s)."
         )
 
         print("[5/5] Rendered internal link/form action check")

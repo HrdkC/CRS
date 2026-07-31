@@ -23,14 +23,13 @@ def test_archive_and_delete_codes_are_prefilled_and_read_only():
     assert "Selected automatically from the recipe list" in source
 
 
-def test_permanent_delete_still_requires_explicit_delete_word():
+def test_permanent_delete_uses_single_action_confirmation():
     source = _template_source()
 
     assert '{% if action_kind == "delete" %}' in source
-    assert '<label for="delete_confirmation">Type DELETE</label>' in source
-    assert 'name="delete_confirmation"' in source
-    assert 'placeholder="DELETE"' in source
-    assert "required" in source
+    assert 'name="delete_confirmation"' not in source
+    assert "Type DELETE" not in source
+    assert "Enter the deletion reason and press Delete Permanently." in source
 
 
 def test_other_retention_actions_keep_manual_recipe_code_confirmation():

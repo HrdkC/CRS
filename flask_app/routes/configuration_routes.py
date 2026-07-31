@@ -11,6 +11,10 @@ from urllib.parse import quote
 from database.configuration_readiness_manager import (
     ConfigurationReadinessManager,
 )
+from database.configuration_workflow_manager import (
+    ConfigurationWorkflowConflict,
+    ConfigurationWorkflowManager,
+)
 from database.stage_plc_tag_requirement_manager import (
     StagePLCTagRequirementManager,
 )
@@ -43,10 +47,11 @@ def _decorate_report(report):
     context = report["context"]
     add_machine_stage_url_fields(context)
 
-    report["setup_url"] = machine_stage_url(
+    report["advanced_setup_url"] = machine_stage_url(
         "/configuration",
         context=context,
     )
+    report["setup_url"] = report["advanced_setup_url"] + "/setup"
     report["recipes_url"] = machine_stage_url(
         "/recipes",
         context=context,
@@ -251,23 +256,48 @@ def register_configuration_routes(app):
         if not _engineering_config_allowed():
             return redirect("/")
 
-        reports = [
+        all_reports = [
             _decorate_report(report)
             for report in ConfigurationReadinessManager.get_all_reports()
         ]
+
+        for report in all_reports:
+            report["workflow"] = ConfigurationWorkflowManager.get_workflow(report)
+
+        search_text = (request.args.get("search") or "").strip().casefold()
+        status_filter = (request.args.get("status") or "all").strip().lower()
+        stage_filter = (request.args.get("stage") or "all").strip().upper()
+        reports = []
+        for report in all_reports:
+            context = report["context"]
+            searchable = " ".join(
+                str(context.get(key) or "")
+                for key in ("machine_code", "machine_description", "stage_type", "stage_description")
+            ).casefold()
+            if search_text and search_text not in searchable:
+                continue
+            if status_filter != "all" and report["status_class"] != status_filter:
+                continue
+            if stage_filter != "ALL" and context.get("stage_type", "").upper() != stage_filter:
+                continue
+            reports.append(report)
 
         status_counts = {
             "ready": 0,
             "warning": 0,
             "blocked": 0,
         }
-        for report in reports:
+        for report in all_reports:
             status_counts[report["status_class"]] += 1
 
         return render_template(
             "configuration/index.html",
             reports=reports,
             status_counts=status_counts,
+            total_stage_count=len(all_reports),
+            search_text=request.args.get("search", ""),
+            status_filter=status_filter,
+            stage_filter=stage_filter,
         )
 
     @app.route("/configuration/<machine_code>/<stage_code>/phase-defaults", methods=["POST"])
@@ -654,7 +684,10 @@ def register_configuration_routes(app):
         except Exception as exc:
             flash(f"PLC assignment could not be changed: {exc}", "error")
 
-        return redirect(machine_stage_url("/configuration", context=context))
+        destination = machine_stage_url("/configuration", context=context)
+        if request.form.get("return_to") == "guided_setup":
+            destination += "/setup?step=plc_assignment"
+        return redirect(destination)
 
 
     @app.route("/configuration/<machine_code>/<stage_code>/plc-registry", methods=["POST"])
@@ -863,4 +896,115 @@ def register_configuration_routes(app):
             "configuration/stage_readiness.html",
             report=_decorate_report(report),
             back_url="/configuration",
+        )
+
+    @app.route("/configuration/<machine_code>/<stage_code>/setup")
+    def configuration_stage_setup(machine_code, stage_code):
+        if not _engineering_config_allowed():
+            return redirect("/")
+
+        context = get_machine_stage_context_by_code(
+            machine_code, stage_code, include_inactive=True
+        )
+        if not context:
+            flash("Machine/stage not found.", "error")
+            return redirect("/configuration")
+        report = ConfigurationReadinessManager.get_report(
+            context["machine_id"], context["stage_id"]
+        )
+        if not report:
+            flash("Configuration report could not be built.", "error")
+            return redirect("/configuration")
+        report = _decorate_report(report)
+        workflow = ConfigurationWorkflowManager.get_workflow(report)
+        requested_step = (request.args.get("step") or "").strip()
+        valid_steps = {step["key"] for step in workflow["steps"]}
+        active_step_key = (
+            requested_step if requested_step in valid_steps
+            else workflow["current_step_key"]
+        )
+        active_step = next(
+            step for step in workflow["steps"] if step["key"] == active_step_key
+        )
+        return render_template(
+            "configuration/setup_workflow.html",
+            report=report,
+            workflow=workflow,
+            active_step=active_step,
+            back_url="/configuration",
+        )
+
+    @app.route(
+        "/configuration/<machine_code>/<stage_code>/setup/progress",
+        methods=["POST"],
+    )
+    def configuration_stage_setup_progress(machine_code, stage_code):
+        if not _engineering_config_allowed():
+            return redirect("/")
+        context = get_machine_stage_context_by_code(
+            machine_code, stage_code, include_inactive=True
+        )
+        if not context:
+            flash("Machine/stage not found.", "error")
+            return redirect("/configuration")
+        step_key = (request.form.get("step_key") or "").strip()
+        try:
+            ConfigurationWorkflowManager.record_step(
+                workflow_id=request.form.get("workflow_id"),
+                step_key=step_key,
+                username=session.get("username", "system"),
+                expected_version=request.form.get("row_version"),
+                setup_mode="STANDARD",
+                role=session.get("role", "SYSTEM"),
+                request_metadata={
+                    "user_agent": request.headers.get("User-Agent", ""),
+                    "forwarded_for": request.headers.get("X-Forwarded-For"),
+                    "request_host": request.host,
+                },
+            )
+        except (ValueError, ConfigurationWorkflowConflict) as exc:
+            flash(str(exc), "warning")
+        return redirect(
+            machine_stage_url("/configuration", context=context)
+            + "/setup?step=" + quote(step_key)
+        )
+
+    @app.route(
+        "/configuration/<machine_code>/<stage_code>/setup/review",
+        methods=["POST"],
+    )
+    def configuration_stage_setup_review(machine_code, stage_code):
+        if not _engineering_config_allowed():
+            return redirect("/")
+        context = get_machine_stage_context_by_code(
+            machine_code, stage_code, include_inactive=True
+        )
+        if not context:
+            flash("Machine/stage not found.", "error")
+            return redirect("/configuration")
+        report = ConfigurationReadinessManager.get_report(
+            context["machine_id"], context["stage_id"]
+        )
+        workflow = ConfigurationWorkflowManager.get_workflow(report)
+        ConfigurationWorkflowManager.save_evidence(
+            workflow["id"],
+            report,
+            session.get("username", "system"),
+            role=session.get("role", "SYSTEM"),
+            request_metadata={
+                "user_agent": request.headers.get("User-Agent", ""),
+                "forwarded_for": request.headers.get("X-Forwarded-For"),
+                "request_host": request.host,
+            },
+        )
+        if report.get("blocking_count"):
+            flash(
+                f"Review saved. Resolve {report['blocking_count']} blocking check(s) before completion.",
+                "warning",
+            )
+        else:
+            flash("Configuration review evidence saved.", "success")
+        return redirect(
+            machine_stage_url("/configuration", context=context)
+            + "/setup?step=review"
         )

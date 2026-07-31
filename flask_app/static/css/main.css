@@ -47,4 +47,6 @@
 
 @import url("./modules/35_parameter_template_guided_setup.css?v=css-v126-parameter-template-wizard-20260721");
 
-@import url("./modules/36_login_signin_center_alignment.css?v=css-v127-login-signin-center-20260721");
+@import url("./modules/36_login_signin_center_alignment.css?v=css-v133-login-content-grid-20260731");
+@import url("./modules/37_configuration_workflow.css?v=css-v132-guided-configuration-navigation-20260731");
+@import url("./modules/38_global_action_typography_standardization.css?v=css-v134-global-action-type-20260731");

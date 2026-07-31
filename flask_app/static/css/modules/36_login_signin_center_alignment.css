@@ -1,23 +1,89 @@
 /*
  * 36_login_signin_center_alignment.css
- * Keeps the login form and Sign In action centered inside the right login panel.
+ * Keeps every visible login block on one centered horizontal grid.
  * This module intentionally loads after accessibility/responsive overrides.
  */
 
-/* Center the complete sign-in form card within the login panel. */
-.compact-corporate-login-panel .compact-login-form {
-    width: min(430px, 100%) !important;
+.compact-corporate-login-panel {
+    --crs-login-content-width: 540px;
+    --crs-login-column-gap: 12px;
+}
+
+.compact-corporate-login-panel .login-panel-main,
+.compact-corporate-login-panel .corporate-login-footer {
+    width: min(var(--crs-login-content-width), 100%) !important;
+    max-width: 100% !important;
     justify-self: center !important;
-    align-self: center !important;
     margin-left: auto !important;
     margin-right: auto !important;
 }
 
-/* Keep the username/password field group centered inside the form card. */
+.compact-corporate-login-panel .login-panel-main {
+    align-self: center !important;
+    gap: 14px !important;
+}
+
+.compact-corporate-login-panel .login-panel-head,
+.compact-corporate-login-panel .compact-login-form,
+.compact-corporate-login-panel .compact-values-panel,
+.compact-corporate-login-panel .leadership-large-panel,
+.compact-corporate-login-panel .login-error-message {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-self: stretch !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.compact-corporate-login-panel .login-panel-head {
+    grid-template-columns: 100px minmax(0, 1fr) !important;
+    column-gap: 16px !important;
+}
+
+.compact-corporate-login-panel .login-panel-head > div {
+    min-width: 0 !important;
+    text-align: center !important;
+}
+
+/* Keep labels and inputs equally inset inside the full-width form card. */
 .compact-corporate-login-panel .login-field-stack {
-    width: min(350px, 100%) !important;
+    width: min(440px, 100%) !important;
     margin-left: auto !important;
     margin-right: auto !important;
+}
+
+.compact-corporate-login-panel .compact-values-panel,
+.compact-corporate-login-panel .leadership-large-panel {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: var(--crs-login-column-gap) !important;
+    align-items: stretch !important;
+}
+
+.compact-corporate-login-panel .compact-values-panel .corporate-value-card,
+.compact-corporate-login-panel .leadership-large-panel .leader-mini-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.compact-corporate-login-panel .compact-values-panel .value-wide {
+    grid-column: 1 / -1 !important;
+}
+
+.compact-corporate-login-panel .leadership-large-panel .leader-mini-card {
+    grid-template-columns: 64px minmax(0, 1fr) !important;
+    column-gap: 12px !important;
+}
+
+.compact-corporate-login-panel .leader-mini-card > div {
+    min-width: 0 !important;
+}
+
+.compact-corporate-login-panel .corporate-login-footer {
+    text-align: center !important;
 }
 
 /* Center both the button and its visible Sign In label. */
@@ -40,15 +106,48 @@
 }
 
 @media (max-width: 640px) {
+    .compact-corporate-login-panel .login-panel-main,
+    .compact-corporate-login-panel .corporate-login-footer,
     .compact-corporate-login-panel .compact-login-form,
-    .compact-corporate-login-panel .login-field-stack {
+    .compact-corporate-login-panel .login-field-stack,
+    .compact-corporate-login-panel .compact-values-panel,
+    .compact-corporate-login-panel .leadership-large-panel {
         width: 100% !important;
         max-width: 100% !important;
+    }
+
+    .compact-corporate-login-panel .compact-values-panel,
+    .compact-corporate-login-panel .leadership-large-panel {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+    }
+
+    .compact-corporate-login-panel .compact-values-panel .value-wide {
+        grid-column: 1 !important;
+    }
+
+    .compact-corporate-login-panel .login-panel-head {
+        grid-template-columns: 86px minmax(0, 1fr) !important;
+        column-gap: 12px !important;
+    }
+
+    .compact-corporate-login-panel .login-panel-logo {
+        width: 86px !important;
+        max-width: 86px !important;
+    }
+
+    .compact-corporate-login-panel .login-system-title,
+    .compact-corporate-login-panel .login-system-subtitle {
+        text-align: center !important;
     }
 
     .compact-corporate-login-panel .login-submit-button {
         width: min(180px, 72vw) !important;
         margin-left: auto !important;
         margin-right: auto !important;
+    }
+
+    .compact-corporate-login-panel .corporate-login-footer {
+        text-align: center !important;
     }
 }

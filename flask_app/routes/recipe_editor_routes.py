@@ -970,10 +970,11 @@ def register_recipe_editor_routes(app):
             "recipe_approve"
         )
 
-        can_download_recipe = role_can(
+        can_role_download_recipe = role_can(
             user_role,
             "recipe_download"
         )
+        can_download_recipe = can_role_download_recipe
 
         can_copy_recipe = role_can(
             user_role,
@@ -1036,6 +1037,7 @@ def register_recipe_editor_routes(app):
             can_approve_recipe=can_approve_recipe,
 
             can_download_recipe=can_download_recipe,
+            can_role_download_recipe=can_role_download_recipe,
 
             can_copy_recipe=can_copy_recipe,
 
@@ -1070,6 +1072,50 @@ def register_recipe_editor_routes(app):
             next_url=next_url,
 
         )
+
+    @app.route(
+        "/recipe-editor/<int:recipe_id>/plc-buffer-access-status",
+        methods=["GET"]
+    )
+    def recipe_editor_plc_buffer_access_status(recipe_id):
+        """Report shared PLC-buffer availability without touching the PLC."""
+
+        if not session.get("username"):
+            return jsonify({
+                "success": False,
+                "message": "Login required."
+            }), 401
+
+        if not role_can(session.get("role"), "recipe_download"):
+            return jsonify({
+                "success": False,
+                "message": "Your role cannot access PLC buffer operations."
+            }), 403
+
+        recipe = RecipeManager.get_recipe_by_id(recipe_id)
+        if not recipe:
+            return jsonify({
+                "success": False,
+                "message": "Recipe not found."
+            }), 404
+
+        active_operation_lock = _active_recipe_operation_lock(recipe_id)
+        available = active_operation_lock is None
+        response = jsonify({
+            "success": True,
+            "recipe_id": recipe_id,
+            "plc_buffer_available": available,
+            "operation_active": not available,
+            "message": (
+                "PLC Buffer is available."
+                if available
+                else "PLC buffer operation is in progress in another login."
+            ),
+            "href": f"/recipe-editor/download-preparation/{recipe_id}",
+        })
+        response.headers["Cache-Control"] = "no-store, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        return response
 
     @app.route(
         "/recipe-editor/<int:recipe_id>/parameters/bulk-edit",

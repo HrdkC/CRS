@@ -182,9 +182,6 @@ Apollo CRS Dashboard
                 <span>Machine / Stage Readiness</span>
                 <p>Configuration status for active machine-stage templates.</p>
             </div>
-            {% if role_can("engineering_config") %}
-            <a href="/configuration" class="secondary-action">Configuration</a>
-            {% endif %}
         </div>
 
         <div class="stage-readiness-grid">
@@ -208,7 +205,7 @@ Apollo CRS Dashboard
                 <div class="stage-readiness-actions">
                     <a href="{{ row.recipe_url }}" class="secondary-action">Recipes</a>
                     {% if role_can("engineering_config") %}
-                    <a href="{{ row.configuration_url }}" class="secondary-action">Configure</a>
+                    <a href="{{ row.configuration_url }}" class="secondary-action">Continue Setup</a>
                     {% endif %}
                 </div>
             </div>

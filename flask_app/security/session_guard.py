@@ -16,6 +16,7 @@ from database.user_session_manager import UserSessionManager
 BACKGROUND_ENDPOINTS = {
     "recipe_download_preparation_job_status",
     "recipe_download_preparation_live_status",
+    "recipe_editor_plc_buffer_access_status",
     "session_heartbeat",
 }
 
