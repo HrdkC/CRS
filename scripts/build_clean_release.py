@@ -30,6 +30,8 @@ ALLOWED_ROOT_FILES = {
     "pytest.ini",
     "requirements.txt",
     "requirements-dev.txt",
+    "Create_CRS_Support_Zip.bat",
+    "Prepare_CRS_Manual_Zip_Folder.bat",
     "run_crs.bat",
     "setup_crs.bat",
 }
