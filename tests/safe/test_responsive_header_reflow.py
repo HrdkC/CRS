@@ -26,21 +26,26 @@ def test_responsive_header_module_order_and_bundle_are_current():
     action_type_import = (
         '@import url("./modules/38_global_action_typography_standardization.css?'
     )
+    light_action_import = (
+        '@import url("./modules/39_light_theme_action_contrast.css?'
+    )
     assert guided_import in manifest
     assert login_import in manifest
     assert workflow_import in manifest
     assert action_type_import in manifest
+    assert light_action_import in manifest
     assert (
         manifest.index(import_line)
         < manifest.index(guided_import)
         < manifest.index(login_import)
         < manifest.index(workflow_import)
         < manifest.index(action_type_import)
+        < manifest.index(light_action_import)
     )
     assert "@media (max-width: 1180px)" in module_text
     assert "max-height: none !important" in module_text
     assert "overflow: visible !important" in module_text
     assert ".site-header.mobile-navigation-open" in module_text
     assert "css/crs.bundle.css" in base_template
-    assert "css-v134-global-action-type-20260731" in base_template
+    assert "css-v135-light-action-contrast-20260731" in base_template
     assert OUTPUT_PATH.read_text(encoding="utf-8") == render_bundle()

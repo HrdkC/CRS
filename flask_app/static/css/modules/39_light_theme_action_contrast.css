@@ -1,0 +1,382 @@
+/*
+ * 39_light_theme_action_contrast.css
+ * Final light-theme foreground/background contract for interactive controls.
+ *
+ * Keep semantic foreground, background, and border colors together. This
+ * prevents high-specificity page rules from combining a pale background with
+ * white text.
+ */
+
+html[data-crs-resolved-theme="light"] {
+    --crs-light-action-primary-bg: #1d4ed8;
+    --crs-light-action-primary-hover: #1e40af;
+    --crs-light-action-primary-border: #1e3a8a;
+    --crs-light-action-violet-bg: #6d28d9;
+    --crs-light-action-violet-hover: #5b21b6;
+    --crs-light-action-violet-border: #4c1d95;
+    --crs-light-action-neutral-bg: #334155;
+    --crs-light-action-neutral-hover: #1e293b;
+    --crs-light-action-neutral-border: #1e293b;
+    --crs-light-action-soft-bg: #e2e8f0;
+    --crs-light-action-soft-hover: #cbd5e1;
+    --crs-light-action-soft-text: #1e293b;
+    --crs-light-action-soft-border: #64748b;
+    --crs-light-action-success-bg: #15803d;
+    --crs-light-action-success-hover: #166534;
+    --crs-light-action-success-border: #14532d;
+    --crs-light-action-warning-bg: #92400e;
+    --crs-light-action-warning-hover: #78350f;
+    --crs-light-action-warning-border: #78350f;
+    --crs-light-action-danger-bg: #dc2626;
+    --crs-light-action-danger-hover: #b91c1c;
+    --crs-light-action-danger-border: #991b1b;
+    --crs-light-action-unavailable-bg: #475569;
+    --crs-light-action-unavailable-text: #ffffff;
+    --crs-light-action-unavailable-border: #334155;
+}
+
+/* Primary commands. */
+html[data-crs-resolved-theme="light"] body :is(
+    .crs-btn-primary,
+    .btn-primary,
+    .primary-action
+) {
+    color: #ffffff !important;
+    background: var(--crs-light-action-violet-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-light-action-violet-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(
+    .crs-btn-primary,
+    .btn-primary,
+    .primary-action
+):is(:hover, :focus-visible) {
+    color: #ffffff !important;
+    background: var(--crs-light-action-violet-hover) !important;
+    border-color: var(--crs-light-action-violet-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Secondary commands use a light surface with dark text. */
+html[data-crs-resolved-theme="light"] body :is(
+    .crs-btn-soft,
+    .btn-secondary,
+    .secondary-action,
+    .nav-back-button
+) {
+    color: var(--crs-light-action-soft-text) !important;
+    background: var(--crs-light-action-soft-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-light-action-soft-border) !important;
+    -webkit-text-fill-color: var(--crs-light-action-soft-text) !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(
+    .crs-btn-soft,
+    .btn-secondary,
+    .secondary-action,
+    .nav-back-button
+):is(:hover, :focus-visible) {
+    color: #0f172a !important;
+    background: var(--crs-light-action-soft-hover) !important;
+    border-color: #475569 !important;
+    -webkit-text-fill-color: #0f172a !important;
+}
+
+/* Default and named row actions. */
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:not(
+    .primary,
+    .edit,
+    .open,
+    .info,
+    .action-primary,
+    .buffer,
+    .violet,
+    .action-violet,
+    .success,
+    .enable,
+    .copy,
+    .action-enable,
+    .action-success,
+    .warning,
+    .history,
+    .audit,
+    .action-warning,
+    .danger,
+    .disable,
+    .delete,
+    .action-disable,
+    .action-danger
+) {
+    color: #ffffff !important;
+    background: var(--crs-light-action-neutral-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-light-action-neutral-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body .plc-registry-actions :is(a, button).row-action:not(
+    .primary
+):not(.buffer):not(.danger):not(.success) {
+    color: #ffffff !important;
+    background: var(--crs-light-action-neutral-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-light-action-neutral-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    .primary,
+    .edit,
+    .open,
+    .info,
+    .action-primary
+) {
+    color: #ffffff !important;
+    background: var(--crs-light-action-primary-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-light-action-primary-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    .buffer,
+    .violet,
+    .action-violet
+) {
+    color: #ffffff !important;
+    background: var(--crs-light-action-violet-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-light-action-violet-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    .success,
+    .enable,
+    .copy,
+    .action-enable,
+    .action-success
+) {
+    color: #ffffff !important;
+    background: var(--crs-light-action-success-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-light-action-success-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    .warning,
+    .history,
+    .audit,
+    .action-warning
+) {
+    color: #ffffff !important;
+    background: var(--crs-light-action-warning-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-light-action-warning-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    .danger,
+    .disable,
+    .delete,
+    .action-disable,
+    .action-danger
+) {
+    color: #ffffff !important;
+    background: var(--crs-light-action-danger-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-light-action-danger-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    :hover,
+    :focus-visible
+):not(:disabled):not([aria-disabled="true"]) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:not(
+    .primary,
+    .edit,
+    .open,
+    .info,
+    .action-primary,
+    .buffer,
+    .violet,
+    .action-violet,
+    .success,
+    .enable,
+    .copy,
+    .action-enable,
+    .action-success,
+    .warning,
+    .history,
+    .audit,
+    .action-warning,
+    .danger,
+    .disable,
+    .delete,
+    .action-disable,
+    .action-danger
+):is(:hover, :focus-visible) {
+    background: var(--crs-light-action-neutral-hover) !important;
+    border-color: var(--crs-light-action-neutral-border) !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    .primary,
+    .edit,
+    .open,
+    .info,
+    .action-primary
+):is(:hover, :focus-visible) {
+    background: var(--crs-light-action-primary-hover) !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    .buffer,
+    .violet,
+    .action-violet
+):is(:hover, :focus-visible) {
+    background: var(--crs-light-action-violet-hover) !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    .success,
+    .enable,
+    .copy,
+    .action-enable,
+    .action-success
+):is(:hover, :focus-visible) {
+    background: var(--crs-light-action-success-hover) !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    .warning,
+    .history,
+    .audit,
+    .action-warning
+):is(:hover, :focus-visible) {
+    background: var(--crs-light-action-warning-hover) !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(a, button, summary, span).row-action:is(
+    .danger,
+    .disable,
+    .delete,
+    .action-disable,
+    .action-danger
+):is(:hover, :focus-visible) {
+    background: var(--crs-light-action-danger-hover) !important;
+}
+
+/* Page-specific button families that do not use row-action. */
+html[data-crs-resolved-theme="light"] body :is(
+    .bulk-chip-button,
+    .bulk-action-button,
+    .bulk-sort-button
+) {
+    color: var(--crs-light-action-soft-text) !important;
+    background: var(--crs-light-action-soft-bg) !important;
+    border-color: var(--crs-light-action-soft-border) !important;
+    -webkit-text-fill-color: var(--crs-light-action-soft-text) !important;
+}
+
+html[data-crs-resolved-theme="light"] body .bulk-action-button.success-action {
+    color: #ffffff !important;
+    background: var(--crs-light-action-success-bg) !important;
+    border-color: var(--crs-light-action-success-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body .bulk-action-button.warning-action {
+    color: #ffffff !important;
+    background: var(--crs-light-action-warning-bg) !important;
+    border-color: var(--crs-light-action-warning-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-crs-resolved-theme="light"] body .plc-browser-v2 :is(.row-btn, .row-link) {
+    -webkit-text-fill-color: currentColor !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(.btn-restore, .btn-save, .btn-upload) {
+    color: #1e293b !important;
+    border: 1px solid var(--crs-light-action-soft-border) !important;
+    -webkit-text-fill-color: #1e293b !important;
+}
+
+html[data-crs-resolved-theme="light"] body .btn-download {
+    color: #ffffff !important;
+    background: var(--crs-light-action-violet-bg) !important;
+    border: 1px solid var(--crs-light-action-violet-border) !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Unavailable controls stay readable but remain visually neutral. */
+html[data-crs-resolved-theme="light"] body :is(
+    button,
+    input[type="button"],
+    input[type="submit"],
+    .btn,
+    .crs-btn,
+    .row-action,
+    .operation-button
+):disabled,
+html[data-crs-resolved-theme="light"] body :is(
+    button,
+    input[type="button"],
+    input[type="submit"],
+    .btn,
+    .crs-btn,
+    .row-action,
+    .operation-button
+)[aria-disabled="true"],
+html[data-crs-resolved-theme="light"] body :is(a, summary).row-action:is(
+    .disabled,
+    .is-disabled,
+    [aria-disabled="true"]
+) {
+    color: var(--crs-light-action-unavailable-text) !important;
+    background: var(--crs-light-action-unavailable-bg) !important;
+    background-image: none !important;
+    border-color: var(--crs-light-action-unavailable-border) !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: var(--crs-light-action-unavailable-text) !important;
+}
+
+html[data-crs-resolved-theme="light"] body :is(
+    button,
+    input[type="button"],
+    input[type="submit"],
+    .btn,
+    .crs-btn,
+    .row-action,
+    .operation-button
+):focus-visible {
+    outline: 3px solid #f59e0b !important;
+    outline-offset: 2px !important;
+}
+
+@media (forced-colors: active) {
+    html[data-crs-resolved-theme="light"] body :is(
+        button,
+        input[type="button"],
+        input[type="submit"],
+        .btn,
+        .crs-btn,
+        .row-action,
+        .operation-button
+    ) {
+        forced-color-adjust: auto;
+    }
+}

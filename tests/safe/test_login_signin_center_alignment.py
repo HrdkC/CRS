@@ -36,6 +36,6 @@ def test_login_content_grid_is_aligned_and_bundle_is_current():
     assert "text-align: center !important" in module_text
     assert "margin: 10px auto 0 !important" in module_text
     assert "css/crs.bundle.css" in base_template
-    assert "css-v134-global-action-type-20260731" in base_template
+    assert "css-v135-light-action-contrast-20260731" in base_template
     assert 'class="login-submit-button">Sign In</button>' in login_template
     assert OUTPUT_PATH.read_text(encoding="utf-8") == render_bundle()

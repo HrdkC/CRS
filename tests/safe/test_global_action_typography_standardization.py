@@ -19,8 +19,14 @@ def test_global_action_module_is_last_and_bundle_is_current():
         '@import url("./modules/38_global_action_typography_standardization.css?'
         'v=css-v134-global-action-type-20260731");'
     )
-    assert manifest.rstrip().endswith(import_line)
-    assert "css-v134-global-action-type-20260731" in base_template
+    light_action_import = (
+        '@import url("./modules/39_light_theme_action_contrast.css?'
+        'v=css-v135-light-action-contrast-20260731");'
+    )
+    assert import_line in manifest
+    assert manifest.rstrip().endswith(light_action_import)
+    assert manifest.index(import_line) < manifest.index(light_action_import)
+    assert "css-v135-light-action-contrast-20260731" in base_template
     assert OUTPUT_PATH.read_text(encoding="utf-8") == render_bundle()
 
 

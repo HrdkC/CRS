@@ -41,5 +41,5 @@ def test_configuration_workflow_uses_resolved_dark_theme_contract():
 def test_configuration_dark_theme_bundle_and_cache_key_are_current():
     template = BASE_TEMPLATE.read_text(encoding="utf-8")
 
-    assert "css-v134-global-action-type-20260731" in template
+    assert "css-v135-light-action-contrast-20260731" in template
     assert OUTPUT_PATH.read_text(encoding="utf-8") == render_bundle()
